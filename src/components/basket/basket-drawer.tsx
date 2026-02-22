@@ -347,9 +347,33 @@ export function BasketDrawer() {
 							))}
 
 							<div className="border-t border-white/10 mt-1 pt-2 flex justify-between items-center">
-								<span className="text-[0.65rem] uppercase tracking-wider text-white/50 font-medium">
-									Ø Monatlich
-								</span>
+								<div className="flex flex-col">
+									<span className="text-[0.65rem] uppercase tracking-wider text-white/50 font-medium">
+										Ø Monatlich
+									</span>
+									<span className="text-[0.6rem] text-white/40 font-medium">
+										ca.{" "}
+										{items.length > 0
+											? items
+													.reduce((acc, item) => {
+														const calc = calculateProductCosts({
+															product: item.product,
+															businessCase: item.config.businessCase,
+															magentaTVPackage: item.config.magentaTVPackage,
+															selectedSpecialPriceIds:
+																item.config.selectedSpecialPriceIds,
+															selectedAddonIds: item.config.selectedAddonIds,
+															vouchers: item.config.vouchers,
+															hardwarePurchaseType:
+																item.config.hardwarePurchaseType
+														});
+														return acc + calc.averageMonthlyCost / 30;
+													}, 0)
+													.toFixed(2)
+											: "0.00"}{" "}
+										€ am Tag
+									</span>
+								</div>
 								<span className="text-[1.1rem] font-extrabold tracking-tight flex items-center leading-none">
 									{totalMonthly.toFixed(2)}
 									<span className="ml-[3px] text-[0.8rem] font-normal text-white/70">

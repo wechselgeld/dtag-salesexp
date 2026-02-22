@@ -105,6 +105,14 @@ export function CombinedTimeline() {
 													{data.total.toFixed(2)} €
 												</span>
 											</div>
+											<div className="mt-1 flex justify-between text-[0.6rem] text-[#ccc]">
+												<span>Täglich ca.</span>
+												<span>
+													{data.total < 30
+														? `${((data.total / 30) * 100).toFixed(0)} Cent`
+														: `${(data.total / 30).toFixed(2)} €`}
+												</span>
+											</div>
 										</div>
 									);
 								}

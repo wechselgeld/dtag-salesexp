@@ -93,7 +93,7 @@ export function IntroSplash({ children }: { children: React.ReactNode }) {
 								}}
 							>
 								<h1 className="text-[1.8rem] font-medium text-[#1a1a2e] tracking-tight mb-2">
-									Willkommen zurück.
+									Willkommen bei der Sales Experience.
 								</h1>
 								<div className="flex items-center gap-2 text-[0.8rem] font-medium text-[#888] tracking-widest uppercase">
 									<span>Chemnitz</span>

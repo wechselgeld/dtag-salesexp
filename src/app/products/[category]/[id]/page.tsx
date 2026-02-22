@@ -591,6 +591,28 @@ function ProductPageContent() {
 						<CostTimeline calculation={calculation} accentColor={catColor} />
 					</motion.div>
 
+					{/* Price Trivialization Card */}
+					<motion.div
+						initial={{ opacity: 0, y: 8 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: 0.32, duration: 0.35 }}
+						className="bg-[#f7f8fa] rounded-2xl p-5 border border-[#eaedf0] flex flex-col items-center gap-1.5"
+					>
+						<span className="text-[0.65rem] text-[#999] uppercase font-bold tracking-widest">
+							Täglicher Preis
+						</span>
+						<span
+							className="text-[1.5rem] font-black tracking-tight"
+							style={{ color: catColor }}
+						>
+							{calculation.dailyPriceTrivialization}
+						</span>
+						<p className="text-[0.7rem] text-[#888] font-medium text-center leading-relaxed m-0 px-2">
+							Das sind weniger als die Kosten für einen Kaffee am Tag – für
+							volles Entertainment.
+						</p>
+					</motion.div>
+
 					{/* CTA Button */}
 					<motion.button
 						initial={{ opacity: 0, y: 8 }}

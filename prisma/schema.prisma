@@ -196,7 +196,7 @@ model Team {
 model SalesSession {
   id     String @id @default(cuid())
   teamId String
-  team   Team   @relation(fields: [teamId], references: [id])
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   acceptedTerms Boolean @default(false)
 

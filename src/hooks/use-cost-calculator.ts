@@ -106,6 +106,7 @@ export interface CalculationResult {
     oneTimeCosts: { total: number; breakdown: { name: string; cost: number }[] };
     basePrice: number;
     effectiveBasePrice: number; // The standard price (with TV if selected)
+    dailyPriceTrivialization?: string;
 }
 
 export type Credit = {
@@ -164,6 +165,7 @@ export function calculateProductCosts({
             effectiveBasePrice = product.rentalPrice ?? product.basePrice;
         }
     } else {
+        // If MagentaTV is selected, we might have a different base price for the bundle
         if (isMagentaTVSelected && product.magentaTVBundlePrice) {
             effectiveBasePrice = product.magentaTVBundlePrice;
         }
@@ -269,13 +271,20 @@ export function calculateProductCosts({
     const totalCost24Months = sumMonthlyCosts + oneTimeTotal;
     const averageMonthlyCost = totalCost24Months / 24;
 
+    // Daily price trivialization (using exact monthly average)
+    const dailyPrice = averageMonthlyCost / 30;
+    const dailyPriceFormatted = dailyPrice < 1
+        ? `${(dailyPrice * 100).toFixed(0)} Cent`
+        : `${dailyPrice.toFixed(2)} €`;
+
     return {
         monthlyCosts,
         averageMonthlyCost,
         totalCost24Months,
         oneTimeCosts: { total: oneTimeTotal, breakdown: oneTimeBreakdown },
         basePrice: product.basePrice,
-        effectiveBasePrice
+        effectiveBasePrice,
+        dailyPriceTrivialization: dailyPriceFormatted
     }
 }
 
