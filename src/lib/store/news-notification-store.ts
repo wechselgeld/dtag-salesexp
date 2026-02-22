@@ -4,7 +4,7 @@ interface NewsNotification {
     id: string;
     title: string;
     content: string;
-    priority: "INFO" | "UPDATE" | "IMPORTANT" | "CRITICAL";
+    priority: "INFO" | "UPDATE" | "IMPORTANT" | "CRITICAL" | "SALES";
 }
 
 interface NewsNotificationStore {

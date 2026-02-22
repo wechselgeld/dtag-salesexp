@@ -18,6 +18,15 @@ export const appRouter = router({
     session: sessionRouter,
     news: newsRouter,
     addon: addonRouter,
+    public: router({
+        getActiveAnnouncements: publicProcedure.query(async () => {
+            const { prisma } = await import('@/lib/prisma');
+            return prisma.maintenanceAnnouncement.findMany({
+                where: { isActive: true },
+                orderBy: { priority: 'desc' }
+            });
+        }),
+    }),
 });
 
 export type AppRouter = typeof appRouter;

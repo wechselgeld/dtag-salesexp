@@ -5,6 +5,8 @@ import { SidebarNav } from "@/components/sidebar-nav";
 import { BasketDrawer } from "@/components/basket/basket-drawer";
 import { IntroSplash } from "@/components/intro-splash";
 import { AnimatePresence, motion } from "framer-motion";
+import { trpc } from "@/lib/trpc";
+import { MaintenanceSplash } from "@/components/maintenance-splash";
 
 // Routes that should render WITHOUT the sales shell (sidebar + basket)
 const STANDALONE_ROUTES = [
@@ -18,7 +20,21 @@ const STANDALONE_ROUTES = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname();
+	const { data: isMaintenance } = trpc.admin.getMaintenanceStatus.useQuery();
+	const { data: user } = trpc.admin.getCurrentUser.useQuery(undefined, {
+		retry: false
+	});
+
+	const isMaintenanceActive = isMaintenance && user?.role !== "ADMIN";
 	const isStandalone = STANDALONE_ROUTES.some((r) => pathname.startsWith(r));
+
+	if (
+		isMaintenanceActive &&
+		!pathname.startsWith("/admin") &&
+		pathname !== "/login"
+	) {
+		return <MaintenanceSplash />;
+	}
 
 	if (isStandalone) {
 		// Full-page layout — no sidebar, no basket. Added wrapper to allow scrolling.

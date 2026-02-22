@@ -50,7 +50,7 @@ export const teamRouter = router({
                 if (error.code === 'P2003') {
                     throw new TRPCError({
                         code: 'CONFLICT',
-                        message: 'Dieses Team kann nicht gelöscht werden, da noch Verknüpfungen (z.B. Sessions) existieren. Bitte stellen Sie sicher, dass alle Cascade-Regeln in der Datenbank aktiv sind.'
+                        message: 'Dieses Team kann nicht gelöscht werden, da noch Verknüpfungen (z.B. Sessions) existieren. Bitte stelle sicher, dass alle Cascade-Regeln in der Datenbank aktiv sind.'
                     });
                 }
                 throw new TRPCError({

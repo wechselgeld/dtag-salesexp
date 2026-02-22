@@ -35,7 +35,7 @@ export default function SettingsPage() {
 					Einstellungen
 				</h1>
 				<p className="text-[0.85rem] text-[#999] mb-8">
-					Konfigurieren Sie das Sales Experience Tool
+					Konfiguriere Deine Sales Experience
 				</p>
 
 				<div className="space-y-4">

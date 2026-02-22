@@ -1,91 +1,5 @@
 @import "tailwindcss";
 
-/* TeleNeo - Telekom Corporate Font (self-hosted) */
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-Thin.woff2") format("woff2");
-	font-weight: 100;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-ThinItalic.woff2") format("woff2");
-	font-weight: 100;
-	font-style: italic;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-Regular.woff2") format("woff2");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-RegularItalic.woff2") format("woff2");
-	font-weight: 400;
-	font-style: italic;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-Medium.woff2") format("woff2");
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-MediumItalic.woff2") format("woff2");
-	font-weight: 500;
-	font-style: italic;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-Bold.woff2") format("woff2");
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-BoldItalic.woff2") format("woff2");
-	font-weight: 700;
-	font-style: italic;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-ExtraBold.woff2") format("woff2");
-	font-weight: 800;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-ExtraBoldItalic.woff2") format("woff2");
-	font-weight: 800;
-	font-style: italic;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-Ultra.woff2") format("woff2");
-	font-weight: 900;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: "TeleNeo";
-	src: url("/fonts/TeleNeo/TeleNeoWeb-UltraItalic.woff2") format("woff2");
-	font-weight: 900;
-	font-style: italic;
-	font-display: swap;
-}
-
 @theme {
 	--color-magenta-50: #fdeaf2;
 	--color-magenta-100: #fbcfe0;
@@ -124,8 +38,8 @@
 	--color-ds-danger-hover: #c9302c;
 
 	--font-sans:
-		"TeleNeo", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+		var(--font-teleneo), ui-sans-serif, system-ui, sans-serif,
+		"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 @layer base {

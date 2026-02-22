@@ -458,7 +458,7 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 							Geräte-Spezifikationen
 						</h3>
 						<p className="text-sm text-zinc-500 mb-4">
-							Hier können Sie Einmal- und Mietpreise für Hardware definieren.
+							Hier kannst Du Einmal- und Mietpreise für Hardware definieren.
 							Einer von beiden Werten kann `0` bleiben, wenn die Kaufart nicht
 							angeboten wird.
 						</p>

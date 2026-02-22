@@ -10,11 +10,11 @@ import clsx from "clsx";
 const FAQ_ITEMS = [
 	{
 		q: "Wie erstelle ich ein Angebot?",
-		a: "Wähle zunächst eine Produktkategorie aus, konfiguriere den gewünschten Tarif mit Vertragsart und optionalen Zusätzen, und füge ihn dem Warenkorb hinzu. Über den Button 'Angebot erstellen' im Warenkorb kannst du das Angebot abschließen."
+		a: "Wähle zunächst eine Produktkategorie aus, konfiguriere den gewünschten Tarif mit Vertragsart und optionalen Zusätzen, und füge ihn dem Warenkorb hinzu. Über den Button 'Angebot erstellen' im Warenkorb kannst Du das Angebot abschließen."
 	},
 	{
 		q: "Kann ich mehrere Produkte in einem Angebot kombinieren?",
-		a: "Ja, du kannst beliebig viele Tarife aus verschiedenen Kategorien zum Warenkorb hinzufügen. Die Kostenübersicht im Warenkorb zeigt automatisch die Gesamtkosten aller kombinierten Produkte."
+		a: "Ja, Du kannst beliebig viele Tarife aus verschiedenen Kategorien zum Warenkorb hinzufügen. Die Kostenübersicht im Warenkorb zeigt automatisch die Gesamtkosten aller kombinierten Produkte."
 	},
 	{
 		q: "Was bedeuten die verschiedenen Geschäftsfälle?",
@@ -22,19 +22,19 @@ const FAQ_ITEMS = [
 	},
 	{
 		q: "Wie funktionieren Aktionen & Rabatte?",
-		a: "Sonderpreise sind zeitlich begrenzte Aktionspreise, die für bestimmte Vertragsmonate gelten. Sie können jeweils einen Sonderpreis pro Tarif auswählen. Die Ersparnis wird in der Kostenübersicht automatisch berücksichtigt."
+		a: "Sonderpreise sind zeitlich begrenzte Aktionspreise, die für bestimmte Vertragsmonate gelten. Du kannst jeweils einen Sonderpreis pro Tarif auswählen. Die Ersparnis wird in der Kostenübersicht automatisch berücksichtigt."
 	},
 	{
 		q: "Was ist das MagentaTV Bundle?",
-		a: "Bei ausgewählten Festnetz-Tarifen kannst du MagentaTV als Kombivorteil hinzubuchen. Dies reduziert den monatlichen TV-Preis und wird automatisch in die Gesamtkosten einberechnet."
+		a: "Bei ausgewählten Festnetz-Tarifen kannst Du MagentaTV als Kombivorteil hinzubuchen. Dies reduziert den monatlichen TV-Preis und wird automatisch in die Gesamtkosten einberechnet."
 	},
 	{
 		q: "Wie setze ich meine Sitzung zurück?",
-		a: "Klicke auf 'Sitzung zurücksetzen' in der Sidebar. Dies leert den Warenkorb und setzt alle Konfigurationen zurück, sodass du von vorne beginnen kannst."
+		a: "Klicke auf 'Sitzung zurücksetzen' in der Sidebar. Dies leert den Warenkorb und setzt alle Konfigurationen zurück, sodass Du von vorne beginnen kannst."
 	},
 	{
 		q: "Wo finde ich die Admin-Oberfläche?",
-		a: "Die Admin-Oberfläche ist über den 'Admin' Link in der Sidebar erreichbar. Dort kannst du Produkte, Sonderpreise und Gutschriften verwalten. Beachte, dass hierfür erweiterte Berechtigungen erforderlich sind."
+		a: "Die Admin-Oberfläche ist über den 'Admin' Link in der Sidebar erreichbar. Dort kannst Du Produkte, Sonderpreise und Gutschriften verwalten. Beachte, dass hierfür erweiterte Berechtigungen erforderlich sind."
 	},
 	{
 		q: "Wie werden die Gesamtkosten berechnet?",

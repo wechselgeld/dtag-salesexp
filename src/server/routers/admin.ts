@@ -1,4 +1,4 @@
-import { router, protectedProcedure } from '@/server/trpc';
+import { router, protectedProcedure, publicProcedure } from '@/server/trpc';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { TRPCError } from '@trpc/server';
@@ -65,8 +65,38 @@ export const adminRouter = router({
             products: await prisma.product.count(),
             users: await prisma.user.count(),
             specialPrices: await prisma.specialPrice.count(),
-        }
+            teams: await prisma.team.count(),
+        };
     }),
+
+    getCurrentUser: protectedProcedure.query(async ({ ctx }) => {
+        const userId = ctx.session?.sub as string;
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, email: true, role: true }
+        });
+        if (!user) throw new TRPCError({ code: 'NOT_FOUND' });
+        return user;
+    }),
+
+    getMaintenanceStatus: publicProcedure.query(async () => {
+        // @ts-ignore
+        const setting = await prisma.systemSetting.findUnique({
+            where: { key: 'maintenance_mode' }
+        });
+        return setting?.value === 'true';
+    }),
+
+    toggleMaintenanceMode: protectedProcedure
+        .input(z.object({ enabled: z.boolean() }))
+        .mutation(async ({ input }) => {
+            // @ts-ignore
+            return await prisma.systemSetting.upsert({
+                where: { key: 'maintenance_mode' },
+                update: { value: input.enabled ? 'true' : 'false' },
+                create: { key: 'maintenance_mode', value: input.enabled ? 'true' : 'false' }
+            });
+        }),
 
     // --- Product CRUD ---
     createProduct: protectedProcedure
@@ -320,6 +350,39 @@ export const adminRouter = router({
             .input(z.object({ id: z.string() }))
             .mutation(async ({ input }) => {
                 return prisma.salesArgument.delete({ where: { id: input.id } });
+            }),
+    }),
+
+    // --- Settings & Profile ---
+    settings: router({
+        changePassword: protectedProcedure
+            .input(z.object({
+                oldPassword: z.string(),
+                newPassword: z.string().min(6),
+            }))
+            .mutation(async ({ input, ctx }) => {
+                const userId = ctx.session.sub as string;
+                const user = await prisma.user.findUnique({ where: { id: userId } });
+
+                if (!user) throw new TRPCError({ code: 'NOT_FOUND' });
+
+                const bcrypt = await import('bcryptjs');
+                const isValid = await bcrypt.compare(input.oldPassword, user.password);
+
+                if (!isValid) {
+                    throw new TRPCError({
+                        code: 'UNAUTHORIZED',
+                        message: 'Das alte Passwort ist nicht korrekt.'
+                    });
+                }
+
+                const hashedPassword = await bcrypt.hash(input.newPassword, 10);
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: { password: hashedPassword }
+                });
+
+                return { success: true };
             }),
     }),
 });

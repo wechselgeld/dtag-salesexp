@@ -28,6 +28,11 @@ export function NewsCarousel() {
 	const [isPaused, setIsPaused] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const accumulatedTimeRef = useRef(0);
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
 
 	// Custom animation loop to manage both the time skipping and progress percentage smoothly with pause support
 	useEffect(() => {
@@ -61,8 +66,8 @@ export function NewsCarousel() {
 		return () => cancelAnimationFrame(animationFrame);
 	}, [newsItems, isPaused]);
 
-	if (isLoading || !newsItems || newsItems.length === 0) {
-		return null; // Don't show anything if no news
+	if (!mounted || isLoading || !newsItems || newsItems.length === 0) {
+		return null; // Don't show anything if no news or not mounted
 	}
 
 	const currentItem = newsItems[currentIndex];

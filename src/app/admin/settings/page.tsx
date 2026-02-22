@@ -1,10 +1,10 @@
 import { Metadata } from "next";
-import TeamsClient from "./teams-client";
+import SettingsClient from "./settings-client";
 
 export const metadata: Metadata = {
-	title: "Teams verwalten"
+	title: "Einstellungen"
 };
 
 export default function Page() {
-	return <TeamsClient />;
+	return <SettingsClient />;
 }

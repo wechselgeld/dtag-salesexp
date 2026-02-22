@@ -26,8 +26,9 @@ import { useRouter } from "next/navigation";
 import { CombinedTimeline } from "./combined-timeline";
 import { CreditSelector } from "../calculator/credit-selector";
 import { trpc } from "@/lib/trpc";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNewsNotificationStore } from "@/lib/store/news-notification-store";
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: "#e20074",
@@ -57,6 +58,51 @@ export function BasketDrawer() {
 	>("idle");
 
 	const { data: availableCredits } = trpc.product.getOneTimeCredits.useQuery();
+	const addNotification = useNewsNotificationStore(
+		(state) => state.addNotification
+	);
+	const lastNudgeRef = useRef<string | null>(null);
+
+	// Cross-Sell Detector (Fixed + Mobile Advantage)
+	useEffect(() => {
+		if (items.length === 0) {
+			lastNudgeRef.current = null;
+			return;
+		}
+
+		const hasMobile = items.some((i) => i.product.category === "MOBILE");
+		const hasFixed = items.some(
+			(i) => i.product.category === "FIBER" || i.product.category === "DSL"
+		);
+
+		let nudgeId = null;
+		let title = "";
+		let content = "";
+
+		if (hasMobile && !hasFixed) {
+			nudgeId = "nudge-fixed-missing";
+			title = "Preisvorteil durch Festnetz";
+			content =
+				"Dein Kunde nutzt Mobilfunk. Biete ihm zusätzlich Festnetz an, um den monatlichen Preisvorteil und das doppelte Datenvolumen freizuschalten!";
+		} else if (hasFixed && !hasMobile) {
+			nudgeId = "nudge-mobile-missing";
+			title = "Preisvorteil durch Mobilfunk";
+			content =
+				"Dein Kunde nutzt Festnetz. Biete ihm zusätzlich Mobilfunk an, um den monatlichen Preisvorteil für beide Verträge zu aktivieren!";
+		}
+
+		if (nudgeId && lastNudgeRef.current !== nudgeId) {
+			addNotification({
+				id: nudgeId + Date.now(), // Unique ID for the toast instance
+				title,
+				content,
+				priority: "SALES"
+			});
+			lastNudgeRef.current = nudgeId;
+		} else if (!nudgeId) {
+			lastNudgeRef.current = null;
+		}
+	}, [items, addNotification]);
 
 	// Calculate totals
 	const totalMonthly = items.reduce((acc, item) => {
@@ -535,7 +581,7 @@ function BasketItemCard({
 				{calculation.hasUnlimitedAdvantage && (
 					<div className="mb-3 inline-flex items-center gap-1 bg-[#e20074]/10 text-[#e20074] px-2 py-0.5 rounded-md text-[0.65rem] font-bold uppercase tracking-wider">
 						<Sparkles className="w-2.5 h-2.5" />
-						MagentaEINS: Unlimited GB
+						Kombivorteil: Unlimited GB
 					</div>
 				)}
 

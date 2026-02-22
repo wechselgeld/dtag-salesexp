@@ -124,7 +124,7 @@ export function AddonSelector({
 									{addon.name}
 								</h3>
 								<p className="text-[0.75rem] text-[#888] m-0">
-									Wählen Sie eine Variante
+									Wähle eine Variante
 								</p>
 							</div>
 						</div>

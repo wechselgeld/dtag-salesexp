@@ -3,7 +3,14 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNewsNotificationStore } from "@/lib/store/news-notification-store";
-import { Info, AlertCircle, AlertTriangle, X } from "lucide-react";
+import {
+	Info,
+	AlertCircle,
+	AlertTriangle,
+	X,
+	Sparkles,
+	TrendingUp
+} from "lucide-react";
 import clsx from "clsx";
 import { trpc } from "@/lib/trpc";
 
@@ -14,7 +21,8 @@ const PRIORITY_CONFIG: Record<
 	INFO: { color: "#00a878", icon: Info }, // Green
 	UPDATE: { color: "#0090d0", icon: Info }, // Blue
 	IMPORTANT: { color: "#ff6b00", icon: AlertCircle }, // Orange
-	CRITICAL: { color: "#dc2626", icon: AlertTriangle } // Red
+	CRITICAL: { color: "#dc2626", icon: AlertTriangle }, // Red
+	SALES: { color: "#e20074", icon: Sparkles } // Magenta
 };
 
 export function GlobalNewsNotification() {
@@ -81,10 +89,17 @@ function NotificationItem({
 	const Icon = config.icon;
 	const isCritical = notification.priority === "CRITICAL";
 	const isImportant = notification.priority === "IMPORTANT";
+	const isSales = notification.priority === "SALES";
 
 	const [progress, setProgress] = useState(0);
 	const accumulatedTimeRef = useRef(0);
 	const [isPaused, setIsPaused] = useState(false);
+	const isPausedRef = useRef(isPaused);
+
+	// Sync ref with state
+	useEffect(() => {
+		isPausedRef.current = isPaused;
+	}, [isPaused]);
 
 	useEffect(() => {
 		let animationFrame: number;
@@ -92,8 +107,10 @@ function NotificationItem({
 		const DURATION = 10000; // 10 seconds visible
 
 		const tick = (currentTime: number) => {
-			if (!isPaused) {
-				const delta = currentTime - lastTime;
+			const delta = currentTime - lastTime;
+			lastTime = currentTime;
+
+			if (!isPausedRef.current) {
 				accumulatedTimeRef.current += delta;
 				const p = Math.min((accumulatedTimeRef.current / DURATION) * 100, 100);
 				setProgress(p);
@@ -103,14 +120,13 @@ function NotificationItem({
 					return;
 				}
 			}
-			lastTime = currentTime;
 			animationFrame = requestAnimationFrame(tick);
 		};
 
 		animationFrame = requestAnimationFrame(tick);
 
 		return () => cancelAnimationFrame(animationFrame);
-	}, [isPaused, onDismiss]);
+	}, [onDismiss]);
 
 	return (
 		<motion.div
@@ -121,27 +137,36 @@ function NotificationItem({
 			onMouseEnter={() => setIsPaused(true)}
 			onMouseLeave={() => setIsPaused(false)}
 			className={clsx(
-				"relative pointer-events-auto bg-white rounded-2xl p-4 shadow-2xl overflow-hidden",
-				isCritical
+				"relative pointer-events-auto rounded-2xl p-4 shadow-2xl overflow-hidden backdrop-blur-sm bg-white/95",
+				isCritical || isSales
 					? "border-[3px]"
 					: isImportant
 						? "border-2"
 						: "border border-black/5"
 			)}
 			style={{
-				borderColor: isCritical
-					? config.color
-					: isImportant
+				borderColor:
+					isCritical || isSales
 						? config.color
-						: undefined
+						: isImportant
+							? config.color
+							: undefined
 			}}
 		>
-			{/* Background Glow for Critical */}
+			{/* Background Glows */}
 			{isCritical && (
 				<div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-red-500/10 to-transparent blur-xl pointer-events-none rounded-full" />
 			)}
 			{isImportant && (
 				<div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-orange-500/10 to-transparent blur-xl pointer-events-none rounded-full" />
+			)}
+			{isSales && (
+				<div
+					className="absolute top-0 right-0 w-32 h-32 blur-2xl pointer-events-none rounded-full animate-pulse"
+					style={{
+						background: `radial-gradient(circle, ${config.color}33 0%, transparent 70%)`
+					}}
+				/>
 			)}
 
 			<div className="absolute top-3 right-3 flex items-center gap-2 z-10">
@@ -195,14 +220,16 @@ function NotificationItem({
 					)}
 					style={{ backgroundColor: config.color }}
 				>
-					<Icon className={isCritical ? "w-5 h-5" : "w-4 h-4"} />
+					<Icon className={isCritical || isSales ? "w-5 h-5" : "w-4 h-4"} />
 				</div>
 
 				<div>
 					<div className="flex items-center gap-2 mb-1">
 						<h4
 							className="font-bold text-[0.95rem] m-0"
-							style={{ color: isCritical ? "#1a1a2e" : config.color }}
+							style={{
+								color: isCritical || isSales ? "#1a1a2e" : config.color
+							}}
 						>
 							{notification.title}
 						</h4>
@@ -211,19 +238,17 @@ function NotificationItem({
 								Neu
 							</span>
 						)}
+						{isSales && (
+							<span className="px-2 py-0.5 rounded-md text-[0.6rem] font-bold uppercase tracking-wider bg-[#e20074] text-white shadow-sm ring-1 ring-magenta-500/20 flex items-center gap-1">
+								<TrendingUp className="w-2.5 h-2.5" />
+								Umsatz-Boost
+							</span>
+						)}
 					</div>
 					<p className="text-[0.8rem] text-[#1a1a2e]/70 m-0 line-clamp-2 leading-relaxed">
 						{notification.content}
 					</p>
 				</div>
-			</div>
-
-			{/* Soft progress bar fallback at bottom */}
-			<div className="absolute bottom-0 left-0 h-1 w-full bg-black/5">
-				<div
-					className="h-full transition-all duration-75 ease-linear"
-					style={{ width: `${100 - progress}%`, backgroundColor: config.color }}
-				/>
 			</div>
 		</motion.div>
 	);

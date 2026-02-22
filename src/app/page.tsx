@@ -23,7 +23,7 @@ export default function Home() {
 					transition={{ delay: 0.1, duration: 0.4 }}
 					className="text-[1rem] text-[#888] font-normal"
 				>
-					Wählen Sie eine Kategorie, um den passenden Tarif zu finden.
+					Wähle eine Kategorie, um den passenden Tarif zu finden.
 				</motion.p>
 			</div>
 
