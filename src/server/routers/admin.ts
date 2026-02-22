@@ -16,8 +16,17 @@ const productSchema = z.object({
     uploadSpeed: z.number().optional(),
     contractDuration: z.number().default(24),
 
+    // Business Case Options
+    allowNewActivation: z.boolean().default(true).optional(),
+    allowMove: z.boolean().default(true).optional(),
+    allowPlanChange: z.boolean().default(true).optional(),
+    allowSpeedUp: z.boolean().default(false).optional(),
+
     // Fees
     activationFeeNew: z.number().optional().nullable(),
+    activationFeeMove: z.number().optional().nullable(),
+    activationFeePlanChange: z.number().optional().nullable(),
+    activationFeeSpeedUp: z.number().optional().nullable(),
     allowMagentaTV: z.boolean().default(false),
     hasMagentaTVBundle: z.boolean().default(false),
     magentaTVBundleName: z.string().optional().nullable(),
@@ -68,6 +77,7 @@ export const adminRouter = router({
                 data: {
                     ...data,
                     features: JSON.stringify(features),
+                    // @ts-ignore
                     targetGroups: JSON.stringify(targetGroups),
                     salesArguments: {
                         create: salesArguments.map((text, i) => ({
@@ -93,6 +103,7 @@ export const adminRouter = router({
                 data: {
                     ...data,
                     features: JSON.stringify(features),
+                    // @ts-ignore
                     targetGroups: JSON.stringify(targetGroups),
                     salesArguments: {
                         create: salesArguments.map((text, i) => ({
@@ -124,7 +135,8 @@ export const adminRouter = router({
             return {
                 ...product,
                 features: product.features ? JSON.parse(product.features) : [],
-                targetGroups: product.targetGroups ? JSON.parse(product.targetGroups) : []
+                // @ts-ignore
+                targetGroups: (product as any).targetGroups ? JSON.parse((product as any).targetGroups) : []
             };
         }),
 

@@ -107,6 +107,8 @@ export interface CalculationResult {
     basePrice: number;
     effectiveBasePrice: number; // The standard price (with TV if selected)
     dailyPriceTrivialization?: string;
+    hasUnlimitedAdvantage?: boolean;
+    plusKartenCost: number;
 }
 
 export type Credit = {
@@ -124,6 +126,7 @@ interface CalculationInput {
     vouchers: number[];
     credits?: Credit[];
     hardwarePurchaseType?: 'RENT' | 'BUY';
+    plusKartenCount?: number;
 }
 
 export function calculateProductCosts({
@@ -134,7 +137,8 @@ export function calculateProductCosts({
     selectedAddonIds,
     vouchers,
     credits = [],
-    hardwarePurchaseType
+    hardwarePurchaseType,
+    plusKartenCount
 }: CalculationInput): CalculationResult {
     if (!product) {
         return {
@@ -144,6 +148,8 @@ export function calculateProductCosts({
             oneTimeCosts: { total: 0, breakdown: [] },
             basePrice: 0,
             effectiveBasePrice: 0,
+            plusKartenCost: 0,
+            hasUnlimitedAdvantage: false
         };
     }
 
@@ -230,6 +236,15 @@ export function calculateProductCosts({
     );
     const monthlyAddonCost = activeTiers.reduce((sum, tier) => sum + tier.price, 0);
 
+    const pkCount = plusKartenCount || 0;
+    const plusKartenCostPerMonth = pkCount >= 1 ? (19.95 + Math.max(0, pkCount - 1) * 9.95) : 0;
+
+    const productNameLower = product.name.toLowerCase();
+    const isAtLeastM = productNameLower.includes('magentamobil m') ||
+        productNameLower.includes('magentamobil l') ||
+        productNameLower.includes('magentamobil xl');
+    const hasUnlimitedAdvantage = isAtLeastM && pkCount > 0;
+
     for (let month = 1; month <= 24; month++) {
         let monthPrice = effectiveBasePrice;
         let appliedSpecialPrice: SpecialPrice | undefined;
@@ -254,7 +269,7 @@ export function calculateProductCosts({
             appliedSpecialPrice = bestSpecialPrice;
         }
 
-        const totalMonthCost = monthPrice + monthlyAddonCost + tvPackagePrice;
+        const totalMonthCost = monthPrice + monthlyAddonCost + tvPackagePrice + plusKartenCostPerMonth;
         sumMonthlyCosts += totalMonthCost;
 
         monthlyCosts.push({
@@ -284,7 +299,9 @@ export function calculateProductCosts({
         oneTimeCosts: { total: oneTimeTotal, breakdown: oneTimeBreakdown },
         basePrice: product.basePrice,
         effectiveBasePrice,
-        dailyPriceTrivialization: dailyPriceFormatted
+        dailyPriceTrivialization: dailyPriceFormatted,
+        plusKartenCost: plusKartenCostPerMonth,
+        hasUnlimitedAdvantage
     }
 }
 
@@ -303,6 +320,7 @@ export function useCostCalculator(
     const [selectedCreditIds, setSelectedCreditIds] = useState<string[]>([]);
 
     const [hardwarePurchaseType, setHardwarePurchaseType] = useState<'RENT' | 'BUY'>('RENT');
+    const [plusKartenCount, setPlusKartenCount] = useState<number>(0);
 
     // Derived boolean for backward compat
     const isMagentaTVSelected = magentaTVPackage !== null;
@@ -356,6 +374,8 @@ export function useCostCalculator(
             oneTimeCosts: { total: 0, breakdown: [] },
             basePrice: 0,
             effectiveBasePrice: 0,
+            plusKartenCost: 0,
+            hasUnlimitedAdvantage: false
         };
 
         const activeCredits = availableCredits.filter(c => selectedCreditIds.includes(c.id));
@@ -368,9 +388,10 @@ export function useCostCalculator(
             selectedAddonIds,
             vouchers,
             credits: activeCredits,
-            hardwarePurchaseType
+            hardwarePurchaseType,
+            plusKartenCount
         });
-    }, [product, businessCase, magentaTVPackage, selectedSpecialPriceIds, selectedAddonIds, vouchers, availableCredits, selectedCreditIds, hardwarePurchaseType]);
+    }, [product, businessCase, magentaTVPackage, selectedSpecialPriceIds, selectedAddonIds, vouchers, availableCredits, selectedCreditIds, hardwarePurchaseType, plusKartenCount]);
 
     return {
         businessCase,
@@ -390,6 +411,8 @@ export function useCostCalculator(
         setAvailableCredits,
         calculation,
         hardwarePurchaseType,
-        setHardwarePurchaseType
+        setHardwarePurchaseType,
+        plusKartenCount,
+        setPlusKartenCount
     };
 }

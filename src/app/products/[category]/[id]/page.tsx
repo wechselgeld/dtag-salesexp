@@ -19,7 +19,12 @@ import {
 	Star,
 	ShoppingCart,
 	ChevronRight,
-	Info
+	Info,
+	UserPlus,
+	Smartphone,
+	Plus,
+	Minus,
+	Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -74,7 +79,9 @@ function ProductPageContent() {
 		setSelectedAddonIds,
 		calculation,
 		hardwarePurchaseType,
-		setHardwarePurchaseType
+		setHardwarePurchaseType,
+		plusKartenCount,
+		setPlusKartenCount
 	} = useCostCalculator(product);
 
 	useEffect(() => {
@@ -88,6 +95,9 @@ function ProductPageContent() {
 				if (item.config.hardwarePurchaseType) {
 					setHardwarePurchaseType(item.config.hardwarePurchaseType);
 				}
+				if (item.config.plusKartenCount !== undefined) {
+					setPlusKartenCount(item.config.plusKartenCount);
+				}
 			}
 		}
 	}, [
@@ -97,7 +107,9 @@ function ProductPageContent() {
 		setBusinessCase,
 		setSelectedSpecialPriceIds,
 		setMagentaTVPackage,
-		setSelectedAddonIds
+		setSelectedAddonIds,
+		setPlusKartenCount,
+		setHardwarePurchaseType
 	]);
 
 	if (isLoading || !product) {
@@ -119,7 +131,8 @@ function ProductPageContent() {
 			selectedAddonIds,
 			vouchers: [],
 			credits: [],
-			hardwarePurchaseType
+			hardwarePurchaseType,
+			plusKartenCount
 		};
 
 		if (basketItemId) {
@@ -632,6 +645,93 @@ function ProductPageContent() {
 							? "Konfiguration wird im Warenkorb aktualisiert."
 							: "Produkt konfigurieren und zum Angebot hinzufügen."}
 					</p>
+
+					{/* Unlimited Advantage Toast */}
+					{calculation.hasUnlimitedAdvantage && (
+						<motion.div
+							initial={{ opacity: 0, y: 8 }}
+							animate={{ opacity: 1, y: 0 }}
+							className="mt-4 w-full py-3.5 rounded-2xl text-white font-bold text-[0.95rem] flex items-center justify-center gap-2.5 relative overflow-hidden shadow-[0_10px_25px_-5px_rgba(226,0,116,0.4)]"
+							style={{ backgroundColor: "#e20074" }}
+						>
+							<div className="absolute inset-0 bg-white/10 blur-2xl rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+							<Sparkles className="w-4.5 h-4.5 shrink-0" />
+							<span>Der PlusKarten-Vorteil wurde aktiviert.</span>
+						</motion.div>
+					)}
+
+					{/* Nudges */}
+					{category === "MOBILE" && (
+						<motion.div
+							initial={{ opacity: 0, y: 8 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.4, duration: 0.35 }}
+							className="mt-4 bg-[#e20074]/5 border border-[#e20074]/20 rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+						>
+							<div className="absolute top-0 right-0 w-24 h-24 bg-[#e20074]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+							<div className="w-8 h-8 rounded-full bg-[#e20074]/10 flex items-center justify-center shrink-0 mt-0.5">
+								<UserPlus className="w-4 h-4 text-[#e20074]" />
+							</div>
+							<div className="flex-1">
+								<h4 className="text-[0.85rem] font-bold text-[#e20074] mb-1 leading-tight">
+									Biete eine PlusKarte an.
+								</h4>
+								<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
+									Jede weitere Person surft für nur einen Bruchteil des Preises!{" "}
+									<br />
+									<strong>1. Karte 19,95 €; ab 2. Karte 9,95 €</strong>
+								</p>
+
+								<div className="flex items-center gap-3">
+									<button
+										onClick={() =>
+											setPlusKartenCount(Math.max(0, plusKartenCount - 1))
+										}
+										className="w-7 h-7 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center hover:border-[#e20074] hover:text-[#e20074] transition-colors"
+									>
+										<Minus className="w-3.5 h-3.5" />
+									</button>
+									<span className="font-extrabold text-[#1a1a2e] text-[0.95rem] w-4 text-center">
+										{plusKartenCount}
+									</span>
+									<button
+										onClick={() => setPlusKartenCount(plusKartenCount + 1)}
+										className="w-7 h-7 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center hover:border-[#e20074] hover:text-[#e20074] transition-colors"
+									>
+										<Plus className="w-3.5 h-3.5" />
+									</button>
+								</div>
+							</div>
+						</motion.div>
+					)}
+
+					{(category === "FIBER" || category === "DSL") && (
+						<motion.div
+							initial={{ opacity: 0, y: 8 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.4, duration: 0.35 }}
+							className="mt-4 bg-[#e20074]/5 border border-[#e20074]/20 rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+						>
+							<div className="absolute top-0 right-0 w-24 h-24 bg-[#e20074]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+							<div className="w-8 h-8 rounded-full bg-[#e20074]/10 flex items-center justify-center shrink-0 mt-0.5">
+								<Smartphone className="w-4 h-4 text-[#e20074]" />
+							</div>
+							<div>
+								<h4 className="text-[0.85rem] font-bold text-[#e20074] mb-1 leading-tight">
+									Biete Mobilfunk an.
+								</h4>
+								<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
+									Nutzt der Kunde schon Mobilfunk? Sprich ihn aktiv darauf an.
+								</p>
+								<Link
+									href="/products/MOBILE"
+									className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold text-[#e20074] hover:text-[#c70066] transition-colors"
+								>
+									Mobilfunktarif finden <ChevronRight className="w-3.5 h-3.5" />
+								</Link>
+							</div>
+						</motion.div>
+					)}
 				</div>
 			</div>
 		</div>

@@ -16,8 +16,10 @@ import {
 	Receipt,
 	ArrowRight,
 	Package,
-	Settings2,
-	Check
+	Check,
+	UserPlus,
+	Sparkles,
+	Settings2
 } from "lucide-react";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
@@ -65,7 +67,8 @@ export function BasketDrawer() {
 			selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
 			selectedAddonIds: item.config.selectedAddonIds,
 			vouchers: item.config.vouchers,
-			hardwarePurchaseType: item.config.hardwarePurchaseType
+			hardwarePurchaseType: item.config.hardwarePurchaseType,
+			plusKartenCount: item.config.plusKartenCount
 		});
 		return acc + cost.averageMonthlyCost;
 	}, 0);
@@ -82,7 +85,8 @@ export function BasketDrawer() {
 							selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
 							selectedAddonIds: item.config.selectedAddonIds,
 							vouchers: item.config.vouchers,
-							hardwarePurchaseType: item.config.hardwarePurchaseType
+							hardwarePurchaseType: item.config.hardwarePurchaseType,
+							plusKartenCount: item.config.plusKartenCount
 						});
 						calculation.monthlyCosts.forEach((mc, index) => {
 							if (index < 24) {
@@ -119,7 +123,8 @@ export function BasketDrawer() {
 			selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
 			selectedAddonIds: item.config.selectedAddonIds,
 			vouchers: item.config.vouchers,
-			hardwarePurchaseType: item.config.hardwarePurchaseType
+			hardwarePurchaseType: item.config.hardwarePurchaseType,
+			plusKartenCount: item.config.plusKartenCount
 		});
 		return cost.oneTimeCosts.breakdown;
 	});
@@ -365,7 +370,8 @@ export function BasketDrawer() {
 															selectedAddonIds: item.config.selectedAddonIds,
 															vouchers: item.config.vouchers,
 															hardwarePurchaseType:
-																item.config.hardwarePurchaseType
+																item.config.hardwarePurchaseType,
+															plusKartenCount: item.config.plusKartenCount
 														});
 														return acc + calc.averageMonthlyCost / 30;
 													}, 0)
@@ -464,7 +470,8 @@ function BasketItemCard({
 		selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
 		selectedAddonIds: item.config.selectedAddonIds,
 		vouchers: item.config.vouchers,
-		hardwarePurchaseType: item.config.hardwarePurchaseType
+		hardwarePurchaseType: item.config.hardwarePurchaseType,
+		plusKartenCount: item.config.plusKartenCount
 	});
 
 	const catColor = CATEGORY_COLORS[item.product.category] || "#e20074";
@@ -524,6 +531,14 @@ function BasketItemCard({
 					</button>
 				</div>
 
+				{/* Unlimited Badge */}
+				{calculation.hasUnlimitedAdvantage && (
+					<div className="mb-3 inline-flex items-center gap-1 bg-[#e20074]/10 text-[#e20074] px-2 py-0.5 rounded-md text-[0.65rem] font-bold uppercase tracking-wider">
+						<Sparkles className="w-2.5 h-2.5" />
+						MagentaEINS: Unlimited GB
+					</div>
+				)}
+
 				{/* Selected Addons */}
 				{item.config.selectedAddonIds?.length > 0 &&
 					item.product.compatibleAddons && (
@@ -556,6 +571,25 @@ function BasketItemCard({
 									</div>
 								);
 							})}
+						</div>
+					)}
+
+				{/* PlusKarten */}
+				{item.config.plusKartenCount !== undefined &&
+					item.config.plusKartenCount > 0 && (
+						<div className="flex flex-col gap-1.5 mb-3">
+							<div className="flex items-center justify-between text-[0.72rem] font-medium">
+								<div
+									className="flex items-center gap-1.5"
+									style={{ color: catColor }}
+								>
+									<UserPlus className="w-3.5 h-3.5" />
+									<span>{item.config.plusKartenCount}x PlusKarte</span>
+								</div>
+								<span className="opacity-70 font-semibold text-[#1a1a2e]">
+									+{calculation.plusKartenCost.toFixed(2)} €
+								</span>
+							</div>
 						</div>
 					)}
 

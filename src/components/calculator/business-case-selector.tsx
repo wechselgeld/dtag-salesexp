@@ -47,7 +47,7 @@ export function BusinessCaseSelector({
 		},
 		{
 			id: "PLAN_CHANGE",
-			label: "Tarifwechsel",
+			label: "Tarif- & Anbieterwechsel",
 			icon: RefreshCw,
 			allowed: product.allowPlanChange,
 			fee: product.activationFeePlanChange

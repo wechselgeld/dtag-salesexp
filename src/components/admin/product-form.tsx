@@ -22,7 +22,14 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 		downloadSpeed: initialData?.downloadSpeed || 0,
 		uploadSpeed: initialData?.uploadSpeed || 0,
 		contractDuration: initialData?.contractDuration || 24,
+		allowNewActivation: initialData?.allowNewActivation ?? true,
+		allowMove: initialData?.allowMove ?? true,
+		allowPlanChange: initialData?.allowPlanChange ?? true,
+		allowSpeedUp: initialData?.allowSpeedUp ?? false,
 		activationFeeNew: initialData?.activationFeeNew || 0,
+		activationFeeMove: initialData?.activationFeeMove || 0,
+		activationFeePlanChange: initialData?.activationFeePlanChange || 0,
+		activationFeeSpeedUp: initialData?.activationFeeSpeedUp || 0,
 		allowMagentaTV: initialData?.allowMagentaTV || false,
 		hasMagentaTVBundle: initialData?.hasMagentaTVBundle || false,
 		magentaTVBundleName: initialData?.magentaTVBundleName || "",
@@ -273,23 +280,160 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 							/>
 						</div>
 					</div>
+				</div>
 
-					<div>
-						<label className="block text-sm font-medium text-zinc-700 mb-1">
-							Anschlussgebühr (€)
-						</label>
-						<input
-							type="number"
-							step="0.01"
-							value={formData.activationFeeNew}
-							onChange={(e) =>
-								setFormData({
-									...formData,
-									activationFeeNew: parseFloat(e.target.value)
-								})
-							}
-							className="w-full px-4 py-2 rounded-xl border border-zinc-200 bg-zinc-50 focus:ring-2 focus:ring-magenta-500 outline-none"
-						/>
+				{/* Business Cases & Fees */}
+				<div className="md:col-span-2 space-y-4 bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm mt-4">
+					<h3 className="text-lg font-bold text-zinc-900 border-b border-zinc-100 pb-2">
+						Geschäftsfälle & Gebühren
+					</h3>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						{/* Neubereitstellung */}
+						<div className="flex flex-col gap-2 p-4 bg-zinc-50 rounded-xl border border-zinc-200">
+							<div className="flex items-center gap-2">
+								<input
+									type="checkbox"
+									checked={formData.allowNewActivation}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											allowNewActivation: e.target.checked
+										})
+									}
+									className="w-4 h-4 rounded border-zinc-300 text-magenta-600 focus:ring-magenta-500"
+								/>
+								<label className="text-sm font-semibold text-zinc-900">
+									Neubereitstellung erlauben
+								</label>
+							</div>
+							<div>
+								<label className="block text-xs text-zinc-500 mb-1">
+									Anschlussgebühr (€)
+								</label>
+								<input
+									type="number"
+									step="0.01"
+									value={formData.activationFeeNew}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											activationFeeNew: parseFloat(e.target.value) || 0
+										})
+									}
+									disabled={!formData.allowNewActivation}
+									className="w-full px-3 py-1.5 rounded-lg border border-zinc-200 bg-white focus:ring-2 focus:ring-magenta-500 outline-none disabled:opacity-50"
+								/>
+							</div>
+						</div>
+
+						{/* Umzug */}
+						<div className="flex flex-col gap-2 p-4 bg-zinc-50 rounded-xl border border-zinc-200">
+							<div className="flex items-center gap-2">
+								<input
+									type="checkbox"
+									checked={formData.allowMove}
+									onChange={(e) =>
+										setFormData({ ...formData, allowMove: e.target.checked })
+									}
+									className="w-4 h-4 rounded border-zinc-300 text-magenta-600 focus:ring-magenta-500"
+								/>
+								<label className="text-sm font-semibold text-zinc-900">
+									Umzug erlauben
+								</label>
+							</div>
+							<div>
+								<label className="block text-xs text-zinc-500 mb-1">
+									Umzugsgebühr (€)
+								</label>
+								<input
+									type="number"
+									step="0.01"
+									value={formData.activationFeeMove}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											activationFeeMove: parseFloat(e.target.value) || 0
+										})
+									}
+									disabled={!formData.allowMove}
+									className="w-full px-3 py-1.5 rounded-lg border border-zinc-200 bg-white focus:ring-2 focus:ring-magenta-500 outline-none disabled:opacity-50"
+								/>
+							</div>
+						</div>
+
+						{/* Tarifwechsel */}
+						<div className="flex flex-col gap-2 p-4 bg-zinc-50 rounded-xl border border-zinc-200">
+							<div className="flex items-center gap-2">
+								<input
+									type="checkbox"
+									checked={formData.allowPlanChange}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											allowPlanChange: e.target.checked
+										})
+									}
+									className="w-4 h-4 rounded border-zinc-300 text-magenta-600 focus:ring-magenta-500"
+								/>
+								<label className="text-sm font-semibold text-zinc-900">
+									Tarifwechsel erlauben
+								</label>
+							</div>
+							<div>
+								<label className="block text-xs text-zinc-500 mb-1">
+									Wechselgebühr (€)
+								</label>
+								<input
+									type="number"
+									step="0.01"
+									value={formData.activationFeePlanChange}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											activationFeePlanChange: parseFloat(e.target.value) || 0
+										})
+									}
+									disabled={!formData.allowPlanChange}
+									className="w-full px-3 py-1.5 rounded-lg border border-zinc-200 bg-white focus:ring-2 focus:ring-magenta-500 outline-none disabled:opacity-50"
+								/>
+							</div>
+						</div>
+
+						{/* Speed Up */}
+						<div className="flex flex-col gap-2 p-4 bg-zinc-50 rounded-xl border border-zinc-200">
+							<div className="flex items-center gap-2">
+								<input
+									type="checkbox"
+									checked={formData.allowSpeedUp}
+									onChange={(e) =>
+										setFormData({ ...formData, allowSpeedUp: e.target.checked })
+									}
+									className="w-4 h-4 rounded border-zinc-300 text-magenta-600 focus:ring-magenta-500"
+								/>
+								<label className="text-sm font-semibold text-zinc-900">
+									Speed Up erlauben
+								</label>
+							</div>
+							<div>
+								<label className="block text-xs text-zinc-500 mb-1">
+									Speed Up Gebühr (€)
+								</label>
+								<input
+									type="number"
+									step="0.01"
+									value={formData.activationFeeSpeedUp}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											activationFeeSpeedUp: parseFloat(e.target.value) || 0
+										})
+									}
+									disabled={!formData.allowSpeedUp}
+									className="w-full px-3 py-1.5 rounded-lg border border-zinc-200 bg-white focus:ring-2 focus:ring-magenta-500 outline-none disabled:opacity-50"
+								/>
+							</div>
+						</div>
 					</div>
 				</div>
 

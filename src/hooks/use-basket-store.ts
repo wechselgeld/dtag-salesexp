@@ -13,6 +13,7 @@ export interface BasketItem {
         vouchers: number[];
         credits: Credit[];
         hardwarePurchaseType?: 'RENT' | 'BUY';
+        plusKartenCount?: number;
         // Snapshotting is safer for "Quote guarantees", but referencing ensures latest price.
         // Let's store the objects as `Credit` for now.
         // Actually, matching `useCostCalculator`, we might just want to store what's needed.
