@@ -54,6 +54,15 @@ const CATEGORIES = [
 
 export default function ProductsPage() {
 	const { data: session } = trpc.session.getCurrent.useQuery();
+	const { data: allProducts } = trpc.product.getAllProducts.useQuery();
+
+	const getStats = (categoryId: string, fallback: string) => {
+		if (!allProducts) return fallback;
+		const count = allProducts.filter((p) => p.category === categoryId).length;
+		if (categoryId === "DEVICE") return `${count} Geräte`;
+		if (categoryId === "MAGENTA_TV_OTT") return `${count} Pakete`;
+		return `${count} Tarife`;
+	};
 
 	const highlightedCategories =
 		session?.team?.highlights
@@ -92,6 +101,7 @@ export default function ProductsPage() {
 						category={category}
 						index={index}
 						isHighlighted={highlightedCategories.includes(category.id)}
+						dynamicStats={getStats(category.id, category.stats)}
 					/>
 				))}
 			</div>
@@ -104,6 +114,7 @@ export default function ProductsPage() {
 						category={category}
 						index={index + 3}
 						isHighlighted={highlightedCategories.includes(category.id)}
+						dynamicStats={getStats(category.id, category.stats)}
 					/>
 				))}
 			</div>
@@ -117,11 +128,13 @@ export default function ProductsPage() {
 function CategoryCard({
 	category,
 	index,
-	isHighlighted
+	isHighlighted,
+	dynamicStats
 }: {
 	category: (typeof CATEGORIES)[number];
 	index: number;
 	isHighlighted?: boolean;
+	dynamicStats: string;
 }) {
 	const utils = trpc.useUtils();
 
@@ -184,7 +197,7 @@ function CategoryCard({
 							{category.title}
 						</h3>
 						<span className="text-[0.72rem] text-[#b5b5b5] font-medium mt-1 tracking-wide">
-							{category.stats}
+							{dynamicStats}
 						</span>
 					</div>
 

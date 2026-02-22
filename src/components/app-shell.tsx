@@ -35,17 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 			<div className="grid grid-cols-[260px_1fr_340px] h-screen w-full">
 				<SidebarNav />
 				<main className="p-8 overflow-y-auto w-full max-w-[1200px] mx-auto scrollbar-none">
-					<AnimatePresence mode="wait">
-						<motion.div
-							key={pathname}
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							transition={{ duration: 0.25, ease: "easeOut" }}
-							className="h-full"
-						>
-							{children}
-						</motion.div>
-					</AnimatePresence>
+					<div className="h-full">{children}</div>
 				</main>
 				<BasketDrawer />
 			</div>

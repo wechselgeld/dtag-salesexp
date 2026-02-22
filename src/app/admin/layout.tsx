@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { TelekomLogo } from "@/components/telekom-logo";
+import { trpc } from "@/lib/trpc";
 
 export default function AdminLayout({
 	children
@@ -24,11 +25,15 @@ export default function AdminLayout({
 	const pathname = usePathname();
 	const router = useRouter();
 
+	const logoutMutation = trpc.auth.logout.useMutation({
+		onSuccess: () => {
+			router.push("/login");
+			router.refresh();
+		}
+	});
+
 	const handleLogout = async () => {
-		document.cookie =
-			"auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-		router.push("/login");
-		router.refresh();
+		logoutMutation.mutate();
 	};
 
 	const navItems = [

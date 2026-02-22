@@ -1,7 +1,7 @@
 import { router, publicProcedure } from '@/server/trpc';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { login } from '@/lib/auth';
+import { login, logout } from '@/lib/auth';
 import { TRPCError } from '@trpc/server';
 import bcrypt from 'bcryptjs';
 
@@ -44,6 +44,12 @@ export const authRouter = router({
             // Create session
             await login(user.id, user.role);
 
+            return { success: true };
+        }),
+
+    logout: publicProcedure
+        .mutation(async () => {
+            await logout();
             return { success: true };
         }),
 });
