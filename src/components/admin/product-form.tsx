@@ -170,6 +170,20 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 
 					<div>
 						<label className="block text-sm font-medium text-zinc-700 mb-1">
+							Beschreibung
+						</label>
+						<textarea
+							value={formData.description || ""}
+							onChange={(e) =>
+								setFormData({ ...formData, description: e.target.value })
+							}
+							className="w-full px-4 py-2 rounded-xl border border-zinc-200 bg-zinc-50 focus:ring-2 focus:ring-magenta-500 outline-none min-h-[80px]"
+							placeholder="Kurze Beschreibung des Tarifs..."
+						/>
+					</div>
+
+					<div>
+						<label className="block text-sm font-medium text-zinc-700 mb-1">
 							Kategorie
 						</label>
 						<select

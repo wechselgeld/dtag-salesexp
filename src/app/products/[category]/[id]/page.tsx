@@ -195,6 +195,11 @@ function ProductPageContent() {
 							<h1 className="text-[1.8rem] md:text-[2.2rem] font-extrabold text-[#1a1a2e] tracking-tight leading-[1.1] m-0">
 								{displayName}
 							</h1>
+							{product.description && (
+								<p className="text-[0.9rem] text-[#555] leading-relaxed mt-2 max-w-[90%]">
+									{product.description}
+								</p>
+							)}
 						</div>
 
 						{/* Specs */}
@@ -666,14 +671,27 @@ function ProductPageContent() {
 							initial={{ opacity: 0, y: 8 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.4, duration: 0.35 }}
-							className="mt-4 bg-[#e20074]/5 border border-[#e20074]/20 rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+							className="mt-4 border rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+							style={{
+								backgroundColor: `${catColor}0D`,
+								borderColor: `${catColor}33`
+							}}
 						>
-							<div className="absolute top-0 right-0 w-24 h-24 bg-[#e20074]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-							<div className="w-8 h-8 rounded-full bg-[#e20074]/10 flex items-center justify-center shrink-0 mt-0.5">
-								<UserPlus className="w-4 h-4 text-[#e20074]" />
+							<div
+								className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
+								style={{ backgroundColor: `${catColor}1A` }}
+							/>
+							<div
+								className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+								style={{ backgroundColor: `${catColor}1A` }}
+							>
+								<UserPlus className="w-4 h-4" style={{ color: catColor }} />
 							</div>
 							<div className="flex-1">
-								<h4 className="text-[0.85rem] font-bold text-[#e20074] mb-1 leading-tight">
+								<h4
+									className="text-[0.85rem] font-bold mb-1 leading-tight"
+									style={{ color: catColor }}
+								>
 									Biete eine PlusKarte an.
 								</h4>
 								<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
@@ -687,7 +705,8 @@ function ProductPageContent() {
 										onClick={() =>
 											setPlusKartenCount(Math.max(0, plusKartenCount - 1))
 										}
-										className="w-7 h-7 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center hover:border-[#e20074] hover:text-[#e20074] transition-colors"
+										className="w-7 h-7 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center hover:opacity-80 transition-opacity"
+										style={{ color: catColor }}
 									>
 										<Minus className="w-3.5 h-3.5" />
 									</button>
@@ -696,7 +715,8 @@ function ProductPageContent() {
 									</span>
 									<button
 										onClick={() => setPlusKartenCount(plusKartenCount + 1)}
-										className="w-7 h-7 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center hover:border-[#e20074] hover:text-[#e20074] transition-colors"
+										className="w-7 h-7 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center hover:opacity-80 transition-opacity"
+										style={{ color: catColor }}
 									>
 										<Plus className="w-3.5 h-3.5" />
 									</button>
@@ -710,14 +730,27 @@ function ProductPageContent() {
 							initial={{ opacity: 0, y: 8 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.4, duration: 0.35 }}
-							className="mt-4 bg-[#e20074]/5 border border-[#e20074]/20 rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+							className="mt-4 border rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+							style={{
+								backgroundColor: `${catColor}0D`,
+								borderColor: `${catColor}33`
+							}}
 						>
-							<div className="absolute top-0 right-0 w-24 h-24 bg-[#e20074]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-							<div className="w-8 h-8 rounded-full bg-[#e20074]/10 flex items-center justify-center shrink-0 mt-0.5">
-								<Smartphone className="w-4 h-4 text-[#e20074]" />
+							<div
+								className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
+								style={{ backgroundColor: `${catColor}1A` }}
+							/>
+							<div
+								className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+								style={{ backgroundColor: `${catColor}1A` }}
+							>
+								<Smartphone className="w-4 h-4" style={{ color: catColor }} />
 							</div>
 							<div>
-								<h4 className="text-[0.85rem] font-bold text-[#e20074] mb-1 leading-tight">
+								<h4
+									className="text-[0.85rem] font-bold mb-1 leading-tight"
+									style={{ color: catColor }}
+								>
 									Biete Mobilfunk an.
 								</h4>
 								<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
@@ -725,9 +758,99 @@ function ProductPageContent() {
 								</p>
 								<Link
 									href="/products/MOBILE"
-									className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold text-[#e20074] hover:text-[#c70066] transition-colors"
+									className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold transition-opacity hover:opacity-80"
+									style={{ color: catColor }}
 								>
 									Mobilfunktarif finden <ChevronRight className="w-3.5 h-3.5" />
+								</Link>
+							</div>
+						</motion.div>
+					)}
+
+					{/* Cross-Sell: Hardware */}
+					{(category === "MOBILE" ||
+						category === "FIBER" ||
+						category === "DSL") && (
+						<motion.div
+							initial={{ opacity: 0, y: 8 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.45, duration: 0.35 }}
+							className="mt-4 border rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+							style={{
+								backgroundColor: `${catColor}0D`,
+								borderColor: `${catColor}33`
+							}}
+						>
+							<div
+								className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
+								style={{ backgroundColor: `${catColor}1A` }}
+							/>
+							<div
+								className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+								style={{ backgroundColor: `${catColor}1A` }}
+							>
+								<Smartphone className="w-4 h-4" style={{ color: catColor }} />
+							</div>
+							<div>
+								<h4
+									className="text-[0.85rem] font-bold mb-1 leading-tight"
+									style={{ color: catColor }}
+								>
+									Neues Endgerät dazu?
+								</h4>
+								<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
+									Perfektioniere den Tarif mit einem neuen Smartphone oder
+									Router.
+								</p>
+								<Link
+									href="/products/DEVICE"
+									className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold transition-opacity hover:opacity-80"
+									style={{ color: catColor }}
+								>
+									Zu den Geräten <ChevronRight className="w-3.5 h-3.5" />
+								</Link>
+							</div>
+						</motion.div>
+					)}
+
+					{/* Cross-Sell: Tarif for Devices */}
+					{category === "DEVICE" && (
+						<motion.div
+							initial={{ opacity: 0, y: 8 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.45, duration: 0.35 }}
+							className="mt-4 border rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+							style={{
+								backgroundColor: `${catColor}0D`,
+								borderColor: `${catColor}33`
+							}}
+						>
+							<div
+								className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
+								style={{ backgroundColor: `${catColor}1A` }}
+							/>
+							<div
+								className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+								style={{ backgroundColor: `${catColor}1A` }}
+							>
+								<Wifi className="w-4 h-4" style={{ color: catColor }} />
+							</div>
+							<div>
+								<h4
+									className="text-[0.85rem] font-bold mb-1 leading-tight"
+									style={{ color: catColor }}
+								>
+									Den passenden Tarif dazu?
+								</h4>
+								<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
+									Neues Endgerät, aber noch kein passender Tarif am Laufen?
+								</p>
+								<Link
+									href="/products/MOBILE"
+									className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold transition-opacity hover:opacity-80"
+									style={{ color: catColor }}
+								>
+									Zu den Tarifen <ChevronRight className="w-3.5 h-3.5" />
 								</Link>
 							</div>
 						</motion.div>

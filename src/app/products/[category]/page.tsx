@@ -287,6 +287,13 @@ export default function ProductListPage() {
 												)}
 											</div>
 
+											{/* Description snippet */}
+											{product.description && (
+												<p className="text-[0.8rem] text-[#666] line-clamp-2 mt-1 mb-3 leading-relaxed">
+													{product.description}
+												</p>
+											)}
+
 											{/* Specs - compact inline */}
 											<div className="flex items-center gap-4 text-[0.8rem] text-[#888]">
 												{product.dataVolume && (
