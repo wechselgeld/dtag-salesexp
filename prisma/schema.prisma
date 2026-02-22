@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Models
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("ADMIN") // "ADMIN", "TEAM_LEADER"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  category    String // "MOBILE", "FIBER", "DSL", "MAGENTA_TV_OTT", "DEVICE"
+  basePrice   Float
+  isActive    Boolean @default(true)
+  priority    Int     @default(0)
+
+  // Tariff Specifics
+  dataVolume       String?
+  downloadSpeed    Int?
+  uploadSpeed      Int?
+  contractDuration Int?    @default(24)
+
+  // Business Case Rules
+  allowNewActivation Boolean @default(true)
+  allowMove          Boolean @default(true)
+  allowPlanChange    Boolean @default(true)
+  allowSpeedUp       Boolean @default(false)
+
+  // Fees
+  activationFeeNew        Float?
+  activationFeeMove       Float?
+  activationFeePlanChange Float? @default(0)
+  activationFeeSpeedUp    Float?
+
+  // MagentaTV Compatibility
+  allowMagentaTV       Boolean @default(false)
+  hasMagentaTVBundle   Boolean @default(false)
+  magentaTVBundleName  String?
+  magentaTVBundlePrice Float?
+
+  // Device Specifics
+  deviceManufacturer String?
+  deviceContext      String?
+  purchasePrice      Float?
+  rentalPrice        Float?
+
+  features     String? // JSON string
+  targetGroups String? // JSON string array of target groups e.g. ["student", "family"]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  specialPrices    SpecialPrice[]  @relation("ProductSpecialPrices")
+  highlights       TeamHighlight[]
+  compatibleAddons Addon[]         @relation("ProductAddons")
+  salesArguments   SalesArgument[]
+}
+
+model SalesArgument {
+  id        String  @id @default(cuid())
+  text      String
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SpecialPrice {
+  id       String    @id @default(cuid())
+  name     String
+  products Product[] @relation("ProductSpecialPrices")
+
+  tiers SpecialPriceTier[]
+
+  // Context Conditions
+  requiresMagentaTV Boolean @default(false)
+  requiresSpeedUp   Boolean @default(false)
+  requiresMove      Boolean @default(false)
+
+  isActive Boolean @default(true)
+  priority Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SpecialPriceTier {
+  id             String       @id @default(cuid())
+  specialPriceId String
+  specialPrice   SpecialPrice @relation(fields: [specialPriceId], references: [id], onDelete: Cascade)
+
+  price     Float
+  fromMonth Int
+  toMonth   Int
+}
+
+model Addon {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  category    String?
+
+  isGlobal Boolean @default(false)
+  isActive Boolean @default(true)
+  requiresNoMagentaTV Boolean @default(false)
+
+  tiers AddonTier[]
+
+  compatibleProducts Product[]       @relation("ProductAddons")
+  highlights         TeamHighlight[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AddonTier {
+  id      String @id @default(cuid())
+  addonId String
+  addon   Addon  @relation(fields: [addonId], references: [id], onDelete: Cascade)
+
+  name  String
+  price Float
+}
+
+model TeamHighlight {
+  id     String @id @default(cuid())
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  addonId String?
+  addon   Addon?  @relation(fields: [addonId], references: [id], onDelete: Cascade)
+
+  category     String?
+  businessCase String?
+
+  reason String?
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+}
+
+model MaintenanceAnnouncement {
+  id       String  @id @default(cuid())
+  title    String
+  message  String
+  priority String // "LOW", "MEDIUM", "HIGH", "CRITICAL"
+  isActive Boolean @default(true)
+
+  validFrom  DateTime?
+  validUntil DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OneTimeCredit {
+  id       String  @id @default(cuid())
+  name     String
+  value    Float
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Team {
+  id   String @id @default(cuid())
+  name String
+
+  sessions   SalesSession[]
+  highlights TeamHighlight[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SalesSession {
+  id     String @id @default(cuid())
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id])
+
+  acceptedTerms Boolean @default(false)
+
+  userAgent String?
+  ip        String?
+
+  isActive  Boolean   @default(true)
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model News {
+  id       String  @id @default(cuid())
+  title    String
+  content  String
+  priority String  @default("INFO") // "INFO", "UPDATE", "IMPORTANT", "CRITICAL"
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

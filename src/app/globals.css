@@ -1,26 +1,341 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* TeleNeo - Telekom Corporate Font (self-hosted) */
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-Thin.woff2") format("woff2");
+	font-weight: 100;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-ThinItalic.woff2") format("woff2");
+	font-weight: 100;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-Regular.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-RegularItalic.woff2") format("woff2");
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-Medium.woff2") format("woff2");
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-MediumItalic.woff2") format("woff2");
+	font-weight: 500;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-Bold.woff2") format("woff2");
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-BoldItalic.woff2") format("woff2");
+	font-weight: 700;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-ExtraBold.woff2") format("woff2");
+	font-weight: 800;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-ExtraBoldItalic.woff2") format("woff2");
+	font-weight: 800;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-Ultra.woff2") format("woff2");
+	font-weight: 900;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "TeleNeo";
+	src: url("/fonts/TeleNeo/TeleNeoWeb-UltraItalic.woff2") format("woff2");
+	font-weight: 900;
+	font-style: italic;
+	font-display: swap;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+	--color-magenta-50: #fdeaf2;
+	--color-magenta-100: #fbcfe0;
+	--color-magenta-200: #f8a6c5;
+	--color-magenta-300: #f272a2;
+	--color-magenta-400: #ea3e7e;
+	--color-magenta-500: #e20074;
+	--color-magenta-600: #c2005c;
+	--color-magenta-700: #9e0048;
+	--color-magenta-800: #84023e;
+	--color-magenta-900: #6f0537;
+	--color-magenta-950: #42001d;
+
+	--color-telekom-gray-50: #f8f9fa;
+	--color-telekom-gray-100: #f1f3f5;
+	--color-telekom-gray-200: #e9ecef;
+	--color-telekom-gray-300: #dee2e6;
+	--color-telekom-gray-400: #ced4da;
+	--color-telekom-gray-500: #adb5bd;
+	--color-telekom-gray-600: #868e96;
+	--color-telekom-gray-700: #495057;
+	--color-telekom-gray-800: #343a40;
+	--color-telekom-gray-900: #212529;
+
+	/* Custom Added Colors from Prompt */
+	--color-ds-primary: #e20074;
+	--color-ds-primary-hover: #b0005a;
+	--color-ds-secondary: #6f7fd3;
+	--color-ds-bg: #f4f4f4;
+	--color-ds-surface: #ffffff;
+	--color-ds-text-main: #262626;
+	--color-ds-text-light: #6a6a6a;
+	--color-ds-border: #e0e0e0;
+	--color-ds-success: #2b8a3e;
+	--color-ds-danger: #d9534f;
+	--color-ds-danger-hover: #c9302c;
+
+	--font-sans:
+		"TeleNeo", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@layer base {
+	:root {
+		--background: 0 0% 100%;
+		--foreground: 240 10% 15%; /* Dark Gray #262626 approx */
+
+		--card: 0 0% 100%;
+		--card-foreground: 240 10% 15%;
+
+		--popover: 0 0% 100%;
+		--popover-foreground: 240 10% 15%;
+
+		--primary: 329 100% 44%; /* Magenta #E20074 */
+		--primary-foreground: 0 0% 100%;
+
+		--secondary: 193 100% 50%; /* Cyan #00C8FF */
+		--secondary-foreground: 240 10% 15%;
+
+		--muted: 210 20% 96%;
+		--muted-foreground: 240 5% 60%;
+
+		--accent: 210 20% 96%;
+		--accent-foreground: 240 10% 15%;
+
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 0 0% 98%;
+
+		--border: 240 5% 90%;
+		--input: 240 5% 90%;
+		--ring: 329 100% 44%;
+
+		--radius: 0.75rem;
+	}
+
+	.dark {
+		/* Keeping dark mode available but optimizing for light mode as requested */
+		--background: 240 10% 3.9%;
+		--foreground: 0 0% 98%;
+
+		--card: 240 10% 3.9%;
+		--card-foreground: 0 0% 98%;
+
+		--popover: 240 10% 3.9%;
+		--popover-foreground: 0 0% 98%;
+
+		--primary: 329 100% 44%;
+		--primary-foreground: 0 0% 100%;
+
+		--secondary: 193 100% 50%;
+		--secondary-foreground: 240 10% 15%;
+
+		--muted: 240 3.7% 15.9%;
+		--muted-foreground: 240 5% 64.9%;
+
+		--accent: 240 3.7% 15.9%;
+		--accent-foreground: 0 0% 98%;
+
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 0 0% 98%;
+
+		--border: 240 3.7% 15.9%;
+		--input: 240 3.7% 15.9%;
+		--ring: 329 100% 44%;
+	}
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+	*,
+	*::before,
+	*::after {
+		@apply border-[#e0e0e0];
+		font-family: "TeleNeo", ui-sans-serif, system-ui, sans-serif;
+	}
+	body {
+		@apply bg-white text-[#262626];
+		font-family: "TeleNeo", ui-sans-serif, system-ui, sans-serif;
+	}
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		font-family: "TeleNeo", ui-sans-serif, system-ui, sans-serif;
+	}
+}
+
+@layer utilities {
+	/* Glassmorphism Utilities */
+	.glass {
+		background: rgba(255, 255, 255, 0.7);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border: 1px solid rgba(255, 255, 255, 0.3);
+	}
+
+	.glass-dark {
+		background: rgba(255, 255, 255, 0.1);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
+	.glass-magenta {
+		background: rgba(226, 0, 116, 0.1);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border: 1px solid rgba(226, 0, 116, 0.2);
+	}
+
+	/* Premium Shadows */
+	.shadow-premium {
+		box-shadow:
+			0 2px 8px rgba(0, 0, 0, 0.04),
+			0 4px 16px rgba(0, 0, 0, 0.06);
+	}
+
+	.shadow-premium-lg {
+		box-shadow:
+			0 4px 16px rgba(0, 0, 0, 0.06),
+			0 8px 32px rgba(0, 0, 0, 0.08);
+	}
+
+	.shadow-magenta {
+		box-shadow:
+			0 4px 16px rgba(226, 0, 116, 0.15),
+			0 8px 32px rgba(226, 0, 116, 0.1);
+	}
+
+	.shadow-cyan {
+		box-shadow:
+			0 4px 16px rgba(0, 200, 255, 0.15),
+			0 8px 32px rgba(0, 200, 255, 0.1);
+	}
+
+	/* Gradient Borders */
+	.border-gradient-magenta {
+		border: 2px solid transparent;
+		background-origin: border-box;
+		background-clip: padding-box, border-box;
+		background-image:
+			linear-gradient(white, white), linear-gradient(135deg, #e20074, #ff1694);
+	}
+
+	.border-gradient-cyan {
+		border: 2px solid transparent;
+		background-origin: border-box;
+		background-clip: padding-box, border-box;
+		background-image:
+			linear-gradient(white, white), linear-gradient(135deg, #00c8ff, #00e5ff);
+	}
+
+	/* Custom Animations */
+	@keyframes float {
+		0%,
+		100% {
+			transform: translateY(0px);
+		}
+		50% {
+			transform: translateY(-10px);
+		}
+	}
+
+	@keyframes fadeSlideUp {
+		from {
+			opacity: 0;
+			transform: translate3d(0, 20px, 0);
+		}
+		to {
+			opacity: 1;
+			transform: translate3d(0, 0, 0);
+		}
+	}
+
+	.animate-fade-slide-up {
+		animation: fadeSlideUp 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+	}
+
+	@keyframes shimmer {
+		0% {
+			background-position: 200% 0;
+		}
+		100% {
+			background-position: -200% 0;
+		}
+	}
+
+	/* Scrollbar Hiding */
+	.scrollbar-none {
+		scrollbar-width: none; /* Firefox */
+		-ms-overflow-style: none; /* IE 10+ */
+	}
+	.scrollbar-none::-webkit-scrollbar {
+		display: none; /* Chrome/Safari/Webkit */
+	}
+
+	@keyframes highlight-pulse-glow {
+		0%,
+		100% {
+			box-shadow: 0 0 8px rgba(255, 213, 79, 0.4);
+			border-color: rgba(255, 213, 79, 0.5);
+		}
+		50% {
+			box-shadow: 0 0 13px 2px rgba(255, 213, 79, 0.85);
+			border-color: rgba(255, 213, 79, 1);
+		}
+	}
+
+	.highlight-glow {
+		animation: highlight-pulse-glow 3.5s ease-in-out infinite !important;
+	}
 }

@@ -1,0 +1,54 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth';
+
+export async function middleware(req: NextRequest) {
+    const path = req.nextUrl.pathname;
+
+    // Protect /admin routes
+    if (path.startsWith('/admin')) {
+        const session = await getSession();
+
+        // Redirect to login if no session
+        if (!session) {
+            return NextResponse.redirect(new URL('/login', req.url));
+        }
+
+        // Role check (Optional: Ensure user is ADMIN)
+        if (session.role !== 'ADMIN' && session.role !== 'TEAM_LEADER') {
+            // Could redirect to unauthorized page or just home
+            return NextResponse.redirect(new URL('/', req.url));
+        }
+    }
+
+    // Redirect authenticated users away from login
+    if (path === '/login') {
+        const session = await getSession();
+        if (session) {
+            return NextResponse.redirect(new URL('/admin/products', req.url));
+        }
+    }
+
+    // Protect Sales Tool routes
+    if (path.startsWith('/products')) {
+        const sessionCookie = req.cookies.get('sales-session-id');
+        if (!sessionCookie) {
+            return NextResponse.redirect(new URL('/setup', req.url));
+        }
+    }
+
+    // Redirect / to /products (which gates to /setup)
+    if (path === '/') {
+        return NextResponse.redirect(new URL('/products', req.url));
+    }
+
+    return NextResponse.next();
+}
+
+export const config = {
+    matcher: [
+        '/admin/:path*',
+        '/login',
+        '/products/:path*',
+        '/'
+    ],
+};
