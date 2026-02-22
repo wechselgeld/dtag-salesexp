@@ -41,9 +41,23 @@ export const teamRouter = router({
                 throw new TRPCError({ code: 'FORBIDDEN' });
             }
 
-            return await ctx.prisma.team.delete({
-                where: { id: input.id }
-            });
+            try {
+                return await ctx.prisma.team.delete({
+                    where: { id: input.id }
+                });
+            } catch (error: any) {
+                // Check for P2003 (Foreign key constraint failed) or P2025 (Record not found)
+                if (error.code === 'P2003') {
+                    throw new TRPCError({
+                        code: 'CONFLICT',
+                        message: 'Dieses Team kann nicht gelöscht werden, da noch Verknüpfungen (z.B. Sessions) existieren. Bitte stellen Sie sicher, dass alle Cascade-Regeln in der Datenbank aktiv sind.'
+                    });
+                }
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: error.message || 'Fehler beim Löschen des Teams'
+                });
+            }
         }),
 
     toggleFocus: protectedProcedure
