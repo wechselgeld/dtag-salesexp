@@ -7,6 +7,7 @@ import { IntroSplash } from "@/components/intro-splash";
 import { AnimatePresence, motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { MaintenanceSplash } from "@/components/maintenance-splash";
+import { OnboardingTutorial } from "@/components/onboarding-tutorial";
 
 // Routes that should render WITHOUT the sales shell (sidebar + basket)
 const STANDALONE_ROUTES = [
@@ -45,7 +46,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 		);
 	}
 
-	// Sales layout — sidebar + content + basket
 	return (
 		<IntroSplash>
 			<div className="grid grid-cols-[260px_1fr_340px] h-screen w-full">
@@ -55,6 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 				</main>
 				<BasketDrawer />
 			</div>
+			<OnboardingTutorial />
 		</IntroSplash>
 	);
 }

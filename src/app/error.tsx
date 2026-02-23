@@ -45,7 +45,7 @@ export default function GlobalError({
 					<p className="text-[0.7rem] font-bold text-zinc-400 uppercase tracking-widest mb-2">
 						Fehlermeldung
 					</p>
-					<code className="text-sm text-red-600 bg-red-50/50 p-3 rounded-xl block border border-red-100/50 break-words font-mono">
+					<code className="text-sm text-red-600 bg-red-50/50 p-3 rounded-xl block border border-red-100/50 wrap-break-word font-mono">
 						{error.message || "An unknown error occurred."}
 					</code>
 					{error.digest && (

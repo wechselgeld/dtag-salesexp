@@ -88,7 +88,10 @@ export function SidebarNav() {
 	};
 
 	return (
-		<aside className="bg-white border-r border-[#eaedf0] flex flex-col z-10 w-[260px] h-screen">
+		<aside
+			id="tour-sidebar"
+			className="bg-white border-r border-[#eaedf0] flex flex-col z-10 w-[260px] h-screen"
+		>
 			{/* Logo */}
 			<div className="px-5 pt-5 pb-6">
 				<Link href="/" className="flex items-center gap-3 no-underline group">
@@ -207,7 +210,7 @@ export function SidebarNav() {
 						onClick={() => setCalculatorOpen(true)}
 						className="flex items-center w-full bg-transparent border-none text-left gap-2.5 px-3 py-2 rounded-xl no-underline text-[0.75rem] font-medium transition-all duration-200 text-[#bbb] hover:text-[#e20074] hover:bg-[#e20074]/5 cursor-pointer"
 					>
-						<Calculator className="w-3.5 h-3.5" />
+						<Calculator id="tour-calculator" className="w-3.5 h-3.5" />
 						Sparvorteil-Rechner
 					</button>
 
@@ -243,7 +246,7 @@ export function SidebarNav() {
 						rel="noopener noreferrer"
 						className="flex items-center gap-2.5 px-3 py-2 rounded-xl no-underline text-[0.75rem] font-medium text-[#bbb] hover:text-[#888] hover:bg-[#f7f8fa] transition-all duration-200"
 					>
-						<ExternalLink className="w-3.5 h-3.5" />
+						<ExternalLink id="tour-admin" className="w-3.5 h-3.5" />
 						Admin
 					</a>
 				</div>

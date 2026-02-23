@@ -117,6 +117,7 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 		<motion.div
 			layoutId="search-bar-transition"
 			ref={containerRef as any}
+			id="tour-search"
 			className={`relative z-30 ${compact ? "mb-6" : "mb-14"}`}
 		>
 			{/* Search input */}

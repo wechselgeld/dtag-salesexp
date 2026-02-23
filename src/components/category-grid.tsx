@@ -63,7 +63,10 @@ const categories = [
 
 export function CategoryGrid() {
 	return (
-		<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+		<div
+			id="tour-categories"
+			className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+		>
 			{categories.map((category, index) => (
 				<Link href={category.href} key={category.id} className="no-underline">
 					<motion.div

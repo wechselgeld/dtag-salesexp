@@ -212,7 +212,10 @@ export function BasketDrawer() {
 	};
 
 	return (
-		<aside className="bg-white border-l border-[#eaedf0] flex flex-col z-10 overflow-hidden h-full relative">
+		<aside
+			id="tour-basket"
+			className="bg-white border-l border-[#eaedf0] flex flex-col z-10 overflow-hidden h-full relative"
+		>
 			{/* Header */}
 			<div className="px-5 py-4 border-b border-[#eaedf0]">
 				<div className="flex items-center justify-between">
