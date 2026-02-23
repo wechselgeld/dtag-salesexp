@@ -394,7 +394,12 @@ function ProductPageContent() {
 
 					{/* MagentaTV Option — Toggle + Package Selector */}
 					{product.allowMagentaTV && (
-						<ConfigSection title="Entertainment" catColor={catColor} index={1}>
+						<ConfigSection
+							id="tour-config-entertainment"
+							title="Entertainment"
+							catColor={catColor}
+							index={1}
+						>
 							{/* Main Toggle */}
 							<div
 								onClick={() => {

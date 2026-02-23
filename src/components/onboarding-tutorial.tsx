@@ -22,7 +22,8 @@ import {
 	TrendingUp,
 	PiggyBank,
 	UserPlus,
-	ShoppingCart
+	ShoppingCart,
+	Tv
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -116,6 +117,14 @@ const STEPS: Step[] = [
 		position: "right"
 	},
 	{
+		targetId: "tour-config-entertainment",
+		title: "MagentaTV buchen",
+		content:
+			"Hier kannst Du MagentaTV direkt zum Tarif hinzubuchen – inklusive Paketauswahl wie MagentaTV Smart, Netflix oder Disney+.",
+		icon: Tv,
+		position: "right"
+	},
+	{
 		targetId: "tour-config-special-prices",
 		title: "Aktionen & Rabatte",
 		content:
@@ -145,14 +154,6 @@ const STEPS: Step[] = [
 		content:
 			"Nutze diesen psychologischen Anker im Verkaufsgespräch. Brich den monatlichen Preis auf einen täglichen Wert runter.",
 		icon: PiggyBank,
-		position: "left"
-	},
-	{
-		targetId: "tour-config-pluskarte",
-		title: "PlusKarte",
-		content:
-			"Nutze Cross-Selling-Potential! Biete bei Mobilfunk z.B. direkt vergünstigte Zusatzkarten für die Familie an.",
-		icon: UserPlus,
 		position: "left"
 	},
 	{
@@ -248,6 +249,11 @@ export function OnboardingTutorial() {
 
 			if (!isInViewport) {
 				el.scrollIntoView({ behavior: "smooth", block: "center" });
+				// Recalculate coords after scroll settles
+				setTimeout(() => {
+					const r = el.getBoundingClientRect();
+					setCoords({ x: r.left, y: r.top, w: r.width, h: r.height });
+				}, 400);
 			}
 		} else {
 			// Reset coords if element is missing to avoid "stuck highlight" from previous step
@@ -282,16 +288,16 @@ export function OnboardingTutorial() {
 
 			// Auto-navigation for dynamic elements inside specific pages
 			if (nextStep.targetId === "tour-product-0") {
-				router.push("/products/MOBILE");
+				router.push("/products/FIBER");
 			} else if (nextStep.targetId === "tour-config-business-case") {
 				// Find first product link and navigate
 				const firstProductLink = document.querySelector<HTMLAnchorElement>(
-					'a[href^="/products/MOBILE/"]'
+					'a[href^="/products/FIBER/"]'
 				);
 				if (firstProductLink && firstProductLink.getAttribute("href")) {
 					router.push(firstProductLink.getAttribute("href") as string);
 				} else {
-					router.push("/products/MOBILE");
+					router.push("/products/FIBER");
 				}
 			}
 
@@ -308,7 +314,7 @@ export function OnboardingTutorial() {
 
 			// Auto-navigation backward
 			if (currentStepData.targetId === "tour-config-business-case") {
-				router.push("/products/MOBILE");
+				router.push("/products/FIBER");
 			} else if (currentStepData.targetId === "tour-product-0") {
 				router.push("/products");
 			}
