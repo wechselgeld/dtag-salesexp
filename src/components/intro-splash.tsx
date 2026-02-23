@@ -9,12 +9,14 @@ export function IntroSplash({ children }: { children: React.ReactNode }) {
 	const [phase, setPhase] = useState<"enter" | "hold" | "exit">("enter");
 
 	useEffect(() => {
-		const today = new Date().toISOString().split("T")[0];
-		const lastSeen = localStorage.getItem("dts-splash-date");
+		const now = Date.now();
+		const lastSeenStr = localStorage.getItem("dts-splash-timestamp");
+		const lastSeen = lastSeenStr ? parseInt(lastSeenStr, 10) : 0;
+		const hoursPassed = (now - lastSeen) / (1000 * 60 * 60);
 
-		if (lastSeen !== today) {
+		if (hoursPassed >= 10) {
 			setShowSplash(true);
-			localStorage.setItem("dts-splash-date", today);
+			localStorage.setItem("dts-splash-timestamp", now.toString());
 		}
 	}, []);
 
@@ -37,14 +39,9 @@ export function IntroSplash({ children }: { children: React.ReactNode }) {
 		setTimeout(() => setShowSplash(false), 800);
 	};
 
-	if (!showSplash) return <>{children}</>;
-
 	return (
 		<>
-			{/* Main content behind */}
-			<div className="opacity-0 pointer-events-none absolute inset-0">
-				{children}
-			</div>
+			{children}
 
 			<AnimatePresence>
 				{showSplash && (

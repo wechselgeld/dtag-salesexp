@@ -20,8 +20,11 @@ export const sessionRouter = router({
             });
 
             // Set cookie
+            const { signSessionId } = await import('@/lib/auth');
+            const token = await signSessionId(session.id);
+
             const cookieStore = await cookies();
-            cookieStore.set('sales-session-id', session.id, {
+            cookieStore.set('sales-session-id', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
@@ -34,7 +37,12 @@ export const sessionRouter = router({
 
     getCurrent: publicProcedure.query(async ({ ctx }) => {
         const cookieStore = await cookies();
-        const sessionId = cookieStore.get('sales-session-id')?.value;
+        const token = cookieStore.get('sales-session-id')?.value;
+
+        if (!token) return null;
+
+        const { verifySessionId } = await import('@/lib/auth');
+        const sessionId = await verifySessionId(token);
 
         if (!sessionId) return null;
 

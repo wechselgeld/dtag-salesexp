@@ -34,6 +34,16 @@ export async function middleware(req: NextRequest) {
         if (!sessionCookie) {
             return NextResponse.redirect(new URL('/setup', req.url));
         }
+
+        // Verify signed cookie
+        const { verifySessionId } = await import('@/lib/auth');
+        const sessionId = await verifySessionId(sessionCookie.value);
+        if (!sessionId) {
+            // Invalid or tampered cookie
+            const response = NextResponse.redirect(new URL('/setup', req.url));
+            response.cookies.delete('sales-session-id');
+            return response;
+        }
     }
 
     // Redirect / to /products (which gates to /setup)

@@ -2,8 +2,12 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-const secretKey = process.env.JWT_SECRET || 'dev-secret-key-change-me';
-const key = new TextEncoder().encode(secretKey);
+const secretKey = process.env.JWT_SECRET;
+if (!secretKey && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable is not set');
+}
+const fallbackSecret = 'dev-only-unsafe-fallback-12345';
+const key = new TextEncoder().encode(secretKey || fallbackSecret);
 
 const ALG = 'HS256';
 
@@ -45,7 +49,18 @@ export async function login(userId: string, role: string) {
     });
 }
 
+
 export async function logout() {
     const cookieStore = await cookies();
     cookieStore.delete('auth-token');
+}
+
+// Session signing for non-auth cookies (e.g. sales-session-id)
+export async function signSessionId(id: string) {
+    return await signJWT({ id });
+}
+
+export async function verifySessionId(token: string) {
+    const payload = await verifyJWT(token);
+    return payload?.id as string | undefined;
 }

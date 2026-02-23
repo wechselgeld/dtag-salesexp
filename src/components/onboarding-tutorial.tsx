@@ -11,8 +11,20 @@ import {
 	Calculator,
 	ShoppingBag,
 	ShieldCheck,
-	MousePointer2
+	MousePointer2,
+	MousePointerClick,
+	Settings2,
+	Swords,
+	MapPin,
+	FileText,
+	Tag,
+	PlusCircle,
+	TrendingUp,
+	PiggyBank,
+	UserPlus,
+	ShoppingCart
 } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
 
 interface Step {
 	targetId: string;
@@ -40,6 +52,38 @@ const STEPS: Step[] = [
 		position: "right"
 	},
 	{
+		targetId: "tour-calculator",
+		title: "Sparvorteil-Rechner",
+		content:
+			"Hier kannst Du prüfen, ob und wie viel Dein Kunde spart, wenn er bereits Streamingdienste oder HD-Fernsehen nutzt.",
+		icon: Calculator,
+		position: "right"
+	},
+	{
+		targetId: "tour-availability",
+		title: "Verfügbarkeits-Check",
+		content:
+			"Prüfe direkt im Gespräch, ob Glasfaser oder DSL an der Adresse Deines Kunden verfügbar ist – inklusive konkreter Tarif-Empfehlungen.",
+		icon: MapPin,
+		position: "right"
+	},
+	{
+		targetId: "tour-battlecards",
+		title: "Wettbewerbs-Battlecards",
+		content:
+			"Hier findest Du schlagkräftige Argumente gegen jeden Wettbewerber. Schwachstellen, Telekom-Vorteile und emotionale Formulierungen für Dein Gespräch.",
+		icon: Swords,
+		position: "right"
+	},
+	{
+		targetId: "tour-admin",
+		title: "Verwaltung",
+		content:
+			"Wenn Du Admin-Rechte hast, kannst Du hier Produkte, Preise und Team-Highlights pflegen.",
+		icon: ShieldCheck,
+		position: "top"
+	},
+	{
 		targetId: "tour-search",
 		title: "Schnellsuche",
 		content:
@@ -51,17 +95,73 @@ const STEPS: Step[] = [
 		targetId: "tour-categories",
 		title: "Produktauswahl",
 		content:
-			"Wähle hier die passende Kategorie für Deinen Kunden aus. Im Team-Fokus siehst Du die aktuellen Empfehlungen.",
+			"Wähle in der Mitte die passende Kategorie für Deinen Kunden aus. Im Team-Fokus siehst Du die aktuellen Empfehlungen.",
 		icon: LayoutGrid,
 		position: "top"
 	},
 	{
-		targetId: "tour-calculator",
-		title: "Sparvorteil-Rechner",
+		targetId: "tour-product-0",
+		title: "Tarif auswählen",
 		content:
-			"Hier kannst Du prüfen, ob und wie viel Dein Kunde spart, wenn er bereits Streamingdienste oder HD-Fernsehen nutzt.",
-		icon: Calculator,
+			"Nachdem Du eine Kategorie gewählt hast, siehst Du alle verfügbaren Tarife. Klicke auf einen Tarif, um ihn zu konfigurieren. Du kannst nach Name filtern oder nach Preis sortieren.",
+		icon: MousePointerClick,
 		position: "right"
+	},
+	{
+		targetId: "tour-config-business-case",
+		title: "Vertragsart",
+		content:
+			"Wähle hier, ob es sich um einen Neuvertrag, eine Vertragsverlängerung oder einen Anbieterwechsel handelt.",
+		icon: FileText,
+		position: "right"
+	},
+	{
+		targetId: "tour-config-special-prices",
+		title: "Aktionen & Rabatte",
+		content:
+			"Wende hier aktive Marketing-Aktionen an, wie z.B. einen Cashback oder den MagentaEINS-Vorteil.",
+		icon: Tag,
+		position: "right"
+	},
+	{
+		targetId: "tour-config-addons",
+		title: "Zusatzoptionen",
+		content:
+			"Buche Optionen wie Netflix oder Disney+ direkt mit einem Klick dazu.",
+		icon: PlusCircle,
+		position: "right"
+	},
+	{
+		targetId: "tour-config-timeline",
+		title: "Kostenübersicht",
+		content:
+			"Hier behältst Du den transparenten Überblick, wie sich der Preis im Laufe der 24 Monate entwickelt.",
+		icon: TrendingUp,
+		position: "left"
+	},
+	{
+		targetId: "tour-config-daily-price",
+		title: "Täglicher Preis",
+		content:
+			"Nutze diesen psychologischen Anker im Verkaufsgespräch. Brich den monatlichen Preis auf einen täglichen Wert runter.",
+		icon: PiggyBank,
+		position: "left"
+	},
+	{
+		targetId: "tour-config-pluskarte",
+		title: "PlusKarte",
+		content:
+			"Nutze Cross-Selling-Potential! Biete bei Mobilfunk z.B. direkt vergünstigte Zusatzkarten für die Familie an.",
+		icon: UserPlus,
+		position: "left"
+	},
+	{
+		targetId: "tour-config-action",
+		title: "In den Warenkorb",
+		content:
+			"Nach der Konfiguration legst Du alles hier in den Warenkorb. Dort kannst Du auch ein PDF erstellen und per E-Mail versenden.",
+		icon: ShoppingCart,
+		position: "left"
 	},
 	{
 		targetId: "tour-basket",
@@ -70,14 +170,6 @@ const STEPS: Step[] = [
 			"Hier siehst Du die Preisentwicklung über 24 Monate und kannst direkt ein PDF-Angebot für Deinen Kunden erstellen und es direkt per E-Mail versenden.",
 		icon: ShoppingBag,
 		position: "left"
-	},
-	{
-		targetId: "tour-admin",
-		title: "Verwaltung",
-		content:
-			"Wenn Du Admin-Rechte hast, kannst Du hier Produkte, Preise und Team-Highlights pflegen.",
-		icon: ShieldCheck,
-		position: "top"
 	},
 	{
 		targetId: "welcome",
@@ -99,14 +191,27 @@ export function OnboardingTutorial() {
 	}>({ x: 0, y: 0, w: 0, h: 0 });
 	const [isVisible, setIsVisible] = useState(false);
 	const [retryCount, setRetryCount] = useState(0);
+	const router = useRouter();
+	const pathname = usePathname();
 
 	useEffect(() => {
-		const hasSeen = localStorage.getItem("onboarding_seen_v2");
+		const hasSeen = localStorage.getItem("onboarding_completed_v3");
 		if (!hasSeen) {
+			// Check if splash screen will play or just started playing
+			const lastSeenStr = localStorage.getItem("dts-splash-timestamp");
+			const lastSeen = lastSeenStr ? parseInt(lastSeenStr, 10) : 0;
+			const now = Date.now();
+			const hoursPassed = (now - lastSeen) / (1000 * 60 * 60);
+			const secondsSinceLastSplash = (now - lastSeen) / 1000;
+
+			// If >= 10 hours, OR if the Splash screen literally JUST saved its timestamp (race condition fix)
+			const delay =
+				hoursPassed >= 10 || secondsSinceLastSplash < 5 ? 4200 : 800;
+
 			const timer = setTimeout(() => {
 				setIsVisible(true);
 				setCurrentStep(0);
-			}, 1500);
+			}, delay);
 			return () => clearTimeout(timer);
 		}
 	}, []);
@@ -149,7 +254,7 @@ export function OnboardingTutorial() {
 			setCoords({ x: 0, y: 0, w: 0, h: 0 });
 
 			// Retry a few times in case of route transition / rendering delay
-			if (retryCount < 10) {
+			if (retryCount < 40) {
 				setTimeout(() => setRetryCount((prev) => prev + 1), 150);
 			}
 		}
@@ -172,7 +277,25 @@ export function OnboardingTutorial() {
 
 	const handleNext = () => {
 		if (currentStep !== null && currentStep < STEPS.length - 1) {
-			setCurrentStep(currentStep + 1);
+			const nextStepIdx = currentStep + 1;
+			const nextStep = STEPS[nextStepIdx];
+
+			// Auto-navigation for dynamic elements inside specific pages
+			if (nextStep.targetId === "tour-product-0") {
+				router.push("/products/MOBILE");
+			} else if (nextStep.targetId === "tour-config-business-case") {
+				// Find first product link and navigate
+				const firstProductLink = document.querySelector<HTMLAnchorElement>(
+					'a[href^="/products/MOBILE/"]'
+				);
+				if (firstProductLink && firstProductLink.getAttribute("href")) {
+					router.push(firstProductLink.getAttribute("href") as string);
+				} else {
+					router.push("/products/MOBILE");
+				}
+			}
+
+			setCurrentStep(nextStepIdx);
 		} else {
 			handleEnd();
 		}
@@ -180,14 +303,25 @@ export function OnboardingTutorial() {
 
 	const handleBack = () => {
 		if (currentStep !== null && currentStep > 0) {
-			setCurrentStep(currentStep - 1);
+			const prevStepIdx = currentStep - 1;
+			const currentStepData = STEPS[currentStep];
+
+			// Auto-navigation backward
+			if (currentStepData.targetId === "tour-config-business-case") {
+				router.push("/products/MOBILE");
+			} else if (currentStepData.targetId === "tour-product-0") {
+				router.push("/products");
+			}
+
+			setCurrentStep(prevStepIdx);
 		}
 	};
 
 	const handleEnd = () => {
-		localStorage.setItem("onboarding_seen_v2", "true");
+		localStorage.setItem("onboarding_completed_v3", "true");
 		setIsVisible(false);
 		setCurrentStep(null);
+		router.push("/");
 	};
 
 	if (!isVisible || currentStep === null) return null;
@@ -196,15 +330,56 @@ export function OnboardingTutorial() {
 	const Icon = step.icon;
 
 	return (
-		<div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none">
-			{/* Overlay Background */}
+		<div className="fixed inset-0 z-9999 flex items-center justify-center pointer-events-none">
+			{/* Overlay Background - full only on welcome, transparent otherwise */}
 			<motion.div
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				exit={{ opacity: 0 }}
-				className="absolute inset-0 bg-black/60 pointer-events-auto"
-				onClick={handleEnd}
+				className={`absolute inset-0 pointer-events-auto transition-all duration-300 ${
+					currentStep === 0 || (currentStep > 0 && coords.w === 0)
+						? "bg-black/60 backdrop-blur-[3px]"
+						: "bg-transparent"
+				}`}
 			/>
+
+			{/* Blurred panels for spotlight hole (four borders around the hole) */}
+			{currentStep > 0 && coords.w > 0 && (
+				<>
+					<motion.div
+						initial={false}
+						animate={{ height: Math.max(0, coords.y - 12) }}
+						transition={{ type: "spring", damping: 30, stiffness: 200 }}
+						className="absolute top-0 left-0 right-0 backdrop-blur-[3px] z-9998"
+					/>
+					<motion.div
+						initial={false}
+						animate={{ top: coords.y + coords.h + 12 }}
+						transition={{ type: "spring", damping: 30, stiffness: 200 }}
+						className="absolute bottom-0 left-0 right-0 backdrop-blur-[3px] z-9998"
+					/>
+					<motion.div
+						initial={false}
+						animate={{
+							top: coords.y - 12,
+							height: coords.h + 24,
+							width: Math.max(0, coords.x - 12)
+						}}
+						transition={{ type: "spring", damping: 30, stiffness: 200 }}
+						className="absolute left-0 backdrop-blur-[3px] z-9998"
+					/>
+					<motion.div
+						initial={false}
+						animate={{
+							top: coords.y - 12,
+							height: coords.h + 24,
+							left: coords.x + coords.w + 12
+						}}
+						transition={{ type: "spring", damping: 30, stiffness: 200 }}
+						className="absolute right-0 backdrop-blur-[3px] z-9998"
+					/>
+				</>
+			)}
 
 			{/* Spotlight */}
 			{currentStep > 0 && coords.w > 0 && (
@@ -218,7 +393,7 @@ export function OnboardingTutorial() {
 						opacity: 1
 					}}
 					transition={{ type: "spring", damping: 30, stiffness: 200 }}
-					className="absolute border-2 border-magenta-500 rounded-3xl shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] pointer-events-none z-[10000]"
+					className="absolute border-2 border-magenta-500 rounded-3xl shadow-[0_0_0_9999px_rgba(0,0,0,0.4)] pointer-events-none z-10000"
 				>
 					<div className="absolute inset-0 bg-magenta-500/5 blur-2xl rounded-3xl" />
 				</motion.div>
@@ -241,7 +416,7 @@ export function OnboardingTutorial() {
 							})
 				}}
 				transition={{ type: "spring", damping: 25, stiffness: 200 }}
-				className="fixed bg-white rounded-[32px] p-6 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] w-[360px] pointer-events-auto z-[10001] border border-zinc-100"
+				className="fixed bg-white rounded-[32px] p-6 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] w-[360px] pointer-events-auto z-10001 border border-zinc-100"
 			>
 				{/* Progress dots */}
 				<div className="flex justify-center gap-1.5 mb-6">

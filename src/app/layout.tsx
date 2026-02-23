@@ -88,7 +88,7 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="de" className={teleNeo.variable}>
+		<html lang="de" className={teleNeo.variable} suppressHydrationWarning>
 			<body className="antialiased text-[#262626] bg-transparent overflow-hidden h-screen">
 				<Providers>
 					<AppShell>{children}</AppShell>

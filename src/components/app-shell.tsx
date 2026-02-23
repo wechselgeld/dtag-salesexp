@@ -8,6 +8,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { MaintenanceSplash } from "@/components/maintenance-splash";
 import { OnboardingTutorial } from "@/components/onboarding-tutorial";
+import { useModalStore } from "@/hooks/use-modal-store";
+import { AvailabilityCheckModal } from "@/components/availability-check-modal";
+import { StreamingCalculatorModal } from "@/components/streaming-calculator-modal";
+import { BattlecardModal } from "@/components/battlecard-panel";
 
 // Routes that should render WITHOUT the sales shell (sidebar + basket)
 const STANDALONE_ROUTES = [
@@ -29,6 +33,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 	const isMaintenanceActive = isMaintenance && user?.role !== "ADMIN";
 	const isStandalone = STANDALONE_ROUTES.some((r) => pathname.startsWith(r));
 
+	const {
+		availabilityOpen,
+		setAvailabilityOpen,
+		calculatorOpen,
+		setCalculatorOpen,
+		battlecardOpen,
+		setBattlecardOpen
+	} = useModalStore();
+
 	if (
 		isMaintenanceActive &&
 		!pathname.startsWith("/admin") &&
@@ -48,7 +61,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 	return (
 		<IntroSplash>
-			<div className="grid grid-cols-[260px_1fr_340px] h-screen w-full">
+			<div className="grid grid-cols-[auto_1fr_340px] h-screen w-full">
 				<SidebarNav />
 				<main className="p-8 overflow-y-auto w-full max-w-[1200px] mx-auto scrollbar-none">
 					<div className="h-full">{children}</div>
@@ -56,6 +69,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 				<BasketDrawer />
 			</div>
 			<OnboardingTutorial />
+			<AvailabilityCheckModal
+				isOpen={availabilityOpen}
+				onClose={() => setAvailabilityOpen(false)}
+			/>
+			<StreamingCalculatorModal
+				isOpen={calculatorOpen}
+				onClose={() => setCalculatorOpen(false)}
+			/>
+			<BattlecardModal
+				isOpen={battlecardOpen}
+				onClose={() => setBattlecardOpen(false)}
+			/>
 		</IntroSplash>
 	);
 }

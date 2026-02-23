@@ -29,6 +29,7 @@ import { trpc } from "@/lib/trpc";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNewsNotificationStore } from "@/lib/store/news-notification-store";
+import { useSettingsStore } from "@/hooks/use-settings-store";
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: "#e20074",
@@ -61,6 +62,7 @@ export function BasketDrawer() {
 	const addNotification = useNewsNotificationStore(
 		(state) => state.addNotification
 	);
+	const { clearAfterExport, offerTemplateText } = useSettingsStore();
 	const lastNudgeRef = useRef<string | null>(null);
 
 	// Cross-Sell Detector (Fixed + Mobile Advantage)
@@ -454,17 +456,14 @@ export function BasketDrawer() {
 									const subject = encodeURIComponent(
 										"Ihr persönliches Angebot der Telekom"
 									);
-									const bodyText = encodeURIComponent(
-										"[HERUNTERGELADENES ANGEBOT HIER HINZUFÜGEN UND TEXT LÖSCHEN] Guten Tag,\n\n" +
-											"vielen Dank für das angenehme Gespräch. Wie besprochen, erhalten Sie anbei Ihr ganz persönliches Telekom-Angebot.\n\n" +
-											"Sie haben noch Fragen zum Angebot oder möchten bestellen? Wir rufen Sie zurück. Antworten Sie gern jederzeit mit Ihrer Rückrufnummer- und Zeit auf diese Nachricht.\n\n" +
-											"Freundliche Grüße aus Chemnitz\n" +
-											"Ihre Telekom"
-									);
+									const bodyText = encodeURIComponent(offerTemplateText);
 
 									window.location.href = `mailto:Kunden-E-Mail hier einfügen?subject=${subject}&body=${bodyText}`;
 
 									setIsGenerating("success");
+									if (clearAfterExport) {
+										setTimeout(() => clearBasket(), 500);
+									}
 									setTimeout(() => setIsGenerating("idle"), 10000);
 								}}
 								disabled={isGenerating !== "idle"}

@@ -313,7 +313,7 @@ function ProductPageContent() {
 							) && (
 								<div className="mb-4 bg-[#00a8781c] border border-[#00a8787c] text-[#00a878] px-4 py-3 rounded-xl text-[1.3rem] flex items-start gap-3">
 									<Info
-										className="w-8 h-8 transition-all duration-400 text-[#00a878] group-hover:text-[var(--card-color)] group-hover:scale-110"
+										className="w-8 h-8 transition-all duration-400 text-[#00a878] group-hover:text-(--card-color) group-hover:scale-110"
 										strokeWidth={1.5}
 									/>
 									<div className="leading-snug mt-0.5">
@@ -373,6 +373,7 @@ function ProductPageContent() {
 					{/* Business Case (Hide for DEVICE) */}
 					{product.category !== "DEVICE" && (
 						<ConfigSection
+							id="tour-config-business-case"
 							title="Vertragsart wählen"
 							catColor={catColor}
 							index={0}
@@ -569,6 +570,7 @@ function ProductPageContent() {
 
 					{/* Special Prices */}
 					<ConfigSection
+						id="tour-config-special-prices"
 						title="Aktionen & Rabatte"
 						catColor={catColor}
 						index={2}
@@ -585,7 +587,12 @@ function ProductPageContent() {
 
 					{/* Add-ons */}
 					{product.compatibleAddons && product.compatibleAddons.length > 0 && (
-						<ConfigSection title="Zusatzoptionen" catColor={catColor} index={3}>
+						<ConfigSection
+							id="tour-config-addons"
+							title="Zusatzoptionen"
+							catColor={catColor}
+							index={3}
+						>
 							<AddonSelector
 								addons={product.compatibleAddons}
 								selectedIds={selectedAddonIds}
@@ -601,6 +608,7 @@ function ProductPageContent() {
 				<div className="lg:sticky lg:top-6 space-y-4">
 					{/* Cost Summary */}
 					<motion.div
+						id="tour-config-timeline"
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.3, duration: 0.35 }}
@@ -611,6 +619,7 @@ function ProductPageContent() {
 
 					{/* Price Trivialization Card */}
 					<motion.div
+						id="tour-config-daily-price"
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.32, duration: 0.35 }}
@@ -633,6 +642,7 @@ function ProductPageContent() {
 
 					{/* CTA Button */}
 					<motion.button
+						id="tour-config-action"
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.35, duration: 0.35 }}
@@ -668,6 +678,7 @@ function ProductPageContent() {
 					{/* Nudges */}
 					{category === "MOBILE" && (
 						<motion.div
+							id="tour-config-pluskarte"
 							initial={{ opacity: 0, y: 8 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.4, duration: 0.35 }}
@@ -883,15 +894,18 @@ function ConfigSection({
 	title,
 	catColor,
 	index,
-	children
+	children,
+	id
 }: {
 	title: string;
 	catColor: string;
 	index: number;
 	children: React.ReactNode;
+	id?: string;
 }) {
 	return (
 		<motion.section
+			id={id}
 			initial={{ opacity: 0, y: 8 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.1 + index * 0.08, duration: 0.35 }}

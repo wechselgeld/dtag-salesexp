@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import clsx from "clsx";
 import { SearchBar } from "@/components/search-bar";
+import { useSettingsStore } from "@/hooks/use-settings-store";
 
 export default function ProductListPage() {
 	const params = useParams();
@@ -29,6 +30,7 @@ export default function ProductListPage() {
 	const [activeFilterId, setActiveFilterId] = useState<string | null>(null);
 
 	const utils = trpc.useUtils();
+	const { compactView } = useSettingsStore();
 
 	const { data: session } = trpc.session.getCurrent.useQuery();
 
@@ -231,7 +233,7 @@ export default function ProductListPage() {
 				) : (
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						<AnimatePresence mode="popLayout">
-							{filteredProducts.map((product) => {
+							{filteredProducts.map((product, index) => {
 								const isFocused = session?.team?.highlights.some(
 									(h) => h.productId === product.id
 								);
@@ -239,12 +241,14 @@ export default function ProductListPage() {
 								return (
 									<motion.div
 										key={product.id}
+										id={`tour-product-${index}`}
 										initial={{ opacity: 0, y: 10 }}
 										animate={{ opacity: 1, y: 0 }}
 										style={{ "--cat-color": catColor } as React.CSSProperties}
 										className={clsx(
-											"bg-white rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 group border relative cursor-pointer overflow-hidden",
-											isFocused ? "highlight-glow" : "border-[#eaedf0]"
+											"bg-white rounded-2xl flex flex-col justify-between transition-all duration-300 group border relative cursor-pointer overflow-hidden",
+											isFocused ? "highlight-glow" : "border-[#eaedf0]",
+											compactView ? "p-3.5" : "p-5"
 										)}
 									>
 										{/* Gradient overlay - hover only */}
@@ -268,10 +272,16 @@ export default function ProductListPage() {
 											)}
 
 											{/* Title + Duration on same line */}
-											<div className="flex items-baseline justify-between mb-3">
+											<div
+												className={clsx(
+													"flex items-baseline justify-between",
+													compactView ? "mb-1.5" : "mb-3"
+												)}
+											>
 												<h3
 													className={clsx(
-														"text-[1.15rem] font-bold transition-colors duration-300 leading-tight m-0",
+														"font-bold transition-colors duration-300 leading-tight m-0",
+														compactView ? "text-[0.95rem]" : "text-[1.15rem]",
 														isFocused
 															? ""
 															: "text-[#1a1a2e] group-hover:text-[var(--cat-color)]"
@@ -288,7 +298,7 @@ export default function ProductListPage() {
 											</div>
 
 											{/* Description snippet */}
-											{product.description && (
+											{!compactView && product.description && (
 												<p className="text-[0.8rem] text-[#666] line-clamp-2 mt-1 mb-3 leading-relaxed">
 													{product.description}
 												</p>
@@ -409,7 +419,12 @@ export default function ProductListPage() {
 													</div>
 												) : (
 													<>
-														<span className="text-[1.8rem] font-extrabold text-[#1a1a2e] tracking-tight leading-none">
+														<span
+															className={clsx(
+																"font-extrabold text-[#1a1a2e] tracking-tight leading-none",
+																compactView ? "text-[1.3rem]" : "text-[1.8rem]"
+															)}
+														>
 															{product.basePrice.toFixed(2)} €
 														</span>
 														<span className="text-[0.7rem] text-[#b0b0b0] font-medium ml-1">

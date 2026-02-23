@@ -6,6 +6,7 @@ import { teamRouter } from './team';
 import { sessionRouter } from './session';
 import { newsRouter } from './news';
 import { addonRouter } from './addon';
+import { availabilityRouter } from './availability';
 
 export const appRouter = router({
     health: publicProcedure.query(() => {
@@ -18,6 +19,7 @@ export const appRouter = router({
     session: sessionRouter,
     news: newsRouter,
     addon: addonRouter,
+    availability: availabilityRouter,
     public: router({
         getActiveAnnouncements: publicProcedure.query(async () => {
             const { prisma } = await import('@/lib/prisma');

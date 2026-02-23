@@ -253,3 +253,11 @@
 		animation: highlight-pulse-glow 3.5s ease-in-out infinite !important;
 	}
 }
+
+body.reduce-animations *, body.reduce-animations *::before, body.reduce-animations *::after {
+	animation-duration: 0.01ms !important;
+	animation-iteration-count: 1 !important;
+	transition-duration: 0.01ms !important;
+	scroll-behavior: auto !important;
+}
+

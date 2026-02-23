@@ -90,4 +90,32 @@ export const productRouter = router({
             orderBy: { createdAt: 'desc' },
         });
     }),
+
+    matchTariffNames: publicProcedure
+        .input(z.object({ tariffNames: z.array(z.string()) }))
+        .query(async ({ input }) => {
+            const allProducts = await prisma.product.findMany({
+                where: { isActive: true },
+                select: { id: true, name: true, category: true },
+            });
+
+            return input.tariffNames.map((tariffName) => {
+                // The availability name is like "MagentaZuhause XL (250/40 MBit/s) [POTS- Kupfer]"
+                // The DB product name is like "MagentaZuhause XL"
+                // Match if the availability name starts with the product name (case-insensitive)
+                const lower = tariffName.toLowerCase();
+                const match = allProducts.find(
+                    (p) =>
+                        lower.startsWith(p.name.toLowerCase()) ||
+                        lower.includes(p.name.toLowerCase())
+                );
+                return {
+                    tariffName,
+                    matched: !!match,
+                    product: match
+                        ? { id: match.id, name: match.name, category: match.category }
+                        : null,
+                };
+            });
+        }),
 });
