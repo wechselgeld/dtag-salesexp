@@ -23,7 +23,8 @@ import {
 	PiggyBank,
 	UserPlus,
 	ShoppingCart,
-	Tv
+	Tv,
+	MessageSquare
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -48,7 +49,7 @@ const STEPS: Step[] = [
 		targetId: "tour-sidebar",
 		title: "Workflow-Navigation",
 		content:
-			'Hier behältst Du den Überblick über den Beratungsprozess. Du kannst von jeder Seite aus auf "Auswahl" klicken, um zur Startseite zu gelangen.',
+			'Hier behältst Du den Überblick über den Beratungsprozess. Du kannst von jeder Seite aus auf "Startseite" klicken, um zur Startseite zu gelangen.',
 		icon: LayoutGrid,
 		position: "right"
 	},
@@ -77,6 +78,14 @@ const STEPS: Step[] = [
 		position: "right"
 	},
 	{
+		targetId: "tour-nps",
+		title: "NPS-Erinnerung",
+		content:
+			"Vergiss nie wieder, Deine Kunden nach dem Gespräch auf die SMS-Umfrage hinzuweisen! Hier findest Du auch Formulierungshilfen. Klicke den Button, wenn Du den Hinweis gegeben hast.",
+		icon: MessageSquare,
+		position: "right"
+	},
+	{
 		targetId: "tour-admin",
 		title: "Verwaltung",
 		content:
@@ -96,7 +105,7 @@ const STEPS: Step[] = [
 		targetId: "tour-categories",
 		title: "Produktauswahl",
 		content:
-			"Wähle in der Mitte die passende Kategorie für Deinen Kunden aus. Im Team-Fokus siehst Du die aktuellen Empfehlungen.",
+			"Wähle in der Mitte die passende Kategorie für Deinen Kunden aus. Im Team-Fokus siehst Du die aktuellen Teamziele.",
 		icon: LayoutGrid,
 		position: "top"
 	},
@@ -104,7 +113,7 @@ const STEPS: Step[] = [
 		targetId: "tour-product-0",
 		title: "Tarif auswählen",
 		content:
-			"Nachdem Du eine Kategorie gewählt hast, siehst Du alle verfügbaren Tarife. Klicke auf einen Tarif, um ihn zu konfigurieren. Du kannst nach Name filtern oder nach Preis sortieren.",
+			"Nachdem Du eine Kategorie gewählt hast, siehst Du alle verfügbaren Tarife. Klicke auf einen Tarif, um ihn zu konfigurieren. Du kannst auch nach Name, Preis oder Geschwindigkeit sortieren.",
 		icon: MousePointerClick,
 		position: "right"
 	},
@@ -112,15 +121,14 @@ const STEPS: Step[] = [
 		targetId: "tour-config-business-case",
 		title: "Vertragsart",
 		content:
-			"Wähle hier, ob es sich um einen Neuvertrag, eine Vertragsverlängerung oder einen Anbieterwechsel handelt.",
+			"Wähle hier, ob es sich um einen Neuvertrag, einen Tarifwechsel, SpeedUp oder einen Umzug handelt.",
 		icon: FileText,
 		position: "right"
 	},
 	{
 		targetId: "tour-config-entertainment",
 		title: "MagentaTV buchen",
-		content:
-			"Hier kannst Du MagentaTV direkt zum Tarif hinzubuchen – inklusive Paketauswahl wie MagentaTV Smart, Netflix oder Disney+.",
+		content: "Hier kannst Du MagentaTV direkt zum Tarif hinzubuchen.",
 		icon: Tv,
 		position: "right"
 	},
@@ -128,7 +136,7 @@ const STEPS: Step[] = [
 		targetId: "tour-config-special-prices",
 		title: "Aktionen & Rabatte",
 		content:
-			"Wende hier aktive Marketing-Aktionen an, wie z.B. einen Cashback oder den MagentaEINS-Vorteil.",
+			"Wende hier aktive Aktionen an, wie z.B. einen Cashback oder Rabatte an.",
 		icon: Tag,
 		position: "right"
 	},
@@ -136,7 +144,7 @@ const STEPS: Step[] = [
 		targetId: "tour-config-addons",
 		title: "Zusatzoptionen",
 		content:
-			"Buche Optionen wie Netflix oder Disney+ direkt mit einem Klick dazu.",
+			"Buche Optionen wie Streamingdienste, Leistungsmerkmale und mehr dazu.",
 		icon: PlusCircle,
 		position: "right"
 	},

@@ -59,6 +59,7 @@ model Product {
 
   features     String? // JSON string
   targetGroups String? // JSON string array of target groups e.g. ["student", "family"]
+  salesScript  String? // Text for sales agents
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -25,10 +25,6 @@ const FAQ_ITEMS = [
 		a: "Sonderpreise sind zeitlich begrenzte Aktionspreise, die für bestimmte Vertragsmonate gelten. Du kannst jeweils einen Sonderpreis pro Tarif auswählen. Die Ersparnis wird in der Kostenübersicht automatisch berücksichtigt."
 	},
 	{
-		q: "Was ist das MagentaTV Bundle?",
-		a: "Bei ausgewählten Festnetz-Tarifen kannst Du MagentaTV als Kombivorteil hinzubuchen. Dies reduziert den monatlichen TV-Preis und wird automatisch in die Gesamtkosten einberechnet."
-	},
-	{
 		q: "Wie setze ich meine Sitzung zurück?",
 		a: "Klicke auf 'Sitzung zurücksetzen' in der Sidebar. Dies leert den Warenkorb und setzt alle Konfigurationen zurück, sodass Du von vorne beginnen kannst."
 	},

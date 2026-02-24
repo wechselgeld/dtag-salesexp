@@ -48,6 +48,8 @@ export type Product = {
     deviceManufacturer?: string | null;
     purchasePrice?: number | null;
     rentalPrice?: number | null;
+
+    salesScript?: string | null;
 };
 
 export type BusinessCase = 'NEW_ACTIVATION' | 'MOVE' | 'PLAN_CHANGE' | 'SPEED_UP';

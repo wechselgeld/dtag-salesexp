@@ -744,6 +744,73 @@ const COMPETITORS: Competitor[] = [
 	}
 ];
 
+interface Objection {
+	id: string;
+	title: string;
+	coreArgument: string;
+	exampleText: string;
+	tip: string;
+	icon: React.ElementType;
+}
+
+const OBJECTIONS: Objection[] = [
+	{
+		id: "too-expensive",
+		title: "„Zu teuer“",
+		coreArgument:
+			"Tagespreis-Rechnung, Gegenüberstellung Einzelkosten, Mehrwert",
+		exampleText:
+			"„Ich verstehe, dass der Preis im ersten Moment hoch wirkt. Wenn wir es aber mal auf den Tag herunterrechnen, sprechen wir hier von wenigen Cent. Dafür bekommen Sie das Telekom-Premiumnetz und sparen sich den Ärger. Ist das nicht den kleinen Aufpreis wert?“",
+		tip: "Zuerst Verständnis zeigen. Dann von Gesamtkosten in kleinere, greifbare Einheiten (z.B. Tagespreis) wechseln.",
+		icon: DollarSign
+	},
+	{
+		id: "dont-need-it",
+		title: "„Brauche ich nicht“",
+		coreArgument: "Bedarfsweckung, aktuelle Nutzung hinterfragen",
+		exampleText:
+			"„Das höre ich oft. Dachte ich anfangs auch. Haben Sie schon mal erlebt, dass abends das Bild ruckelt? Genau hier hilft nämlich diese Lösung, damit das nicht mehr passiert.“",
+		tip: "Fragen stellen, statt zu argumentieren: „Wie nutzen Sie aktuell...?“, „Was machen Sie, wenn...?“",
+		icon: EyeOff
+	},
+	{
+		id: "need-to-think",
+		title: "„Muss drüber nachdenken“",
+		coreArgument: "Zeitdruck, Angebot anbieten",
+		exampleText:
+			"„Verstehe ich absolut. Nur zur Info: Die aktuelle Aktion gilt nur noch diese Woche. Sollen wir das heute schon mal fertig machen und Sie haben noch ein Widerrufsrecht, falls Sie es sich anders überlegen?“",
+		tip: "Einwand abfedern, aber Dringlichkeit aufbauen (FOMO = Fear of missing out).",
+		icon: Clock
+	},
+	{
+		id: "im-satisfied",
+		title: "„Bin zufrieden“",
+		coreArgument: "Verbesserungspotential zeigen, Vergleich Alt vs. Neu",
+		exampleText:
+			"„Das freut mich sehr, Herr [Name]. Deswegen melde ich mich auch. Als treuer Kunde haben sich über die Jahre Ihre Konditionen etwas überholt – ich kann Ihnen heute für fast das gleiche Geld die vierfache Leistung anbieten.“",
+		tip: "Zufriedenheit loben, aber Weiterentwicklung (Update) schmackhaft machen.",
+		icon: CheckCircle2
+	},
+	{
+		id: "in-contract",
+		title: "„Bin noch im Vertrag“",
+		coreArgument: "Vormerkung, MagentaEINS-Vorteil, Wechselzeitpunkt",
+		exampleText:
+			"„Kein Problem! Das ist sogar perfekt. Wir können den Wechsel jetzt schon kostenlos reservieren, Sie sichern sich die heutigen Aktionspreise, und wir kümmern uns automatisch im Hintergrund um die problemlose Kündigung beim alten Anbieter, sobald die Zeit reif ist.“",
+		tip: "Kunden die Angst vor dem 'Doppelt-Zahlen' nehmen und auf Bequemlichkeit hinweisen.",
+		icon: Lock
+	},
+	{
+		id: "competitor-cheaper",
+		title: "„Wettbewerber ist günstiger“",
+		coreArgument: "Lösung: Überleitung zu Battlecards",
+		exampleText:
+			"„Da haben Sie recht, auf dem Papier sieht das günstiger aus. Aber wissen Sie auch, woran dort gespart wird? Oft ist es die Netzqualität am Abend oder der Kundenservice. Welcher Anbieter ist es denn genau?“",
+		tip: "Sofort in die Analyse gehen ('Welcher Anbieter?') und dann ins Battlecard-Panel (Tab: Wettbewerb) wechseln.",
+		icon: AlertTriangle
+	}
+];
+
 // ─── Modal Component ─────────────────────────────────────────────
 
 interface BattlecardModalProps {
@@ -752,6 +819,9 @@ interface BattlecardModalProps {
 }
 
 export function BattlecardModal({ isOpen, onClose }: BattlecardModalProps) {
+	const [activeTab, setActiveTab] = useState<"battlecards" | "objections">(
+		"battlecards"
+	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedCompetitor, setSelectedCompetitor] =
 		useState<Competitor | null>(null);
@@ -763,11 +833,19 @@ export function BattlecardModal({ isOpen, onClose }: BattlecardModalProps) {
 	// Focus search on open
 	useEffect(() => {
 		if (isOpen) {
+			setActiveTab("battlecards");
 			setSelectedCompetitor(null);
 			setSearchQuery("");
 			setTimeout(() => searchRef.current?.focus(), 100);
 		}
 	}, [isOpen]);
+
+	// Focus search on tab change to battlecards
+	useEffect(() => {
+		if (isOpen && activeTab === "battlecards" && !selectedCompetitor) {
+			setTimeout(() => searchRef.current?.focus(), 100);
+		}
+	}, [isOpen, activeTab, selectedCompetitor]);
 
 	const filteredCompetitors = useMemo(() => {
 		if (!searchQuery.trim()) return COMPETITORS;
@@ -785,6 +863,18 @@ export function BattlecardModal({ isOpen, onClose }: BattlecardModalProps) {
 						a.title.toLowerCase().includes(q) ||
 						a.detail.toLowerCase().includes(q)
 				)
+		);
+	}, [searchQuery]);
+
+	const filteredObjections = useMemo(() => {
+		if (!searchQuery.trim()) return OBJECTIONS;
+		const q = searchQuery.toLowerCase();
+		return OBJECTIONS.filter(
+			(o) =>
+				o.title.toLowerCase().includes(q) ||
+				o.coreArgument.toLowerCase().includes(q) ||
+				o.exampleText.toLowerCase().includes(q) ||
+				o.tip.toLowerCase().includes(q)
 		);
 	}, [searchQuery]);
 
@@ -823,18 +913,26 @@ export function BattlecardModal({ isOpen, onClose }: BattlecardModalProps) {
 									</button>
 								)}
 								<div className="w-12 h-12 rounded-2xl bg-[#e20074]/10 text-[#e20074] flex items-center justify-center">
-									<Swords className="w-6 h-6" />
+									{activeTab === "objections" ? (
+										<Shield className="w-6 h-6" />
+									) : (
+										<Swords className="w-6 h-6" />
+									)}
 								</div>
 								<div>
 									<h2 className="text-[1.2rem] font-extrabold text-[#1a1a2e] mb-0.5 tracking-tight">
-										{selectedCompetitor
-											? `vs. ${selectedCompetitor.name}`
-											: "Wettbewerbs\u2011Battlecards"}
+										{activeTab === "objections"
+											? "Einwandbehandlung"
+											: selectedCompetitor
+												? `vs. ${selectedCompetitor.name}`
+												: "Battlecards"}
 									</h2>
 									<p className="text-[0.85rem] text-[#888] font-medium m-0">
-										{selectedCompetitor
-											? "Warum Telekom die bessere Wahl ist"
-											: "Argumente gegen den Wettbewerb"}
+										{activeTab === "objections"
+											? "Reaktionen auf häufige Kundeneinwände"
+											: selectedCompetitor
+												? "Warum Telekom die bessere Wahl ist"
+												: "Argumente gegen den Wettbewerb"}
 									</p>
 								</div>
 							</div>
@@ -846,9 +944,37 @@ export function BattlecardModal({ isOpen, onClose }: BattlecardModalProps) {
 							</button>
 						</div>
 
-						{/* Search (only on list view) */}
+						{/* Tabs */}
 						{!selectedCompetitor && (
-							<div className="px-8 pt-5 pb-2">
+							<div className="px-8 pt-4 pb-0 flex items-center gap-6 border-b border-[#f0f0f0] bg-white shrink-0">
+								<button
+									onClick={() => setActiveTab("battlecards")}
+									className={clsx(
+										"pb-3 text-[0.9rem] font-bold transition-colors border-b-2 cursor-pointer",
+										activeTab === "battlecards"
+											? "border-[#e20074] text-[#1a1a2e]"
+											: "border-transparent text-[#999] hover:text-[#555]"
+									)}
+								>
+									Wettbewerb
+								</button>
+								<button
+									onClick={() => setActiveTab("objections")}
+									className={clsx(
+										"pb-3 text-[0.9rem] font-bold transition-colors border-b-2 cursor-pointer",
+										activeTab === "objections"
+											? "border-[#e20074] text-[#1a1a2e]"
+											: "border-transparent text-[#999] hover:text-[#555]"
+									)}
+								>
+									Einwände
+								</button>
+							</div>
+						)}
+
+						{/* Search (only on list view, both tabs) */}
+						{!selectedCompetitor && (
+							<div className="px-8 pt-5 pb-2 shrink-0">
 								<div className="relative">
 									<Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#bbb] pointer-events-none" />
 									<input
@@ -856,7 +982,11 @@ export function BattlecardModal({ isOpen, onClose }: BattlecardModalProps) {
 										type="text"
 										value={searchQuery}
 										onChange={(e) => setSearchQuery(e.target.value)}
-										placeholder={"Suche nach einem Anbieter"}
+										placeholder={
+											activeTab === "objections"
+												? "Suche nach Einwänden..."
+												: "Suche nach einem Anbieter..."
+										}
 										className="w-full pl-11 pr-10 py-3.5 rounded-2xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] text-[#1a1a2e] placeholder:text-[#bbb] focus:outline-none focus:ring-2 focus:ring-[#e20074]/15 focus:border-[#e20074]/25 transition-all"
 									/>
 									{searchQuery && (
@@ -873,7 +1003,12 @@ export function BattlecardModal({ isOpen, onClose }: BattlecardModalProps) {
 
 						{/* Content */}
 						<div className="flex-1 overflow-y-auto px-8 py-5">
-							{selectedCompetitor ? (
+							{activeTab === "objections" ? (
+								<ObjectionList
+									objections={filteredObjections}
+									query={searchQuery}
+								/>
+							) : selectedCompetitor ? (
 								<CompetitorDetail competitor={selectedCompetitor} />
 							) : (
 								<CompetitorList
@@ -1078,6 +1213,83 @@ function CompetitorDetail({ competitor }: { competitor: Competitor }) {
 					</div>
 				</div>
 			</div>
+		</div>
+	);
+}
+
+// ─── Objection List ──────────────────────────────────────────────
+
+function ObjectionList({
+	objections,
+	query
+}: {
+	objections: Objection[];
+	query: string;
+}) {
+	if (objections.length === 0) {
+		return (
+			<div className="flex flex-col items-center justify-center py-16 text-center">
+				<div className="w-14 h-14 rounded-full bg-[#f7f8fa] flex items-center justify-center mb-4">
+					<Search className="w-6 h-6 text-[#ddd]" />
+				</div>
+				<p className="text-[0.95rem] text-[#999] font-semibold m-0">
+					Kein Einwand gefunden
+				</p>
+				<p className="text-[0.8rem] text-[#ccc] mt-1 m-0">
+					Suche nach bestimmten Stichworten
+				</p>
+			</div>
+		);
+	}
+
+	return (
+		<div className="flex flex-col gap-4">
+			{query && (
+				<p className="text-[0.75rem] text-[#bbb] m-0 mb-1 px-1 -mt-2">
+					{objections.length} Ergebnis
+					{objections.length !== 1 ? "se" : ""} für &ldquo;{query}&rdquo;
+				</p>
+			)}
+			{objections.map((objection, i) => (
+				<motion.div
+					key={objection.id}
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: i * 0.05 }}
+					className="w-full flex flex-col gap-3 px-6 py-5 rounded-2xl border border-[#eaedf0] bg-white hover:border-[#e20074]/25 hover:shadow-[0_4px_20px_-8px_rgba(226,0,116,0.15)] transition-all duration-200 group"
+				>
+					{/* Header */}
+					<div className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-xl bg-[#f7f8fa] flex items-center justify-center shrink-0 group-hover:bg-[#e20074]/10 transition-colors duration-300">
+							<objection.icon className="w-5 h-5 text-[#888] group-hover:text-[#e20074] transition-colors duration-300" />
+						</div>
+						<div>
+							<h3 className="text-[1rem] font-bold text-[#1a1a2e] m-0 leading-tight">
+								{objection.title}
+							</h3>
+							<p className="text-[0.75rem] font-semibold text-[#e20074] uppercase tracking-wider m-0 mt-0.5">
+								{objection.coreArgument}
+							</p>
+						</div>
+					</div>
+
+					{/* Body / Example text */}
+					<div className="pl-[52px]">
+						<div className="relative bg-[#fcfcfc] border border-[#f0f0f0] rounded-xl p-4 text-[0.88rem] text-[#444] leading-relaxed mb-3">
+							<div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1.5 w-3 h-3 bg-[#fcfcfc] border-l border-b border-[#f0f0f0] rotate-45" />
+							{objection.exampleText}
+						</div>
+
+						{/* Tip */}
+						<div className="flex gap-2.5 items-start">
+							<div className="min-w-fit mt-0.5 text-[0.85rem]">💡</div>
+							<p className="text-[0.8rem] text-[#888] m-0 leading-snug">
+								<strong className="text-[#555]">Tipp:</strong> {objection.tip}
+							</p>
+						</div>
+					</div>
+				</motion.div>
+			))}
 		</div>
 	);
 }

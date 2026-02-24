@@ -39,7 +39,8 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 		rentalPrice: initialData?.rentalPrice || 0,
 		features: initialData?.features || [],
 		targetGroups: initialData?.targetGroups || [],
-		salesArguments: initialData?.salesArguments?.map((a: any) => a.text) || []
+		salesArguments: initialData?.salesArguments?.map((a: any) => a.text) || [],
+		salesScript: initialData?.salesScript || ""
 	});
 
 	const [newFeature, setNewFeature] = useState("");
@@ -179,6 +180,20 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 							}
 							className="w-full px-4 py-2 rounded-xl border border-zinc-200 bg-zinc-50 focus:ring-2 focus:ring-magenta-500 outline-none min-h-[80px]"
 							placeholder="Kurze Beschreibung des Tarifs..."
+						/>
+					</div>
+
+					<div>
+						<label className="block text-sm font-medium text-zinc-700 mb-1">
+							Gesprächsleitfaden / Überleitung (Sales Script)
+						</label>
+						<textarea
+							value={formData.salesScript || ""}
+							onChange={(e) =>
+								setFormData({ ...formData, salesScript: e.target.value })
+							}
+							className="w-full px-4 py-2 rounded-xl border border-zinc-200 bg-zinc-50 focus:ring-2 focus:ring-magenta-500 outline-none min-h-[100px]"
+							placeholder="z.B. „Herr [Name], ich sehe, dass Ihr aktueller Vertrag noch mit DSL 50 läuft...“"
 						/>
 					</div>
 

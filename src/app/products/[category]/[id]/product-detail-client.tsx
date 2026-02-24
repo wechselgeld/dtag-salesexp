@@ -24,7 +24,10 @@ import {
 	Smartphone,
 	Plus,
 	Minus,
-	Sparkles
+	Sparkles,
+	MessageSquare,
+	ChevronDown,
+	ListTodo
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -83,6 +86,8 @@ function ProductPageContent() {
 		plusKartenCount,
 		setPlusKartenCount
 	} = useCostCalculator(product);
+
+	const [salesScriptOpen, setSalesScriptOpen] = React.useState(false);
 
 	useEffect(() => {
 		if (basketItemId && product && items) {
@@ -301,6 +306,77 @@ function ProductPageContent() {
 			<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start pb-10">
 				{/* LEFT: Configuration Flow */}
 				<div className="space-y-4">
+					{/* Sales Script Assistant */}
+					{(product as any)?.salesScript && (
+						<ConfigSection
+							title="Überleitung & Tipps"
+							catColor={catColor}
+							index={0}
+						>
+							<div className="rounded-xl border border-[#eaedf0] bg-[#fafafa] overflow-hidden transition-all duration-300">
+								<button
+									onClick={() => setSalesScriptOpen(!salesScriptOpen)}
+									className="w-full flex items-center justify-between p-4 cursor-pointer outline-none hover:bg-[#f0f0f0]/50 transition-colors"
+								>
+									<div className="flex items-center gap-3">
+										<div
+											className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200"
+											style={{
+												backgroundColor: salesScriptOpen ? catColor : "white",
+												color: salesScriptOpen ? "white" : catColor,
+												border: salesScriptOpen
+													? "none"
+													: `1px solid ${catColor}30`,
+												boxShadow: salesScriptOpen
+													? `0 4px 12px ${catColor}40`
+													: "none"
+											}}
+										>
+											<ListTodo
+												className="w-5 h-5"
+												strokeWidth={salesScriptOpen ? 2 : 1.5}
+											/>
+										</div>
+										<div className="text-left">
+											<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] mb-0.5 tracking-tight flex items-center gap-1.5">
+												Gesprächsleitfaden
+											</h3>
+											<p className="text-[0.75rem] text-[#888] font-medium m-0">
+												Empfohlene Argumentation
+											</p>
+										</div>
+									</div>
+									<div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-[#eaedf0] shadow-sm">
+										<ChevronDown
+											className={clsx(
+												"w-4 h-4 text-[#888] transition-transform duration-300",
+												salesScriptOpen ? "rotate-180" : ""
+											)}
+										/>
+									</div>
+								</button>
+								<motion.div
+									initial={false}
+									animate={{
+										height: salesScriptOpen ? "auto" : 0,
+										opacity: salesScriptOpen ? 1 : 0
+									}}
+									transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+									className="overflow-hidden"
+								>
+									<div className="px-4 pb-4 pt-1">
+										<div className="bg-white rounded-xl p-4 border border-[#eaedf0] shadow-sm relative">
+											<div className="absolute top-0 right-10 w-px h-full bg-linear-to-b from-transparent via-[#e20074]/10 to-transparent pointer-events-none" />
+											<p className="text-[0.9rem] leading-relaxed text-[#444] whitespace-pre-wrap m-0 font-medium font-serif italic relative z-10">
+												{(product as any).salesScript}
+											</p>
+										</div>
+									</div>
+								</motion.div>
+							</div>
+						</ConfigSection>
+					)}
+
 					{/* Hardware Kaufart (Only for DEVICE) */}
 					{product.category === "DEVICE" && (
 						<ConfigSection

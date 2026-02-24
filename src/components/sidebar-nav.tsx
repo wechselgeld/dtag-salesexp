@@ -15,14 +15,15 @@ import {
 	Swords,
 	ChevronLeft,
 	ChevronRight,
-	Check
+	Check,
+	MessageSquare
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useBasketStore } from "@/hooks/use-basket-store";
 import { useModalStore } from "@/hooks/use-modal-store";
 import clsx from "clsx";
-import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: "#e20074",
@@ -72,6 +73,26 @@ export function SidebarNav() {
 
 	const [collapsed, setCollapsed] = useState(false);
 	const [resetConfirm, setResetConfirm] = useState(false);
+	const [npsChecked, setNpsChecked] = useState(false);
+	const [npsResetting, setNpsResetting] = useState(false);
+	const [npsHovered, setNpsHovered] = useState(false);
+	const npsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// Auto-reset NPS after 2 minutes with animation
+	useEffect(() => {
+		if (npsChecked) {
+			npsTimerRef.current = setTimeout(() => {
+				setNpsResetting(true);
+				setTimeout(() => {
+					setNpsChecked(false);
+					setNpsResetting(false);
+				}, 600);
+			}, 120000);
+		}
+		return () => {
+			if (npsTimerRef.current) clearTimeout(npsTimerRef.current);
+		};
+	}, [npsChecked]);
 
 	// Determine current step from route
 	const isHome = pathname === "/" || pathname === "/products";
@@ -147,6 +168,8 @@ export function SidebarNav() {
 		clearBasket();
 		router.push("/");
 		setResetConfirm(false);
+		setNpsChecked(false);
+		if (npsTimerRef.current) clearTimeout(npsTimerRef.current);
 	};
 
 	const sidebarWidth = collapsed ? 72 : 260;
@@ -169,7 +192,7 @@ export function SidebarNav() {
 		{
 			id: "tour-battlecards",
 			icon: Swords,
-			label: "Wettbewerbs\u2011Battlecards",
+			label: "Battlecards",
 			onClick: () => setBattlecardOpen(true),
 			type: "button" as const
 		},
@@ -183,7 +206,7 @@ export function SidebarNav() {
 		{
 			id: "faq-link",
 			icon: HelpCircle,
-			label: "FAQ",
+			label: "Hilfe & FAQ",
 			href: "/faq",
 			type: "link" as const
 		},
@@ -501,6 +524,144 @@ export function SidebarNav() {
 						);
 					})}
 				</div>
+
+				{/* NPS Reminder */}
+				<Tooltip
+					label={npsChecked ? "NPS ✓" : "NPS-Hinweis geben"}
+					show={collapsed}
+				>
+					<div
+						id="tour-nps"
+						className="relative mb-2 w-full flex flex-col justify-end"
+						onMouseEnter={() => setNpsHovered(true)}
+						onMouseLeave={() => setNpsHovered(false)}
+					>
+						{/* Inline Expandable Example Text (opens upwards) */}
+						{!collapsed && (
+							<AnimatePresence>
+								{npsHovered && !npsChecked && (
+									<motion.div
+										initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+										animate={{ height: "auto", opacity: 1, marginBottom: 8 }}
+										exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+										transition={{ duration: 0.2 }}
+										className="overflow-hidden"
+									>
+										<div className="bg-[#fff7ed]/80 border border-[#fed7aa] p-3 rounded-xl text-[0.7rem] text-[#ea580c] leading-relaxed relative mx-0.5">
+											<div className="font-bold flex items-center gap-1.5 mb-1.5">
+												<span className="text-[0.8rem]">💡</span>
+												Beispielformulierung:
+											</div>
+											„Sie erhalten morgen eine SMS von uns. Sie werden
+											gefragt...
+											<br />- ...ob wir Ihr <strong>Anliegen lösen</strong>{" "}
+											konnten
+											<br />- ...ob ich Ihnen{" "}
+											<strong>ein Angebot gemacht</strong> habe
+											<br />- ...und wie Sie das Gespräch mit mir fanden.
+											<br />
+											<strong>
+												1 bis 8 bedeutet dort, dass es Ihnen nicht gefallen hat
+												und 9 bis 10 bedeutet, dass Sie es gern wieder mit mir
+												führen würden!
+											</strong>
+											<br />
+											Ich würde mich freuen, wenn Sie sich kurz Zeit dafür
+											nehmen.“
+										</div>
+									</motion.div>
+								)}
+							</AnimatePresence>
+						)}
+
+						<motion.button
+							onClick={() => {
+								if (npsTimerRef.current) clearTimeout(npsTimerRef.current);
+								setNpsResetting(false);
+								setNpsChecked(!npsChecked);
+							}}
+							animate={
+								npsResetting
+									? {
+											scale: [1, 1.05, 0.95, 1.05, 1],
+											rotate: [0, -2, 2, -1, 0]
+										}
+									: { scale: 1, rotate: 0 }
+							}
+							transition={{ duration: 0.5 }}
+							className={clsx(
+								"w-full flex items-center justify-between gap-2.5 rounded-xl transition-all duration-300 cursor-pointer border overflow-hidden whitespace-nowrap relative z-10 shrink-0",
+								collapsed ? "w-9 h-9 justify-center mx-auto p-0" : "px-3 py-2",
+								npsResetting && "animate-pulse",
+								npsChecked
+									? "bg-[#dcfce7]/50 border-[#86efac] text-[#16a34a]"
+									: "bg-[#fff7ed]/60 border-[#fed7aa] text-[#ea580c] hover:bg-[#fff7ed] hover:border-[#fb923c]"
+							)}
+						>
+							<div className="flex items-center gap-2.5">
+								{npsChecked ? (
+									<Check
+										className={clsx(
+											"shrink-0",
+											collapsed ? "w-4 h-4" : "w-3.5 h-3.5"
+										)}
+										strokeWidth={2.5}
+									/>
+								) : (
+									<MessageSquare
+										className={clsx(
+											"shrink-0",
+											collapsed ? "w-4 h-4" : "w-3.5 h-3.5"
+										)}
+									/>
+								)}
+								<span
+									className="text-[0.72rem] font-semibold transition-opacity duration-200 truncate"
+									style={{
+										opacity: collapsed ? 0 : 1,
+										width: collapsed ? 0 : "auto",
+										overflow: "hidden"
+									}}
+								>
+									{npsChecked ? "NPS erledigt. Top!" : "Auf NPS hingewiesen?"}
+								</span>
+							</div>
+
+							{/* Loading Circle for the 2-Minute Timer */}
+							{npsChecked && !collapsed && (
+								<div className="w-4 h-4 relative shrink-0">
+									<svg
+										className="w-full h-full -rotate-90"
+										style={{ color: "#22c55e" }}
+										viewBox="0 0 20 20"
+									>
+										<circle
+											cx="10"
+											cy="10"
+											r="8"
+											stroke="currentColor"
+											strokeWidth="2.5"
+											fill="none"
+											className="opacity-20"
+										/>
+										<motion.circle
+											cx="10"
+											cy="10"
+											r="8"
+											stroke="currentColor"
+											strokeWidth="2.5"
+											fill="none"
+											strokeDasharray={2 * Math.PI * 8}
+											initial={{ strokeDashoffset: 0 }}
+											animate={{ strokeDashoffset: 2 * Math.PI * 8 }}
+											transition={{ duration: 120, ease: "linear" }}
+										/>
+									</svg>
+								</div>
+							)}
+						</motion.button>
+					</div>
+				</Tooltip>
 
 				{/* Reset button */}
 				<Tooltip label="Sitzung zurücksetzen" show={collapsed}>

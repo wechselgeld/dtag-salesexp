@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -15,7 +15,11 @@ import {
 	HeartHandshake,
 	Gamepad2,
 	Briefcase,
-	Asterisk
+	Asterisk,
+	ArrowUpDown,
+	ArrowUp,
+	ArrowDown,
+	Check
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -28,9 +32,11 @@ export default function ProductListPage() {
 	const category = params.category as string;
 	const [expandedArgId, setExpandedArgId] = useState<string | null>(null);
 	const [activeFilterId, setActiveFilterId] = useState<string | null>(null);
+	const [sortMenuOpen, setSortMenuOpen] = useState(false);
+	const sortRef = useRef<HTMLDivElement>(null);
 
 	const utils = trpc.useUtils();
-	const { compactView } = useSettingsStore();
+	const { compactView, sortOption, setSortOption } = useSettingsStore();
 
 	const { data: session } = trpc.session.getCurrent.useQuery();
 
@@ -112,11 +118,57 @@ export default function ProductListPage() {
 	);
 	const activeFilter = FILTER_PRESETS.find((f) => f.id === activeFilterId);
 
-	const filteredProducts =
-		products?.filter((p) => {
-			if (!activeFilter) return true;
-			return activeFilter.predicate(p);
-		}) || [];
+	const SORT_OPTIONS = [
+		{ id: "default", label: "Standard", icon: ArrowUpDown },
+		{ id: "name-asc", label: "Name (A → Z)", icon: ArrowUp },
+		{ id: "name-desc", label: "Name (Z → A)", icon: ArrowDown },
+		{ id: "price-asc", label: "Preis (aufsteigend)", icon: ArrowUp },
+		{ id: "price-desc", label: "Preis (absteigend)", icon: ArrowDown },
+		{ id: "speed-asc", label: "Geschwindigkeit (aufsteigend)", icon: ArrowUp },
+		{ id: "speed-desc", label: "Geschwindigkeit (absteigend)", icon: ArrowDown }
+	];
+
+	const activeSortOption = SORT_OPTIONS.find((s) => s.id === sortOption);
+
+	// Close sort menu on outside click
+	useEffect(() => {
+		function handleClickOutside(e: MouseEvent) {
+			if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+				setSortMenuOpen(false);
+			}
+		}
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, []);
+
+	const filteredProducts = useMemo(() => {
+		const filtered =
+			products?.filter((p) => {
+				if (!activeFilter) return true;
+				return activeFilter.predicate(p);
+			}) || [];
+
+		if (sortOption === "default") return filtered;
+
+		return [...filtered].sort((a, b) => {
+			switch (sortOption) {
+				case "name-asc":
+					return a.name.localeCompare(b.name, "de");
+				case "name-desc":
+					return b.name.localeCompare(a.name, "de");
+				case "price-asc":
+					return (a.basePrice ?? 0) - (b.basePrice ?? 0);
+				case "price-desc":
+					return (b.basePrice ?? 0) - (a.basePrice ?? 0);
+				case "speed-asc":
+					return (a.downloadSpeed ?? 0) - (b.downloadSpeed ?? 0);
+				case "speed-desc":
+					return (b.downloadSpeed ?? 0) - (a.downloadSpeed ?? 0);
+				default:
+					return 0;
+			}
+		});
+	}, [products, activeFilter, sortOption]);
 
 	return (
 		<div className="min-h-full">
@@ -150,74 +202,147 @@ export default function ProductListPage() {
 				</p>
 			</motion.div>
 
-			{/* Filters */}
-			{visibleFilters.length > 0 && (
-				<div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-					<div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none">
-						{visibleFilters.map((filter) => (
-							<button
-								key={filter.id}
-								onClick={() =>
-									setActiveFilterId(
-										activeFilterId === filter.id ? null : filter.id
-									)
-								}
+			{/* Filters + Sorting */}
+			<div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500 relative z-20">
+				<div className="flex items-center gap-2 flex-wrap pb-4">
+					{/* Filter Pills */}
+					{visibleFilters.map((filter) => (
+						<button
+							key={filter.id}
+							onClick={() =>
+								setActiveFilterId(
+									activeFilterId === filter.id ? null : filter.id
+								)
+							}
+							className={clsx(
+								"flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border whitespace-nowrap transition-all duration-200 cursor-pointer outline-none",
+								activeFilterId === filter.id
+									? "text-white shadow-md"
+									: "bg-white border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]"
+							)}
+							style={{
+								backgroundColor:
+									activeFilterId === filter.id ? catColor : undefined,
+								borderColor: activeFilterId === filter.id ? catColor : undefined
+							}}
+						>
+							<filter.icon
 								className={clsx(
-									"flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border whitespace-nowrap transition-all duration-200 cursor-pointer outline-none",
-									activeFilterId === filter.id
-										? "text-white shadow-md"
-										: "bg-white border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]"
+									"w-4 h-4",
+									activeFilterId === filter.id ? "opacity-100" : "opacity-60"
 								)}
-								style={{
-									backgroundColor:
-										activeFilterId === filter.id ? catColor : undefined,
-									borderColor:
-										activeFilterId === filter.id ? catColor : undefined
-								}}
-							>
-								<filter.icon
-									className={clsx(
-										"w-4 h-4",
-										activeFilterId === filter.id ? "opacity-100" : "opacity-60"
-									)}
-								/>
-								<span className="font-semibold text-[0.8rem]">
-									{filter.label}
-								</span>
-							</button>
-						))}
-					</div>
+							/>
+							<span className="font-semibold text-[0.8rem]">
+								{filter.label}
+							</span>
+						</button>
+					))}
 
-					<AnimatePresence mode="popLayout">
-						{activeFilter && (
-							<motion.div
-								initial={{ opacity: 0, scale: 0.95, y: -10 }}
-								animate={{ opacity: 1, scale: 1, y: 0 }}
-								exit={{ opacity: 0, scale: 0.95, y: -10 }}
-								className="border px-5 py-4 rounded-2xl flex items-start gap-3 shadow-sm"
-								style={{
-									backgroundColor: `${catColor}1C`,
-									borderColor: `${catColor}59`,
-									color: catColor
-								}}
-							>
-								<Asterisk
-									className="w-10 h-10 mt-0.5 shrink-0"
-									strokeWidth={1.5}
-								/>
-								<div>
-									<h4 className="font-bold text-[0.85rem] mb-1">
-										Empfehlung für: {activeFilter.label}
-									</h4>
-									<p className="text-[0.85rem] m-0 leading-relaxed opacity-90">
-										{activeFilter.pitch}
-									</p>
-								</div>
-							</motion.div>
-						)}
-					</AnimatePresence>
+					{/* Separator */}
+					{visibleFilters.length > 0 && (
+						<div className="h-6 w-px bg-[#e0e0e0] mx-1 shrink-0" />
+					)}
+
+					{/* Sort Dropdown */}
+					<div className="relative shrink-0" ref={sortRef}>
+						<button
+							onClick={() => setSortMenuOpen(!sortMenuOpen)}
+							className={clsx(
+								"flex items-center gap-2 px-4 py-2.5 rounded-xl border whitespace-nowrap transition-all duration-200 cursor-pointer outline-none",
+								sortOption !== "default"
+									? "text-white shadow-md"
+									: "bg-white border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]"
+							)}
+							style={{
+								backgroundColor:
+									sortOption !== "default" ? catColor : undefined,
+								borderColor: sortOption !== "default" ? catColor : undefined
+							}}
+						>
+							<ArrowUpDown className="w-4 h-4" />
+							<span className="font-semibold text-[0.8rem]">
+								{activeSortOption?.label || "Sortieren"}
+							</span>
+							<ChevronDown
+								className={clsx(
+									"w-3.5 h-3.5 transition-transform duration-200",
+									sortMenuOpen ? "rotate-180" : ""
+								)}
+							/>
+						</button>
+
+						{/* Dropdown Menu */}
+						<AnimatePresence>
+							{sortMenuOpen && (
+								<motion.div
+									initial={{ opacity: 0, y: -8, scale: 0.96 }}
+									animate={{ opacity: 1, y: 0, scale: 1 }}
+									exit={{ opacity: 0, y: -8, scale: 0.96 }}
+									transition={{ duration: 0.15 }}
+									className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl border border-[#eaedf0] shadow-lg py-1.5 min-w-[220px]"
+								>
+									{SORT_OPTIONS.map((option) => (
+										<button
+											key={option.id}
+											onClick={() => {
+												setSortOption(option.id);
+												setSortMenuOpen(false);
+											}}
+											className={clsx(
+												"w-full flex items-center gap-3 px-4 py-2.5 text-left text-[0.8rem] font-medium transition-colors cursor-pointer outline-none",
+												sortOption === option.id
+													? "bg-[#f7f8fa]"
+													: "hover:bg-[#fafafa]"
+											)}
+											style={{
+												color: sortOption === option.id ? catColor : "#555"
+											}}
+										>
+											<option.icon className="w-3.5 h-3.5 shrink-0 opacity-70" />
+											<span className="flex-1">{option.label}</span>
+											{sortOption === option.id && (
+												<Check
+													className="w-3.5 h-3.5 shrink-0"
+													style={{ color: catColor }}
+												/>
+											)}
+										</button>
+									))}
+								</motion.div>
+							)}
+						</AnimatePresence>
+					</div>
 				</div>
-			)}
+
+				<AnimatePresence mode="popLayout">
+					{activeFilter && (
+						<motion.div
+							initial={{ opacity: 0, scale: 0.95, y: -10 }}
+							animate={{ opacity: 1, scale: 1, y: 0 }}
+							exit={{ opacity: 0, scale: 0.95, y: -10 }}
+							className="border px-5 py-4 rounded-2xl flex items-start gap-3 shadow-sm"
+							style={{
+								backgroundColor: `${catColor}1C`,
+								borderColor: `${catColor}59`,
+								color: catColor
+							}}
+						>
+							<Asterisk
+								className="w-10 h-10 mt-0.5 shrink-0"
+								strokeWidth={1.5}
+							/>
+							<div>
+								<h4 className="font-bold text-[0.85rem] mb-1">
+									Empfehlung für: {activeFilter.label}
+								</h4>
+								<p className="text-[0.85rem] m-0 leading-relaxed opacity-90">
+									{activeFilter.pitch}
+								</p>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
 
 			{/* Product Grid */}
 			<div className="pb-10">
