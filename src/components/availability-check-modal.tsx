@@ -17,6 +17,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { Skeleton } from "./skeleton";
 
 interface AvailabilityCheckModalProps {
 	isOpen: boolean;
@@ -49,21 +50,12 @@ function TariffMatchList({ tariffNames }: { tariffNames: string[] }) {
 					? tariffNames.map((name, i) => (
 							<div
 								key={i}
-								className="flex items-center justify-between p-3.5 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl animate-pulse"
+								className="flex items-center justify-between p-3.5 bg-white border border-[#eaedf0] rounded-xl"
 							>
-								<div className="flex items-center gap-3">
-									<div className="p-1.5 bg-white rounded-lg shadow-sm">
-										{name.toLowerCase().includes("glasfaser") ? (
-											<Zap className="w-3.5 h-3.5 text-[#0090d0]" />
-										) : (
-											<Wifi className="w-3.5 h-3.5 text-[#e20074]" />
-										)}
-									</div>
-									<span className="text-[0.85rem] font-bold text-[#1a1a2e]">
-										{name}
-									</span>
+								<div className="flex items-center gap-3 w-full">
+									<Skeleton className="w-8 h-8 rounded-lg shrink-0" />
+									<Skeleton className="h-4 w-1/2" />
 								</div>
-								<Loader2 className="w-4 h-4 text-[#ccc] animate-spin" />
 							</div>
 						))
 					: (matches ?? []).map((entry, i) => {

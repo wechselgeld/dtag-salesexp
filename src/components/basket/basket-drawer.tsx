@@ -19,13 +19,15 @@ import {
 	Check,
 	UserPlus,
 	Sparkles,
-	Settings2
+	Settings2,
+	RotateCcw
 } from "lucide-react";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { CombinedTimeline } from "./combined-timeline";
 import { CreditSelector } from "../calculator/credit-selector";
 import { trpc } from "@/lib/trpc";
+import { Skeleton } from "../skeleton";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNewsNotificationStore } from "@/lib/store/news-notification-store";
@@ -50,13 +52,23 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export function BasketDrawer() {
-	const { items, removeItem, clearBasket, basketCredits, setBasketCredits } =
-		useBasketStore();
+	const {
+		items,
+		removeItem,
+		restoreItem,
+		clearBasket,
+		basketCredits,
+		setBasketCredits
+	} = useBasketStore();
 	const router = useRouter();
 	const [creditsOpen, setCreditsOpen] = useState(false);
 	const [isGenerating, setIsGenerating] = useState<
 		"idle" | "generating" | "success"
 	>("idle");
+	const [deletedItem, setDeletedItem] = useState<{
+		item: BasketItem;
+		timeoutId: NodeJS.Timeout;
+	} | null>(null);
 
 	const { data: availableCredits } = trpc.product.getOneTimeCredits.useQuery();
 	const addNotification = useNewsNotificationStore(
@@ -64,6 +76,30 @@ export function BasketDrawer() {
 	);
 	const { clearAfterExport, offerTemplateText } = useSettingsStore();
 	const lastNudgeRef = useRef<string | null>(null);
+	const [isMounted, setIsMounted] = useState(false);
+
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
+
+	const handleRemoveItem = (itemToRemove: BasketItem) => {
+		removeItem(itemToRemove.id);
+		if (deletedItem?.timeoutId) clearTimeout(deletedItem.timeoutId);
+
+		const timeoutId = setTimeout(() => {
+			setDeletedItem(null);
+		}, 5000);
+
+		setDeletedItem({ item: itemToRemove, timeoutId });
+	};
+
+	const handleRestore = () => {
+		if (deletedItem) {
+			restoreItem(deletedItem.item);
+			clearTimeout(deletedItem.timeoutId);
+			setDeletedItem(null);
+		}
+	};
 
 	// Cross-Sell Detector (Fixed + Mobile Advantage)
 	useEffect(() => {
@@ -84,13 +120,11 @@ export function BasketDrawer() {
 		if (hasMobile && !hasFixed) {
 			nudgeId = "nudge-fixed-missing";
 			title = "Preisvorteil durch Festnetz";
-			content =
-				"Dein Kunde nutzt Mobilfunk. Biete ihm zusätzlich Festnetz an, um den monatlichen Preisvorteil und das doppelte Datenvolumen freizuschalten!";
+			content = "Dein Kunde nutzt Mobilfunk. Biete ihm zusätzlich Festnetz an.";
 		} else if (hasFixed && !hasMobile) {
 			nudgeId = "nudge-mobile-missing";
 			title = "Preisvorteil durch Mobilfunk";
-			content =
-				"Dein Kunde nutzt Festnetz. Biete ihm zusätzlich Mobilfunk an, um den monatlichen Preisvorteil für beide Verträge zu aktivieren!";
+			content = "Dein Kunde nutzt Festnetz. Biete ihm zusätzlich Mobilfunk an.";
 		}
 
 		if (nudgeId && lastNudgeRef.current !== nudgeId) {
@@ -234,85 +268,104 @@ export function BasketDrawer() {
 
 			{/* Content */}
 			<div className="flex-1 px-4 py-4 overflow-y-auto scrollbar-none">
-				{/* Chart */}
-				{items.length > 0 && (
-					<div className="mb-4 bg-[#f7f8fa] rounded-xl p-3.5">
-						<CombinedTimeline />
-					</div>
-				)}
-
-				{/* Credits */}
-				<div className="mb-4">
-					<button
-						className="w-full flex items-center gap-2 px-3.5 py-2.5 bg-white border border-[#eaedf0] rounded-xl text-left transition-all duration-200 hover:border-[#ddd] cursor-pointer"
-						onClick={() => setCreditsOpen(!creditsOpen)}
-					>
-						<Percent className="w-3.5 h-3.5 text-[#00a878]" />
-						<span className="flex-1 text-[0.78rem] font-semibold text-[#1a1a2e]">
-							Gutschriften
-						</span>
-						{totalCredits > 0 && (
-							<span className="text-[0.72rem] text-[#00a878] font-semibold mr-1">
-								−{totalCredits.toFixed(2)} €
-							</span>
-						)}
-						<ChevronDown
-							className={clsx(
-								"w-3.5 h-3.5 text-[#bbb] transition-transform duration-200",
-								creditsOpen && "rotate-180"
-							)}
-						/>
-					</button>
-					{creditsOpen && (
-						<div className="mt-2 pl-1">
-							<CreditSelector
-								basketCredits={basketCredits}
-								setBasketCredits={setBasketCredits}
-							/>
+				{!isMounted ? (
+					<div className="flex flex-col gap-4">
+						<Skeleton className="h-[120px] rounded-xl" />
+						<Skeleton className="h-10 rounded-xl" />
+						<div className="flex flex-col gap-3">
+							{[1, 2].map((i) => (
+								<Skeleton key={i} className="h-28 rounded-xl" />
+							))}
 						</div>
-					)}
-				</div>
-
-				{/* Items */}
-				<div className="flex flex-col gap-3">
-					<AnimatePresence mode="popLayout">
-						{items.length === 0 ? (
-							<motion.div
-								key="empty"
-								initial={{ opacity: 0, scale: 0.95 }}
-								animate={{ opacity: 1, scale: 1 }}
-								exit={{ opacity: 0, scale: 0.95 }}
-								transition={{ duration: 0.2 }}
-								className="text-center py-14 flex flex-col items-center gap-2.5"
-							>
-								<div className="w-12 h-12 rounded-2xl bg-[#f7f8fa] flex items-center justify-center">
-									<ShoppingBag className="w-5 h-5 text-[#ddd]" />
-								</div>
-								<div>
-									<p className="text-[0.82rem] font-medium text-[#bbb] m-0">
-										Noch keine Produkte
-									</p>
-									<p className="text-[0.72rem] text-[#ddd] m-0 mt-0.5">
-										Tarife aus den Kategorien wählen
-									</p>
-								</div>
-							</motion.div>
-						) : (
-							items.map((item) => (
-								<BasketItemCard
-									key={item.id}
-									item={item}
-									removeItem={removeItem}
-								/>
-							))
+					</div>
+				) : (
+					<>
+						{/* Chart */}
+						{items.length > 0 && (
+							<div className="mb-4 bg-[#f7f8fa] rounded-xl p-3.5">
+								<CombinedTimeline />
+							</div>
 						)}
-					</AnimatePresence>
-				</div>
+
+						{/* Credits */}
+						<div className="mb-4">
+							<button
+								className="w-full flex items-center gap-2 px-3.5 py-2.5 bg-white border border-[#eaedf0] rounded-xl text-left transition-all duration-200 hover:border-[#ddd] cursor-pointer"
+								onClick={() => setCreditsOpen(!creditsOpen)}
+							>
+								<Percent className="w-3.5 h-3.5 text-[#00a878]" />
+								<span className="flex-1 text-[0.78rem] font-semibold text-[#1a1a2e]">
+									Gutschriften
+								</span>
+								{totalCredits > 0 && (
+									<span className="text-[0.72rem] text-[#00a878] font-semibold mr-1">
+										−{totalCredits.toFixed(2)} €
+									</span>
+								)}
+								<ChevronDown
+									className={clsx(
+										"w-3.5 h-3.5 text-[#bbb] transition-transform duration-200",
+										creditsOpen && "rotate-180"
+									)}
+								/>
+							</button>
+							{creditsOpen && (
+								<div className="mt-2 pl-1">
+									<CreditSelector
+										basketCredits={basketCredits}
+										setBasketCredits={setBasketCredits}
+									/>
+								</div>
+							)}
+						</div>
+
+						{/* Items */}
+						<div className="flex flex-col gap-3">
+							<AnimatePresence mode="popLayout">
+								{items.length === 0 ? (
+									<motion.div
+										key="empty"
+										initial={{ opacity: 0, scale: 0.95 }}
+										animate={{ opacity: 1, scale: 1 }}
+										exit={{ opacity: 0, scale: 0.95 }}
+										transition={{ duration: 0.2 }}
+										className="text-center py-14 flex flex-col items-center gap-2.5"
+									>
+										<div className="w-12 h-12 rounded-2xl bg-[#f7f8fa] flex items-center justify-center">
+											<ShoppingBag className="w-5 h-5 text-[#ddd]" />
+										</div>
+										<div>
+											<p className="text-[0.82rem] font-medium text-[#bbb] m-0">
+												Noch keine Produkte
+											</p>
+											<p className="text-[0.72rem] text-[#ddd] m-0 mt-0.5">
+												Tarife aus den Kategorien wählen
+											</p>
+										</div>
+									</motion.div>
+								) : (
+									items.map((item) => (
+										<BasketItemCard
+											key={item.id}
+											item={item}
+											removeItem={() => handleRemoveItem(item)}
+										/>
+									))
+								)}
+							</AnimatePresence>
+						</div>
+					</>
+				)}
 			</div>
 
 			{/* Footer */}
 			<div className="w-full bg-white border-t border-[#eaedf0] z-20 shrink-0">
-				{items.length > 0 ? (
+				{!isMounted ? (
+					<div className="p-4 flex flex-col gap-3">
+						<Skeleton className="h-24 w-full rounded-xl" />
+						<Skeleton className="h-12 w-full rounded-xl" />
+					</div>
+				) : items.length > 0 ? (
 					<div className="p-4">
 						{/* Costs */}
 						<div className="space-y-1.5 mb-3">
@@ -444,7 +497,7 @@ export function BasketDrawer() {
 						<div className="flex gap-2">
 							<button
 								onClick={clearBasket}
-								className="px-3.5 py-2.5 rounded-xl bg-[#f7f8fa] text-[0.78rem] text-[#999] hover:bg-[#fee2e2] hover:text-[#dc2626] font-medium transition-all duration-200 border border-[#eaedf0] hover:border-[#fca5a5] cursor-pointer"
+								className="px-3.5 py-2.5 rounded-xl bg-[#f7f8fa] text-[0.78rem] text-[#999] hover:bg-[#fee2e2] hover:text-[#dc2626] font-medium transition-all duration-200 border border-[#eaedf0] hover:border-[#fca5a5] cursor-pointer active:scale-95"
 							>
 								Leeren
 							</button>
@@ -468,7 +521,7 @@ export function BasketDrawer() {
 								}}
 								disabled={isGenerating !== "idle"}
 								className={clsx(
-									"flex-1 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-[0.82rem] cursor-pointer",
+									"flex-1 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-[0.82rem] cursor-pointer active:scale-95",
 									isGenerating === "idle" && "bg-[#e20074] hover:bg-[#c70066]",
 									isGenerating === "generating" &&
 										"bg-[#ff69b4] cursor-not-allowed",
@@ -498,6 +551,34 @@ export function BasketDrawer() {
 						</p>
 					</div>
 				)}
+
+				{/* Undo Toast */}
+				<AnimatePresence>
+					{deletedItem && (
+						<motion.div
+							initial={{ opacity: 0, y: 50, scale: 0.95 }}
+							animate={{ opacity: 1, y: 0, scale: 1 }}
+							exit={{ opacity: 0, y: 20, scale: 0.95 }}
+							className="absolute bottom-20 left-4 right-4 bg-[#1a1a2e] text-white p-3 rounded-xl shadow-xl border border-white/10 flex items-center justify-between z-50"
+						>
+							<div className="flex flex-col">
+								<span className="text-[0.7rem] text-white/60 font-medium">
+									Gelöscht
+								</span>
+								<span className="text-[0.85rem] font-bold line-clamp-1">
+									{deletedItem.item.product.name}
+								</span>
+							</div>
+							<button
+								onClick={handleRestore}
+								className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-[0.8rem] font-semibold active:scale-95 cursor-pointer"
+							>
+								<RotateCcw className="w-3.5 h-3.5" />
+								Rückgängig
+							</button>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</div>
 		</aside>
 	);
@@ -572,7 +653,7 @@ function BasketItemCard({
 							e.stopPropagation();
 							removeItem(item.id);
 						}}
-						className="w-6 h-6 rounded-lg flex items-center justify-center bg-transparent hover:bg-[#fee2e2] text-[#ccc] hover:text-[#dc2626] transition-all duration-150 border-none cursor-pointer p-0 opacity-0 group-hover:opacity-100 shrink-0 ml-2"
+						className="w-6 h-6 rounded-lg flex items-center justify-center bg-transparent hover:bg-[#fee2e2] text-[#ccc] hover:text-[#dc2626] transition-all duration-150 border-none cursor-pointer p-0 opacity-0 group-hover:opacity-100 shrink-0 ml-2 active:scale-95"
 						title="Entfernen"
 					>
 						<Trash2 className="w-3 h-3" />

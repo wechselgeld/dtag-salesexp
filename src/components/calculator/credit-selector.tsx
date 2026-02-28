@@ -6,6 +6,7 @@ import { Credit } from "@/hooks/use-cost-calculator";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
+import { Skeleton } from "../skeleton";
 
 interface CreditSelectorProps {
 	basketCredits: Credit[];
@@ -42,7 +43,9 @@ export function CreditSelector({
 
 	if (isLoading)
 		return (
-			<div className="py-2 text-center text-[0.75rem] text-[#aaa]">Lade...</div>
+			<div className="py-2 flex flex-col gap-2">
+				<Skeleton className="h-10 w-full rounded-lg" />
+			</div>
 		);
 
 	const activeCredits = credits?.filter((c) => c.isActive) || [];

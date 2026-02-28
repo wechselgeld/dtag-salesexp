@@ -35,6 +35,7 @@ import React, { useEffect, Suspense } from "react";
 import clsx from "clsx";
 import { useBasketStore } from "@/hooks/use-basket-store";
 import { SearchBar } from "@/components/search-bar";
+import { Skeleton } from "@/components/skeleton";
 import { motion } from "framer-motion";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -119,10 +120,43 @@ function ProductPageContent() {
 
 	if (isLoading || !product) {
 		return (
-			<div className="min-h-full flex items-center justify-center">
-				<div className="animate-pulse flex flex-col items-center gap-4">
-					<div className="h-8 w-64 bg-[#f0f0f0] rounded-xl" />
-					<div className="h-4 w-32 bg-[#f0f0f0] rounded-lg" />
+			<div className="min-h-full">
+				<div className="pt-2 mb-6">
+					<Skeleton className="h-10 w-full max-w-xl rounded-full" />
+				</div>
+				<Skeleton className="h-4 w-32 mb-6" />
+
+				<div className="bg-white rounded-2xl border border-[#eaedf0] p-7 mb-6">
+					<div className="flex items-start justify-between">
+						<div className="flex-1">
+							<Skeleton className="h-10 w-3/4 max-w-lg mb-4" />
+							<Skeleton className="h-4 w-full max-w-xl mb-2" />
+							<Skeleton className="h-4 w-4/5 max-w-lg mb-6" />
+							<div className="flex gap-4">
+								<Skeleton className="h-6 w-20" />
+								<Skeleton className="h-6 w-24" />
+								<Skeleton className="h-6 w-32" />
+							</div>
+						</div>
+						<div className="flex flex-col items-end">
+							<Skeleton className="h-4 w-12 mb-2" />
+							<Skeleton className="h-12 w-32 mb-2" />
+							<Skeleton className="h-3 w-20" />
+						</div>
+					</div>
+				</div>
+
+				<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start pb-10">
+					<div className="space-y-4">
+						<Skeleton className="h-32 w-full rounded-2xl" />
+						<Skeleton className="h-48 w-full rounded-2xl" />
+						<Skeleton className="h-40 w-full rounded-2xl" />
+					</div>
+					<div className="space-y-4">
+						<Skeleton className="h-64 w-full rounded-2xl" />
+						<Skeleton className="h-40 w-full rounded-2xl" />
+						<Skeleton className="h-14 w-full rounded-2xl" />
+					</div>
 				</div>
 			</div>
 		);

@@ -13,15 +13,8 @@ import { AvailabilityCheckModal } from "@/components/availability-check-modal";
 import { StreamingCalculatorModal } from "@/components/streaming-calculator-modal";
 import { BattlecardModal } from "@/components/battlecard-panel";
 
-// Routes that should render WITHOUT the sales shell (sidebar + basket)
-const STANDALONE_ROUTES = [
-	"/admin",
-	"/login",
-	"/setup",
-	"/impressum",
-	"/privacy",
-	"/faq"
-];
+// Routes that SHOULD render WITH the sales shell (sidebar + basket)
+const SHELL_ROUTES = ["/products", "/settings"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname();
@@ -31,7 +24,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 	});
 
 	const isMaintenanceActive = isMaintenance && user?.role !== "ADMIN";
-	const isStandalone = STANDALONE_ROUTES.some((r) => pathname.startsWith(r));
+
+	// Standalone if it's NOT a shell route AND not the root home page
+	const isShellRoute =
+		SHELL_ROUTES.some((r) => pathname.startsWith(r)) || pathname === "/";
+	const isStandalone = !isShellRoute;
 
 	const {
 		availabilityOpen,
@@ -42,6 +39,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 		setBattlecardOpen
 	} = useModalStore();
 
+	const isLoginOrAdmin = pathname.startsWith("/admin") || pathname === "/login";
+
 	if (
 		isMaintenanceActive &&
 		!pathname.startsWith("/admin") &&
@@ -50,37 +49,45 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 		return <MaintenanceSplash />;
 	}
 
-	if (isStandalone) {
-		// Full-page layout — no sidebar, no basket. Added wrapper to allow scrolling.
-		return (
-			<div className="h-screen w-full overflow-y-auto bg-white sm:bg-[#f7f8fa]">
-				{children}
-			</div>
-		);
+	const shellContent = isStandalone ? (
+		<div className="h-screen w-full overflow-y-auto bg-white sm:bg-[#f7f8fa]">
+			{children}
+		</div>
+	) : (
+		<div className="grid grid-cols-[auto_1fr_340px] h-screen w-full">
+			<SidebarNav />
+			<main className="p-8 overflow-y-auto w-full max-w-[1200px] mx-auto scrollbar-none">
+				<div className="h-full">{children}</div>
+			</main>
+			<BasketDrawer />
+		</div>
+	);
+
+	// Don't show splash/modals on admin/login
+	if (isLoginOrAdmin) {
+		return shellContent;
 	}
 
 	return (
 		<IntroSplash>
-			<div className="grid grid-cols-[auto_1fr_340px] h-screen w-full">
-				<SidebarNav />
-				<main className="p-8 overflow-y-auto w-full max-w-[1200px] mx-auto scrollbar-none">
-					<div className="h-full">{children}</div>
-				</main>
-				<BasketDrawer />
-			</div>
-			<OnboardingTutorial />
-			<AvailabilityCheckModal
-				isOpen={availabilityOpen}
-				onClose={() => setAvailabilityOpen(false)}
-			/>
-			<StreamingCalculatorModal
-				isOpen={calculatorOpen}
-				onClose={() => setCalculatorOpen(false)}
-			/>
-			<BattlecardModal
-				isOpen={battlecardOpen}
-				onClose={() => setBattlecardOpen(false)}
-			/>
+			{shellContent}
+			{!isStandalone && (
+				<>
+					<OnboardingTutorial />
+					<AvailabilityCheckModal
+						isOpen={availabilityOpen}
+						onClose={() => setAvailabilityOpen(false)}
+					/>
+					<StreamingCalculatorModal
+						isOpen={calculatorOpen}
+						onClose={() => setCalculatorOpen(false)}
+					/>
+					<BattlecardModal
+						isOpen={battlecardOpen}
+						onClose={() => setBattlecardOpen(false)}
+					/>
+				</>
+			)}
 		</IntroSplash>
 	);
 }

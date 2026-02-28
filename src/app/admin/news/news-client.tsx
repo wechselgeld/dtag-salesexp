@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Plus, Trash2, Megaphone, Loader2 } from "lucide-react";
+import { Plus, Trash2, Megaphone, Loader2, Search, Layers } from "lucide-react";
 import clsx from "clsx";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { Skeleton } from "@/components/skeleton";
+import Link from "next/link";
 
 const PRIORITY_COLORS: Record<string, string> = {
 	INFO: "#00a878", // Green
@@ -25,155 +27,106 @@ export default function AdminNewsPage() {
 	const utils = trpc.useContext();
 	const { data: newsItems, isLoading } = trpc.admin.news.list.useQuery();
 
-	const createNews = trpc.admin.news.create.useMutation({
-		onSuccess: () => {
-			setNewTitle("");
-			setNewContent("");
-			setNewPriority("INFO");
-			utils.admin.news.list.invalidate();
-		}
-	});
-
 	const deleteNews = trpc.admin.news.delete.useMutation({
 		onSuccess: async () => {
 			await utils.admin.news.list.invalidate();
-			alert("Neuigkeit erfolgreich gelöscht.");
-		},
-		onError: (err) => {
-			alert("Fehler beim Löschen: " + err.message);
 		}
 	});
 
-	const [newTitle, setNewTitle] = useState("");
-	const [newContent, setNewContent] = useState("");
-	const [newPriority, setNewPriority] = useState<
-		"INFO" | "UPDATE" | "IMPORTANT" | "CRITICAL"
-	>("INFO");
+	const [searchQuery, setSearchQuery] = useState("");
 
-	const handleCreate = () => {
-		if (!newTitle.trim() || !newContent.trim()) return;
-		createNews.mutate({
-			title: newTitle,
-			content: newContent,
-			priority: newPriority
-		});
-	};
+	const filteredNews =
+		newsItems?.filter(
+			(n) =>
+				n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				n.content.toLowerCase().includes(searchQuery.toLowerCase())
+		) || [];
+
+	if (isLoading) {
+		return (
+			<div>
+				<div className="flex justify-between items-center mb-6">
+					<div>
+						<h1 className="text-[1.6rem] font-extrabold text-[#1a1a2e] tracking-tight mb-1">
+							Neuigkeiten
+						</h1>
+						<p className="text-[0.85rem] text-[#999] m-0">
+							Verwalte Mitteilungen für das Dashboard.
+						</p>
+					</div>
+					<Skeleton className="h-10 w-32 rounded-xl" />
+				</div>
+				<div className="bg-white rounded-2xl border border-[#eaedf0] overflow-hidden p-5 flex flex-col gap-3">
+					{[1, 2, 3, 4, 5].map((i) => (
+						<Skeleton key={i} className="h-14 w-full rounded-xl" />
+					))}
+				</div>
+			</div>
+		);
+	}
 
 	return (
-		<div className="space-y-6">
-			<div>
-				<h1 className="text-[1.6rem] font-extrabold text-[#1a1a2e] tracking-tight mb-1">
-					Neuigkeiten verwalten
-				</h1>
-				<p className="text-[0.85rem] text-[#999] m-0">
-					Erstelle Mitteilungen für das Dashboard.
-				</p>
+		<div>
+			<div className="flex justify-between items-center mb-6">
+				<div>
+					<h1 className="text-[1.6rem] font-extrabold text-[#1a1a2e] tracking-tight mb-1">
+						Neuigkeiten
+					</h1>
+					<p className="text-[0.85rem] text-[#999] m-0">
+						Verwalte Mitteilungen für das Dashboard.
+					</p>
+				</div>
+				<Link
+					href="/admin/news/new"
+					className="flex items-center gap-2 bg-[#e20074] hover:bg-[#c70066] text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-[0_4px_14px_rgba(226,0,116,0.25)] hover:shadow-[0_6px_20px_rgba(226,0,116,0.3)] hover:-translate-y-0.5 active:scale-95 text-[0.82rem] no-underline"
+				>
+					<Plus className="w-4 h-4" />
+					Neuigkeit erstellen
+				</Link>
 			</div>
 
-			{/* Create News */}
-			<div className="bg-white p-5 rounded-2xl border border-[#eaedf0]">
-				<div className="grid grid-cols-1 gap-4 mb-4">
-					<div className="space-y-1.5">
-						<label className="text-[0.75rem] font-semibold text-[#888]">
-							Titel
-						</label>
-						<input
-							type="text"
-							value={newTitle}
-							onChange={(e) => setNewTitle(e.target.value)}
-							placeholder="z.B. Wartungsarbeiten am Wochenende"
-							className="w-full px-4 py-2.5 border border-[#eaedf0] rounded-xl focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
-						/>
-					</div>
-
-					<div className="space-y-1.5">
-						<label className="text-[0.75rem] font-semibold text-[#888]">
-							Inhalt
-						</label>
-						<textarea
-							value={newContent}
-							onChange={(e) => setNewContent(e.target.value)}
-							placeholder="Kurze Beschreibung..."
-							className="w-full px-4 py-2.5 border border-[#eaedf0] rounded-xl focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem] resize-none h-20"
-						/>
-					</div>
-
-					<div className="space-y-1.5">
-						<label className="text-[0.75rem] font-semibold text-[#888]">
-							Wichtigkeitsstufe
-						</label>
-						<div className="flex flex-wrap gap-2">
-							{(["INFO", "UPDATE", "IMPORTANT", "CRITICAL"] as const).map(
-								(p) => {
-									const color = PRIORITY_COLORS[p];
-									const isSelected = newPriority === p;
-									return (
-										<button
-											key={p}
-											onClick={() => setNewPriority(p)}
-											className={clsx(
-												"px-4 py-2 rounded-xl text-[0.75rem] font-semibold transition-all duration-200 border-2 cursor-pointer",
-												isSelected
-													? "border-transparent text-white"
-													: "bg-transparent hover:bg-black/5"
-											)}
-											style={{
-												backgroundColor: isSelected ? color : "transparent",
-												borderColor: isSelected ? color : "#eaedf0",
-												color: isSelected ? "#fff" : color
-											}}
-										>
-											{PRIORITY_LABELS[p]}
-										</button>
-									);
-								}
-							)}
-						</div>
-					</div>
-				</div>
-
-				<div className="flex justify-end">
-					<button
-						onClick={handleCreate}
-						disabled={
-							createNews.isPending || !newTitle.trim() || !newContent.trim()
-						}
-						className={clsx(
-							"px-5 py-2.5 rounded-xl font-semibold text-white flex items-center gap-2 transition-all duration-200 text-[0.82rem] cursor-pointer",
-							createNews.isPending || !newTitle.trim() || !newContent.trim()
-								? "bg-[#ddd] cursor-not-allowed"
-								: "bg-[#e20074] hover:bg-[#c70066]"
-						)}
-					>
-						{createNews.isPending ? (
-							<Loader2 className="w-4 h-4 animate-spin" />
-						) : (
-							<Plus className="w-4 h-4" />
-						)}
-						Neuigkeit veröffentlichen
-					</button>
+			{/* Search */}
+			<div className="flex flex-col md:flex-row gap-4 mb-6">
+				<div className="relative flex-1">
+					<Search className="w-4 h-4 text-[#bbb] absolute left-4 top-1/2 -translate-y-1/2" />
+					<input
+						type="text"
+						placeholder="Neuigkeiten suchen..."
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
+					/>
 				</div>
 			</div>
 
-			{/* News List */}
 			<div className="bg-white rounded-2xl border border-[#eaedf0] overflow-hidden">
-				<div className="px-5 py-3.5 border-b border-[#eaedf0] flex justify-between items-center">
-					<h2 className="text-[0.88rem] font-bold text-[#1a1a2e] flex items-center gap-2 m-0">
-						<Megaphone className="w-4 h-4 text-[#bbb]" />
-						Veröffentlichte Neuigkeiten
-					</h2>
-					<span className="text-[0.65rem] font-semibold text-[#999] bg-[#f7f8fa] px-2.5 py-1 rounded-full">
-						{newsItems?.length || 0}
-					</span>
-				</div>
-
-				{isLoading ? (
-					<div className="p-10 text-center text-[0.85rem] text-[#ccc]">
-						Lade Neuigkeiten...
+				{newsItems && newsItems.length === 0 ? (
+					<div className="p-16 flex flex-col items-center justify-center text-center">
+						<div className="w-16 h-16 bg-[#f7f8fa] rounded-2xl flex items-center justify-center mb-4 border border-[#eaedf0]">
+							<Megaphone className="w-6 h-6 text-[#ccc]" />
+						</div>
+						<h3 className="text-[1rem] font-bold text-[#1a1a2e] mb-1">
+							Keine Neuigkeiten
+						</h3>
+						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0">
+							Es wurden noch keine Neuigkeiten erfasst.
+						</p>
 					</div>
-				) : newsItems && newsItems.length > 0 ? (
-					<div>
-						{newsItems.map(
+				) : filteredNews.length === 0 && newsItems && newsItems.length > 0 ? (
+					<div className="p-16 flex flex-col items-center justify-center text-center">
+						<div className="w-16 h-16 bg-[#f7f8fa] rounded-2xl flex items-center justify-center mb-4 border border-[#eaedf0]">
+							<Search className="w-6 h-6 text-[#ccc]" />
+						</div>
+						<h3 className="text-[1rem] font-bold text-[#1a1a2e] mb-1">
+							Keine Ergebnisse
+						</h3>
+						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0">
+							Es wurden keine Neuigkeiten für die aktuelle Suche gefunden.
+						</p>
+					</div>
+				) : (
+					<div className="flex flex-col">
+						{filteredNews.map(
 							(
 								item: {
 									id: string;
@@ -190,12 +143,12 @@ export default function AdminNewsPage() {
 									<div
 										key={item.id}
 										className={clsx(
-											"px-5 py-4 flex items-start justify-between group hover:bg-[#f7f8fa] transition-colors gap-4",
-											i < newsItems.length - 1 && "border-b border-[#f0f0f0]"
+											"px-6 py-5 flex items-start justify-between group hover:bg-white hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative z-0 hover:z-10 transition-all duration-300 gap-4",
+											i < filteredNews.length - 1 && "border-b border-[#f0f0f0]"
 										)}
 									>
 										<div className="flex-1">
-											<div className="flex items-center gap-2 mb-1">
+											<div className="flex items-center gap-2 mb-1.5">
 												<span
 													className="px-2 py-0.5 rounded-lg text-[0.65rem] font-bold uppercase tracking-wider"
 													style={{
@@ -215,59 +168,40 @@ export default function AdminNewsPage() {
 													)}
 												</span>
 											</div>
-											<h3 className="text-[0.9rem] font-bold text-[#1a1a2e] m-0 mb-1">
+											<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] m-0 mb-1.5">
 												{item.title}
 											</h3>
-											<p className="text-[0.8rem] text-[#666] m-0 leading-relaxed">
+											<p className="text-[0.85rem] text-[#666] m-0 leading-relaxed max-w-[800px]">
 												{item.content}
 											</p>
 										</div>
-										<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-											<DeleteButton
-												onConfirm={() => deleteNews.mutate({ id: item.id })}
-											/>
+										<div className="flex items-center gap-1">
+											<button
+												onClick={(e) => {
+													e.preventDefault();
+													e.stopPropagation();
+													if (
+														window.confirm(
+															"Möchtest Du diese Neuigkeit wirklich löschen?"
+														)
+													) {
+														deleteNews.mutate({ id: item.id });
+													}
+												}}
+												disabled={deleteNews.isPending}
+												className="p-2 text-[#aaa] hover:text-[#dc2626] hover:bg-[#fee2e2]/40 rounded-lg transition-all duration-150 cursor-pointer disabled:opacity-50"
+												title="Löschen"
+											>
+												<Trash2 className="w-4 h-4" />
+											</button>
 										</div>
 									</div>
 								);
 							}
 						)}
 					</div>
-				) : (
-					<div className="p-10 text-center text-[0.85rem] text-[#ccc]">
-						Keine Neuigkeiten vorhanden.
-					</div>
 				)}
 			</div>
 		</div>
-	);
-}
-
-function DeleteButton({ onConfirm }: { onConfirm: () => void }) {
-	const [confirmMode, setConfirmMode] = useState(false);
-
-	return (
-		<button
-			onClick={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				if (confirmMode) {
-					onConfirm();
-					setConfirmMode(false);
-				} else {
-					setConfirmMode(true);
-					setTimeout(() => setConfirmMode(false), 3000);
-				}
-			}}
-			className={clsx(
-				"p-2 rounded-lg transition-all duration-150 cursor-pointer border-none flex items-center gap-1 text-[0.75rem] font-bold relative z-10",
-				confirmMode
-					? "bg-[#dc2626] text-white hover:bg-[#b91c1c] shadow-md"
-					: "bg-transparent text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2]/40"
-			)}
-			title={confirmMode ? "Tatsächlich löschen?" : "Neuigkeit löschen"}
-		>
-			<Trash2 className="w-4 h-4" />
-			{confirmMode && "Sicher?"}
-		</button>
 	);
 }

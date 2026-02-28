@@ -28,7 +28,7 @@ export const authRouter = router({
                 }
                 throw new TRPCError({
                     code: 'UNAUTHORIZED',
-                    message: 'Invalid credentials',
+                    message: 'Deine Zugangsdaten sind ungültig. Wende Dich an den Entwickler, um Zugangsdaten zu bestellen.',
                 });
             }
 
@@ -37,7 +37,7 @@ export const authRouter = router({
             if (!isValid) {
                 throw new TRPCError({
                     code: 'UNAUTHORIZED',
-                    message: 'Invalid credentials',
+                    message: 'Deine Zugangsdaten sind ungültig. Wende Dich an den Entwickler, um Zugangsdaten zu bestellen.',
                 });
             }
 

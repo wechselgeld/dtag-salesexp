@@ -11,11 +11,11 @@ const key = new TextEncoder().encode(secretKey || fallbackSecret);
 
 const ALG = 'HS256';
 
-export async function signJWT(payload: any) {
+export async function signJWT(payload: any, expiresIn: string = "24h") {
     return new SignJWT(payload)
         .setProtectedHeader({ alg: ALG })
         .setIssuedAt()
-        .setExpirationTime('24h')
+        .setExpirationTime(expiresIn)
         .sign(key);
 }
 
@@ -57,7 +57,7 @@ export async function logout() {
 
 // Session signing for non-auth cookies (e.g. sales-session-id)
 export async function signSessionId(id: string) {
-    return await signJWT({ id });
+    return await signJWT({ id }, '30d');
 }
 
 export async function verifySessionId(token: string) {

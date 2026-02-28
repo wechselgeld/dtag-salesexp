@@ -11,6 +11,7 @@ import {
 	ChevronLeft
 } from "lucide-react";
 import clsx from "clsx";
+import { Skeleton } from "./skeleton";
 
 const PRIORITY_CONFIG: Record<
 	string,
@@ -66,8 +67,23 @@ export function NewsCarousel() {
 		return () => cancelAnimationFrame(animationFrame);
 	}, [newsItems, isPaused]);
 
-	if (!mounted || isLoading || !newsItems || newsItems.length === 0) {
-		return null; // Don't show anything if no news or not mounted
+	if (!mounted || isLoading) {
+		return (
+			<div className="mt-8 mb-6">
+				<div className="rounded-2xl border border-[#eaedf0] bg-white p-5 flex items-start gap-4 h-[100px]">
+					<Skeleton className="w-[42px] h-[42px] rounded-xl shrink-0" />
+					<div className="flex-1 w-full">
+						<Skeleton className="h-5 w-1/3 mb-3" />
+						<Skeleton className="h-4 w-3/4 mb-2" />
+						<Skeleton className="h-4 w-2/3" />
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	if (!newsItems || newsItems.length === 0) {
+		return null;
 	}
 
 	const currentItem = newsItems[currentIndex];

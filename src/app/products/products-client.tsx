@@ -8,6 +8,8 @@ import { NewsCarousel } from "@/components/news-carousel";
 import { trpc } from "@/lib/trpc";
 import { Star } from "lucide-react";
 import clsx from "clsx";
+import { Skeleton } from "@/components/skeleton";
+import { useEffect } from "react";
 
 const CATEGORIES = [
 	{
@@ -53,8 +55,21 @@ const CATEGORIES = [
 ];
 
 export default function ProductsPage() {
-	const { data: session } = trpc.session.getCurrent.useQuery();
-	const { data: allProducts } = trpc.product.getAllProducts.useQuery();
+	const { data: session, isLoading: sessionLoading } =
+		trpc.session.getCurrent.useQuery();
+	const { data: allProducts, isLoading: productsLoading } =
+		trpc.product.getAllProducts.useQuery();
+	const isLoading = sessionLoading || productsLoading;
+	const utils = trpc.useUtils();
+
+	// Prefetch all category products in background for "instant" load
+	useEffect(() => {
+		if (allProducts) {
+			CATEGORIES.forEach((category) => {
+				utils.product.getProductsByCategory.prefetch({ category: category.id });
+			});
+		}
+	}, [allProducts, utils]);
 
 	const getStats = (categoryId: string, fallback: string) => {
 		if (!allProducts) return fallback;
@@ -75,15 +90,15 @@ export default function ProductsPage() {
 			<motion.div
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
-				exit={{ opacity: 0, y: -10, filter: "blur(5px)" }}
-				transition={{ duration: 0.25, ease: "easeIn", delay: 0.5 }}
+				exit={{ opacity: 0, y: -5, filter: "blur(2px)" }}
+				transition={{ duration: 0.15, ease: "easeIn", delay: 0.05 }}
 				className="mb-10 pt-6"
 			>
 				{/* Main heading: large, left-aligned, with accent */}
 				<motion.h1
-					initial={{ opacity: 0, y: 8 }}
+					initial={{ opacity: 0, y: 5 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.15, duration: 0.4 }}
+					transition={{ delay: 0.05, duration: 0.2 }}
 					className="text-[2.4rem] md:text-[3rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight leading-[1.1]"
 				>
 					Wähle eine <span className="text-[#e20074]">Kategorie</span>.
@@ -93,31 +108,49 @@ export default function ProductsPage() {
 			{/* Full-width Search Bar */}
 			<SearchBar />
 
-			{/* Category Cards - Row 1 (3 cards) */}
-			<div className="grid grid-cols-3 gap-4 mb-4">
-				{CATEGORIES.slice(0, 3).map((category, index) => (
-					<CategoryCard
-						key={category.id}
-						category={category}
-						index={index}
-						isHighlighted={highlightedCategories.includes(category.id)}
-						dynamicStats={getStats(category.id, category.stats)}
-					/>
-				))}
-			</div>
+			{/* Category Cards */}
+			{isLoading ? (
+				<>
+					<div className="grid grid-cols-3 gap-4 mb-4">
+						{[1, 2, 3].map((i) => (
+							<Skeleton key={i} className="h-[120px] rounded-[20px]" />
+						))}
+					</div>
+					<div className="grid grid-cols-2 gap-4">
+						{[4, 5].map((i) => (
+							<Skeleton key={i} className="h-[120px] rounded-[20px]" />
+						))}
+					</div>
+				</>
+			) : (
+				<>
+					{/* Category Cards - Row 1 (3 cards) */}
+					<div className="grid grid-cols-3 gap-4 mb-4">
+						{CATEGORIES.slice(0, 3).map((category, index) => (
+							<CategoryCard
+								key={category.id}
+								category={category}
+								index={index}
+								isHighlighted={highlightedCategories.includes(category.id)}
+								dynamicStats={getStats(category.id, category.stats)}
+							/>
+						))}
+					</div>
 
-			{/* Category Cards - Row 2 (2 cards, wider) */}
-			<div className="grid grid-cols-2 gap-4">
-				{CATEGORIES.slice(3).map((category, index) => (
-					<CategoryCard
-						key={category.id}
-						category={category}
-						index={index + 3}
-						isHighlighted={highlightedCategories.includes(category.id)}
-						dynamicStats={getStats(category.id, category.stats)}
-					/>
-				))}
-			</div>
+					{/* Category Cards - Row 2 (2 cards, wider) */}
+					<div className="grid grid-cols-2 gap-4">
+						{CATEGORIES.slice(3).map((category, index) => (
+							<CategoryCard
+								key={category.id}
+								category={category}
+								index={index + 3}
+								isHighlighted={highlightedCategories.includes(category.id)}
+								dynamicStats={getStats(category.id, category.stats)}
+							/>
+						))}
+					</div>
+				</>
+			)}
 
 			{/* News Updates */}
 			<NewsCarousel />
@@ -154,12 +187,12 @@ function CategoryCard({
 				animate={{ opacity: 1, y: 0 }}
 				exit={{
 					opacity: 0,
-					scale: 0.95,
-					transition: { duration: 0.15, delay: 0 }
+					scale: 0.98,
+					transition: { duration: 0.1, delay: 0 }
 				}}
 				transition={{
-					delay: 0.25 + index * 0.05,
-					duration: 0.35,
+					delay: index * 0.03, // minimal staggering
+					duration: 0.15,
 					ease: "easeOut"
 				}}
 				className={clsx(
@@ -193,7 +226,7 @@ function CategoryCard({
 								TEAM-FOKUS
 							</div>
 						)}
-						<h3 className="text-[1.15rem] font-bold text-[#1a1a2e] m-0 leading-tight group-hover:text-[var(--card-color)] transition-colors duration-300">
+						<h3 className="text-[1.15rem] font-bold text-[#1a1a2e] m-0 leading-tight group-hover:text-(--card-color) transition-colors duration-300">
 							{category.title}
 						</h3>
 						<span className="text-[0.72rem] text-[#b5b5b5] font-medium mt-1 tracking-wide">
@@ -203,7 +236,7 @@ function CategoryCard({
 
 					{/* Right: Icon */}
 					<category.icon
-						className="w-8 h-8 transition-all duration-400 text-[#c8c8c8] group-hover:text-[var(--card-color)] group-hover:scale-110"
+						className="w-8 h-8 transition-all duration-400 text-[#c8c8c8] group-hover:text-(--card-color) group-hover:scale-110"
 						strokeWidth={1.5}
 					/>
 				</div>

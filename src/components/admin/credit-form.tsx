@@ -8,6 +8,8 @@ import { trpc } from "@/lib/trpc";
 import clsx from "clsx";
 import { Save, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const creditSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),
@@ -34,6 +36,7 @@ export function CreditForm({
 		formState: { errors }
 	} = useForm({
 		resolver: zodResolver(creditSchema),
+		mode: "onChange",
 		defaultValues: {
 			name: initialData ? initialData.name : "",
 			value: initialData ? initialData.value : 0,
@@ -66,92 +69,72 @@ export function CreditForm({
 	const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
 	return (
-		<div className="max-w-2xl mx-auto">
-			<div className="mb-6 flex items-center justify-between">
+		<form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+			{/* Header */}
+			<div className="flex items-center justify-between">
 				<Link
 					href="/admin/credits"
-					className="flex items-center text-sm text-zinc-500 hover:text-zinc-900:text-zinc-300 transition-colors"
+					className="text-[#999] hover:text-[#1a1a2e] flex items-center gap-2 transition-colors text-[0.85rem] no-underline"
 				>
-					<ArrowLeft className="w-4 h-4 mr-1" /> Zurück zur Übersicht
+					<ArrowLeft className="w-4 h-4" /> Zurück
 				</Link>
-				<h1 className="text-2xl font-bold text-zinc-900">
-					{isEditMode ? "Gutschrift bearbeiten" : "Neue Gutschrift"}
-				</h1>
+				<button
+					type="submit"
+					disabled={isSubmitting}
+					className={clsx(
+						"px-5 py-2.5 rounded-xl font-semibold text-white flex items-center gap-2 transition-all duration-200 text-[0.82rem] cursor-pointer active:scale-95",
+						isSubmitting
+							? "bg-[#ddd] cursor-not-allowed"
+							: "bg-[#e20074] hover:bg-[#c70066]"
+					)}
+				>
+					{isSubmitting ? (
+						<Loader2 className="w-4 h-4 animate-spin" />
+					) : (
+						<Save className="w-4 h-4" />
+					)}
+					Speichern
+				</button>
 			</div>
 
-			<form
-				onSubmit={handleSubmit(onSubmit)}
-				className="space-y-6 bg-white p-8 rounded-2xl border border-zinc-200 shadow-sm"
-			>
-				{/* Name */}
-				<div>
-					<label className="block text-sm font-medium text-zinc-700 mb-1">
-						Bezeichnung
-					</label>
-					<input
-						{...register("name")}
-						className="w-full px-4 py-2 rounded-lg border border-zinc-300 bg-white focus:outline-none focus:ring-2 focus:ring-magenta-500"
-						placeholder="z.B. Anschlusspreisbefreiung"
-					/>
-					{errors.name && (
-						<p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
-					)}
-				</div>
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div className="space-y-6">
+					<div className="bg-white rounded-2xl p-6 border border-[#eaedf0] space-y-5">
+						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] border-b border-[#f0f0f0] pb-2 m-0">
+							Basisdaten
+						</h3>
 
-				{/* Value */}
-				<div>
-					<label className="block text-sm font-medium text-zinc-700 mb-1">
-						Wert (€)
-					</label>
-					<input
-						type="number"
-						step="0.01"
-						{...register("value", { valueAsNumber: true })}
-						className="w-full px-4 py-2 rounded-lg border border-zinc-300 bg-white focus:outline-none focus:ring-2 focus:ring-magenta-500"
-						placeholder="0.00"
-					/>
-					{errors.value && (
-						<p className="text-red-500 text-xs mt-1">{errors.value.message}</p>
-					)}
-				</div>
+						{/* Name */}
+						<Input
+							label="Bezeichnung"
+							placeholder="z.B. Anschlusspreisbefreiung"
+							error={errors.name?.message as string}
+							{...register("name")}
+						/>
 
-				{/* Active Status */}
-				<div className="flex items-center gap-2">
-					<input
-						type="checkbox"
-						id="isActive"
-						{...register("isActive")}
-						className="rounded border-zinc-300 text-magenta-600 focus:ring-magenta-500"
-					/>
-					<label
-						htmlFor="isActive"
-						className="text-sm text-zinc-700"
-					>
-						Aktiv (für Verkäufer sichtbar)
-					</label>
-				</div>
+						{/* Value */}
+						<Input
+							label="Wert (€)"
+							type="number"
+							step="0.01"
+							placeholder="0.00"
+							error={errors.value?.message as string}
+							{...register("value", { valueAsNumber: true })}
+						/>
 
-				{/* Submit Button */}
-				<div className="pt-4 border-t border-zinc-200 flex justify-end">
-					<button
-						type="submit"
-						disabled={isSubmitting}
-						className={clsx(
-							"px-6 py-2 rounded-lg font-bold text-white transition-all flex items-center gap-2",
-							isSubmitting
-								? "bg-zinc-400 cursor-not-allowed"
-								: "bg-magenta-600 hover:bg-magenta-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-						)}
-					>
-						{isSubmitting ? (
-							<Loader2 className="w-5 h-5 animate-spin" />
-						) : (
-							<Save className="w-5 h-5" />
-						)}
-						{isEditMode ? "Speichern" : "Erstellen"}
-					</button>
+						{/* Active Status */}
+						<div className="space-y-3 pt-2 border-t border-[#f0f0f0]">
+							<h4 className="text-[0.8rem] font-bold text-[#1a1a2e] m-0 mb-3">
+								Sichtbarkeit
+							</h4>
+							<Checkbox
+								label="Aktiv (für Verkäufer sichtbar)"
+								{...register("isActive")}
+							/>
+						</div>
+					</div>
 				</div>
-			</form>
-		</div>
+			</div>
+		</form>
 	);
 }

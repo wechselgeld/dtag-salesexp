@@ -81,7 +81,6 @@ export const adminRouter = router({
     }),
 
     getMaintenanceStatus: publicProcedure.query(async () => {
-        // @ts-ignore
         const setting = await prisma.systemSetting.findUnique({
             where: { key: 'maintenance_mode' }
         });
@@ -91,11 +90,27 @@ export const adminRouter = router({
     toggleMaintenanceMode: protectedProcedure
         .input(z.object({ enabled: z.boolean() }))
         .mutation(async ({ input }) => {
-            // @ts-ignore
             return await prisma.systemSetting.upsert({
                 where: { key: 'maintenance_mode' },
                 update: { value: input.enabled ? 'true' : 'false' },
                 create: { key: 'maintenance_mode', value: input.enabled ? 'true' : 'false' }
+            });
+        }),
+
+    getSecuritySettings: protectedProcedure.query(async () => {
+        const setting = await prisma.systemSetting.findUnique({
+            where: { key: 'allowed_ips' }
+        });
+        return setting?.value || "";
+    }),
+
+    updateSecuritySettings: protectedProcedure
+        .input(z.object({ allowedIps: z.string() }))
+        .mutation(async ({ input }) => {
+            return await prisma.systemSetting.upsert({
+                where: { key: 'allowed_ips' },
+                update: { value: input.allowedIps },
+                create: { key: 'allowed_ips', value: input.allowedIps }
             });
         }),
 

@@ -30,7 +30,19 @@ function SettingsWrapper({ children }: { children: React.ReactNode }) {
 }
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-	const [queryClient] = useState(() => new QueryClient());
+	const [queryClient] = useState(
+		() =>
+			new QueryClient({
+				defaultOptions: {
+					queries: {
+						staleTime: 5 * 60 * 1000, // 5 minutes caching before refetch
+						gcTime: 30 * 60 * 1000, // 30 minutes garbage collection
+						refetchOnWindowFocus: false, // Don't refetch when switching tabs
+						retry: 1
+					}
+				}
+			})
+	);
 	const [trpcClient] = useState(() =>
 		trpc.createClient({
 			links: [

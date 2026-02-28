@@ -27,6 +27,7 @@ interface BasketState {
     basketCredits: Credit[];
     addItem: (product: Product, config: BasketItem["config"]) => void;
     removeItem: (id: string) => void;
+    restoreItem: (item: BasketItem) => void;
     updateItem: (id: string, config: Partial<BasketItem["config"]>) => void;
     setBasketCredits: (credits: Credit[]) => void;
     clearBasket: () => void;
@@ -56,6 +57,12 @@ export const useBasketStore = create<BasketState>()(
             removeItem: (id) => {
                 set((state) => ({
                     items: state.items.filter((item) => item.id !== id)
+                }));
+            },
+            restoreItem: (item) => {
+                set((state) => ({
+                    items: [...state.items, item].sort((a, b) => a.addedAt - b.addedAt),
+                    isOpen: true
                 }));
             },
             updateItem: (id, config) => {

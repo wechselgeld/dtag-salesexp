@@ -19,13 +19,16 @@ import {
 	ArrowUpDown,
 	ArrowUp,
 	ArrowDown,
-	Check
+	Check,
+	Plus
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import clsx from "clsx";
 import { SearchBar } from "@/components/search-bar";
 import { useSettingsStore } from "@/hooks/use-settings-store";
+import { useBasketStore } from "@/hooks/use-basket-store";
+import { Skeleton } from "@/components/skeleton";
 
 export default function ProductListPage() {
 	const params = useParams();
@@ -37,6 +40,7 @@ export default function ProductListPage() {
 
 	const utils = trpc.useUtils();
 	const { compactView, sortOption, setSortOption } = useSettingsStore();
+	const { addItem } = useBasketStore();
 
 	const { data: session } = trpc.session.getCurrent.useQuery();
 
@@ -179,9 +183,9 @@ export default function ProductListPage() {
 
 			{/* Header */}
 			<motion.div
-				initial={{ opacity: 0, y: 12 }}
+				initial={{ opacity: 0, y: 8 }}
 				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.25, ease: "easeOut", delay: 0.05 }}
+				transition={{ duration: 0.15, ease: "easeOut", delay: 0 }}
 				className="bg-transparent pb-8"
 			>
 				<Link
@@ -203,7 +207,7 @@ export default function ProductListPage() {
 			</motion.div>
 
 			{/* Filters + Sorting */}
-			<div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500 relative z-20">
+			<div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300 relative z-20">
 				<div className="flex items-center gap-2 flex-wrap pb-4">
 					{/* Filter Pills */}
 					{visibleFilters.map((filter) => (
@@ -317,9 +321,10 @@ export default function ProductListPage() {
 				<AnimatePresence mode="popLayout">
 					{activeFilter && (
 						<motion.div
-							initial={{ opacity: 0, scale: 0.95, y: -10 }}
+							initial={{ opacity: 0, scale: 0.95, y: -5 }}
 							animate={{ opacity: 1, scale: 1, y: 0 }}
-							exit={{ opacity: 0, scale: 0.95, y: -10 }}
+							exit={{ opacity: 0, scale: 0.95, y: -5 }}
+							transition={{ duration: 0.15 }}
 							className="border px-5 py-4 rounded-2xl flex items-start gap-3 shadow-sm"
 							style={{
 								backgroundColor: `${catColor}1C`,
@@ -348,11 +353,47 @@ export default function ProductListPage() {
 			<div className="pb-10">
 				{isLoading ? (
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						{[1, 2, 3].map((i) => (
+						{[1, 2, 3, 4, 5, 6].map((i) => (
 							<div
 								key={i}
-								className="h-64 bg-white rounded-2xl border border-[#eaedf0] animate-pulse"
-							/>
+								className="h-auto bg-white rounded-2xl border border-[#eaedf0] overflow-hidden flex flex-col justify-between"
+							>
+								{/* Skeleton Top Section matching content padding */}
+								<div className="p-5">
+									<div className="flex justify-between items-baseline mb-4">
+										<Skeleton className="h-[1.15rem] w-3/4 rounded-md bg-[#eaedf0]" />
+										<Skeleton className="h-3 w-8 rounded-full bg-[#f0f0f0]" />
+									</div>
+									<div className="space-y-2.5 mb-5">
+										<Skeleton className="h-2.5 w-full rounded bg-[#f7f8fa]" />
+										<Skeleton className="h-2.5 w-5/6 rounded bg-[#f7f8fa]" />
+									</div>
+									<div className="flex gap-4">
+										<div className="flex gap-1.5 items-center">
+											<Skeleton className="h-3 w-3 rounded-full bg-[#eaedf0]" />
+											<Skeleton className="h-2.5 w-10 rounded bg-[#f0f0f0]" />
+										</div>
+										<div className="flex gap-1.5 items-center">
+											<Skeleton className="h-3 w-3 rounded-full bg-[#eaedf0]" />
+											<Skeleton className="h-2.5 w-16 rounded bg-[#f0f0f0]" />
+										</div>
+									</div>
+								</div>
+
+								{/* Skeleton Bottom Section */}
+								<div className="p-5 pt-3 border-t border-[#f0f0f0] mt-auto">
+									<div className="flex justify-between items-end">
+										<div>
+											<Skeleton className="h-7 w-20 rounded-md bg-[#eaedf0] mb-1" />
+											<Skeleton className="h-2 w-14 rounded bg-[#f0f0f0]" />
+										</div>
+										<div className="flex gap-1.5">
+											<Skeleton className="h-8 w-10 rounded-xl bg-[#eaedf0]" />
+											<Skeleton className="h-8 w-28 rounded-xl bg-[#eaedf0]" />
+										</div>
+									</div>
+								</div>
+							</div>
 						))}
 					</div>
 				) : (
@@ -367,9 +408,11 @@ export default function ProductListPage() {
 									<motion.div
 										key={product.id}
 										id={`tour-product-${index}`}
-										initial={{ opacity: 0, y: 10 }}
+										initial={{ opacity: 0, y: 5 }}
 										animate={{ opacity: 1, y: 0 }}
+										transition={{ duration: 0.15, delay: index * 0.02 }}
 										style={{ "--cat-color": catColor } as React.CSSProperties}
+										data-cursor="view"
 										className={clsx(
 											"bg-white rounded-2xl flex flex-col justify-between transition-all duration-300 group border relative cursor-pointer overflow-hidden",
 											isFocused ? "highlight-glow" : "border-[#eaedf0]",
@@ -559,32 +602,65 @@ export default function ProductListPage() {
 												)}
 											</div>
 
-											<Link
-												href={`/products/${category}/${product.id}`}
-												className="block"
-												onMouseEnter={() =>
-													utils.product.getProductById.prefetch({
-														id: product.id
-													})
-												}
-												onFocus={() =>
-													utils.product.getProductById.prefetch({
-														id: product.id
-													})
-												}
-											>
+											<div className="flex items-center gap-1.5">
 												<button
+													onClick={(e) => {
+														e.preventDefault();
+														e.stopPropagation();
+														addItem(product as any, {
+															businessCase: "NEW_ACTIVATION",
+															selectedSpecialPriceIds: [],
+															magentaTVPackage: null,
+															selectedAddonIds: [],
+															vouchers: [],
+															credits: [],
+															hardwarePurchaseType:
+																product.category === "DEVICE"
+																	? ((product as any).rentalPrice ||
+																			product.basePrice) > 0
+																		? "RENT"
+																		: "BUY"
+																	: undefined
+														});
+													}}
 													className={clsx(
-														"px-4 py-2 rounded-xl font-semibold text-[0.85rem] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer",
+														"px-2.5 py-1.5 h-full rounded-xl transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-95",
 														isFocused
-															? "bg-[#e20074] text-white hover:bg-[#c2005c] hover:shadow-[0_4px_12px_rgba(226,0,116,0.2)]"
-															: "bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:bg-[#1a1a2e] hover:text-white hover:border-[#1a1a2e]"
+															? "bg-[#e20074]/10 text-[#e20074] border border-[#e20074]/20 hover:bg-[#e20074] hover:text-white"
+															: "bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:bg-[#e20074] hover:text-white hover:border-[#e20074]"
 													)}
+													title="Hinzufügen"
 												>
-													Wählen
-													<ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+													<Plus className="w-5 h-5 shrink-0" />
 												</button>
-											</Link>
+
+												<Link
+													href={`/products/${category}/${product.id}`}
+													className="block"
+													onMouseEnter={() =>
+														utils.product.getProductById.prefetch({
+															id: product.id
+														})
+													}
+													onFocus={() =>
+														utils.product.getProductById.prefetch({
+															id: product.id
+														})
+													}
+												>
+													<button
+														className={clsx(
+															"px-3 py-1.5 rounded-xl font-semibold text-[0.8rem] transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95",
+															isFocused
+																? "bg-[#e20074] text-white hover:bg-[#c2005c] hover:shadow-[0_4px_12px_rgba(226,0,116,0.2)]"
+																: "bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:bg-[#1a1a2e] hover:text-white hover:border-[#1a1a2e]"
+														)}
+													>
+														Konfigurieren
+														<ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+													</button>
+												</Link>
+											</div>
 										</div>
 									</motion.div>
 								);
