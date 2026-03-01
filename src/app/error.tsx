@@ -24,7 +24,7 @@ export default function GlobalError({
 				<div className="flex flex-col items-center mb-12 text-center">
 					<TelekomLogo className="w-12 h-12 text-[#e20074] mb-8" />
 					<h1 className="text-3xl font-extrabold text-[#1a1a2e] tracking-tight mb-4 lowercase">
-						unerwarteter fehler
+						Unerwarteter Fehler
 					</h1>
 					<p className="text-[#888] font-medium max-w-xl">
 						Ein technisches Problem ist aufgetreten. Wir entschuldigen uns für
@@ -35,10 +35,6 @@ export default function GlobalError({
 				{/* Content Card */}
 				<div className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] p-8 sm:p-12">
 					<div className="flex flex-col items-center text-center mb-10">
-						<div className="w-20 h-20 bg-[#fdf2f8] border border-[#fbcfe8] rounded-3xl flex items-center justify-center mb-8 shadow-sm">
-							<AlertCircle className="w-10 h-10 text-[#e20074]" />
-						</div>
-
 						<h2 className="text-[1.8rem] font-extrabold text-[#1a1a2e] mb-4 tracking-tight">
 							Etwas ist schiefgelaufen.
 						</h2>

@@ -5,6 +5,8 @@ import { X, Calculator, Plus, Minus, Check } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
+import { trpc } from "@/lib/trpc";
+import { DEFAULT_PRICING } from "@/hooks/use-cost-calculator";
 
 interface StreamingCalculatorModalProps {
 	isOpen: boolean;
@@ -93,6 +95,23 @@ export function StreamingCalculatorModal({
 	const [selectedPlan, setSelectedPlan] = useState<string>("mtv-smartstream");
 	const [mounted, setMounted] = useState(false);
 
+	const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery();
+	const settings = pricingSettings || DEFAULT_PRICING;
+
+	const dynamicPlans = useMemo(
+		() =>
+			MAGENTA_PLANS.map((plan) => {
+				if (plan.id === "mtv-smart")
+					return { ...plan, price: settings.magentatv_smart_price };
+				if (plan.id === "mtv-smartstream")
+					return { ...plan, price: settings.magentatv_smartstream_price };
+				if (plan.id === "mtv-megastream")
+					return { ...plan, price: settings.magentatv_megastream_price };
+				return plan;
+			}),
+		[settings]
+	);
+
 	useEffect(() => setMounted(true), []);
 
 	const toggleService = (id: string, group: string) => {
@@ -115,8 +134,8 @@ export function StreamingCalculatorModal({
 	}, [selectedServices]);
 
 	const targetPlan = useMemo(() => {
-		return MAGENTA_PLANS.find((p) => p.id === selectedPlan);
-	}, [selectedPlan]);
+		return dynamicPlans.find((p) => p.id === selectedPlan);
+	}, [selectedPlan, dynamicPlans]);
 
 	const coveredValue = useMemo(() => {
 		return selectedServices.reduce((sum, currentServiceId) => {
@@ -255,7 +274,7 @@ export function StreamingCalculatorModal({
 										Gewünschter Tarif
 									</h3>
 									<div className="flex flex-col gap-4 mb-8">
-										{MAGENTA_PLANS.map((plan) => {
+										{dynamicPlans.map((plan) => {
 											const isSelected = selectedPlan === plan.id;
 											return (
 												<button

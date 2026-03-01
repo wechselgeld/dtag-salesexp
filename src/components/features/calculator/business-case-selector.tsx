@@ -62,7 +62,7 @@ export function BusinessCaseSelector({
 	] as const;
 
 	return (
-		<div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+		<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
 			{cases.map((item) => {
 				if (!item.allowed) return null;
 				const isSelected = selectedCase === item.id;

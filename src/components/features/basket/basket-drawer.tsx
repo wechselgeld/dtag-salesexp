@@ -4,8 +4,12 @@ import { generateOfferPdf } from "@/lib/pdf-generator";
 import { useBasketLogic } from "@/hooks/use-basket-logic";
 
 import { useBasketStore, BasketItem } from "@/hooks/use-basket-store";
-import { calculateProductCosts } from "@/hooks/use-cost-calculator";
+import {
+	calculateProductCosts,
+	DEFAULT_PRICING
+} from "@/hooks/use-cost-calculator";
 import { MAGENTA_TV_PACKAGES } from "@/lib/constants/pricing";
+import type { PricingSettings } from "@/types/product";
 import {
 	Trash2,
 	ShoppingBag,
@@ -262,6 +266,7 @@ export function BasketDrawer() {
 											key={item.id}
 											item={item}
 											removeItem={() => handleRemoveItem(item)}
+											settings={settings}
 										/>
 									))
 								)}
@@ -342,9 +347,9 @@ export function BasketDrawer() {
 						</div>
 
 						{/* Monthly total */}
-						<div className="bg-[#1a1a2e] text-white px-4 py-3 rounded-xl flex flex-col gap-2 mb-3">
+						<div className="bg-[#f7f8fa] border border-[#eaedf0] px-4 py-3 rounded-xl flex flex-col gap-2 mb-3">
 							<div className="flex justify-between items-center mb-1">
-								<span className="text-[0.65rem] uppercase tracking-wider text-white/50 font-medium">
+								<span className="text-[0.65rem] uppercase tracking-wider text-[#999] font-medium">
 									Kostenübersicht (24 Monate)
 								</span>
 							</div>
@@ -354,14 +359,14 @@ export function BasketDrawer() {
 									idx: number
 								) => (
 									<div key={idx} className="flex justify-between items-center">
-										<span className="text-[0.75rem] text-white/80">
+										<span className="text-[0.75rem] text-[#888]">
 											{step.start === step.end
 												? `Monat ${step.start}`
 												: `Monat ${step.start} - ${step.end}`}
 										</span>
-										<span className="text-[0.95rem] font-bold tracking-tight flex items-center">
+										<span className="text-[0.95rem] font-bold tracking-tight text-[#1a1a2e] flex items-center">
 											{step.total.toFixed(2)}
-											<span className="ml-[3px] text-[0.75rem] font-normal text-white/70">
+											<span className="ml-[3px] text-[0.75rem] font-normal text-[#aaa]">
 												€
 											</span>
 										</span>
@@ -369,19 +374,19 @@ export function BasketDrawer() {
 								)
 							)}
 
-							<div className="border-t border-white/10 mt-1 pt-2 flex justify-between items-center">
+							<div className="border-t border-[#e0e0e0] mt-1 pt-2 flex justify-between items-center">
 								<div className="flex flex-col">
-									<span className="text-[0.65rem] uppercase tracking-wider text-white/50 font-medium">
+									<span className="text-[0.65rem] uppercase tracking-wider text-[#999] font-medium">
 										Ø Monatlich
 									</span>
-									<span className="text-[0.6rem] text-white/40 font-medium">
+									<span className="text-[0.6rem] text-[#bbb] font-medium">
 										ca. {items.length > 0 ? totals.daily.toFixed(2) : "0.00"} €
 										am Tag
 									</span>
 								</div>
-								<span className="text-[1.1rem] font-extrabold tracking-tight flex items-center leading-none">
+								<span className="text-[1.3rem] font-extrabold tracking-tight text-[#e20074] flex items-center leading-none">
 									{totalMonthly.toFixed(2)}
-									<span className="ml-[3px] text-[0.8rem] font-normal text-white/70">
+									<span className="ml-[3px] text-[0.8rem] font-normal text-[#e20074]/60">
 										€
 									</span>
 								</span>
@@ -399,7 +404,7 @@ export function BasketDrawer() {
 							<button
 								onClick={async () => {
 									setIsGenerating("generating");
-									await generateOfferPdf(items, basketCredits);
+									await generateOfferPdf(items, basketCredits, settings);
 
 									const subject = encodeURIComponent(
 										"Ihr persönliches Angebot der Telekom"
@@ -481,10 +486,12 @@ export function BasketDrawer() {
 
 function BasketItemCard({
 	item,
-	removeItem
+	removeItem,
+	settings
 }: {
 	item: BasketItem;
 	removeItem: (id: string) => void;
+	settings: PricingSettings;
 }) {
 	const router = useRouter();
 	const calculation = calculateProductCosts({
@@ -495,7 +502,8 @@ function BasketItemCard({
 		selectedAddonIds: item.config.selectedAddonIds,
 		vouchers: item.config.vouchers,
 		hardwarePurchaseType: item.config.hardwarePurchaseType,
-		plusKartenCount: item.config.plusKartenCount
+		plusKartenCount: item.config.plusKartenCount,
+		settings
 	});
 
 	const catColor = CATEGORY_COLORS[item.product.category] || "#e20074";

@@ -1,12 +1,18 @@
 "use client";
 
 import { useBasketStore } from "@/hooks/use-basket-store";
-import { calculateProductCosts } from "@/hooks/use-cost-calculator";
+import {
+	calculateProductCosts,
+	DEFAULT_PRICING
+} from "@/hooks/use-cost-calculator";
+import { trpc } from "@/lib/trpc";
 import { useMemo } from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 export function CombinedTimeline() {
 	const items = useBasketStore((state) => state.items);
+	const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery();
+	const settings = pricingSettings || DEFAULT_PRICING;
 
 	const aggregatedData = useMemo(() => {
 		const data = Array.from({ length: 24 }, (_, i) => ({
@@ -23,7 +29,8 @@ export function CombinedTimeline() {
 				selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
 				selectedAddonIds: item.config.selectedAddonIds,
 				vouchers: item.config.vouchers,
-				credits: item.config.credits || []
+				credits: item.config.credits || [],
+				settings
 			});
 
 			calculation.monthlyCosts.forEach((mc, index) => {

@@ -85,7 +85,8 @@ function ProductPageContent() {
 		hardwarePurchaseType,
 		setHardwarePurchaseType,
 		plusKartenCount,
-		setPlusKartenCount
+		setPlusKartenCount,
+		settings
 	} = useCostCalculator(product);
 
 	const [salesScriptOpen, setSalesScriptOpen] = React.useState(false);
@@ -208,11 +209,11 @@ function ProductPageContent() {
 				initial={{ opacity: 0, y: 8 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ delay: 0.05, duration: 0.35 }}
-				className="bg-white rounded-2xl border border-[#eaedf0] p-7 mb-6 relative overflow-hidden"
+				className="bg-white rounded-xl border border-[#eaedf0] p-7 mb-6 relative overflow-hidden"
 			>
 				{/* Category gradient */}
 				<div
-					className="absolute inset-0 pointer-events-none rounded-2xl"
+					className="absolute inset-0 pointer-events-none rounded-xl"
 					style={{
 						background: `linear-gradient(to right, transparent 40%, ${catColor}08 70%, ${catColor}14 100%)`
 					}}
@@ -337,7 +338,7 @@ function ProductPageContent() {
 			</motion.div>
 
 			{/* ── Configuration + Summary ── */}
-			<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start pb-10">
+			<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start pb-10">
 				{/* LEFT: Configuration Flow */}
 				<div className="space-y-4">
 					{/* Sales Script Assistant */}
@@ -428,7 +429,13 @@ function ProductPageContent() {
 									/>
 									<div className="leading-snug mt-0.5">
 										Für Hardware fällt einmalig eine{" "}
-										<strong>Bereitstellungspauschale i. H. v. 6,95 €</strong>{" "}
+										<strong>
+											Bereitstellungspauschale i. H. v.{" "}
+											{settings.shipping_hardware_fee
+												.toFixed(2)
+												.replace(".", ",")}{" "}
+											€
+										</strong>{" "}
 										an.
 									</div>
 								</div>
@@ -566,7 +573,11 @@ function ProductPageContent() {
 											)}
 									</div>
 									<p className="text-[0.78rem] text-[#999] m-0">
-										ab +10,00€ mtl. · Kombivorteil
+										ab +
+										{settings.magentatv_smart_price
+											.toFixed(2)
+											.replace(".", ",")}
+										€ mtl. · Kombivorteil
 									</p>
 								</div>
 
@@ -641,7 +652,14 @@ function ProductPageContent() {
 															color: isSelected ? catColor : "#888"
 														}}
 													>
-														+{pkg.price.toFixed(2)} €
+														+
+														{(key === "smart"
+															? settings.magentatv_smart_price
+															: key === "smartstream"
+																? settings.magentatv_smartstream_price
+																: settings.magentatv_megastream_price
+														).toFixed(2)}{" "}
+														€
 													</span>
 												</div>
 
@@ -729,7 +747,7 @@ function ProductPageContent() {
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.3, duration: 0.35 }}
-						className="bg-white rounded-2xl border border-[#eaedf0] p-5 hidden lg:block"
+						className="bg-white rounded-xl border border-[#eaedf0] p-5 hidden lg:block"
 					>
 						<CostTimeline calculation={calculation} accentColor={catColor} />
 					</motion.div>
@@ -740,7 +758,7 @@ function ProductPageContent() {
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.32, duration: 0.35 }}
-						className="bg-[#f7f8fa] rounded-2xl p-5 border border-[#eaedf0] flex flex-col items-center gap-1.5"
+						className="bg-[#f7f8fa] rounded-xl p-5 border border-[#eaedf0] flex flex-col items-start gap-1.5"
 					>
 						<span className="text-[0.65rem] text-[#999] uppercase font-bold tracking-widest">
 							Täglicher Preis
@@ -751,7 +769,7 @@ function ProductPageContent() {
 						>
 							{calculation.dailyPriceTrivialization}
 						</span>
-						<p className="text-[0.7rem] text-[#888] font-medium text-center leading-relaxed m-0 px-2">
+						<p className="text-[0.7rem] text-[#888] font-medium leading-relaxed m-0">
 							Das sind weniger als die Kosten für einen Kaffee am Tag – für
 							volles Entertainment.
 						</p>
@@ -764,8 +782,8 @@ function ProductPageContent() {
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.35, duration: 0.35 }}
 						onClick={handleAddToBasket}
-						className="w-full py-3.5 rounded-2xl text-white font-bold text-[0.95rem] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] active:scale-[0.98]"
-						style={{ backgroundColor: catColor }}
+						className="w-full py-3.5 rounded-xl text-white font-bold text-[0.95rem] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer hover:shadow-[0_6px_20px_rgba(226,0,116,0.25)] active:scale-[0.98]"
+						style={{ backgroundColor: "#e20074" }}
 					>
 						<ShoppingCart className="w-4.5 h-4.5" />
 						{basketItemId ? "Konfiguration aktualisieren" : "In den Warenkorb"}
@@ -783,7 +801,7 @@ function ProductPageContent() {
 						<motion.div
 							initial={{ opacity: 0, y: 8 }}
 							animate={{ opacity: 1, y: 0 }}
-							className="mt-4 w-full py-3.5 rounded-2xl text-white font-bold text-[0.95rem] flex items-center justify-center gap-2.5 relative overflow-hidden shadow-[0_10px_25px_-5px_rgba(226,0,116,0.4)]"
+							className="mt-4 w-full py-3.5 rounded-xl text-white font-bold text-[0.95rem] flex items-center justify-center gap-2.5 relative overflow-hidden shadow-[0_10px_25px_-5px_rgba(226,0,116,0.4)]"
 							style={{ backgroundColor: "#e20074" }}
 						>
 							<div className="absolute inset-0 bg-white/10 blur-2xl rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none" />
@@ -799,7 +817,7 @@ function ProductPageContent() {
 							initial={{ opacity: 0, y: 8 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.4, duration: 0.35 }}
-							className="mt-4 border rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+							className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
 							style={{
 								backgroundColor: `${catColor}0D`,
 								borderColor: `${catColor}33`
@@ -825,7 +843,17 @@ function ProductPageContent() {
 								<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
 									Jede weitere Person surft für nur einen Bruchteil des Preises!{" "}
 									<br />
-									<strong>1. Karte 19,95 €; ab 2. Karte 9,95 €</strong>
+									<strong>
+										1. Karte{" "}
+										{settings.plus_karte_first_price
+											.toFixed(2)
+											.replace(".", ",")}{" "}
+										€; ab 2. Karte{" "}
+										{settings.plus_karte_following_price
+											.toFixed(2)
+											.replace(".", ",")}{" "}
+										€
+									</strong>
 								</p>
 
 								<div className="flex items-center gap-3">
@@ -858,7 +886,7 @@ function ProductPageContent() {
 							initial={{ opacity: 0, y: 8 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.4, duration: 0.35 }}
-							className="mt-4 border rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+							className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
 							style={{
 								backgroundColor: `${catColor}0D`,
 								borderColor: `${catColor}33`
@@ -903,7 +931,7 @@ function ProductPageContent() {
 							initial={{ opacity: 0, y: 8 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.45, duration: 0.35 }}
-							className="mt-4 border rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+							className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
 							style={{
 								backgroundColor: `${catColor}0D`,
 								borderColor: `${catColor}33`
@@ -947,7 +975,7 @@ function ProductPageContent() {
 							initial={{ opacity: 0, y: 8 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.45, duration: 0.35 }}
-							className="mt-4 border rounded-2xl p-4 flex gap-4 items-start relative overflow-hidden"
+							className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
 							style={{
 								backgroundColor: `${catColor}0D`,
 								borderColor: `${catColor}33`
@@ -1026,11 +1054,11 @@ function ConfigSection({
 			initial={{ opacity: 0, y: 8 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.1 + index * 0.08, duration: 0.35 }}
-			className="bg-white rounded-2xl p-5 border border-[#eaedf0] relative overflow-hidden"
+			className="bg-white rounded-xl p-5 border border-[#eaedf0] relative overflow-hidden"
 		>
 			{/* Subtle gradient */}
 			<div
-				className="absolute inset-0 pointer-events-none rounded-2xl"
+				className="absolute inset-0 pointer-events-none rounded-xl"
 				style={{
 					background: `linear-gradient(to right, transparent 50%, ${catColor}05 80%, ${catColor}0a 100%)`
 				}}

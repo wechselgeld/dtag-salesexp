@@ -16,16 +16,17 @@ import {
 	Tag,
 	ShieldAlert,
 	Loader2,
-	Save
+	Save,
+	Euro
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { Input } from "@/components/shared/ui/input";
 
 export default function AdminSettingsPage() {
-	const [activeTab, setActiveTab] = useState<"profile" | "security" | "system">(
-		"profile"
-	);
+	const [activeTab, setActiveTab] = useState<
+		"profile" | "security" | "system" | "pricing"
+	>("profile");
 
 	const { data: user } = trpc.admin.getCurrentUser.useQuery();
 
@@ -43,6 +44,7 @@ export default function AdminSettingsPage() {
 			<nav className="flex gap-2 p-1 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl w-fit">
 				{[
 					{ id: "profile", label: "Profil", icon: User },
+					{ id: "pricing", label: "Preise", icon: Euro },
 					{ id: "security", label: "Sicherheit", icon: Lock },
 					{ id: "system", label: "System", icon: Hammer }
 				].map((tab) => (
@@ -67,6 +69,7 @@ export default function AdminSettingsPage() {
 					{activeTab === "profile" && (
 						<ProfilePanel key="profile" user={user} />
 					)}
+					{activeTab === "pricing" && <PricingPanel key="pricing" />}
 					{activeTab === "security" && <SecurityPanel key="security" />}
 					{activeTab === "system" && <SystemPanel key="system" />}
 				</AnimatePresence>
@@ -488,6 +491,222 @@ function SystemPanel() {
 					</p>
 				</div>
 			</div>
+		</motion.div>
+	);
+}
+
+function PricingPanel() {
+	const utils = trpc.useUtils();
+	const { data: pricingSettings, isLoading } =
+		trpc.settings.getPricingSettings.useQuery();
+
+	const [status, setStatus] = useState<
+		"idle" | "pending" | "success" | "error"
+	>("idle");
+
+	const updateMutation = trpc.settings.updateMany.useMutation({
+		onSuccess: () => {
+			utils.settings.getPricingSettings.invalidate();
+			setStatus("success");
+			setTimeout(() => setStatus("idle"), 3000);
+		},
+		onError: () => {
+			setStatus("error");
+			setTimeout(() => setStatus("idle"), 3000);
+		}
+	});
+
+	const [form, setForm] = useState({
+		magentatv_smart_price: "10.00",
+		magentatv_smartstream_price: "17.00",
+		magentatv_megastream_price: "30.00",
+		shipping_hardware_fee: "6.95",
+		plus_karte_first_price: "19.95",
+		plus_karte_following_price: "9.95"
+	});
+
+	useEffect(() => {
+		if (pricingSettings) {
+			setForm({
+				magentatv_smart_price: pricingSettings.magentatv_smart_price.toFixed(2),
+				magentatv_smartstream_price:
+					pricingSettings.magentatv_smartstream_price.toFixed(2),
+				magentatv_megastream_price:
+					pricingSettings.magentatv_megastream_price.toFixed(2),
+				shipping_hardware_fee: pricingSettings.shipping_hardware_fee.toFixed(2),
+				plus_karte_first_price:
+					pricingSettings.plus_karte_first_price.toFixed(2),
+				plus_karte_following_price:
+					pricingSettings.plus_karte_following_price.toFixed(2)
+			});
+		}
+	}, [pricingSettings]);
+
+	const handleChange = (key: keyof typeof form, value: string) => {
+		setForm((prev) => ({ ...prev, [key]: value }));
+	};
+
+	const handleSave = (e: React.FormEvent) => {
+		e.preventDefault();
+		setStatus("pending");
+		const changes = Object.entries(form).map(([key, value]) => ({
+			key,
+			value: value.replace(",", ".")
+		}));
+		updateMutation.mutate(changes);
+	};
+
+	if (isLoading) {
+		return (
+			<div className="flex items-center gap-2 text-sm text-[#888]">
+				<Loader2 className="w-4 h-4 animate-spin" /> Lade Preise...
+			</div>
+		);
+	}
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 10 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -10 }}
+			className="space-y-6 max-w-3xl"
+		>
+			<form
+				onSubmit={handleSave}
+				className="bg-white border border-[#eaedf0] rounded-2xl shadow-sm overflow-hidden"
+			>
+				<div className="p-6 md:p-8 space-y-6">
+					<div className="flex items-center gap-4 mb-6">
+						<div className="w-14 h-14 bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl flex items-center justify-center">
+							<Euro className="w-6 h-6 text-[#1a1a2e]" />
+						</div>
+						<div>
+							<h2 className="text-[1.4rem] font-extrabold text-[#1a1a2e] mb-1 tracking-tight">
+								Globale Preise
+							</h2>
+							<p className="text-[0.85rem] text-[#888] m-0">
+								Diese Preise werden global für Hardware-Versand,
+								MagentaTV-Pakete und PlusKarten angewendet.
+							</p>
+						</div>
+					</div>
+
+					{/* MagentaTV Preise */}
+					<div>
+						<h3 className="text-sm font-bold text-[#1a1a2e] uppercase tracking-wider mb-4 border-b pb-2">
+							MagentaTV
+						</h3>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+							<Input
+								label="MagentaTV Smart"
+								type="number"
+								step="0.01"
+								value={form.magentatv_smart_price}
+								onChange={(e) =>
+									handleChange("magentatv_smart_price", e.target.value)
+								}
+							/>
+							<Input
+								label="MagentaTV SmartStream"
+								type="number"
+								step="0.01"
+								value={form.magentatv_smartstream_price}
+								onChange={(e) =>
+									handleChange("magentatv_smartstream_price", e.target.value)
+								}
+							/>
+							<Input
+								label="MagentaTV MegaStream"
+								type="number"
+								step="0.01"
+								value={form.magentatv_megastream_price}
+								onChange={(e) =>
+									handleChange("magentatv_megastream_price", e.target.value)
+								}
+							/>
+						</div>
+					</div>
+
+					{/* PlusKarten */}
+					<div>
+						<h3 className="text-sm font-bold text-[#1a1a2e] uppercase tracking-wider mb-4 border-b pb-2 pt-2">
+							PlusKarten
+						</h3>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+							<Input
+								label="PlusKarte (Erste)"
+								type="number"
+								step="0.01"
+								value={form.plus_karte_first_price}
+								onChange={(e) =>
+									handleChange("plus_karte_first_price", e.target.value)
+								}
+							/>
+							<Input
+								label="PlusKarte (Jede weitere)"
+								type="number"
+								step="0.01"
+								value={form.plus_karte_following_price}
+								onChange={(e) =>
+									handleChange("plus_karte_following_price", e.target.value)
+								}
+							/>
+						</div>
+					</div>
+
+					{/* Sonstiges */}
+					<div>
+						<h3 className="text-sm font-bold text-[#1a1a2e] uppercase tracking-wider mb-4 border-b pb-2 pt-2">
+							Einmalige Kosten
+						</h3>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+							<Input
+								label="Hardware Versandpauschale"
+								type="number"
+								step="0.01"
+								value={form.shipping_hardware_fee}
+								onChange={(e) =>
+									handleChange("shipping_hardware_fee", e.target.value)
+								}
+							/>
+						</div>
+					</div>
+				</div>
+
+				<div className="bg-[#f7f8fa] p-5 border-t border-[#eaedf0] flex items-center justify-between">
+					<div>
+						{status === "success" && (
+							<span className="text-green-600 font-medium flex items-center gap-2 text-[0.85rem]">
+								<Check className="w-4 h-4" /> Erfolgreich gespeichert
+							</span>
+						)}
+						{status === "error" && (
+							<span className="text-red-500 font-medium flex items-center gap-2 text-[0.85rem]">
+								<AlertTriangle className="w-4 h-4" /> Fehler beim Speichern
+							</span>
+						)}
+					</div>
+					<button
+						type="submit"
+						disabled={status === "pending"}
+						className={clsx(
+							"px-6 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
+							status === "pending"
+								? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
+								: "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:-translate-y-0.5"
+						)}
+					>
+						{status === "pending" ? (
+							<Loader2 className="w-4 h-4 animate-spin" />
+						) : (
+							<Save className="w-4 h-4" />
+						)}
+						{status === "pending"
+							? "Speichere..."
+							: "Preis-Konfiguration speichern"}
+					</button>
+				</div>
+			</form>
 		</motion.div>
 	);
 }

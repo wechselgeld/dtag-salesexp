@@ -52,24 +52,15 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 					<div className="text-[0.6rem] font-semibold uppercase tracking-wider text-[#aaa] mb-1">
 						Ø Monatlich
 					</div>
-					<div className="text-[1.4rem] font-extrabold text-[#1a1a2e] tracking-tight leading-none">
+					<div className="text-[1.15rem] font-bold text-[#1a1a2e] tracking-tight leading-none">
 						{averageMonthlyCost.toFixed(2)} €
 					</div>
 				</div>
-				<div
-					className="p-3.5 rounded-xl"
-					style={{ backgroundColor: `${accentColor}08` }}
-				>
-					<div
-						className="text-[0.6rem] font-semibold uppercase tracking-wider mb-1"
-						style={{ color: accentColor }}
-					>
+				<div className="p-3.5 rounded-xl bg-[#f7f8fa]">
+					<div className="text-[0.6rem] font-semibold uppercase tracking-wider mb-1 text-[#aaa]">
 						Gesamt (24M)
 					</div>
-					<div
-						className="text-[1.4rem] font-extrabold tracking-tight leading-none"
-						style={{ color: accentColor }}
-					>
+					<div className="text-[1.15rem] font-bold tracking-tight leading-none text-[#1a1a2e]">
 						{totalCost24Months.toFixed(2)} €
 					</div>
 				</div>
