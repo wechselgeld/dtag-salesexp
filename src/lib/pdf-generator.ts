@@ -1,24 +1,11 @@
 import { jsPDF } from "jspdf";
 import { BasketItem } from "@/hooks/use-basket-store";
-import { calculateProductCosts, MAGENTA_TV_PACKAGES, Credit } from "@/hooks/use-cost-calculator";
+import { calculateProductCosts, DEFAULT_PRICING } from "@/hooks/use-cost-calculator";
+import { Credit, PricingSettings } from "@/types/product";
+import { MAGENTA_TV_PACKAGES, CATEGORY_COLORS, CATEGORY_NAMES, SHIPPING_HARDWARE_FEE } from "@/lib/constants/pricing";
+import { hexToRgb } from "@/lib/utils";
 
-const CATEGORY_COLORS: Record<string, [number, number, number]> = {
-    MOBILE: [226, 0, 116],    // Magenta
-    FIBER: [0, 144, 208],     // Blue
-    DSL: [123, 97, 255],      // Purple
-    MAGENTA_TV_OTT: [255, 107, 0], // Orange
-    DEVICE: [0, 168, 120],    // Green
-    ADDON: [230, 126, 34]
-};
 
-const CATEGORY_LABELS: Record<string, string> = {
-    MOBILE: "MOBILFUNK",
-    FIBER: "GLASFASER",
-    DSL: "FESTNETZ",
-    MAGENTA_TV_OTT: "MAGENTATV",
-    ADDON: "OPTION",
-    DEVICE: "GERÄT"
-};
 
 export const getSvgAsPngBase64 = async (url: string): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -41,7 +28,7 @@ export const getSvgAsPngBase64 = async (url: string): Promise<string> => {
     });
 };
 
-export async function generateOfferPdf(items: BasketItem[], basketCredits: Credit[]) {
+export async function generateOfferPdf(items: BasketItem[], basketCredits: Credit[], settings: PricingSettings = DEFAULT_PRICING) {
     // A4 dimensions: 210 x 297 mm
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pageWidth = 210;
@@ -82,15 +69,20 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
             selectedAddonIds: item.config.selectedAddonIds,
             vouchers: item.config.vouchers,
             credits: item.config.credits,
-            hardwarePurchaseType: item.config.hardwarePurchaseType
+            hardwarePurchaseType: item.config.hardwarePurchaseType,
+            settings: settings
         });
 
         calc.monthlyCosts.forEach((mc, i) => {
             combinedMonths[i] += mc.total;
         });
 
-        totalBasketOneTime += calc.oneTimeCosts.total;
-        if (calc.oneTimeCosts.total !== 0) hasOneTimeValues = true;
+        const itemOneTime = calc.oneTimeCosts.breakdown
+            .filter(b => b.name !== "Versand Hardware")
+            .reduce((sum, b) => sum + b.cost, 0);
+
+        totalBasketOneTime += itemOneTime;
+        if (itemOneTime !== 0) hasOneTimeValues = true;
     });
 
     basketCredits.forEach(c => {
@@ -98,10 +90,9 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
         allCredits.push({ name: c.name, amount: c.value });
         hasOneTimeValues = true;
     });
-
     const hasDevice = items.some(i => i.product.category === "DEVICE");
     if (hasDevice) {
-        totalBasketOneTime += 6.95;
+        totalBasketOneTime += settings.shipping_hardware_fee;
         hasOneTimeValues = true;
     }
 
@@ -248,7 +239,8 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
             selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
             selectedAddonIds: item.config.selectedAddonIds,
             vouchers: item.config.vouchers,
-            credits: item.config.credits
+            credits: item.config.credits,
+            settings: settings
         });
 
         const activeAddons: string[] = [];
@@ -294,9 +286,10 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
         // Category Tag
         doc.setFontSize(8);
         doc.setFont("helvetica", "bold");
-        const color = CATEGORY_COLORS[item.product.category] || [100, 100, 100];
+        const colorHex = CATEGORY_COLORS[item.product.category] || "#666666";
+        const color = hexToRgb(colorHex);
         doc.setTextColor(color[0], color[1], color[2]);
-        doc.text(CATEGORY_LABELS[item.product.category] || "PRODUKT", margin + 5, currentY + 7);
+        doc.text(CATEGORY_NAMES[item.product.category]?.toUpperCase() || "PRODUKT", margin + 5, currentY + 7);
 
         // Product Title
         let title = item.product.name;

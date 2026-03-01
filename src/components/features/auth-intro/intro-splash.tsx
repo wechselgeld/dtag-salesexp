@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TelekomLogo } from "./telekom-logo";
+import { TelekomLogo } from "@/components/shared/telekom-logo";
 
 export function IntroSplash({ children }: { children: React.ReactNode }) {
 	const [showSplash, setShowSplash] = useState(false);

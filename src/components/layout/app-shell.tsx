@@ -1,17 +1,17 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { SidebarNav } from "@/components/sidebar-nav";
-import { BasketDrawer } from "@/components/basket/basket-drawer";
-import { IntroSplash } from "@/components/intro-splash";
+import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { BasketDrawer } from "@/components/features/basket/basket-drawer";
+import { IntroSplash } from "@/components/features/auth-intro/intro-splash";
 import { AnimatePresence, motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
-import { MaintenanceSplash } from "@/components/maintenance-splash";
-import { OnboardingTutorial } from "@/components/onboarding-tutorial";
+import { MaintenanceSplash } from "@/components/features/maintenance/maintenance-splash";
+import { OnboardingTutorial } from "@/components/features/onboarding/onboarding-tutorial";
 import { useModalStore } from "@/hooks/use-modal-store";
-import { AvailabilityCheckModal } from "@/components/availability-check-modal";
-import { StreamingCalculatorModal } from "@/components/streaming-calculator-modal";
-import { BattlecardModal } from "@/components/battlecard-panel";
+import { AvailabilityCheckModal } from "@/components/features/availability/availability-check-modal";
+import { StreamingCalculatorModal } from "@/components/features/calculator/streaming-calculator-modal";
+import { BattlecardModal } from "@/components/features/battlecards/battlecard-panel";
 
 // Routes that SHOULD render WITH the sales shell (sidebar + basket)
 const SHELL_ROUTES = ["/products", "/settings"];

@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronDown, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { TelekomLogo } from "@/components/telekom-logo";
+import { TelekomLogo } from "@/components/shared/telekom-logo";
 import clsx from "clsx";
 
 const FAQ_ITEMS = [

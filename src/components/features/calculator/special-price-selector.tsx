@@ -1,6 +1,6 @@
 "use client";
 
-import { SpecialPrice } from "@/hooks/use-cost-calculator";
+import { SpecialPrice } from "@/types/product";
 import clsx from "clsx";
 
 interface Props {

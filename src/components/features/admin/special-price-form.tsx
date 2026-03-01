@@ -17,8 +17,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/shared/ui/input";
+import { Checkbox } from "@/components/shared/ui/checkbox";
 
 const tierSchema = z.object({
 	price: z.number().min(0, "Preis darf nicht negativ sein"),

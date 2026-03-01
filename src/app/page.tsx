@@ -1,6 +1,6 @@
 "use client";
 
-import { CategoryGrid } from "@/components/category-grid";
+import { CategoryGrid } from "@/components/features/products/category-grid";
 import { Search } from "lucide-react";
 import { motion } from "framer-motion";
 

@@ -3,7 +3,7 @@
 import { trpc } from "@/lib/trpc";
 import Link from "next/link";
 import { Plus, Pencil, Trash2, Layers, Search } from "lucide-react";
-import { Skeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 import { useState } from "react";
 
 export default function AddonsPage() {

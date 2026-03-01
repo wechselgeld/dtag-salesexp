@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditForm } from "@/components/admin/credit-form";
+import { CreditForm } from "@/components/features/admin/credit-form";
 import { trpc } from "@/lib/trpc";
 import { useParams } from "next/navigation";
 

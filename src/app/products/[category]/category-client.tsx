@@ -25,10 +25,10 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import clsx from "clsx";
-import { SearchBar } from "@/components/search-bar";
+import { SearchBar } from "@/components/features/search/search-bar";
 import { useSettingsStore } from "@/hooks/use-settings-store";
 import { useBasketStore } from "@/hooks/use-basket-store";
-import { Skeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 
 export default function ProductListPage() {
 	const params = useParams();

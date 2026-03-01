@@ -118,4 +118,25 @@ export const productRouter = router({
                 };
             });
         }),
+
+    getCategoryStats: publicProcedure.query(async () => {
+        const stats = await prisma.product.groupBy({
+            by: ['category'],
+            where: { isActive: true },
+            _count: { _all: true }
+        });
+
+        // Add special counts for andons or news if needed, but for now just products
+        const result: Record<string, number> = {};
+        stats.forEach(s => {
+            result[s.category] = s._count._all;
+        });
+
+        // Add counts for compatible addons or other categories if they don't exist as products
+        // (e.g. ADDON might be a different model but handled in the grid)
+        const addonCount = await prisma.addon.count({ where: { isActive: true } });
+        result['ADDON'] = addonCount;
+
+        return result;
+    }),
 });

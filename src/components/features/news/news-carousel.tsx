@@ -11,7 +11,7 @@ import {
 	ChevronLeft
 } from "lucide-react";
 import clsx from "clsx";
-import { Skeleton } from "./skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 
 const PRIORITY_CONFIG: Record<
 	string,

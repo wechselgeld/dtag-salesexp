@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/shared/ui/input";
 
 export default function AdminSettingsPage() {
 	const [activeTab, setActiveTab] = useState<"profile" | "security" | "system">(

@@ -1,12 +1,11 @@
 "use client";
 
 import { generateOfferPdf } from "@/lib/pdf-generator";
+import { useBasketLogic } from "@/hooks/use-basket-logic";
 
 import { useBasketStore, BasketItem } from "@/hooks/use-basket-store";
-import {
-	calculateProductCosts,
-	MAGENTA_TV_PACKAGES
-} from "@/hooks/use-cost-calculator";
+import { calculateProductCosts } from "@/hooks/use-cost-calculator";
+import { MAGENTA_TV_PACKAGES } from "@/lib/constants/pricing";
 import {
 	Trash2,
 	ShoppingBag,
@@ -27,7 +26,7 @@ import { useRouter } from "next/navigation";
 import { CombinedTimeline } from "./combined-timeline";
 import { CreditSelector } from "../calculator/credit-selector";
 import { trpc } from "@/lib/trpc";
-import { Skeleton } from "../skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNewsNotificationStore } from "@/lib/store/news-notification-store";
@@ -140,104 +139,18 @@ export function BasketDrawer() {
 		}
 	}, [items, addNotification]);
 
-	// Calculate totals
-	const totalMonthly = items.reduce((acc, item) => {
-		const cost = calculateProductCosts({
-			product: item.product,
-			businessCase: item.config.businessCase,
-			magentaTVPackage: item.config.magentaTVPackage,
-			selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
-			selectedAddonIds: item.config.selectedAddonIds,
-			vouchers: item.config.vouchers,
-			hardwarePurchaseType: item.config.hardwarePurchaseType,
-			plusKartenCount: item.config.plusKartenCount
-		});
-		return acc + cost.averageMonthlyCost;
-	}, 0);
+	const {
+		totals,
+		combinedSteps,
+		groupedOneTimeCosts,
+		totalOneTime,
+		totalCredits,
+		hasDevice,
+		deviceShippingCost,
+		settings
+	} = useBasketLogic();
 
-	const combinedSteps =
-		items.length > 0
-			? (() => {
-					const monthlyTotals = Array(24).fill(0);
-					items.forEach((item) => {
-						const calculation = calculateProductCosts({
-							product: item.product,
-							businessCase: item.config.businessCase,
-							magentaTVPackage: item.config.magentaTVPackage,
-							selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
-							selectedAddonIds: item.config.selectedAddonIds,
-							vouchers: item.config.vouchers,
-							hardwarePurchaseType: item.config.hardwarePurchaseType,
-							plusKartenCount: item.config.plusKartenCount
-						});
-						calculation.monthlyCosts.forEach((mc, index) => {
-							if (index < 24) {
-								monthlyTotals[index] += mc.total;
-							}
-						});
-					});
-
-					const steps: { start: number; end: number; total: number }[] = [];
-					let currentStep = { start: 1, end: 1, total: monthlyTotals[0] };
-
-					for (let i = 1; i < 24; i++) {
-						if (Math.abs(monthlyTotals[i] - currentStep.total) < 0.01) {
-							currentStep.end = i + 1;
-						} else {
-							steps.push({ ...currentStep });
-							currentStep = {
-								start: i + 1,
-								end: i + 1,
-								total: monthlyTotals[i]
-							};
-						}
-					}
-					steps.push(currentStep);
-					return steps;
-				})()
-			: [];
-
-	const oneTimeBreakdowns = items.flatMap((item) => {
-		const cost = calculateProductCosts({
-			product: item.product,
-			businessCase: item.config.businessCase,
-			magentaTVPackage: item.config.magentaTVPackage,
-			selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
-			selectedAddonIds: item.config.selectedAddonIds,
-			vouchers: item.config.vouchers,
-			hardwarePurchaseType: item.config.hardwarePurchaseType,
-			plusKartenCount: item.config.plusKartenCount
-		});
-		return cost.oneTimeCosts.breakdown;
-	});
-
-	const totalOneTimeItems = oneTimeBreakdowns.reduce(
-		(acc, curr) => acc + curr.cost,
-		0
-	);
-
-	const groupedOneTimeCosts = oneTimeBreakdowns.reduce(
-		(acc, curr) => {
-			if (acc[curr.name]) {
-				acc[curr.name] += curr.cost;
-			} else {
-				acc[curr.name] = curr.cost;
-			}
-			return acc;
-		},
-		{} as Record<string, number>
-	);
-
-	const hasDevice = items.some((i) => i.product.category === "DEVICE");
-	const deviceShippingCost = hasDevice ? 6.95 : 0;
-
-	const totalOneTimeItemsWithShipping = totalOneTimeItems + deviceShippingCost;
-
-	const totalCredits = basketCredits.reduce(
-		(acc, credit) => acc + credit.value,
-		0
-	);
-	const totalOneTime = totalOneTimeItemsWithShipping - totalCredits;
+	const totalMonthly = totals.monthly;
 
 	const handleCreditChange = (ids: string[]) => {
 		if (!availableCredits) return;
@@ -408,22 +321,18 @@ export function BasketDrawer() {
 								</span>
 							</div>
 
-							{Object.entries(groupedOneTimeCosts).map(([name, cost]) => (
-								<div
-									key={name}
-									className="flex justify-between items-center text-[0.75rem] text-[#aaa] mt-1 pr-1.5"
-								>
-									<span>{name}</span>
-									<span>{cost.toFixed(2)} €</span>
-								</div>
-							))}
-
-							{hasDevice && (
-								<div className="flex justify-between items-center text-[0.75rem] text-[#aaa] mt-1 pr-1.5">
-									<span>Versand Hardware</span>
-									<span>6.95 €</span>
-								</div>
+							{Object.entries(groupedOneTimeCosts).map(
+								([name, cost]: [string, number]) => (
+									<div
+										key={name}
+										className="flex justify-between items-center text-[0.75rem] text-[#aaa] mt-1 pr-1.5"
+									>
+										<span>{name}</span>
+										<span>{cost.toFixed(2)} €</span>
+									</div>
+								)
 							)}
+
 							{totalCredits > 0 && (
 								<div className="flex justify-between items-center text-[0.75rem] text-[#00a878] mt-1 pr-1.5">
 									<span>Gutschrift</span>
@@ -439,21 +348,26 @@ export function BasketDrawer() {
 									Kostenübersicht (24 Monate)
 								</span>
 							</div>
-							{combinedSteps.map((step, idx) => (
-								<div key={idx} className="flex justify-between items-center">
-									<span className="text-[0.75rem] text-white/80">
-										{step.start === step.end
-											? `Monat ${step.start}`
-											: `Monat ${step.start} - ${step.end}`}
-									</span>
-									<span className="text-[0.95rem] font-bold tracking-tight flex items-center">
-										{step.total.toFixed(2)}
-										<span className="ml-[3px] text-[0.75rem] font-normal text-white/70">
-											€
+							{combinedSteps.map(
+								(
+									step: { start: number; end: number; total: number },
+									idx: number
+								) => (
+									<div key={idx} className="flex justify-between items-center">
+										<span className="text-[0.75rem] text-white/80">
+											{step.start === step.end
+												? `Monat ${step.start}`
+												: `Monat ${step.start} - ${step.end}`}
 										</span>
-									</span>
-								</div>
-							))}
+										<span className="text-[0.95rem] font-bold tracking-tight flex items-center">
+											{step.total.toFixed(2)}
+											<span className="ml-[3px] text-[0.75rem] font-normal text-white/70">
+												€
+											</span>
+										</span>
+									</div>
+								)
+							)}
 
 							<div className="border-t border-white/10 mt-1 pt-2 flex justify-between items-center">
 								<div className="flex flex-col">
@@ -461,27 +375,8 @@ export function BasketDrawer() {
 										Ø Monatlich
 									</span>
 									<span className="text-[0.6rem] text-white/40 font-medium">
-										ca.{" "}
-										{items.length > 0
-											? items
-													.reduce((acc, item) => {
-														const calc = calculateProductCosts({
-															product: item.product,
-															businessCase: item.config.businessCase,
-															magentaTVPackage: item.config.magentaTVPackage,
-															selectedSpecialPriceIds:
-																item.config.selectedSpecialPriceIds,
-															selectedAddonIds: item.config.selectedAddonIds,
-															vouchers: item.config.vouchers,
-															hardwarePurchaseType:
-																item.config.hardwarePurchaseType,
-															plusKartenCount: item.config.plusKartenCount
-														});
-														return acc + calc.averageMonthlyCost / 30;
-													}, 0)
-													.toFixed(2)
-											: "0.00"}{" "}
-										€ am Tag
+										ca. {items.length > 0 ? totals.daily.toFixed(2) : "0.00"} €
+										am Tag
 									</span>
 								</div>
 								<span className="text-[1.1rem] font-extrabold tracking-tight flex items-center leading-none">

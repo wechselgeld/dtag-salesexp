@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Providers from "@/app/providers";
-import { AppShell } from "@/components/app-shell";
-import { GlobalNewsNotification } from "@/components/global-news-notification";
+import { AppShell } from "@/components/layout/app-shell";
+import { GlobalNewsNotification } from "@/components/features/news/global-news-notification";
 
 const teleNeo = localFont({
 	src: [

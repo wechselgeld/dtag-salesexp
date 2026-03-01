@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Lock, ShieldAlert } from "lucide-react";
-import { TelekomLogo } from "./telekom-logo";
+import { TelekomLogo } from "@/components/shared/telekom-logo";
 import Link from "next/link";
 
 export function MaintenanceSplash() {

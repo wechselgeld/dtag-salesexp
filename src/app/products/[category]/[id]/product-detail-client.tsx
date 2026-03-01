@@ -1,15 +1,15 @@
 "use client";
 
-import { BusinessCaseSelector } from "@/components/calculator/business-case-selector";
-import { CostTimeline } from "@/components/calculator/cost-timeline";
-import { SpecialPriceSelector } from "@/components/calculator/special-price-selector";
-import { AddonSelector } from "@/components/calculator/addon-selector";
+import { BusinessCaseSelector } from "@/components/features/calculator/business-case-selector";
+import { CostTimeline } from "@/components/features/calculator/cost-timeline";
+import { SpecialPriceSelector } from "@/components/features/calculator/special-price-selector";
+import { AddonSelector } from "@/components/features/calculator/addon-selector";
 import {
 	useCostCalculator,
-	MAGENTA_TV_PACKAGES,
 	MagentaTVPackageKey,
 	type BusinessCase
 } from "@/hooks/use-cost-calculator";
+import { MAGENTA_TV_PACKAGES } from "@/lib/constants/pricing";
 import { trpc } from "@/lib/trpc";
 import {
 	ArrowLeft,
@@ -34,8 +34,8 @@ import { useParams, useSearchParams } from "next/navigation";
 import React, { useEffect, Suspense } from "react";
 import clsx from "clsx";
 import { useBasketStore } from "@/hooks/use-basket-store";
-import { SearchBar } from "@/components/search-bar";
-import { Skeleton } from "@/components/skeleton";
+import { SearchBar } from "@/components/features/search/search-bar";
+import { Skeleton } from "@/components/shared/skeleton";
 import { motion } from "framer-motion";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -657,21 +657,23 @@ function ProductPageContent() {
 														}}
 													>
 														<ul className="space-y-1 m-0 p-0 list-none">
-															{pkg.features.map((feature, i) => (
-																<li
-																	key={i}
-																	className="flex items-start gap-2 text-[0.75rem] text-[#666]"
-																>
-																	<Check
-																		className="w-3 h-3 shrink-0 mt-0.5"
-																		style={{
-																			color: catColor
-																		}}
-																		strokeWidth={2.5}
-																	/>
-																	{feature}
-																</li>
-															))}
+															{pkg.features.map(
+																(feature: string, i: number) => (
+																	<li
+																		key={i}
+																		className="flex items-start gap-2 text-[0.75rem] text-[#666]"
+																	>
+																		<Check
+																			className="w-3 h-3 shrink-0 mt-0.5"
+																			style={{
+																				color: catColor
+																			}}
+																			strokeWidth={2.5}
+																		/>
+																		{feature}
+																	</li>
+																)
+															)}
 														</ul>
 													</motion.div>
 												)}

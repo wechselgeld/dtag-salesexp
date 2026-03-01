@@ -6,7 +6,7 @@ import { Plus, Pencil, Trash2, Gift, Search } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { de } from "date-fns/locale";
-import { Skeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 
 export default function CreditsPage() {
 	const {

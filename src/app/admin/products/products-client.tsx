@@ -5,7 +5,7 @@ import { Plus, Edit, Trash2, Search, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import clsx from "clsx";
-import { Skeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: "#e20074",

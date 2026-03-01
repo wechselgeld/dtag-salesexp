@@ -2,7 +2,7 @@
 
 import { Building2, Info, FileText } from "lucide-react";
 import Link from "next/link";
-import { TelekomLogo } from "@/components/telekom-logo";
+import { TelekomLogo } from "@/components/shared/telekom-logo";
 
 export default function ImpressumPage() {
 	return (

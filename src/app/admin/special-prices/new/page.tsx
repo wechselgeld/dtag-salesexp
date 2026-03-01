@@ -1,6 +1,6 @@
 "use client";
 
-import { SpecialPriceForm } from "@/components/admin/special-price-form";
+import { SpecialPriceForm } from "@/components/features/admin/special-price-form";
 
 export default function NewSpecialPricePage() {
 	return (

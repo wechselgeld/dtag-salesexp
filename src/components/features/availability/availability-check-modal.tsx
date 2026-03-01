@@ -17,7 +17,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { Skeleton } from "./skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 
 interface AvailabilityCheckModalProps {
 	isOpen: boolean;

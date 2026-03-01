@@ -6,8 +6,8 @@ import { trpc } from "@/lib/trpc";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ShieldAlert, ArrowRight } from "lucide-react";
 import clsx from "clsx";
-import { TelekomLogo } from "@/components/telekom-logo";
-import { Skeleton } from "@/components/skeleton";
+import { TelekomLogo } from "@/components/shared/telekom-logo";
+import { Skeleton } from "@/components/shared/skeleton";
 import Link from "next/link";
 
 export default function SetupPage() {

@@ -6,7 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { motion } from "framer-motion";
 import { ArrowRight, Loader2, AlertTriangle } from "lucide-react";
 import clsx from "clsx";
-import { TelekomLogo } from "@/components/telekom-logo";
+import { TelekomLogo } from "@/components/shared/telekom-logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Addon, AddonTier } from "@/hooks/use-cost-calculator";
+import { Addon, AddonTier } from "@/types/product";
 import {
 	Check,
 	LayoutList,

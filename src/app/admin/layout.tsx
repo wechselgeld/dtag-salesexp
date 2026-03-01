@@ -14,7 +14,7 @@ import {
 	Layers
 } from "lucide-react";
 import clsx from "clsx";
-import { TelekomLogo } from "@/components/telekom-logo";
+import { TelekomLogo } from "@/components/shared/telekom-logo";
 import { trpc } from "@/lib/trpc";
 
 export default function AdminLayout({

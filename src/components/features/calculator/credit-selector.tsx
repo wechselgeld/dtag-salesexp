@@ -2,11 +2,11 @@
 
 import { Trash2, ChevronDown, Plus } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { Credit } from "@/hooks/use-cost-calculator";
+import { Credit } from "@/types/product";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
-import { Skeleton } from "../skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 
 interface CreditSelectorProps {
 	basketCredits: Credit[];

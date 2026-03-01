@@ -9,9 +9,9 @@ import clsx from "clsx";
 import { Save, Loader2, ArrowLeft, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/shared/ui/input";
+import { Textarea } from "@/components/shared/ui/textarea";
+import { Checkbox } from "@/components/shared/ui/checkbox";
 
 const addonSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),

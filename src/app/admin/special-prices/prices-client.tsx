@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { Plus, Edit, Trash2, Search, Tag } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Skeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 
 export default function AdminSpecialPricesPage() {
 	const [search, setSearch] = useState("");

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { TelekomLogo } from "@/components/telekom-logo";
+import { TelekomLogo } from "@/components/shared/telekom-logo";
 import {
 	Home,
 	LayoutGrid,

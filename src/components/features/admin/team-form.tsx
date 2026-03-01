@@ -8,7 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { Save, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/shared/ui/input";
 
 const teamSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich")

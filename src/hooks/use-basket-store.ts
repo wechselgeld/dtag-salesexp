@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Product, BusinessCase, Credit, MagentaTVPackageKey } from './use-cost-calculator';
+import { MagentaTVPackageKey } from '@/lib/constants/pricing';
+import type { Product, BusinessCase, Credit } from '@/types/product';
 
 export interface BasketItem {
     id: string; // UUID

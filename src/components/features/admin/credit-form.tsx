@@ -8,8 +8,8 @@ import { trpc } from "@/lib/trpc";
 import clsx from "clsx";
 import { Save, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/shared/ui/input";
+import { Checkbox } from "@/components/shared/ui/checkbox";
 
 const creditSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),

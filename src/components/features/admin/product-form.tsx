@@ -9,9 +9,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import clsx from "clsx";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/shared/ui/input";
+import { Textarea } from "@/components/shared/ui/textarea";
+import { Checkbox } from "@/components/shared/ui/checkbox";
 
 const productSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),

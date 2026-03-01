@@ -1,6 +1,6 @@
 "use client";
 
-import { ProductForm } from "@/components/admin/product-form";
+import { ProductForm } from "@/components/features/admin/product-form";
 import { trpc } from "@/lib/trpc";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";

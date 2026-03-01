@@ -14,7 +14,7 @@ import {
 	Briefcase
 } from "lucide-react";
 import clsx from "clsx";
-import { Skeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 import Link from "next/link";
 
 const CATEGORIES = [

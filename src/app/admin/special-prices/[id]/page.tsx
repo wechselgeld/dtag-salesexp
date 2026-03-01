@@ -1,6 +1,6 @@
 "use client";
 
-import { SpecialPriceForm } from "@/components/admin/special-price-form";
+import { SpecialPriceForm } from "@/components/features/admin/special-price-form";
 import { trpc } from "@/lib/trpc";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";

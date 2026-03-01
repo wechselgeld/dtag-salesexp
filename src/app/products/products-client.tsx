@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { Smartphone, Wifi, Zap, Tv, Tablet, Router } from "lucide-react";
 import { motion } from "framer-motion";
-import { SearchBar } from "@/components/search-bar";
-import { NewsCarousel } from "@/components/news-carousel";
+import { SearchBar } from "@/components/features/search/search-bar";
+import { NewsCarousel } from "@/components/features/news/news-carousel";
 import { trpc } from "@/lib/trpc";
 import { Star } from "lucide-react";
 import clsx from "clsx";
-import { Skeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 import { useEffect } from "react";
 
 const CATEGORIES = [

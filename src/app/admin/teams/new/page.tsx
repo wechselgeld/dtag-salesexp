@@ -1,4 +1,4 @@
-import { TeamForm } from "@/components/admin/team-form";
+import { TeamForm } from "@/components/features/admin/team-form";
 
 export const metadata = {
 	title: "Team erstellen | Admin"

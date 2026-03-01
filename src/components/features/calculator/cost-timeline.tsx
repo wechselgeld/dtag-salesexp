@@ -1,6 +1,6 @@
 "use client";
 
-import { CalculationResult } from "@/hooks/use-cost-calculator";
+import { CalculationResult } from "@/types/product";
 
 interface Props {
 	calculation: CalculationResult;
@@ -88,7 +88,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 					</div>
 					{oneTimeCosts.breakdown.length > 0 && (
 						<div className="space-y-1">
-							{oneTimeCosts.breakdown.map((item, i) => (
+							{oneTimeCosts.breakdown.map((item: any, i: number) => (
 								<div
 									key={i}
 									className="flex justify-between text-[0.75rem] text-[#aaa] py-1"

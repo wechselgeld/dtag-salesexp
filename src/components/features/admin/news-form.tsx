@@ -8,8 +8,8 @@ import { trpc } from "@/lib/trpc";
 import { Save, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/shared/ui/input";
+import { Textarea } from "@/components/shared/ui/textarea";
 
 const PRIORITY_COLORS: Record<string, string> = {
 	INFO: "#00a878",

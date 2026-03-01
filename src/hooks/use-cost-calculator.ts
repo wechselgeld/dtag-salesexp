@@ -1,125 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
+import { MAGENTA_TV_PACKAGES, MagentaTVPackageKey } from '@/lib/constants/pricing';
+import { trpc } from '@/lib/trpc';
+import type {
+    Product,
+    BusinessCase,
+    SpecialPrice,
+    CalculationResult,
+    Credit,
+    PricingSettings
+} from '@/types/product';
 
-export type SpecialPrice = {
-    id: string;
-    name: string;
-    requiresMagentaTV: boolean;
-    requiresSpeedUp: boolean;
-    requiresMove: boolean;
-    isActive: boolean;
-    priority: number;
-    tiers: {
-        price: number;
-        fromMonth: number;
-        toMonth: number;
-    }[];
+export const DEFAULT_PRICING: PricingSettings = {
+    magentatv_smart_price: 10,
+    magentatv_smartstream_price: 17,
+    magentatv_megastream_price: 30,
+    shipping_hardware_fee: 6.95,
+    plus_karte_first_price: 19.95,
+    plus_karte_following_price: 9.95
 };
 
-export type AddonTier = {
-    id: string;
-    name: string;
-    price: number;
-    addonId: string;
-};
+export type { BusinessCase };
+export type { MagentaTVPackageKey };
 
-export type Addon = {
-    id: string;
-    name: string;
-    description: string | null;
-    requiresNoMagentaTV: boolean;
-    tiers: AddonTier[];
-};
-
-export type Product = {
-    id: string;
-    name: string;
-    category: string;
-    basePrice: number;
-    contractDuration: number | null;
-    activationFeeNew: number | null;
-    activationFeeMove: number | null;
-    activationFeePlanChange: number | null;
-    activationFeeSpeedUp: number | null;
-    magentaTVBundlePrice: number | null;
-    specialPrices: SpecialPrice[];
-    compatibleAddons?: Addon[];
-
-    // Devices
-    deviceManufacturer?: string | null;
-    purchasePrice?: number | null;
-    rentalPrice?: number | null;
-
-    salesScript?: string | null;
-};
-
-export type BusinessCase = 'NEW_ACTIVATION' | 'MOVE' | 'PLAN_CHANGE' | 'SPEED_UP';
-
-// MagentaTV packages definition
-export const MAGENTA_TV_PACKAGES = {
-    smart: {
-        name: 'MagentaTV Smart',
-        shortName: 'Smart',
-        price: 10,
-        features: [
-            'Alle Spiele der FIFA WM nur bei MagentaTV',
-            'MagentaTV+',
-            'RTL+ Premium'
-        ]
-    },
-    smartstream: {
-        name: 'MagentaTV SmartStream',
-        shortName: 'SmartStream',
-        price: 17,
-        features: [
-            'Alle Spiele der FIFA WM nur bei MagentaTV',
-            'Netflix Standard-Abo mit Werbung',
-            'Disney+ Standard mit Werbung',
-            'RTL+ Premium'
-        ]
-    },
-    megastream: {
-        name: 'MagentaTV MegaStream',
-        shortName: 'MegaStream',
-        price: 30,
-        features: [
-            'Alle Spiele der FIFA WM nur bei MagentaTV',
-            'Netflix Standard-Abo',
-            'Disney+ Standard',
-            'RTL+ Premium',
-            'AppleTV+'
-        ]
-    }
-} as const;
-
-export type MagentaTVPackageKey = keyof typeof MAGENTA_TV_PACKAGES;
-
-export interface CalculationResult {
-    monthlyCosts: {
-        month: number;
-        basePrice: number;
-        effectivePrice: number;
-        specialPriceApplied?: SpecialPrice;
-        addonCosts: number;
-        magentaTVCost: number;
-        total: number;
-    }[];
-    averageMonthlyCost: number;
-    totalCost24Months: number;
-    oneTimeCosts: { total: number; breakdown: { name: string; cost: number }[] };
-    basePrice: number;
-    effectiveBasePrice: number; // The standard price (with TV if selected)
-    dailyPriceTrivialization?: string;
-    hasUnlimitedAdvantage?: boolean;
-    plusKartenCost: number;
-}
-
-export type Credit = {
-    id: string;
-    name: string;
-    value: number;
-}
-
-interface CalculationInput {
+export interface CalculationInput {
     product: Product;
     businessCase: BusinessCase;
     magentaTVPackage: MagentaTVPackageKey | null;
@@ -129,6 +32,7 @@ interface CalculationInput {
     credits?: Credit[];
     hardwarePurchaseType?: 'RENT' | 'BUY';
     plusKartenCount?: number;
+    settings?: PricingSettings;
 }
 
 export function calculateProductCosts({
@@ -140,7 +44,8 @@ export function calculateProductCosts({
     vouchers,
     credits = [],
     hardwarePurchaseType,
-    plusKartenCount
+    plusKartenCount,
+    settings = DEFAULT_PRICING
 }: CalculationInput): CalculationResult {
     if (!product) {
         return {
@@ -156,7 +61,10 @@ export function calculateProductCosts({
     }
 
     const isMagentaTVSelected = magentaTVPackage !== null;
-    const tvPackagePrice = magentaTVPackage ? MAGENTA_TV_PACKAGES[magentaTVPackage].price : 0;
+    let tvPackagePrice = 0;
+    if (magentaTVPackage === 'smart') tvPackagePrice = settings.magentatv_smart_price;
+    else if (magentaTVPackage === 'smartstream') tvPackagePrice = settings.magentatv_smartstream_price;
+    else if (magentaTVPackage === 'megastream') tvPackagePrice = settings.magentatv_megastream_price;
 
     const duration = product.contractDuration || 24;
 
@@ -210,6 +118,12 @@ export function calculateProductCosts({
         oneTimeBreakdown.push({ name: "Bereitstellungspauschale Tarif", cost: activationFee });
     }
 
+    if (product.category === "DEVICE") {
+        oneTimeTotal += settings.shipping_hardware_fee;
+        oneTimeBreakdown.push({ name: "Versand Hardware", cost: settings.shipping_hardware_fee });
+    }
+
+
     // Credits
     credits.forEach(credit => {
         oneTimeTotal -= credit.value;
@@ -239,7 +153,9 @@ export function calculateProductCosts({
     const monthlyAddonCost = activeTiers.reduce((sum, tier) => sum + tier.price, 0);
 
     const pkCount = plusKartenCount || 0;
-    const plusKartenCostPerMonth = pkCount >= 1 ? (19.95 + Math.max(0, pkCount - 1) * 9.95) : 0;
+    const plusKartenCostPerMonth = pkCount >= 1
+        ? (settings.plus_karte_first_price + Math.max(0, pkCount - 1) * settings.plus_karte_following_price)
+        : 0;
 
     const productNameLower = product.name.toLowerCase();
     const isAtLeastM = productNameLower.includes('magentamobil m') ||
@@ -361,6 +277,9 @@ export function useCostCalculator(
         }
     }, [isMagentaTVSelected, product, selectedAddonIds]);
 
+    const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery();
+    const settings = pricingSettings || DEFAULT_PRICING;
+
     const businessCaseOptions = [
         { id: 'NEW_ACTIVATION', label: 'Neuvertrag' },
         { id: 'MOVE', label: 'Umzug' },
@@ -391,9 +310,10 @@ export function useCostCalculator(
             vouchers,
             credits: activeCredits,
             hardwarePurchaseType,
-            plusKartenCount
+            plusKartenCount,
+            settings
         });
-    }, [product, businessCase, magentaTVPackage, selectedSpecialPriceIds, selectedAddonIds, vouchers, availableCredits, selectedCreditIds, hardwarePurchaseType, plusKartenCount]);
+    }, [product, businessCase, magentaTVPackage, selectedSpecialPriceIds, selectedAddonIds, vouchers, availableCredits, selectedCreditIds, hardwarePurchaseType, plusKartenCount, settings]);
 
     return {
         businessCase,
@@ -415,6 +335,7 @@ export function useCostCalculator(
         hardwarePurchaseType,
         setHardwarePurchaseType,
         plusKartenCount,
-        setPlusKartenCount
+        setPlusKartenCount,
+        settings
     };
 }

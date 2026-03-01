@@ -6,7 +6,7 @@ import { Plus, Trash2, Megaphone, Loader2, Search, Layers } from "lucide-react";
 import clsx from "clsx";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Skeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 import Link from "next/link";
 
 const PRIORITY_COLORS: Record<string, string> = {
