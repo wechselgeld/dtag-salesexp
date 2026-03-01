@@ -16,6 +16,7 @@ import {
 import clsx from "clsx";
 import { Skeleton } from "@/components/shared/skeleton";
 import Link from "next/link";
+import { confirmDelete } from "@/components/shared/delete-confirm-toast";
 
 const CATEGORIES = [
 	{ id: "MOBILE", label: "Mobilfunk" },
@@ -192,11 +193,11 @@ export default function TeamsPage() {
 											</button>
 											<button
 												onClick={() => {
-													if (
-														window.confirm("Möchtest Du dieses Team löschen?")
-													) {
-														deleteTeam.mutate({ id: team.id });
-													}
+													confirmDelete({
+														id: team.id,
+														name: team.name,
+														onConfirm: () => deleteTeam.mutate({ id: team.id })
+													});
 												}}
 												disabled={deleteTeam.isPending}
 												className="p-2 text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2]/40 rounded-lg transition-all duration-150 cursor-pointer bg-transparent border-none disabled:opacity-50"

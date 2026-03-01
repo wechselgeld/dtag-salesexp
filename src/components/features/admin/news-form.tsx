@@ -39,6 +39,7 @@ interface NewsFormProps {
 
 export function NewsForm({ mode }: NewsFormProps) {
 	const router = useRouter();
+	const utils = trpc.useUtils();
 
 	const {
 		register,
@@ -58,6 +59,7 @@ export function NewsForm({ mode }: NewsFormProps) {
 
 	const createMutation = trpc.admin.news.create.useMutation({
 		onSuccess: () => {
+			utils.admin.news.list.invalidate();
 			router.push("/admin/news");
 			router.refresh();
 		}

@@ -46,6 +46,7 @@ interface SpecialPriceFormProps {
 
 export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 	const router = useRouter();
+	const utils = trpc.useUtils();
 	const { data: products } = trpc.product.getAllProducts.useQuery();
 
 	const [searchQuery, setSearchQuery] = useState("");
@@ -136,6 +137,8 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 
 	const createMutation = trpc.admin.createSpecialPrice.useMutation({
 		onSuccess: () => {
+			utils.admin.getAllSpecialPrices.invalidate();
+			utils.admin.getSpecialPriceById.invalidate();
 			router.push("/admin/special-prices");
 			router.refresh();
 		}
@@ -143,6 +146,8 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 
 	const updateMutation = trpc.admin.updateSpecialPrice.useMutation({
 		onSuccess: () => {
+			utils.admin.getAllSpecialPrices.invalidate();
+			utils.admin.getSpecialPriceById.invalidate();
 			router.push("/admin/special-prices");
 			router.refresh();
 		}
@@ -298,7 +303,7 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 											className={clsx(
 												"flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all group hover:bg-white border",
 												isChecked
-													? "bg-[#e20074]/[0.04] border-[#e20074]/20 hover:border-[#e20074]/40"
+													? "bg-[#e20074]/4 border border-[#e20074]/30 hover:border-[#e20074]/40"
 													: "border-transparent"
 											)}
 										>

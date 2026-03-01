@@ -7,15 +7,13 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { de } from "date-fns/locale";
 import { Skeleton } from "@/components/shared/skeleton";
+import { confirmDelete } from "@/components/shared/delete-confirm-toast";
 
 export default function CreditsPage() {
-	const {
-		data: credits,
-		isLoading,
-		refetch
-	} = trpc.admin.oneTimeCredit.list.useQuery();
+	const utils = trpc.useUtils();
+	const { data: credits, isLoading } = trpc.admin.oneTimeCredit.list.useQuery();
 	const deleteMutation = trpc.admin.oneTimeCredit.delete.useMutation({
-		onSuccess: () => refetch()
+		onSuccess: () => utils.admin.oneTimeCredit.list.invalidate()
 	});
 
 	const [searchQuery, setSearchQuery] = useState("");
@@ -166,13 +164,12 @@ export default function CreditsPage() {
 											</Link>
 											<button
 												onClick={() => {
-													if (
-														confirm(
-															"Möchtest Du diese Gutschrift wirklich löschen?"
-														)
-													) {
-														deleteMutation.mutate({ id: credit.id });
-													}
+													confirmDelete({
+														id: credit.id,
+														name: credit.name,
+														onConfirm: () =>
+															deleteMutation.mutate({ id: credit.id })
+													});
 												}}
 												className="p-2 text-[#aaa] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all duration-150 cursor-pointer bg-transparent border-none active:scale-95"
 											>

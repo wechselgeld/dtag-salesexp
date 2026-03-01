@@ -160,7 +160,7 @@ export function NewsCarousel() {
 								strokeDashoffset={
 									circumference - (circumference * progress) / 100
 								}
-								className="transition-all duration-75 ease-linear"
+								className="transition-none"
 							/>
 						</svg>
 					</div>

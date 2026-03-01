@@ -199,7 +199,7 @@ function NotificationItem({
 							strokeDashoffset={
 								2 * Math.PI * 8 - (2 * Math.PI * 8 * progress) / 100
 							}
-							className="transition-all duration-75 ease-linear"
+							className="transition-none"
 						/>
 					</svg>
 				</div>

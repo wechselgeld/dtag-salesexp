@@ -5,6 +5,7 @@ import { Plus, Edit, Trash2, Search, Tag } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Skeleton } from "@/components/shared/skeleton";
+import { confirmDelete } from "@/components/shared/delete-confirm-toast";
 
 export default function AdminSpecialPricesPage() {
 	const [search, setSearch] = useState("");
@@ -162,13 +163,12 @@ export default function AdminSpecialPricesPage() {
 											</Link>
 											<button
 												onClick={() => {
-													if (
-														confirm(
-															"Möchten Sie diese Aktion wirklich löschen?"
-														)
-													) {
-														deleteMutation.mutate({ id: sp.id });
-													}
+													confirmDelete({
+														id: sp.id,
+														name: sp.name,
+														onConfirm: () =>
+															deleteMutation.mutate({ id: sp.id })
+													});
 												}}
 												className="p-2 text-[#aaa] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all duration-150 cursor-pointer bg-transparent border-none active:scale-95"
 											>

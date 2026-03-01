@@ -22,6 +22,7 @@ interface TeamFormProps {
 
 export function TeamForm({ mode }: TeamFormProps) {
 	const router = useRouter();
+	const utils = trpc.useUtils();
 
 	const {
 		register,
@@ -37,6 +38,7 @@ export function TeamForm({ mode }: TeamFormProps) {
 
 	const createMutation = trpc.team.create.useMutation({
 		onSuccess: () => {
+			utils.team.list.invalidate();
 			router.push("/admin/teams");
 			router.refresh();
 		}

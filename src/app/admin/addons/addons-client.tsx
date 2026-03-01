@@ -4,13 +4,15 @@ import { trpc } from "@/lib/trpc";
 import Link from "next/link";
 import { Plus, Pencil, Trash2, Layers, Search } from "lucide-react";
 import { Skeleton } from "@/components/shared/skeleton";
+import { confirmDelete } from "@/components/shared/delete-confirm-toast";
 import { useState } from "react";
 
 export default function AddonsPage() {
-	const { data: addons, isLoading, refetch } = trpc.addon.list.useQuery();
+	const utils = trpc.useUtils();
+	const { data: addons, isLoading } = trpc.addon.list.useQuery();
 
 	const deleteMutation = trpc.addon.delete.useMutation({
-		onSuccess: () => refetch()
+		onSuccess: () => utils.addon.list.invalidate()
 	});
 
 	const [searchQuery, setSearchQuery] = useState("");
@@ -173,13 +175,12 @@ export default function AddonsPage() {
 												onClick={(e) => {
 													e.preventDefault();
 													e.stopPropagation();
-													if (
-														window.confirm(
-															"Möchtest Du diese Option wirklich löschen?"
-														)
-													) {
-														deleteMutation.mutate({ id: addon.id });
-													}
+													confirmDelete({
+														id: addon.id,
+														name: addon.name,
+														onConfirm: () =>
+															deleteMutation.mutate({ id: addon.id })
+													});
 												}}
 												className="p-2 text-[#aaa] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all duration-150 cursor-pointer bg-transparent border-none active:scale-95"
 											>

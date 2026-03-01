@@ -29,6 +29,7 @@ export function CreditForm({
 	isEditMode = false
 }: CreditFormProps) {
 	const router = useRouter();
+	const utils = trpc.useUtils();
 
 	const {
 		register,
@@ -46,6 +47,8 @@ export function CreditForm({
 
 	const createMutation = trpc.admin.oneTimeCredit.create.useMutation({
 		onSuccess: () => {
+			utils.admin.oneTimeCredit.list.invalidate();
+			utils.admin.oneTimeCredit.getById.invalidate();
 			router.push("/admin/credits");
 			router.refresh();
 		}
@@ -53,6 +56,8 @@ export function CreditForm({
 
 	const updateMutation = trpc.admin.oneTimeCredit.update.useMutation({
 		onSuccess: () => {
+			utils.admin.oneTimeCredit.list.invalidate();
+			utils.admin.oneTimeCredit.getById.invalidate();
 			router.push("/admin/credits");
 			router.refresh();
 		}

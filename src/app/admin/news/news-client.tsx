@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Skeleton } from "@/components/shared/skeleton";
 import Link from "next/link";
+import { confirmDelete } from "@/components/shared/delete-confirm-toast";
 
 const PRIORITY_COLORS: Record<string, string> = {
 	INFO: "#00a878", // Green
@@ -180,13 +181,11 @@ export default function AdminNewsPage() {
 												onClick={(e) => {
 													e.preventDefault();
 													e.stopPropagation();
-													if (
-														window.confirm(
-															"Möchtest Du diese Neuigkeit wirklich löschen?"
-														)
-													) {
-														deleteNews.mutate({ id: item.id });
-													}
+													confirmDelete({
+														id: item.id,
+														name: item.title,
+														onConfirm: () => deleteNews.mutate({ id: item.id })
+													});
 												}}
 												disabled={deleteNews.isPending}
 												className="p-2 text-[#aaa] hover:text-[#dc2626] hover:bg-[#fee2e2]/40 rounded-lg transition-all duration-150 cursor-pointer disabled:opacity-50"

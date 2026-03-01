@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
+import { DeleteConfirmToast } from "@/components/shared/delete-confirm-toast";
 import { trpc } from "@/lib/trpc";
 
 export default function AdminLayout({
@@ -131,6 +132,8 @@ export default function AdminLayout({
 			<main className="flex-1 ml-[260px] p-8 overflow-y-auto h-screen">
 				<div className="max-w-[1000px] mx-auto">{children}</div>
 			</main>
+
+			<DeleteConfirmToast />
 		</div>
 	);
 }

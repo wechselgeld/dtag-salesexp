@@ -40,6 +40,7 @@ interface AddonFormProps {
 
 export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 	const router = useRouter();
+	const utils = trpc.useUtils();
 
 	const { data: allProducts } = trpc.product.getAllProducts.useQuery();
 
@@ -82,6 +83,8 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 
 	const createMutation = trpc.addon.create.useMutation({
 		onSuccess: () => {
+			utils.addon.list.invalidate();
+			utils.addon.getById.invalidate();
 			router.push("/admin/addons");
 			router.refresh();
 		}
@@ -89,6 +92,8 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 
 	const updateMutation = trpc.addon.update.useMutation({
 		onSuccess: () => {
+			utils.addon.list.invalidate();
+			utils.addon.getById.invalidate();
 			router.push("/admin/addons");
 			router.refresh();
 		}

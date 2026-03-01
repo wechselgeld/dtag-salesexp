@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 import clsx from "clsx";
 import { Skeleton } from "@/components/shared/skeleton";
+import { confirmDelete } from "@/components/shared/delete-confirm-toast";
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: "#e20074",
@@ -209,13 +210,12 @@ export default function AdminProductsPage() {
 												</Link>
 												<button
 													onClick={() => {
-														if (
-															confirm(
-																"Möchtest Du dieses Produkt wirklich löschen?"
-															)
-														) {
-															deleteMutation.mutate({ id: product.id });
-														}
+														confirmDelete({
+															id: product.id,
+															name: product.name,
+															onConfirm: () =>
+																deleteMutation.mutate({ id: product.id })
+														});
 													}}
 													className="p-2 text-[#aaa] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all duration-150 cursor-pointer bg-transparent border-none active:scale-95"
 												>

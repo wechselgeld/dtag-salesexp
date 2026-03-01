@@ -52,6 +52,7 @@ interface ProductFormProps {
 
 export function ProductForm({ initialData, mode }: ProductFormProps) {
 	const router = useRouter();
+	const utils = trpc.useUtils();
 
 	const {
 		register,
@@ -99,6 +100,8 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 
 	const createMutation = trpc.admin.createProduct.useMutation({
 		onSuccess: () => {
+			utils.product.getAllProducts.invalidate();
+			utils.admin.getProductById.invalidate();
 			router.push("/admin/products");
 			router.refresh();
 		}
@@ -106,6 +109,8 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 
 	const updateMutation = trpc.admin.updateProduct.useMutation({
 		onSuccess: () => {
+			utils.product.getAllProducts.invalidate();
+			utils.admin.getProductById.invalidate();
 			router.push("/admin/products");
 			router.refresh();
 		}
