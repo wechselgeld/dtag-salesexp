@@ -172,7 +172,7 @@ export function BasketDrawer() {
 						Zusammenfassung
 					</h2>
 					{items.length > 0 && (
-						<span className="text-[0.65rem] font-semibold text-[#e20074] bg-[#e20074]/[0.06] px-2 py-0.5 rounded-full">
+						<span className="text-[0.65rem] font-semibold text-[#e20074] bg-[#e20074]/6 px-2 py-0.5 rounded-full">
 							{items.length} {items.length === 1 ? "Produkt" : "Produkte"}
 						</span>
 					)}
@@ -557,7 +557,7 @@ function BasketItemCard({
 
 				{/* Unlimited Badge */}
 				{calculation.hasUnlimitedAdvantage && (
-					<div className="mb-3 inline-flex items-center gap-1 bg-[#e20074]/10 text-[#e20074] px-2 py-0.5 rounded-md text-[0.65rem] font-bold uppercase tracking-wider">
+					<div className="mb-3 inline-flex items-center gap-1 bg-[#e20074]/6 text-[#e20074] px-2 py-0.5 rounded-md text-[0.65rem] font-bold uppercase tracking-wider">
 						<Sparkles className="w-2.5 h-2.5" />
 						Kombivorteil: Unlimited GB
 					</div>

@@ -1,0 +1,28 @@
+src/app/products/[category]/[id]/product-detail-client.tsx(9,2): error TS2724: '"@/hooks/use-cost-calculator"' has no exported member named 'MAGENTA_TV_PACKAGES'. Did you mean 'MagentaTVPackageKey'?
+src/app/products/[category]/[id]/product-detail-client.tsx(660,35): error TS7006: Parameter 'feature' implicitly has an 'any' type.
+src/app/products/[category]/[id]/product-detail-client.tsx(660,44): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/components/basket/basket-drawer.tsx(8,2): error TS2724: '"@/hooks/use-cost-calculator"' has no exported member named 'MAGENTA_TV_PACKAGES'. Did you mean 'MagentaTVPackageKey'?
+src/components/calculator/addon-selector.tsx(3,10): error TS2305: Module '"@/hooks/use-cost-calculator"' has no exported member 'Addon'.
+src/components/calculator/addon-selector.tsx(3,17): error TS2305: Module '"@/hooks/use-cost-calculator"' has no exported member 'AddonTier'.
+src/components/calculator/addon-selector.tsx(42,48): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/calculator/addon-selector.tsx(95,46): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/calculator/addon-selector.tsx(134,16): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/components/calculator/addon-selector.tsx(134,19): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/components/calculator/addon-selector.tsx(135,15): error TS7006: Parameter 'tier' implicitly has an 'any' type.
+src/components/calculator/cost-timeline.tsx(3,10): error TS2459: Module '"@/hooks/use-cost-calculator"' declares 'CalculationResult' locally, but it is not exported.
+src/components/calculator/cost-timeline.tsx(23,25): error TS7006: Parameter 'month' implicitly has an 'any' type.
+src/components/calculator/cost-timeline.tsx(91,37): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/calculator/cost-timeline.tsx(91,43): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/components/calculator/credit-selector.tsx(5,10): error TS2459: Module '"@/hooks/use-cost-calculator"' declares 'Credit' locally, but it is not exported.
+src/components/calculator/special-price-selector.tsx(3,10): error TS2459: Module '"@/hooks/use-cost-calculator"' declares 'SpecialPrice' locally, but it is not exported.
+src/components/calculator/special-price-selector.tsx(52,54): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/calculator/special-price-selector.tsx(86,24): error TS7006: Parameter 'tier' implicitly has an 'any' type.
+src/components/calculator/special-price-selector.tsx(86,30): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/components/layout/app-shell.tsx(5,30): error TS2307: Cannot find module '@/components/features/basket/basket-drawer' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(6,29): error TS2307: Cannot find module '@/components/features/auth-intro/intro-splash' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(9,35): error TS2307: Cannot find module '@/components/features/maintenance/maintenance-splash' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(10,36): error TS2307: Cannot find module '@/components/features/onboarding/onboarding-tutorial' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(12,40): error TS2307: Cannot find module '@/components/features/availability/availability-check-modal' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(13,42): error TS2307: Cannot find module '@/components/features/calculator/streaming-calculator-modal' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(14,33): error TS2307: Cannot find module '@/components/features/battlecards/battlecard-panel' or its corresponding type declarations.
+src/components/layout/sidebar-nav.tsx(4,29): error TS2307: Cannot find module '@/components/shared/telekom-logo' or its corresponding type declarations.

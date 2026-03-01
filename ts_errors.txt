@@ -1,0 +1,86 @@
+src/app/admin/addons/[id]/page.tsx(3,27): error TS2307: Cannot find module '@/components/features/admin/addon-form' or its corresponding type declarations.
+src/app/admin/addons/addons-client.tsx(6,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/app/admin/addons/new/page.tsx(3,27): error TS2307: Cannot find module '@/components/features/admin/addon-form' or its corresponding type declarations.
+src/app/admin/credits/[id]/page.tsx(3,28): error TS2307: Cannot find module '@/components/features/admin/credit-form' or its corresponding type declarations.
+src/app/admin/credits/credits-client.tsx(9,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/app/admin/credits/new/page.tsx(3,28): error TS2307: Cannot find module '@/components/features/admin/credit-form' or its corresponding type declarations.
+src/app/admin/layout.tsx(17,29): error TS2307: Cannot find module '@/components/shared/telekom-logo' or its corresponding type declarations.
+src/app/admin/news/new/page.tsx(1,26): error TS2307: Cannot find module '@/components/features/admin/news-form' or its corresponding type declarations.
+src/app/admin/news/news-client.tsx(9,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/app/admin/products/[id]/page.tsx(3,29): error TS2307: Cannot find module '@/components/features/admin/product-form' or its corresponding type declarations.
+src/app/admin/products/new/page.tsx(3,29): error TS2307: Cannot find module '@/components/features/admin/product-form' or its corresponding type declarations.
+src/app/admin/products/products-client.tsx(8,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/app/admin/settings/settings-client.tsx(23,23): error TS2307: Cannot find module '@/components/shared/ui/input' or its corresponding type declarations.
+src/app/admin/settings/settings-client.tsx(240,18): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/app/admin/settings/settings-client.tsx(251,19): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/app/admin/settings/settings-client.tsx(260,19): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/app/admin/settings/settings-client.tsx(634,23): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/app/admin/special-prices/[id]/page.tsx(3,34): error TS2307: Cannot find module '@/components/features/admin/special-price-form' or its corresponding type declarations.
+src/app/admin/special-prices/new/page.tsx(3,34): error TS2307: Cannot find module '@/components/features/admin/special-price-form' or its corresponding type declarations.
+src/app/admin/special-prices/prices-client.tsx(7,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/app/admin/teams/new/page.tsx(1,26): error TS2307: Cannot find module '@/components/features/admin/team-form' or its corresponding type declarations.
+src/app/admin/teams/teams-client.tsx(17,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/app/error.tsx(6,29): error TS2307: Cannot find module '@/components/shared/telekom-logo' or its corresponding type declarations.
+src/app/faq/page.tsx(7,29): error TS2307: Cannot find module '@/components/shared/telekom-logo' or its corresponding type declarations.
+src/app/impressum/impressum-client.tsx(5,29): error TS2307: Cannot find module '@/components/shared/telekom-logo' or its corresponding type declarations.
+src/app/layout.tsx(6,40): error TS2307: Cannot find module '@/components/features/news/global-news-notification' or its corresponding type declarations.
+src/app/loading.tsx(1,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/app/login/login-client.tsx(9,29): error TS2307: Cannot find module '@/components/shared/telekom-logo' or its corresponding type declarations.
+src/app/not-found.tsx(4,29): error TS2307: Cannot find module '@/components/shared/telekom-logo' or its corresponding type declarations.
+src/app/page.tsx(3,30): error TS2307: Cannot find module '@/components/features/products/category-grid' or its corresponding type declarations.
+src/app/page.tsx(6,27): error TS2307: Cannot find module '@/components/features/search/search-bar' or its corresponding type declarations.
+src/app/privacy/privacy-client.tsx(4,29): error TS2307: Cannot find module '@/components/shared/telekom-logo' or its corresponding type declarations.
+src/app/products/[category]/[id]/product-detail-client.tsx(3,38): error TS2307: Cannot find module '@/components/features/calculator/business-case-selector' or its corresponding type declarations.
+src/app/products/[category]/[id]/product-detail-client.tsx(4,30): error TS2307: Cannot find module '@/components/features/calculator/cost-timeline' or its corresponding type declarations.
+src/app/products/[category]/[id]/product-detail-client.tsx(5,38): error TS2307: Cannot find module '@/components/features/calculator/special-price-selector' or its corresponding type declarations.
+src/app/products/[category]/[id]/product-detail-client.tsx(6,31): error TS2307: Cannot find module '@/components/features/calculator/addon-selector' or its corresponding type declarations.
+src/app/products/[category]/[id]/product-detail-client.tsx(37,27): error TS2307: Cannot find module '@/components/features/search/search-bar' or its corresponding type declarations.
+src/app/products/[category]/[id]/product-detail-client.tsx(38,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/app/products/[category]/category-client.tsx(28,27): error TS2307: Cannot find module '@/components/features/search/search-bar' or its corresponding type declarations.
+src/app/products/[category]/category-client.tsx(31,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/app/products/products-client.tsx(6,27): error TS2307: Cannot find module '@/components/features/search/search-bar' or its corresponding type declarations.
+src/app/products/products-client.tsx(7,30): error TS2307: Cannot find module '@/components/features/news/news-carousel' or its corresponding type declarations.
+src/app/products/products-client.tsx(11,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/app/setup/setup-client.tsx(9,29): error TS2307: Cannot find module '@/components/shared/telekom-logo' or its corresponding type declarations.
+src/app/setup/setup-client.tsx(10,26): error TS2307: Cannot find module '@/components/shared/skeleton' or its corresponding type declarations.
+src/components/admin/addon-form.tsx(12,23): error TS2307: Cannot find module '@/components/shared/ui/input' or its corresponding type declarations.
+src/components/admin/addon-form.tsx(13,26): error TS2307: Cannot find module '@/components/shared/ui/textarea' or its corresponding type declarations.
+src/components/admin/addon-form.tsx(14,26): error TS2307: Cannot find module '@/components/shared/ui/checkbox' or its corresponding type declarations.
+src/components/admin/credit-form.tsx(11,23): error TS2307: Cannot find module '@/components/shared/ui/input' or its corresponding type declarations.
+src/components/admin/credit-form.tsx(12,26): error TS2307: Cannot find module '@/components/shared/ui/checkbox' or its corresponding type declarations.
+src/components/admin/news-form.tsx(11,23): error TS2307: Cannot find module '@/components/shared/ui/input' or its corresponding type declarations.
+src/components/admin/news-form.tsx(12,26): error TS2307: Cannot find module '@/components/shared/ui/textarea' or its corresponding type declarations.
+src/components/admin/product-form.tsx(12,23): error TS2307: Cannot find module '@/components/shared/ui/input' or its corresponding type declarations.
+src/components/admin/product-form.tsx(13,26): error TS2307: Cannot find module '@/components/shared/ui/textarea' or its corresponding type declarations.
+src/components/admin/product-form.tsx(14,26): error TS2307: Cannot find module '@/components/shared/ui/checkbox' or its corresponding type declarations.
+src/components/admin/product-form.tsx(478,21): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/admin/product-form.tsx(479,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/admin/product-form.tsx(522,21): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/admin/product-form.tsx(523,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/admin/special-price-form.tsx(20,23): error TS2307: Cannot find module '@/components/shared/ui/input' or its corresponding type declarations.
+src/components/admin/special-price-form.tsx(21,26): error TS2307: Cannot find module '@/components/shared/ui/checkbox' or its corresponding type declarations.
+src/components/admin/team-form.tsx(11,23): error TS2307: Cannot find module '@/components/shared/ui/input' or its corresponding type declarations.
+src/components/calculator/addon-selector.tsx(3,10): error TS2305: Module '"@/hooks/use-cost-calculator"' has no exported member 'Addon'.
+src/components/calculator/addon-selector.tsx(3,17): error TS2305: Module '"@/hooks/use-cost-calculator"' has no exported member 'AddonTier'.
+src/components/calculator/addon-selector.tsx(42,48): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/calculator/addon-selector.tsx(95,46): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/calculator/addon-selector.tsx(134,16): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/components/calculator/addon-selector.tsx(134,19): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/components/calculator/addon-selector.tsx(135,15): error TS7006: Parameter 'tier' implicitly has an 'any' type.
+src/components/calculator/cost-timeline.tsx(3,10): error TS2459: Module '"@/hooks/use-cost-calculator"' declares 'CalculationResult' locally, but it is not exported.
+src/components/calculator/cost-timeline.tsx(23,25): error TS7006: Parameter 'month' implicitly has an 'any' type.
+src/components/calculator/cost-timeline.tsx(91,37): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/calculator/cost-timeline.tsx(91,43): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/components/calculator/credit-selector.tsx(5,10): error TS2459: Module '"@/hooks/use-cost-calculator"' declares 'Credit' locally, but it is not exported.
+src/components/calculator/special-price-selector.tsx(3,10): error TS2459: Module '"@/hooks/use-cost-calculator"' declares 'SpecialPrice' locally, but it is not exported.
+src/components/calculator/special-price-selector.tsx(52,54): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/calculator/special-price-selector.tsx(86,24): error TS7006: Parameter 'tier' implicitly has an 'any' type.
+src/components/calculator/special-price-selector.tsx(86,30): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/components/layout/app-shell.tsx(5,30): error TS2307: Cannot find module '@/components/features/basket/basket-drawer' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(6,29): error TS2307: Cannot find module '@/components/features/auth-intro/intro-splash' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(9,35): error TS2307: Cannot find module '@/components/features/maintenance/maintenance-splash' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(10,36): error TS2307: Cannot find module '@/components/features/onboarding/onboarding-tutorial' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(12,40): error TS2307: Cannot find module '@/components/features/availability/availability-check-modal' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(13,42): error TS2307: Cannot find module '@/components/features/calculator/streaming-calculator-modal' or its corresponding type declarations.
+src/components/layout/app-shell.tsx(14,33): error TS2307: Cannot find module '@/components/features/battlecards/battlecard-panel' or its corresponding type declarations.
+src/components/layout/sidebar-nav.tsx(4,29): error TS2307: Cannot find module '@/components/shared/telekom-logo' or its corresponding type declarations.
