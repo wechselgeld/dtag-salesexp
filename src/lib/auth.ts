@@ -3,11 +3,10 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 const secretKey = process.env.JWT_SECRET;
-if (!secretKey && process.env.NODE_ENV === 'production') {
+if (!secretKey) {
     throw new Error('JWT_SECRET environment variable is not set');
 }
-const fallbackSecret = 'dev-only-unsafe-fallback-12345';
-const key = new TextEncoder().encode(secretKey || fallbackSecret);
+const key = new TextEncoder().encode(secretKey);
 
 const ALG = 'HS256';
 
