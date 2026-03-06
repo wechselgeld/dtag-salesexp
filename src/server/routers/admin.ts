@@ -125,7 +125,6 @@ export const adminRouter = router({
                 data: {
                     ...data,
                     features: JSON.stringify(features),
-                    // @ts-ignore
                     targetGroups: JSON.stringify(targetGroups),
                     salesArguments: {
                         create: salesArguments.map((text, i) => ({
@@ -151,7 +150,6 @@ export const adminRouter = router({
                 data: {
                     ...data,
                     features: JSON.stringify(features),
-                    // @ts-ignore
                     targetGroups: JSON.stringify(targetGroups),
                     salesArguments: {
                         create: salesArguments.map((text, i) => ({
@@ -183,8 +181,7 @@ export const adminRouter = router({
             return {
                 ...product,
                 features: product.features ? JSON.parse(product.features) : [],
-                // @ts-ignore
-                targetGroups: (product as any).targetGroups ? JSON.parse((product as any).targetGroups) : []
+                targetGroups: product.targetGroups ? JSON.parse(product.targetGroups) : []
             };
         }),
 
