@@ -58,6 +58,8 @@ const specialPriceSchema = z.object({
     requiresMove: z.boolean().default(false),
     priority: z.number().default(0),
     isActive: z.boolean().default(true),
+    discountTarget: z.enum(["BASE_PRICE", "MAGENTA_TV"]).default("BASE_PRICE"),
+    discountType: z.enum(["ABSOLUTE", "RELATIVE"]).default("ABSOLUTE"),
 });
 
 export const adminRouter = router({

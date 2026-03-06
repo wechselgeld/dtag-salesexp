@@ -242,24 +242,36 @@ function ProductPageContent() {
 							)}
 						</div>
 
-						{/* Specs */}
 						<div className="flex flex-wrap items-center gap-5">
-							{product.dataVolume && (
-								<div className="flex items-center gap-2">
-									<Wifi className="w-4 h-4" style={{ color: catColor }} />
-									<span className="text-[0.85rem] font-semibold text-[#555]">
-										{product.dataVolume}
-									</span>
-								</div>
-							)}
-							{product.downloadSpeed && (
-								<div className="flex items-center gap-2">
-									<Zap className="w-4 h-4" style={{ color: catColor }} />
-									<span className="text-[0.85rem] font-semibold text-[#555]">
-										{product.downloadSpeed} Mbit/s
-									</span>
-								</div>
-							)}
+							{product.category === "DEVICE"
+								? (product as any).deviceManufacturer && (
+										<div className="flex items-center gap-2">
+											<Smartphone
+												className="w-4 h-4"
+												style={{ color: catColor }}
+											/>
+											<span className="text-[0.85rem] font-semibold text-[#555]">
+												{(product as any).deviceManufacturer}
+											</span>
+										</div>
+									)
+								: product.dataVolume && (
+										<div className="flex items-center gap-2">
+											<Wifi className="w-4 h-4" style={{ color: catColor }} />
+											<span className="text-[0.85rem] font-semibold text-[#555]">
+												{product.dataVolume}
+											</span>
+										</div>
+									)}
+							{(product.downloadSpeed ?? 0) > 0 &&
+								product.category !== "DEVICE" && (
+									<div className="flex items-center gap-2">
+										<Zap className="w-4 h-4" style={{ color: catColor }} />
+										<span className="text-[0.85rem] font-semibold text-[#555]">
+											{product.downloadSpeed} Mbit/s
+										</span>
+									</div>
+								)}
 							{product.contractDuration && (
 								<span className="text-[0.72rem] font-medium text-[#b0b0b0] uppercase tracking-wider">
 									{product.contractDuration}M Laufzeit
@@ -297,16 +309,34 @@ function ProductPageContent() {
 							Ab
 						</div>
 						{product.category === "DEVICE" ? (
-							<>
+							<div className="flex flex-col items-end gap-2.5">
 								{(product as any).purchasePrice > 0 && (
-									<div className="text-[0.85rem] font-bold text-[#1a1a2e] mb-1">
-										Kauf: {(product as any).purchasePrice.toFixed(2)} €
+									<div className="flex flex-col items-end">
+										<div
+											className={clsx(
+												"font-extrabold tracking-tight leading-none",
+												((product as any).rentalPrice || product.basePrice) > 0
+													? "text-[1.3rem]"
+													: "text-[1.8rem]"
+											)}
+											style={{ color: catColor }}
+										>
+											{(product as any).purchasePrice.toFixed(2)} €
+										</div>
+										<div className="text-[0.7rem] text-[#b0b0b0] font-bold mt-1 uppercase tracking-wider">
+											Kauf
+										</div>
 									</div>
 								)}
 								{((product as any).rentalPrice || product.basePrice) > 0 && (
 									<div className="flex flex-col items-end">
 										<div
-											className="text-[1.8rem] font-extrabold tracking-tight leading-none"
+											className={clsx(
+												"font-extrabold tracking-tight leading-none",
+												(product as any).purchasePrice > 0
+													? "text-[1.3rem]"
+													: "text-[1.8rem]"
+											)}
 											style={{ color: catColor }}
 										>
 											{(
@@ -314,12 +344,12 @@ function ProductPageContent() {
 											).toFixed(2)}{" "}
 											€
 										</div>
-										<div className="text-[0.72rem] text-[#b0b0b0] font-medium mt-0.5">
-											/Monat (Miete)
+										<div className="text-[0.7rem] text-[#b0b0b0] font-bold mt-1 uppercase tracking-wider">
+											Miete
 										</div>
 									</div>
 								)}
-							</>
+							</div>
 						) : (
 							<>
 								<div
@@ -440,49 +470,62 @@ function ProductPageContent() {
 									</div>
 								</div>
 							)}
-							<div className="grid grid-cols-2 gap-3">
-								<button
-									onClick={() => setHardwarePurchaseType("RENT")}
-									className={clsx(
-										"flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer",
-										hardwarePurchaseType === "RENT"
-											? "bg-white shadow-sm"
-											: "bg-[#f7f8fa] hover:bg-white hover:border-[#ddd]"
-									)}
-									style={{
-										borderColor:
-											hardwarePurchaseType === "RENT" ? catColor : "#eaedf0"
-									}}
-								>
-									<span className="text-[0.8rem] font-bold text-[#1a1a2e] mb-1">
-										Mieten
-									</span>
-									<span className="text-[0.7rem] text-[#999]">
-										{product.rentalPrice?.toFixed(2) ||
-											product.basePrice.toFixed(2)}{" "}
-										€ mtl.
-									</span>
-								</button>
-								<button
-									onClick={() => setHardwarePurchaseType("BUY")}
-									className={clsx(
-										"flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer",
-										hardwarePurchaseType === "BUY"
-											? "bg-white shadow-sm"
-											: "bg-[#f7f8fa] hover:bg-white hover:border-[#ddd]"
-									)}
-									style={{
-										borderColor:
-											hardwarePurchaseType === "BUY" ? catColor : "#eaedf0"
-									}}
-								>
-									<span className="text-[0.8rem] font-bold text-[#1a1a2e] mb-1">
-										Einmalzahlung
-									</span>
-									<span className="text-[0.7rem] text-[#999]">
-										{product.purchasePrice?.toFixed(2) || "0.00"} €
-									</span>
-								</button>
+							<div
+								className={clsx(
+									"grid gap-3",
+									(product as any).rentalPrice > 0 &&
+										(product as any).purchasePrice > 0
+										? "grid-cols-2"
+										: "grid-cols-1"
+								)}
+							>
+								{((product as any).rentalPrice || product.basePrice) > 0 && (
+									<button
+										onClick={() => setHardwarePurchaseType("RENT")}
+										className={clsx(
+											"flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer",
+											hardwarePurchaseType === "RENT"
+												? "bg-white shadow-sm"
+												: "bg-[#f7f8fa] hover:bg-white hover:border-[#ddd]"
+										)}
+										style={{
+											borderColor:
+												hardwarePurchaseType === "RENT" ? catColor : "#eaedf0"
+										}}
+									>
+										<span className="text-[0.8rem] font-bold text-[#1a1a2e] mb-1">
+											Mieten
+										</span>
+										<span className="text-[0.7rem] text-[#999]">
+											{(
+												(product as any).rentalPrice || product.basePrice
+											).toFixed(2)}{" "}
+											€ mtl.
+										</span>
+									</button>
+								)}
+								{(product as any).purchasePrice > 0 && (
+									<button
+										onClick={() => setHardwarePurchaseType("BUY")}
+										className={clsx(
+											"flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer",
+											hardwarePurchaseType === "BUY"
+												? "bg-white shadow-sm"
+												: "bg-[#f7f8fa] hover:bg-white hover:border-[#ddd]"
+										)}
+										style={{
+											borderColor:
+												hardwarePurchaseType === "BUY" ? catColor : "#eaedf0"
+										}}
+									>
+										<span className="text-[0.8rem] font-bold text-[#1a1a2e] mb-1">
+											Einmalzahlung
+										</span>
+										<span className="text-[0.7rem] text-[#999]">
+											{(product as any).purchasePrice.toFixed(2)} €
+										</span>
+									</button>
+								)}
 							</div>
 						</ConfigSection>
 					)}

@@ -34,6 +34,8 @@ const specialPriceSchema = z.object({
 	requiresMove: z.boolean().default(false),
 	priority: z.number().default(0),
 	isActive: z.boolean().default(true),
+	discountTarget: z.enum(["BASE_PRICE", "MAGENTA_TV"]).default("BASE_PRICE"),
+	discountType: z.enum(["ABSOLUTE", "RELATIVE"]).default("ABSOLUTE"),
 	tiers: z.array(tierSchema).min(1, "Mindestens eine Preisstufe ist nötig")
 });
 
@@ -70,6 +72,8 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 			requiresMove: initialData?.requiresMove || false,
 			priority: initialData?.priority || 0,
 			isActive: initialData?.isActive ?? true,
+			discountTarget: initialData?.discountTarget || "BASE_PRICE",
+			discountType: initialData?.discountType || "ABSOLUTE",
 			tiers:
 				initialData?.tiers && initialData.tiers.length > 0
 					? initialData.tiers
@@ -217,6 +221,33 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 							error={errors.priority?.message}
 							{...register("priority", { valueAsNumber: true })}
 						/>
+
+						<div className="grid grid-cols-2 gap-4">
+							<div className="flex flex-col gap-1.5">
+								<label className="text-[0.7rem] font-bold text-[#1a1a2e] uppercase tracking-wider ml-1">
+									Worauf anwenden?
+								</label>
+								<select
+									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem] font-medium"
+									{...register("discountTarget")}
+								>
+									<option value="BASE_PRICE">Tarif (Grundpreis)</option>
+									<option value="MAGENTA_TV">MagentaTV Paket</option>
+								</select>
+							</div>
+							<div className="flex flex-col gap-1.5">
+								<label className="text-[0.7rem] font-bold text-[#1a1a2e] uppercase tracking-wider ml-1">
+									Art des Rabatts
+								</label>
+								<select
+									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem] font-medium"
+									{...register("discountType")}
+								>
+									<option value="ABSOLUTE">Absoluter (Fest-)Preis</option>
+									<option value="RELATIVE">Zieht diesen Betrag ab</option>
+								</select>
+							</div>
+						</div>
 
 						{/* Conditions */}
 						<div className="space-y-3 pt-2 border-t border-[#f0f0f0]">
@@ -419,7 +450,11 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 										/>
 										<div className="col-span-2">
 											<Input
-												label="Preis (€ / Monat)"
+												label={
+													watch("discountType") === "RELATIVE"
+														? "Abzug pro Monat (€)"
+														: "Festpreis (€ / Monat)"
+												}
 												type="number"
 												step="0.01"
 												min={0}
@@ -441,6 +476,28 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 									<div className="w-1.5 h-1.5 rounded-full bg-[#ff6b00]"></div>
 									Vorschau für Verkäufer
 								</div>
+								<div className="space-y-2 text-[#ccc] text-[0.8rem] mb-2 leading-relaxed">
+									Dieser Sonderpreis wird auf den{" "}
+									<strong className="text-white">
+										{watch("discountTarget") === "MAGENTA_TV"
+											? "MagentaTV Preis"
+											: "Grundpreis des Tarifs"}
+									</strong>{" "}
+									angewendet.
+									{watch("discountType") === "RELATIVE" ? (
+										<span>
+											{" "}
+											Es wird der Betrag abgezogen. Ist der Betrag höher als der
+											reguläre Preis, wird es{" "}
+											<strong className="text-white">0,00 €</strong>.
+										</span>
+									) : (
+										<span>
+											{" "}
+											Der Preis wird dabei mit dem neuen überschrieben.
+										</span>
+									)}
+								</div>
 								<div className="space-y-2">
 									{cTiers.map((tier, i) => (
 										<div
@@ -451,6 +508,7 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 												Monat {tier.fromMonth || 1}–{tier.toMonth || "?"}
 											</span>
 											<span className="font-bold text-white">
+												{watch("discountType") === "RELATIVE" ? "-" : ""}
 												{tier.price?.toFixed(2) || "0.00"} €
 											</span>
 										</div>

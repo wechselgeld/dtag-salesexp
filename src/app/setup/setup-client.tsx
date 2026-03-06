@@ -1,279 +1,621 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ShieldAlert, ArrowRight } from "lucide-react";
+import {
+	Check,
+	ShieldAlert,
+	ArrowRight,
+	Users,
+	User,
+	CheckCircle2,
+	RotateCcw,
+	ChevronRight
+} from "lucide-react";
 import clsx from "clsx";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
 import { Skeleton } from "@/components/shared/skeleton";
 import Link from "next/link";
+import { z } from "zod";
+
+/* ──────────────────────────────────────────────
+   Zod schema for form validation
+   ────────────────────────────────────────────── */
+
+const setupFormSchema = z.object({
+	firstName: z.string().trim().min(1, "Vorname ist erforderlich"),
+	lastName: z.string().trim().min(1, "Nachname ist erforderlich"),
+	teamId: z.string().min(1, "Bitte wähle ein Team aus"),
+	acceptedTerms: z.literal(true),
+	acceptedPrivacy: z.literal(true)
+});
+
+/* ──────────────────────────────────────────────
+   LocalStorage helpers
+   ────────────────────────────────────────────── */
+
+const LS_KEY_FIRST_NAME = "setup-user-firstName";
+const LS_KEY_LAST_NAME = "setup-user-lastName";
+const LS_KEY_SETUP_DONE = "setup-completed";
+
+function getStoredName(): { firstName: string; lastName: string } {
+	if (typeof window === "undefined") return { firstName: "", lastName: "" };
+	return {
+		firstName: localStorage.getItem(LS_KEY_FIRST_NAME) ?? "",
+		lastName: localStorage.getItem(LS_KEY_LAST_NAME) ?? ""
+	};
+}
+
+function persistName(firstName: string, lastName: string) {
+	localStorage.setItem(LS_KEY_FIRST_NAME, firstName);
+	localStorage.setItem(LS_KEY_LAST_NAME, lastName);
+}
+
+function markSetupComplete() {
+	localStorage.setItem(LS_KEY_SETUP_DONE, new Date().toISOString());
+}
+
+function isSetupAlreadyDone(): boolean {
+	if (typeof window === "undefined") return false;
+	return !!localStorage.getItem(LS_KEY_SETUP_DONE);
+}
+
+/* ──────────────────────────────────────────────
+   Component
+   ────────────────────────────────────────────── */
 
 export default function SetupPage() {
 	const router = useRouter();
+
+	// Form state
+	const [firstName, setFirstName] = useState("");
+	const [lastName, setLastName] = useState("");
 	const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
 	const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const { data: teams, isLoading: isTeamsLoading } = trpc.team.list.useQuery();
+	// Returning-user state
+	const [hasCompletedBefore, setHasCompletedBefore] = useState(false);
+	const [showReconfigure, setShowReconfigure] = useState(false);
 
+	// Data fetching
+	const { data: teams, isLoading: isTeamsLoading } = trpc.team.list.useQuery();
 	const {
-		data: ipVerification,
 		isLoading: isIpLoading,
 		isError: isIpError,
 		error: ipError
-	} = trpc.session.verifyIp.useQuery(undefined, {
-		retry: false
-	});
+	} = trpc.session.verifyIp.useQuery(undefined, { retry: false });
+	const { data: existingSession } = trpc.session.getCurrent.useQuery();
 
 	const createSession = trpc.session.create.useMutation({
 		onSuccess: () => {
+			persistName(firstName.trim(), lastName.trim());
+			markSetupComplete();
 			router.push("/products");
 			router.refresh();
 		}
 	});
 
-	const handleSubmit = async () => {
-		if (!selectedTeamId || !acceptedTerms || !acceptedPrivacy) return;
+	// Hydrate stored name on mount
+	useEffect(() => {
+		const stored = getStoredName();
+		if (stored.firstName) setFirstName(stored.firstName);
+		if (stored.lastName) setLastName(stored.lastName);
+		setHasCompletedBefore(isSetupAlreadyDone());
+	}, []);
+
+	// Show welcome-back if user has completed setup before (localStorage persists
+	// beyond the 30-day session cookie, so data survives across re-setups)
+	const isReturningUser = hasCompletedBefore;
+
+	// Zod-based validation
+	const validationResult = useMemo(
+		() =>
+			setupFormSchema.safeParse({
+				firstName,
+				lastName,
+				teamId: selectedTeamId ?? "",
+				acceptedTerms,
+				acceptedPrivacy
+			}),
+		[firstName, lastName, selectedTeamId, acceptedTerms, acceptedPrivacy]
+	);
+
+	const canSubmit = validationResult.success && !isSubmitting;
+
+	const handleSubmit = useCallback(async () => {
+		const result = setupFormSchema.safeParse({
+			firstName,
+			lastName,
+			teamId: selectedTeamId ?? "",
+			acceptedTerms,
+			acceptedPrivacy
+		});
+
+		if (!result.success) return;
 
 		setIsSubmitting(true);
 		try {
 			await createSession.mutateAsync({
-				teamId: selectedTeamId,
+				teamId: result.data.teamId,
 				acceptedTerms: true
 			});
 		} catch (error) {
 			console.error("Setup failed", error);
 			setIsSubmitting(false);
 		}
-	};
+	}, [
+		selectedTeamId,
+		acceptedTerms,
+		acceptedPrivacy,
+		firstName,
+		lastName,
+		createSession
+	]);
 
-	const canSubmit =
-		selectedTeamId && acceptedTerms && acceptedPrivacy && !isSubmitting;
+	/* ── Render ────────────────────────────── */
 
 	return (
-		<div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 sm:p-8 font-sans selection:bg-[#e20074]/20 selection:text-[#e20074]">
-			<motion.div
-				initial={{ opacity: 0, y: 15 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-				className="w-full max-w-[480px] flex flex-col items-center"
-			>
-				{/* Top Branding - Removed the box, increased logo slightly */}
-				<div className="mb-10 flex flex-col items-center text-center">
+		<div className="min-h-screen py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074]">
+			<div className="max-w-3xl mx-auto">
+				{/* ─── Header / Branding ─── */}
+				<motion.div
+					initial={{ opacity: 0, y: 12 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+					className="flex flex-col items-center mb-10 text-center"
+				>
 					<TelekomLogo className="w-12 h-12 text-[#e20074] mb-8" />
-
-					<h1 className="text-[2.2rem] sm:text-[2.5rem] font-extrabold text-[#1a1a2e] tracking-tight mb-3 leading-none">
+					<h1 className="text-3xl sm:text-[2.5rem] font-extrabold text-[#1a1a2e] tracking-tight mb-3 leading-none">
 						Sales Experience @ DTS
 					</h1>
-					<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-[90%] mx-auto mt-2">
+					<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">
 						Willkommen bei der Sales Experience! 👋🏻
 						<br />
 						Sie hilft Dir interaktiv bei der Beratung im Gespräch.
 					</p>
-				</div>
+				</motion.div>
 
-				{isIpLoading ? (
-					<div className="w-full flex flex-col items-center gap-4 py-8">
-						<div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
-						<p className="text-[#888] text-[0.9rem] font-medium">
-							Überprüfe Zugriffsberechtigung...
-						</p>
-					</div>
-				) : isIpError ? (
-					<motion.div
-						initial={{ opacity: 0, scale: 0.95 }}
-						animate={{ opacity: 1, scale: 1 }}
-						className="w-full bg-[#fdf2f8] border border-[#fbcfe8] rounded-2xl p-6 flex flex-col items-center text-center gap-4"
-					>
-						<div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
-							<ShieldAlert className="w-8 h-8 text-[#e20074]" />
-						</div>
-						<div>
-							<h3 className="text-[1.1rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight">
-								Zugriff verweigert
-							</h3>
-							<p className="text-[0.9rem] text-[#888] leading-relaxed">
-								{ipError?.message ||
-									"Dein aktueller Standort (IP-Adresse) ist für den Zugriff auf dieses System nicht autorisiert."}
+				{/* ─── Main Card ─── */}
+				<motion.div
+					initial={{ opacity: 0, y: 15 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{
+						duration: 0.5,
+						delay: 0.1,
+						ease: [0.16, 1, 0.3, 1]
+					}}
+					className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] p-8 sm:p-12"
+				>
+					{/* Loading state */}
+					{isIpLoading ? (
+						<div className="flex flex-col items-center gap-4 py-12">
+							<div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
+							<p className="text-[#888] text-[0.9rem] font-medium">
+								Überprüfe Zugriffsberechtigung…
 							</p>
 						</div>
-					</motion.div>
-				) : (
-					<div className="w-full flex flex-col gap-8">
-						<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed text-center mx-auto m-0 mt-[-10px]">
-							Wähle bitte Dein Team aus, um zu starten.
-						</p>
-
-						{/* Team Selection */}
-						<div className="flex flex-col gap-3">
-							<label className="text-[0.75rem] font-bold text-[#b0b0b0] uppercase tracking-wider pl-1 font-sans">
-								Dein Vertriebsteam
-							</label>
-
-							{isTeamsLoading ? (
-								<div className="flex flex-col gap-3">
-									<Skeleton className="h-[68px] w-full rounded-2xl" />
-									<Skeleton className="h-[68px] w-full rounded-2xl" />
+					) : isIpError ? (
+						/* IP blocked */
+						<IpBlockedCard error={ipError} />
+					) : isReturningUser && !showReconfigure ? (
+						/* Returning user – already set up */
+						<WelcomeBackCard
+							firstName={firstName}
+							lastName={lastName}
+							teamName={existingSession?.team?.name}
+							onContinue={() => {
+								router.push("/products");
+							}}
+							onReconfigure={() => setShowReconfigure(true)}
+						/>
+					) : (
+						/* Setup form */
+						<div className="space-y-10">
+							{/* ─── Section 1: Name ─── */}
+							<section>
+								<SectionHeader
+									icon={<User className="w-5 h-5 text-[#e20074]" />}
+									title="Dein Name"
+									step={1}
+								/>
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
+									<InputField
+										id="setup-first-name"
+										label="Vorname"
+										placeholder="Max"
+										value={firstName}
+										onChange={setFirstName}
+									/>
+									<InputField
+										id="setup-last-name"
+										label="Nachname"
+										placeholder="Mustermann"
+										value={lastName}
+										onChange={setLastName}
+									/>
 								</div>
-							) : (
-								<div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#eaedf0] scrollbar-track-transparent">
-									<AnimatePresence>
-										{teams?.map((team) => {
-											const isSelected = selectedTeamId === team.id;
-											return (
-												<button
+							</section>
+
+							{/* Divider */}
+							<div className="h-px bg-[#eaedf0]" />
+
+							{/* ─── Section 2: Team ─── */}
+							<section>
+								<SectionHeader
+									icon={<Users className="w-5 h-5 text-[#e20074]" />}
+									title="Dein Vertriebsteam"
+									step={2}
+								/>
+
+								{isTeamsLoading ? (
+									<div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">
+										{Array.from({ length: 6 }).map((_, i) => (
+											<Skeleton
+												key={i}
+												className="h-[48px] w-full rounded-xl"
+											/>
+										))}
+									</div>
+								) : teams?.length === 0 ? (
+									<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
+										Bisher wurden keine Teams angelegt.
+									</div>
+								) : (
+									<div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">
+										<AnimatePresence>
+											{teams?.map((team, index) => (
+												<TeamTile
 													key={team.id}
+													name={team.name}
+													isSelected={selectedTeamId === team.id}
 													onClick={() => setSelectedTeamId(team.id)}
-													className={clsx(
-														"relative flex items-center justify-between p-4 px-5 rounded-2xl border transition-all duration-300 w-full text-left group outline-none cursor-pointer",
-														isSelected
-															? "border-[#e20074]/40 bg-white shadow-[0_4px_20px_rgba(226,0,116,0.08)] ring-1 ring-[#e20074]/30"
-															: "border-[#eaedf0] bg-[#f7f8fa] hover:bg-white hover:border-[#d1d5db] hover:shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
-													)}
-												>
-													<span
-														className={clsx(
-															"text-[1rem] font-bold transition-colors",
-															isSelected ? "text-[#e20074]" : "text-[#1a1a2e]"
-														)}
-													>
-														{team.name}
-													</span>
-													<div
-														className={clsx(
-															"w-[22px] h-[22px] rounded-full border flex items-center justify-center transition-all duration-300",
-															isSelected
-																? "border-[#e20074] bg-[#e20074] text-white scale-110"
-																: "border-[#d1d5db] bg-transparent group-hover:border-[#a3a8b4]"
-														)}
-													>
-														{isSelected && (
-															<Check
-																className="w-3.5 h-3.5"
-																strokeWidth={3.5}
-															/>
-														)}
-													</div>
-												</button>
-											);
-										})}
-									</AnimatePresence>
-									{teams?.length === 0 && (
-										<div className="text-center p-6 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl">
-											Bisher wurden keine Teams angelegt.
+													index={index}
+												/>
+											))}
+										</AnimatePresence>
+									</div>
+								)}
+							</section>
+
+							{/* Divider */}
+							<div className="h-px bg-[#eaedf0]" />
+
+							{/* ─── Section 3: Agreements + Submit ─── */}
+							<section>
+								{/* Notice box */}
+								<div className="bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl p-5 mb-6">
+									<div className="flex gap-4">
+										<ShieldAlert className="w-[18px] h-[18px] text-[#888] shrink-0 mt-[2px]" />
+										<div className="flex flex-col gap-1.5">
+											<h3 className="text-[0.85rem] font-bold text-[#1a1a2e] m-0 leading-none">
+												Interner Nutzungshinweis
+											</h3>
+											<p className="text-[0.8rem] text-[#888] leading-relaxed m-0">
+												Dieses Tool dient ausschließlich internen Beratungs- und
+												Schulungszwecken. Es handelt sich um keine
+												rechtsverbindliche Preisliste. Die Weitergabe an Dritte
+												ist strikt untersagt.
+											</p>
 										</div>
-									)}
-								</div>
-							)}
-						</div>
-
-						{/* Subtle Disclaimer instead of bright yellow box */}
-						<div className="bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl p-5">
-							<div className="flex gap-4">
-								<ShieldAlert className="w-[18px] h-[18px] text-[#888] shrink-0 mt-[2px]" />
-								<div className="flex flex-col gap-1.5">
-									<h3 className="text-[0.85rem] font-bold text-[#1a1a2e] m-0 leading-none">
-										Interner Nutzungshinweis
-									</h3>
-									<p className="text-[0.8rem] text-[#888] leading-relaxed m-0">
-										Dieses Tool dient ausschließlich internen Beratungs- und
-										Schulungszwecken. Es handelt sich um keine
-										rechtsverbindliche Preisliste. Die Weitergabe an Dritte ist
-										strikt untersagt.
-									</p>
-								</div>
-							</div>
-						</div>
-
-						{/* Agreements */}
-						<div className="flex flex-col gap-4">
-							{/* Terms Checkbox */}
-							<label className="flex items-start gap-3.5 group cursor-pointer relative">
-								<div className="relative flex items-center justify-center mt-0.5">
-									<input
-										type="checkbox"
-										className="peer sr-only"
-										checked={acceptedTerms}
-										onChange={() => setAcceptedTerms(!acceptedTerms)}
-									/>
-									<div className="w-[20px] h-[20px] rounded-[6px] border-[1.5px] border-[#d1d5db] bg-white transition-all peer-checked:bg-[#e20074] peer-checked:border-[#e20074] group-hover:border-[#e20074]/50 flex items-center justify-center shadow-sm">
-										<Check
-											className={clsx(
-												"w-3 h-3 text-white transition-transform duration-200",
-												acceptedTerms ? "scale-100" : "scale-0"
-											)}
-											strokeWidth={4}
-										/>
 									</div>
 								</div>
-								<div className="text-[0.90rem] mt-0.5 text-[#555] font-medium leading-snug pt-px group-hover:text-[#1a1a2e] transition-colors select-none">
-									Ich erkläre mich mit dem Nutzungshinweis einverstanden.
-								</div>
-							</label>
 
-							{/* Privacy Checkbox */}
-							<label className="flex items-start gap-3.5 group cursor-pointer relative">
-								<div className="relative flex items-center justify-center mt-0.5">
-									<input
-										type="checkbox"
-										className="peer sr-only"
-										checked={acceptedPrivacy}
-										onChange={() => setAcceptedPrivacy(!acceptedPrivacy)}
-									/>
-									<div className="w-[20px] h-[20px] rounded-[6px] border-[1.5px] border-[#d1d5db] bg-white transition-all peer-checked:bg-[#e20074] peer-checked:border-[#e20074] group-hover:border-[#e20074]/50 flex items-center justify-center shadow-sm">
-										<Check
-											className={clsx(
-												"w-3 h-3 text-white transition-transform duration-200",
-												acceptedPrivacy ? "scale-100" : "scale-0"
-											)}
-											strokeWidth={4}
+								{/* Checkboxes left + Submit right */}
+								<div className="flex items-stretch justify-between gap-6 flex-wrap">
+									<div className="flex flex-col gap-2.5">
+										<CheckboxRow
+											checked={acceptedTerms}
+											onChange={() => setAcceptedTerms(!acceptedTerms)}
+											label="Nutzungshinweis akzeptiert"
+										/>
+										<CheckboxRow
+											checked={acceptedPrivacy}
+											onChange={() => setAcceptedPrivacy(!acceptedPrivacy)}
+											label={
+												<>
+													<Link
+														href="/privacy"
+														className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2"
+													>
+														Datenschutz
+													</Link>{" "}
+													akzeptiert
+												</>
+											}
 										/>
 									</div>
-								</div>
-								<div className="text-[0.90rem] mt-0.5 text-[#555] font-medium leading-snug pt-px group-hover:text-[#1a1a2e] transition-colors select-none">
-									Ich erkläre mich mit der{" "}
-									<Link
-										href="/privacy"
-										className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2"
+
+									{/* Submit button */}
+									<button
+										id="setup-submit-btn"
+										onClick={handleSubmit}
+										disabled={!canSubmit}
+										className={clsx(
+											"self-stretch px-6 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 outline-none text-[0.88rem] whitespace-nowrap",
+											canSubmit
+												? "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_6px_16px_-4px_rgba(226,0,116,0.3)] cursor-pointer active:scale-[0.98]"
+												: "bg-[#f7f8fa] text-[#ccc] border border-[#eaedf0] cursor-not-allowed"
+										)}
 									>
-										Datenschutzerklärung
-									</Link>{" "}
-									einverstanden.
+										{isSubmitting ? (
+											<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+										) : (
+											<span className="flex items-center gap-2">
+												Setup abschließen
+												<ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
+											</span>
+										)}
+									</button>
 								</div>
-							</label>
+							</section>
 						</div>
+					)}
+				</motion.div>
 
-						{/* Action */}
-						<button
-							onClick={handleSubmit}
-							disabled={!canSubmit}
-							className={clsx(
-								"w-full h-[56px] rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 mt-2 outline-none",
-								canSubmit
-									? "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_8px_20px_-6px_rgba(226,0,116,0.35)] cursor-pointer"
-									: "bg-[#f7f8fa] text-[#bbb] border border-[#eaedf0] cursor-not-allowed"
-							)}
-						>
-							{isSubmitting ? (
-								<div className="w-5 h-5 border-[2.5px] border-white/30 border-t-white rounded-full animate-spin" />
-							) : (
-								<span className="flex items-center gap-2 text-[1rem]">
-									Sales Experience starten{" "}
-									<ArrowRight className="w-4 h-4 ml-0.5" strokeWidth={2.5} />
-								</span>
-							)}
-						</button>
-					</div>
-				)}
-
-				<div className="mt-14 text-center text-[0.75rem] font-medium text-[#c0c0c0]">
+				{/* Footer */}
+				<div className="mt-8 text-center text-[0.75rem] font-medium text-[#bbb]">
 					&copy; {new Date().getFullYear()} Felix Kinze für Deutsche Telekom
-					Service GmbH &bull; Via www.flxk.nz
+					Service GmbH &bull; Sales Experience
 				</div>
-			</motion.div>
+			</div>
+		</div>
+	);
+}
+
+/* ──────────────────────────────────────────────
+   Sub-components
+   ────────────────────────────────────────────── */
+
+/** Section header with numbered step indicator */
+function SectionHeader({
+	icon,
+	title,
+	step
+}: {
+	icon: React.ReactNode;
+	title: string;
+	step: number;
+}) {
+	return (
+		<div className="flex items-center gap-3">
+			<div className="w-8 h-8 rounded-full bg-[#e20074]/10 text-[#e20074] flex items-center justify-center text-[0.75rem] font-extrabold shrink-0">
+				{step}
+			</div>
+			<div className="flex items-center gap-2">
+				{icon}
+				<h2 className="text-[1.05rem] font-bold text-[#1a1a2e] m-0">{title}</h2>
+			</div>
+		</div>
+	);
+}
+
+/** Text input field */
+function InputField({
+	id,
+	label,
+	placeholder,
+	value,
+	onChange
+}: {
+	id: string;
+	label: string;
+	placeholder: string;
+	value: string;
+	onChange: (v: string) => void;
+}) {
+	return (
+		<div className="flex flex-col gap-1.5">
+			<label
+				htmlFor={id}
+				className="text-[0.75rem] font-bold text-[#b0b0b0] uppercase tracking-wider pl-1"
+			>
+				{label}
+			</label>
+			<input
+				id={id}
+				type="text"
+				value={value}
+				onChange={(e) => onChange(e.target.value)}
+				placeholder={placeholder}
+				className="h-[48px] px-4 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.95rem] text-[#1a1a2e] font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 focus:bg-white transition-all"
+			/>
+		</div>
+	);
+}
+
+/** Team selection tile */
+function TeamTile({
+	name,
+	isSelected,
+	onClick,
+	index
+}: {
+	name: string;
+	isSelected: boolean;
+	onClick: () => void;
+	index: number;
+}) {
+	return (
+		<motion.button
+			initial={{ opacity: 0, scale: 0.95 }}
+			animate={{ opacity: 1, scale: 1 }}
+			transition={{ delay: 0.03 * index, duration: 0.25 }}
+			onClick={onClick}
+			className={clsx(
+				"relative flex items-center gap-3 px-4 h-[48px] rounded-xl border transition-all duration-300 cursor-pointer outline-none group",
+				isSelected
+					? "border-[#e20074]/40 bg-[#e20074]/5 shadow-[0_4px_20px_rgba(226,0,116,0.08)] ring-1 ring-[#e20074]/30"
+					: "border-[#eaedf0] bg-[#f7f8fa] hover:bg-white hover:border-[#d1d5db] hover:shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
+			)}
+		>
+			{/* Checkmark indicator */}
+			<div
+				className={clsx(
+					"w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all duration-200",
+					isSelected
+						? "bg-[#e20074] border-[#e20074]"
+						: "border-[#d1d5db] bg-white group-hover:border-[#a3a8b4]"
+				)}
+			>
+				<Check
+					className={clsx(
+						"w-2.5 h-2.5 text-white transition-transform duration-200",
+						isSelected ? "scale-100" : "scale-0"
+					)}
+					strokeWidth={4}
+				/>
+			</div>
+
+			<span
+				className={clsx(
+					"text-[0.88rem] font-bold transition-colors text-left leading-tight",
+					isSelected ? "text-[#e20074]" : "text-[#1a1a2e]"
+				)}
+			>
+				{name}
+			</span>
+		</motion.button>
+	);
+}
+
+/** Compact checkbox row with round filled checkmark */
+function CheckboxRow({
+	checked,
+	onChange,
+	label
+}: {
+	checked: boolean;
+	onChange: () => void;
+	label: React.ReactNode;
+}) {
+	return (
+		<label className="flex items-center gap-2.5 group cursor-pointer select-none">
+			<div className="relative flex items-center justify-center">
+				<input
+					type="checkbox"
+					className="peer sr-only"
+					checked={checked}
+					onChange={onChange}
+				/>
+				<div
+					className={clsx(
+						"w-[20px] h-[20px] rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200",
+						checked
+							? "bg-[#e20074] border-[#e20074]"
+							: "border-[#d1d5db] bg-white group-hover:border-[#e20074]/50"
+					)}
+				>
+					<Check
+						className={clsx(
+							"w-3 h-3 text-white transition-transform duration-200",
+							checked ? "scale-100" : "scale-0"
+						)}
+						strokeWidth={4}
+					/>
+				</div>
+			</div>
+			<span className="text-[0.85rem] text-[#555] font-medium group-hover:text-[#1a1a2e] transition-colors">
+				{label}
+			</span>
+		</label>
+	);
+}
+
+/** IP blocked error card */
+function IpBlockedCard({ error }: { error: { message: string } | null }) {
+	return (
+		<div className="flex flex-col items-center text-center gap-5 py-4">
+			<div className="w-16 h-16 bg-[#fdf2f8] rounded-full flex items-center justify-center">
+				<ShieldAlert className="w-8 h-8 text-[#e20074]" />
+			</div>
+			<div>
+				<h3 className="text-[1.1rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight">
+					Zugriff verweigert
+				</h3>
+				<p className="text-[0.9rem] text-[#888] leading-relaxed max-w-md mx-auto">
+					{error?.message ||
+						"Dein aktueller Standort (IP-Adresse) ist für den Zugriff auf dieses System nicht autorisiert."}
+				</p>
+			</div>
+		</div>
+	);
+}
+
+/** Welcome-back card for returning users */
+function WelcomeBackCard({
+	firstName,
+	lastName,
+	teamName,
+	onContinue,
+	onReconfigure
+}: {
+	firstName: string;
+	lastName: string;
+	teamName?: string;
+	onContinue: () => void;
+	onReconfigure: () => void;
+}) {
+	return (
+		<div className="flex flex-col items-center text-center gap-6 py-4">
+			<div className="w-16 h-16 bg-[#e20074]/10 rounded-full flex items-center justify-center">
+				<CheckCircle2 className="w-8 h-8 text-[#e20074]" />
+			</div>
+
+			<div>
+				<h3 className="text-[1.25rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight">
+					Willkommen zurück{firstName ? `, ${firstName}` : ""}!
+				</h3>
+				<p className="text-[0.95rem] text-[#888] leading-relaxed max-w-md mx-auto">
+					Dein Setup ist bereits abgeschlossen
+					{teamName ? (
+						<>
+							{" "}
+							und Du bist dem Team{" "}
+							<span className="font-bold text-[#1a1a2e]">{teamName}</span>{" "}
+							zugeordnet
+						</>
+					) : null}
+					. Du kannst direkt weiterarbeiten.
+				</p>
+			</div>
+
+			{/* Info badges */}
+			{teamName && (
+				<div className="flex flex-wrap gap-3 justify-center">
+					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f7f8fa] border border-[#eaedf0] text-[0.8rem] font-medium text-[#666]">
+						<Users className="w-3.5 h-3.5 text-[#e20074]" />
+						{teamName}
+					</div>
+					{firstName && (
+						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f7f8fa] border border-[#eaedf0] text-[0.8rem] font-medium text-[#666]">
+							<User className="w-3.5 h-3.5 text-[#e20074]" />
+							{firstName} {lastName}
+						</div>
+					)}
+				</div>
+			)}
+
+			{/* Actions */}
+			<div className="flex flex-col sm:flex-row gap-3 w-full mt-2">
+				<button
+					onClick={onReconfigure}
+					className="flex-1 h-[52px] rounded-2xl bg-[#f7f8fa] border border-[#eaedf0] text-[#666] font-bold text-[0.9rem] hover:bg-[#eaedf0] transition-all cursor-pointer flex items-center justify-center gap-2 outline-none active:scale-[0.98]"
+				>
+					<RotateCcw className="w-4 h-4" />
+					Neu einrichten
+				</button>
+				<button
+					onClick={onContinue}
+					className="flex-[1.5] h-[52px] rounded-2xl bg-[#e20074] hover:bg-[#c70066] text-white font-bold text-[0.9rem] shadow-[0_8px_20px_-6px_rgba(226,0,116,0.35)] transition-all cursor-pointer flex items-center justify-center gap-2 outline-none hover:-translate-y-0.5 active:scale-[0.98]"
+				>
+					Weiter zur Sales Experience
+					<ChevronRight className="w-4 h-4" strokeWidth={2.5} />
+				</button>
+			</div>
 		</div>
 	);
 }

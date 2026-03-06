@@ -94,6 +94,9 @@ model SpecialPrice {
   requiresSpeedUp   Boolean @default(false)
   requiresMove      Boolean @default(false)
 
+  discountTarget String @default("BASE_PRICE") // "BASE_PRICE", "MAGENTA_TV"
+  discountType   String @default("ABSOLUTE")   // "ABSOLUTE", "RELATIVE"
+
   isActive Boolean @default(true)
   priority Int     @default(0)
 

@@ -1,15 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { Smartphone, Wifi, Zap, Tv, Tablet, Router } from "lucide-react";
+import { Smartphone, Wifi, Zap, Tv, Router, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { SearchBar } from "@/components/features/search/search-bar";
 import { NewsCarousel } from "@/components/features/news/news-carousel";
 import { trpc } from "@/lib/trpc";
-import { Star } from "lucide-react";
 import clsx from "clsx";
 import { Skeleton } from "@/components/shared/skeleton";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+/* ──────────────────────────────────────────────
+   Constants
+   ────────────────────────────────────────────── */
+
+const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
+const LS_KEY_FIRST_NAME = "setup-user-firstName";
 
 const CATEGORIES = [
 	{
@@ -54,6 +60,21 @@ const CATEGORIES = [
 	}
 ];
 
+/* ──────────────────────────────────────────────
+   Helpers
+   ────────────────────────────────────────────── */
+
+function getGreeting(): string {
+	const h = new Date().getHours();
+	if (h < 12) return "Guten Morgen";
+	if (h < 18) return "Guten Tag";
+	return "Guten Abend";
+}
+
+/* ──────────────────────────────────────────────
+   Main Component
+   ────────────────────────────────────────────── */
+
 export default function ProductsPage() {
 	const { data: session, isLoading: sessionLoading } =
 		trpc.session.getCurrent.useQuery();
@@ -62,11 +83,21 @@ export default function ProductsPage() {
 	const isLoading = sessionLoading || productsLoading;
 	const utils = trpc.useUtils();
 
+	const [firstName, setFirstName] = useState("");
+
+	// Load stored first name
+	useEffect(() => {
+		const stored = localStorage.getItem(LS_KEY_FIRST_NAME) ?? "";
+		setFirstName(stored);
+	}, []);
+
 	// Prefetch all category products in background for "instant" load
 	useEffect(() => {
 		if (allProducts) {
 			CATEGORIES.forEach((category) => {
-				utils.product.getProductsByCategory.prefetch({ category: category.id });
+				utils.product.getProductsByCategory.prefetch({
+					category: category.id
+				});
 			});
 		}
 	}, [allProducts, utils]);
@@ -84,31 +115,49 @@ export default function ProductsPage() {
 			.filter((h) => h.category)
 			.map((h) => h.category) || [];
 
+	const greeting = getGreeting();
+
 	return (
 		<div className="min-h-full">
-			{/* Header - Creative minimal design */}
+			{/* ─── Personalised Header ─── */}
 			<motion.div
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				exit={{ opacity: 0, y: -5, filter: "blur(2px)" }}
-				transition={{ duration: 0.15, ease: "easeIn", delay: 0.05 }}
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
 				className="mb-10 pt-6"
 			>
-				{/* Main heading: large, left-aligned, with accent */}
-				<motion.h1
-					initial={{ opacity: 0, y: 5 }}
+				{/* Greeting subtitle */}
+				<motion.p
+					initial={{ opacity: 0, y: 6 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.05, duration: 0.2 }}
-					className="text-[2.4rem] md:text-[3rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight leading-[1.1]"
+					transition={{ delay: 0.05, duration: 0.35, ease: EASE_OUT_EXPO }}
+					className="text-[0.85rem] font-bold text-[#bbb] uppercase tracking-[0.12em] mb-2"
+				>
+					{greeting}
+					{firstName ? `, ${firstName}` : ""}
+				</motion.p>
+
+				{/* Main heading */}
+				<motion.h1
+					initial={{ opacity: 0, y: 8 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.08, duration: 0.4, ease: EASE_OUT_EXPO }}
+					className="text-[2.4rem] md:text-[3rem] font-extrabold text-[#1a1a2e] mb-0 tracking-tight leading-[1.1]"
 				>
 					Wähle eine <span className="text-[#e20074]">Kategorie</span>.
 				</motion.h1>
 			</motion.div>
 
-			{/* Full-width Search Bar */}
-			<SearchBar />
+			{/* ─── Search Bar ─── */}
+			<motion.div
+				initial={{ opacity: 0, y: 6 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ delay: 0.12, duration: 0.35, ease: EASE_OUT_EXPO }}
+			>
+				<SearchBar />
+			</motion.div>
 
-			{/* Category Cards */}
+			{/* ─── Category Cards ─── */}
 			{isLoading ? (
 				<>
 					<div className="grid grid-cols-3 gap-4 mb-4">
@@ -124,7 +173,7 @@ export default function ProductsPage() {
 				</>
 			) : (
 				<>
-					{/* Category Cards - Row 1 (3 cards) */}
+					{/* Row 1 (3 cards) */}
 					<div className="grid grid-cols-3 gap-4 mb-4">
 						{CATEGORIES.slice(0, 3).map((category, index) => (
 							<CategoryCard
@@ -137,7 +186,7 @@ export default function ProductsPage() {
 						))}
 					</div>
 
-					{/* Category Cards - Row 2 (2 cards, wider) */}
+					{/* Row 2 (2 cards, wider) */}
 					<div className="grid grid-cols-2 gap-4">
 						{CATEGORIES.slice(3).map((category, index) => (
 							<CategoryCard
@@ -152,11 +201,15 @@ export default function ProductsPage() {
 				</>
 			)}
 
-			{/* News Updates */}
+			{/* ─── News ─── */}
 			<NewsCarousel />
 		</div>
 	);
 }
+
+/* ──────────────────────────────────────────────
+   CategoryCard
+   ────────────────────────────────────────────── */
 
 function CategoryCard({
 	category,
@@ -191,9 +244,9 @@ function CategoryCard({
 					transition: { duration: 0.1, delay: 0 }
 				}}
 				transition={{
-					delay: index * 0.03, // minimal staggering
-					duration: 0.15,
-					ease: "easeOut"
+					delay: 0.15 + index * 0.04,
+					duration: 0.35,
+					ease: EASE_OUT_EXPO
 				}}
 				className={clsx(
 					"group relative bg-white border rounded-[20px] h-full flex flex-col justify-center",
@@ -208,7 +261,7 @@ function CategoryCard({
 					} as React.CSSProperties
 				}
 			>
-				{/* Hover gradient - fills edge to edge, stronger on the right */}
+				{/* Hover gradient */}
 				<div
 					className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[20px]"
 					style={{

@@ -51,7 +51,7 @@ export default function GlobalError({
 							Technische Details
 						</p>
 						<code className="text-[0.85rem] text-red-600 bg-red-50 p-4 rounded-xl block border border-red-100 wrap-break-word font-mono shadow-inner leading-relaxed">
-							{error.message || "An unknown error occurred."}
+							{error.message || "No error message provided (unknown error)."}
 						</code>
 						{error.digest && (
 							<p className="text-[0.75rem] text-[#aaa] mt-3 pl-1">

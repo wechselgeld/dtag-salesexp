@@ -402,6 +402,7 @@ export function BasketDrawer() {
 								Leeren
 							</button>
 							<button
+								id="tour-offer-action"
 								onClick={async () => {
 									setIsGenerating("generating");
 									await generateOfferPdf(items, basketCredits, settings);

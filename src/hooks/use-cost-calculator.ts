@@ -164,39 +164,51 @@ export function calculateProductCosts({
     const hasUnlimitedAdvantage = isAtLeastM && pkCount > 0;
 
     for (let month = 1; month <= 24; month++) {
-        let monthPrice = effectiveBasePrice;
-        let appliedSpecialPrice: SpecialPrice | undefined;
+        let bestBasePrice = effectiveBasePrice;
+        let bestTVCost = tvPackagePrice;
 
-        // Check for applicable special prices for this month
-        // For each active special price, find if any tier covers this month
-        let bestTierPrice: number | undefined;
-        let bestSpecialPrice: SpecialPrice | undefined;
+        let appliedBasePriceSpecial: SpecialPrice | undefined;
+        let appliedTVSpecial: SpecialPrice | undefined;
 
         for (const sp of activeSpecialPrices) {
             const matchingTier = sp.tiers.find(t => month >= t.fromMonth && month <= t.toMonth);
             if (matchingTier) {
-                if (bestTierPrice === undefined || matchingTier.price < bestTierPrice) {
-                    bestTierPrice = matchingTier.price;
-                    bestSpecialPrice = sp;
+                if (sp.discountTarget === "MAGENTA_TV") {
+                    let simulatedCost = sp.discountType === "RELATIVE"
+                        ? tvPackagePrice - matchingTier.price
+                        : matchingTier.price;
+
+                    if (simulatedCost < 0) simulatedCost = 0;
+
+                    if (simulatedCost < bestTVCost) {
+                        bestTVCost = simulatedCost;
+                        appliedTVSpecial = sp;
+                    }
+                } else {
+                    let simulatedCost = sp.discountType === "RELATIVE"
+                        ? effectiveBasePrice - matchingTier.price
+                        : matchingTier.price;
+
+                    if (simulatedCost < 0) simulatedCost = 0;
+
+                    if (simulatedCost < bestBasePrice) {
+                        bestBasePrice = simulatedCost;
+                        appliedBasePriceSpecial = sp;
+                    }
                 }
             }
         }
 
-        if (bestTierPrice !== undefined) {
-            monthPrice = bestTierPrice;
-            appliedSpecialPrice = bestSpecialPrice;
-        }
-
-        const totalMonthCost = monthPrice + monthlyAddonCost + tvPackagePrice + plusKartenCostPerMonth;
+        const totalMonthCost = bestBasePrice + monthlyAddonCost + bestTVCost + plusKartenCostPerMonth;
         sumMonthlyCosts += totalMonthCost;
 
         monthlyCosts.push({
             month,
             basePrice: effectiveBasePrice,
-            effectivePrice: monthPrice,
-            specialPriceApplied: appliedSpecialPrice,
+            effectivePrice: bestBasePrice,
+            specialPriceApplied: appliedBasePriceSpecial || appliedTVSpecial,
             addonCosts: monthlyAddonCost,
-            magentaTVCost: tvPackagePrice,
+            magentaTVCost: bestTVCost,
             total: totalMonthCost
         });
     }

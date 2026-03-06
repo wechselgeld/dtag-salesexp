@@ -14,6 +14,8 @@ export type SpecialPrice = {
     requiresMove: boolean;
     isActive: boolean;
     priority: number;
+    discountTarget: string;
+    discountType: string;
     tiers: SpecialPriceTier[];
 };
 

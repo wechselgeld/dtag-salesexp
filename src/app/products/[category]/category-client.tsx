@@ -8,6 +8,7 @@ import {
 	Star,
 	Wifi,
 	Zap,
+	Smartphone,
 	ChevronDown,
 	MessageSquareQuote,
 	Users,
@@ -474,22 +475,32 @@ export default function ProductListPage() {
 
 											{/* Specs - compact inline */}
 											<div className="flex items-center gap-4 text-[0.8rem] text-[#888]">
-												{product.dataVolume && (
-													<div className="flex items-center gap-1.5">
-														<Wifi className="w-3.5 h-3.5 text-[#bbb]" />
-														<span className="font-medium text-[#666]">
-															{product.dataVolume}
-														</span>
-													</div>
-												)}
-												{product.downloadSpeed && (
-													<div className="flex items-center gap-1.5">
-														<Zap className="w-3.5 h-3.5 text-[#bbb]" />
-														<span className="font-medium text-[#666]">
-															{product.downloadSpeed} Mbit/s
-														</span>
-													</div>
-												)}
+												{product.category === "DEVICE"
+													? (product as any).deviceManufacturer && (
+															<div className="flex items-center gap-1.5">
+																<Smartphone className="w-3.5 h-3.5 text-[#bbb]" />
+																<span className="font-medium text-[#666]">
+																	{(product as any).deviceManufacturer}
+																</span>
+															</div>
+														)
+													: product.dataVolume && (
+															<div className="flex items-center gap-1.5">
+																<Wifi className="w-3.5 h-3.5 text-[#bbb]" />
+																<span className="font-medium text-[#666]">
+																	{product.dataVolume}
+																</span>
+															</div>
+														)}
+												{(product.downloadSpeed ?? 0) > 0 &&
+													product.category !== "DEVICE" && (
+														<div className="flex items-center gap-1.5">
+															<Zap className="w-3.5 h-3.5 text-[#bbb]" />
+															<span className="font-medium text-[#666]">
+																{product.downloadSpeed} Mbit/s
+															</span>
+														</div>
+													)}
 											</div>
 
 											{/* Sales Arguments (Collapsible) */}
@@ -562,25 +573,44 @@ export default function ProductListPage() {
 										<div className="relative z-10 flex justify-between items-end mt-2 pt-2 border-t border-[#f0f0f0]">
 											<div>
 												{product.category === "DEVICE" ? (
-													<div className="flex flex-col mb-1">
+													<div className="flex flex-col gap-1 mb-1 justify-end h-full">
 														{(product as any).purchasePrice > 0 && (
-															<div className="text-[0.8rem] font-bold text-[#1a1a2e] leading-snug">
-																Kauf:{" "}
-																{(product as any).purchasePrice.toFixed(2)} €
+															<div className="flex items-baseline mt-0.5">
+																<span
+																	className={clsx(
+																		"font-extrabold text-[#1a1a2e] tracking-tight leading-none",
+																		((product as any).rentalPrice ||
+																			product.basePrice) > 0
+																			? "text-[1.1rem]"
+																			: "text-[1.35rem]"
+																	)}
+																>
+																	{(product as any).purchasePrice.toFixed(2)} €
+																</span>
+																<span className="text-[0.65rem] text-[#b0b0b0] font-bold ml-1.5 uppercase tracking-wide">
+																	Kauf
+																</span>
 															</div>
 														)}
 														{((product as any).rentalPrice ||
 															product.basePrice) > 0 && (
 															<div className="flex items-baseline mt-0.5">
-																<span className="text-[1.35rem] font-extrabold text-[#1a1a2e] tracking-tight leading-none">
+																<span
+																	className={clsx(
+																		"font-extrabold text-[#1a1a2e] tracking-tight leading-none",
+																		(product as any).purchasePrice > 0
+																			? "text-[1.1rem]"
+																			: "text-[1.35rem]"
+																	)}
+																>
 																	{(
 																		(product as any).rentalPrice ||
 																		product.basePrice
 																	).toFixed(2)}{" "}
 																	€
 																</span>
-																<span className="text-[0.7rem] text-[#b0b0b0] font-medium ml-1">
-																	/Miete
+																<span className="text-[0.65rem] text-[#b0b0b0] font-bold ml-1.5 uppercase tracking-wide">
+																	Miete
 																</span>
 															</div>
 														)}

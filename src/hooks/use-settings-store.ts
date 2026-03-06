@@ -29,7 +29,7 @@ export const useSettingsStore = create<SettingsState>()(
             setSortOption: (value) => set({ sortOption: value }),
         }),
         {
-            name: 'dts-settings',
+            name: 'settings-values',
         }
     )
 );

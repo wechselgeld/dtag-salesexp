@@ -56,7 +56,7 @@ export default function SettingsPage() {
 
 	const handleReset = () => {
 		clearBasket();
-		localStorage.removeItem("dts-splash-timestamp");
+		localStorage.removeItem("splash-timestamp");
 		router.push("/");
 	};
 
@@ -64,9 +64,12 @@ export default function SettingsPage() {
 		// Clear all app-specific localStorage entries
 		const keysToRemove = [
 			"basket-storage",
-			"dts-splash-timestamp",
-			"onboarding_completed_v3",
-			"dts-settings"
+			"splash-timestamp",
+			"onboarding-completed-v3",
+			"settings-values",
+			"setup-user-firstName",
+			"setup-user-lastName",
+			"setup-completed"
 		];
 		keysToRemove.forEach((key) => localStorage.removeItem(key));
 		clearBasket();
@@ -74,7 +77,7 @@ export default function SettingsPage() {
 	};
 
 	const handleRestartOnboarding = () => {
-		localStorage.removeItem("onboarding_completed_v3");
+		localStorage.removeItem("onboarding-completed-v3");
 		router.push("/");
 		// The onboarding component will auto-start on next mount
 		setTimeout(() => window.location.reload(), 100);
