@@ -192,8 +192,65 @@ export default function PrivacyPage() {
 					</section>
 
 					<section className="space-y-4">
+						<div className="flex items-center gap-2 mb-2">
+							<FileText className="w-5 h-5 text-[#e20074]" />
+							<h2 className="text-xl font-bold text-[#1a1a2e]">
+								4. Cookies und Local Storage
+							</h2>
+						</div>
+						<p className="text-[0.95rem] text-[#555] leading-relaxed">
+							Dieses Tool verwendet Cookies und den Local Storage Ihres
+							Browsers, um eine reibungslose Funktion und Sitzungsverwaltung zu
+							gewährleisten. Es handelt sich hierbei ausschließlich um{" "}
+							<strong>technisch notwendige</strong> Daten (funktionale
+							Speicherung). Es erfolgt kein Tracking zu Werbezwecken.
+						</p>
+
+						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-2">
+							Cookies
+						</h3>
+						<ul className="list-disc list-inside text-[0.95rem] text-[#555] space-y-1 ml-2">
+							<li>
+								<strong>auth-token:</strong> Speichert die Anmeldeinformationen
+								für Administratoren (Dauer: 24 Std.).
+							</li>
+							<li>
+								<strong>sales-session-id:</strong> Verknüpft Ihren Browser mit
+								Ihrer aktuellen Beratungs-Sitzung (Dauer: 30 Tage).
+							</li>
+						</ul>
+
+						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
+							Local Storage
+						</h3>
+						<p className="text-[0.95rem] text-[#555] leading-relaxed">
+							Im Local Storage werden Informationen dauerhaft gespeichert, bis
+							Sie Ihren Browser-Cache leeren oder die Daten in den Einstellungen
+							des Tools löschen:
+						</p>
+						<ul className="list-disc list-inside text-[0.95rem] text-[#555] space-y-1 ml-2">
+							<li>
+								<strong>setup-user-firstName / lastName:</strong> Ihr Vor- und
+								Nachname zur Personalisierung der Beratungsoberfläche.
+							</li>
+							<li>
+								<strong>setup-completed:</strong> Zeitstempel des
+								abgeschlossenen Setups.
+							</li>
+							<li>
+								<strong>onboarding-completed-v3:</strong> Statusinformation, ob
+								Sie das Einführungstutorial bereits gesehen haben.
+							</li>
+							<li>
+								<strong>splash-timestamp:</strong> Letzte Anzeige des
+								Startbildschirms (zur Vermeidung unnötiger Wiederholungen).
+							</li>
+						</ul>
+					</section>
+
+					<section className="space-y-4">
 						<h2 className="text-xl font-bold text-[#1a1a2e]">
-							4. Speicherdauer und Betroffenenrechte
+							5. Speicherdauer und Betroffenenrechte
 						</h2>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
 							Sitzungsinformationen (Sales Sessions) werden nach Ablauf eines
