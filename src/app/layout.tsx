@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/app/providers";
 import { AppShell } from "@/components/layout/app-shell";
 import { GlobalNewsNotification } from "@/components/features/news/global-news-notification";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const teleNeo = localFont({
 	src: [
@@ -94,6 +95,7 @@ export default function RootLayout({
 					<AppShell>{children}</AppShell>
 					<GlobalNewsNotification />
 				</Providers>
+				<SpeedInsights />
 			</body>
 		</html>
 	);
