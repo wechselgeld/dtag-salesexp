@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "manage-admins": "tsx scripts/manage-admins.ts"
+    "manage-admins": "tsx scripts/manage-admins.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

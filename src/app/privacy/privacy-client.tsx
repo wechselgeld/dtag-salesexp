@@ -115,10 +115,13 @@ export default function PrivacyPage() {
 							</li>
 						</ul>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed mt-2 p-4 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl">
-							<strong>Hinweis:</strong> Es findet kein Tracking Ihres
-							spezifischen Beratungsverhaltens statt. Das System erfasst
-							lediglich, welches Team zu welchem Zeitpunkt das Tool gestartet
-							hat, um den Zugriff eingrenzen und auswerten zu können.
+							Es findet{" "}
+							<strong>
+								kein Tracking Ihres spezifischen Nutzungsverhaltens
+							</strong>{" "}
+							statt. Das System erfasst lediglich, welches Team zu welchem
+							Zeitpunkt das Tool gestartet hat, um den Zugriff eingrenzen und
+							auswerten zu können.
 						</p>
 					</section>
 
@@ -179,6 +182,12 @@ export default function PrivacyPage() {
 							anonymisierte bzw. rein auf die Teamnutzung bezogene Meta-Daten
 							anfallen, erfolgt die Nutzung auf Basis technischer
 							Bereitstellungsinteressen der Infrastruktur.
+						</p>
+						<p className="text-[0.95rem] text-[#555] leading-relaxed mt-2 p-4 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl">
+							Wir haben mit den oben genannten Anbietern (Cloudflare, Vercel &
+							Oracle) Verträge zur Auftragsverarbeitung (AVV) abgeschlossen.
+							Diese garantieren, dass die Dienstleister die Daten ausschließlich
+							nach unseren Weisungen und unter Einhaltung der DSGVO verarbeiten.
 						</p>
 					</section>
 
