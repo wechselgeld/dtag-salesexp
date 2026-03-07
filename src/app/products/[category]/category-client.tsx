@@ -21,7 +21,8 @@ import {
 	ArrowUp,
 	ArrowDown,
 	Check,
-	Plus
+	Plus,
+	Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -549,15 +550,20 @@ export default function ProductListPage() {
 																			(arg: any) => (
 																				<div
 																					key={arg.id}
-																					className="flex items-start gap-2 text-[0.75rem] bg-[#f7f8fa] p-2 rounded-lg border border-[#eaedf0] text-[#1a1a2e]"
+																					className="flex items-start gap-3 text-[0.8rem] bg-white p-3 rounded-xl border border-[#eaedf0] text-[#1a1a2e] shadow-[0_2px_8px_rgba(0,0,0,0.02)] group/item transition-all hover:border-[#ddd] hover:shadow-sm"
 																				>
-																					<span
-																						className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+																					<div
+																						className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-transform duration-300 group-hover/item:scale-110"
 																						style={{
-																							backgroundColor: catColor
+																							backgroundColor: `${catColor}10`,
+																							color: catColor
 																						}}
-																					/>
-																					<span>{arg.text}</span>
+																					>
+																						<Sparkles className="w-3.5 h-3.5" />
+																					</div>
+																					<span className="font-semibold leading-relaxed mt-0.5 uppercase tracking-tight">
+																						{arg.text}
+																					</span>
 																				</div>
 																			)
 																		)}

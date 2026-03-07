@@ -16,9 +16,12 @@ interface NewsNotificationStore {
 export const useNewsNotificationStore = create<NewsNotificationStore>((set) => ({
     notifications: [],
     addNotification: (notification) =>
-        set((state) => ({ notifications: [...state.notifications, notification] })),
+        set((state) => {
+            if (state.notifications.some((n) => n.id === notification.id)) return state;
+            return { notifications: [...state.notifications, notification] };
+        }),
     removeNotification: (id) =>
         set((state) => ({
-            notifications: state.notifications.filter((n) => n.id !== id),
-        })),
+            notifications: state.notifications.filter((n) => n.id !== id)
+        }))
 }));

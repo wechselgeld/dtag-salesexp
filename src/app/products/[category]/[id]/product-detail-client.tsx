@@ -281,22 +281,22 @@ function ProductPageContent() {
 
 						{/* Sales Arguments */}
 						{product.salesArguments && product.salesArguments.length > 0 && (
-							<div className="flex flex-wrap gap-2 mt-5">
+							<div className="flex flex-wrap gap-x-3 gap-y-2 mt-6">
 								{product.salesArguments.map((arg: any) => (
 									<div
 										key={arg.id}
-										className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[0.75rem] font-medium border"
+										className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[0.8rem] font-bold border cursor-default"
 										style={{
-											borderColor: `${catColor}30`,
-											backgroundColor: `${catColor}08`,
-											color: catColor
+											borderColor: `${catColor}25`,
+											color: catColor,
+											backgroundColor: `${catColor}08`
 										}}
 									>
-										<span
-											className="w-1.5 h-1.5 rounded-full"
-											style={{ backgroundColor: catColor }}
+										<Sparkles
+											className="w-3.5 h-3.5 shrink-0 opacity-70"
+											style={{ color: catColor }}
 										/>
-										{arg.text}
+										<span className="leading-tight">{arg.text}</span>
 									</div>
 								))}
 							</div>

@@ -72,10 +72,11 @@ export default function PrivacyPage() {
 							Server-Log-Dateien
 						</h3>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
-							Der Provider der Seiten (VPS Hosting) sowie unser Content Delivery
-							Network (Cloudflare) erheben und speichern automatisch
-							Informationen in so genannten Server-Log-Dateien, die Ihr Browser
-							automatisch an uns übermittelt. Dies sind:
+							Unsere Hosting-Anbieter (Vercel Inc. / Oracle) sowie unser
+							vorgeschaltetes Content Delivery Network (Cloudflare) erheben und
+							speichern automatisch Informationen in so genannten
+							Server-Log-Dateien, die Ihr Browser automatisch an uns
+							übermittelt. Dies sind:
 						</p>
 						<ul className="list-disc list-inside text-[0.95rem] text-[#555] space-y-1 ml-2">
 							<li>Browsertyp und Browserversion</li>
@@ -141,17 +142,43 @@ export default function PrivacyPage() {
 							DDoS-Angriffen und blockiert unbefugte Zugriffe, hierfür
 							verarbeitet Cloudflare IP-Adressen. Die Nutzung beruht auf unserem
 							berechtigten Interesse an einer sicheren Bereitstellung (Art. 6
-							Abs. 1 lit. f DSGVO).
+							Abs. 1 lit. f DSGVO). Die Datenübertragung in die USA wird durch
+							Standardvertragsklauseln und das EU-U.S. Data Privacy Framework
+							(DPF) abgesichert.
 						</p>
 
 						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
-							VPS Hosting
+							Vercel (Hosting & Applikationslogik)
 						</h3>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
-							Die Datenbank sowie das Backend dieses Tools werden auf einem
-							Virtual Private Server (VPS) mit Standort in der Europäischen
-							Union (bzw. Deutschland) gehostet. Ein entsprechender Vertrag zur
-							Auftragsverarbeitung (AVV) liegt vor.
+							Die Bereitstellung der Website erfolgt über die Plattform Vercel.
+							Anbieter ist die Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA
+							91789, USA. Vercel nutzt ein globales Content Delivery Network
+							(CDN), um statische Dateien performant zur Verfügung zu stellen.
+							Die serverseitige Verarbeitung (Backend-Funktionen) findet primär
+							auf Servern innerhalb der Europäischen Union (Region: Frankfurt am
+							Main, Deutschland) statt. Eine Übertragung von Metadaten in die
+							USA kann im Rahmen der Infrastrukturnutzung erfolgen. Die Nutzung
+							erfolgt zur Erfüllung unseres berechtigten Interesses an einer
+							hochverfügbaren Bereitstellung (Art. 6 Abs. 1 lit. f DSGVO). Die
+							Vercel Inc. ist nach dem EU-U.S. Data Privacy Framework
+							zertifiziert.
+						</p>
+
+						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
+							Oracle Cloud Infrastructure (Datenbank)
+						</h3>
+						<p className="text-[0.95rem] text-[#555] leading-relaxed">
+							Die durch diese Anwendung verarbeiteten Daten (z. B.
+							Sitzungsinformationen) werden in einer Datenbank der Oracle Cloud
+							Infrastructure (OCI) gespeichert. Anbieter ist die Oracle
+							Corporation. Die physische Speicherung und Verarbeitung dieser
+							Daten findet ausschließlich im Rechenzentrum in Frankfurt am Main,
+							Deutschland (Region: eu-frankfurt-1), statt. Da durch dieses Tool
+							keine Kundendaten verarbeitet werden, sondern lediglich
+							anonymisierte bzw. rein auf die Teamnutzung bezogene Meta-Daten
+							anfallen, erfolgt die Nutzung auf Basis technischer
+							Bereitstellungsinteressen der Infrastruktur.
 						</p>
 					</section>
 

@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -57,9 +57,9 @@ model Product {
   purchasePrice      Float?
   rentalPrice        Float?
 
-  features     String? // JSON string
-  targetGroups String? // JSON string array of target groups e.g. ["student", "family"]
-  salesScript  String? // Text for sales agents
+  features     String? @db.Text // JSON string
+  targetGroups String? @db.Text // JSON string array of target groups e.g. ["student", "family"]
+  salesScript  String? @db.Text // Text for sales agents
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -72,7 +72,7 @@ model Product {
 
 model SalesArgument {
   id        String  @id @default(cuid())
-  text      String
+  text      String  @db.Text
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   sortOrder Int     @default(0)
@@ -165,7 +165,7 @@ model TeamHighlight {
 model MaintenanceAnnouncement {
   id       String  @id @default(cuid())
   title    String
-  message  String
+  message  String  @db.Text
   priority String // "LOW", "MEDIUM", "HIGH", "CRITICAL"
   isActive Boolean @default(true)
 
@@ -217,7 +217,7 @@ model SalesSession {
 model News {
   id       String  @id @default(cuid())
   title    String
-  content  String
+  content  String  @db.Text
   priority String  @default("INFO") // "INFO", "UPDATE", "IMPORTANT", "CRITICAL"
   isActive Boolean @default(true)
 

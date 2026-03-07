@@ -74,11 +74,7 @@ export function BasketDrawer() {
 	} | null>(null);
 
 	const { data: availableCredits } = trpc.product.getOneTimeCredits.useQuery();
-	const addNotification = useNewsNotificationStore(
-		(state) => state.addNotification
-	);
 	const { clearAfterExport, offerTemplateText } = useSettingsStore();
-	const lastNudgeRef = useRef<string | null>(null);
 	const [isMounted, setIsMounted] = useState(false);
 
 	useEffect(() => {
@@ -103,46 +99,6 @@ export function BasketDrawer() {
 			setDeletedItem(null);
 		}
 	};
-
-	// Cross-Sell Detector (Fixed + Mobile Advantage)
-	useEffect(() => {
-		if (items.length === 0) {
-			lastNudgeRef.current = null;
-			return;
-		}
-
-		const hasMobile = items.some((i) => i.product.category === "MOBILE");
-		const hasFixed = items.some(
-			(i) => i.product.category === "FIBER" || i.product.category === "DSL"
-		);
-
-		let nudgeId = null;
-		let title = "";
-		let content = "";
-
-		if (hasMobile && !hasFixed) {
-			nudgeId = "nudge-fixed-missing";
-			title = "Preisvorteil durch Festnetz";
-			content = "Dein Kunde nutzt Mobilfunk. Biete ihm zusätzlich Festnetz an.";
-		} else if (hasFixed && !hasMobile) {
-			nudgeId = "nudge-mobile-missing";
-			title = "Preisvorteil durch Mobilfunk";
-			content = "Dein Kunde nutzt Festnetz. Biete ihm zusätzlich Mobilfunk an.";
-		}
-
-		if (nudgeId && lastNudgeRef.current !== nudgeId) {
-			addNotification({
-				id: nudgeId + Date.now(), // Unique ID for the toast instance
-				title,
-				content,
-				priority: "SALES"
-			});
-			lastNudgeRef.current = nudgeId;
-		} else if (!nudgeId) {
-			lastNudgeRef.current = null;
-		}
-	}, [items, addNotification]);
-
 	const {
 		totals,
 		combinedSteps,

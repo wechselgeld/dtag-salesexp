@@ -1,6 +1,0 @@
-src/components/features/auth-intro/intro-splash.tsx(5,29): error TS2307: Cannot find module './telekom-logo' or its corresponding type declarations.
-src/components/features/availability/availability-check-modal.tsx(20,26): error TS2307: Cannot find module './skeleton' or its corresponding type declarations.
-src/components/features/basket/basket-drawer.tsx(29,26): error TS2307: Cannot find module '../skeleton' or its corresponding type declarations.
-src/components/features/calculator/credit-selector.tsx(9,26): error TS2307: Cannot find module '../skeleton' or its corresponding type declarations.
-src/components/features/maintenance/maintenance-splash.tsx(5,29): error TS2307: Cannot find module './telekom-logo' or its corresponding type declarations.
-src/components/features/news/news-carousel.tsx(14,26): error TS2307: Cannot find module './skeleton' or its corresponding type declarations.

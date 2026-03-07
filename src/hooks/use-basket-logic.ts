@@ -41,7 +41,7 @@ export function useBasketLogic() {
 
         if (nudgeId && lastNudgeRef.current !== nudgeId) {
             addNotification({
-                id: nudgeId + Date.now(),
+                id: nudgeId,
                 title,
                 content,
                 priority: "SALES"
