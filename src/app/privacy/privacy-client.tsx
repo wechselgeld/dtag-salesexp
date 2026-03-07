@@ -230,8 +230,8 @@ export default function PrivacyPage() {
 						</p>
 						<ul className="list-disc list-inside text-[0.95rem] text-[#555] space-y-1 ml-2">
 							<li>
-								<strong>setup-user-firstName / lastName:</strong> Ihr Vor- und
-								Nachname zur Personalisierung der Beratungsoberfläche.
+								<strong>setup-user-firstName & setup-user-lastName:</strong> Ihr
+								Vor- und Nachname zur Personalisierung der Beratungsoberfläche.
 							</li>
 							<li>
 								<strong>setup-completed:</strong> Zeitstempel des
@@ -244,6 +244,14 @@ export default function PrivacyPage() {
 							<li>
 								<strong>splash-timestamp:</strong> Letzte Anzeige des
 								Startbildschirms (zur Vermeidung unnötiger Wiederholungen).
+							</li>
+							<li>
+								<strong>basket-storage:</strong> Speichert die Produkte, die Sie
+								Ihrem Warenkorb hinzugefügt haben.
+							</li>
+							<li>
+								<strong>settings-values:</strong> Speichert die von Ihnen
+								ausgewählten Einstellungen.
 							</li>
 						</ul>
 					</section>
