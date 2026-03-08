@@ -11,6 +11,7 @@ import {
 } from "@/hooks/use-cost-calculator";
 import { MAGENTA_TV_PACKAGES } from "@/lib/constants/pricing";
 import { trpc } from "@/lib/trpc";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 import {
 	ArrowLeft,
 	Check,
@@ -342,7 +343,10 @@ function ProductPageContent() {
 													)}
 													style={{ color: catColor }}
 												>
-													{(product as any).purchasePrice.toFixed(2)} €
+													<AnimatedNumber
+														value={(product as any).purchasePrice}
+													/>{" "}
+													€
 												</span>
 												<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
 													Kauf
@@ -361,9 +365,11 @@ function ProductPageContent() {
 													)}
 													style={{ color: catColor }}
 												>
-													{(
-														(product as any).rentalPrice || product.basePrice
-													).toFixed(2)}{" "}
+													<AnimatedNumber
+														value={
+															(product as any).rentalPrice || product.basePrice
+														}
+													/>{" "}
 													€
 												</span>
 												<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
@@ -382,7 +388,7 @@ function ProductPageContent() {
 										className="text-[1.5rem] font-extrabold tracking-tight"
 										style={{ color: catColor }}
 									>
-										{product.basePrice.toFixed(2)} €
+										<AnimatedNumber value={product.basePrice} /> €
 									</span>
 									<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
 										/Monat
@@ -488,9 +494,7 @@ function ProductPageContent() {
 										Für Hardware fällt einmalig eine{" "}
 										<strong>
 											Bereitstellungspauschale i. H. v.{" "}
-											{settings.shipping_hardware_fee
-												.toFixed(2)
-												.replace(".", ",")}{" "}
+											<AnimatedNumber value={settings.shipping_hardware_fee} />{" "}
 											€
 										</strong>{" "}
 										an.
@@ -524,9 +528,11 @@ function ProductPageContent() {
 											Mieten
 										</span>
 										<span className="text-[0.7rem] text-[#999]">
-											{(
-												(product as any).rentalPrice || product.basePrice
-											).toFixed(2)}{" "}
+											<AnimatedNumber
+												value={
+													(product as any).rentalPrice || product.basePrice
+												}
+											/>{" "}
 											€ mtl.
 										</span>
 									</button>
@@ -549,7 +555,8 @@ function ProductPageContent() {
 											Einmalzahlung
 										</span>
 										<span className="text-[0.7rem] text-[#999]">
-											{(product as any).purchasePrice.toFixed(2)} €
+											<AnimatedNumber value={(product as any).purchasePrice} />{" "}
+											€
 										</span>
 									</button>
 								)}
@@ -763,12 +770,15 @@ function ProductPageContent() {
 														}}
 													>
 														+
-														{(key === "smart"
-															? settings.magentatv_smart_price
-															: key === "smartstream"
-																? settings.magentatv_smartstream_price
-																: settings.magentatv_megastream_price
-														).toFixed(2)}{" "}
+														<AnimatedNumber
+															value={
+																key === "smart"
+																	? settings.magentatv_smart_price
+																	: key === "smartstream"
+																		? settings.magentatv_smartstream_price
+																		: settings.magentatv_megastream_price
+															}
+														/>{" "}
 														€
 													</span>
 												</div>
@@ -932,13 +942,11 @@ function ProductPageContent() {
 									<br />
 									<strong>
 										1. Karte{" "}
-										{settings.plus_karte_first_price
-											.toFixed(2)
-											.replace(".", ",")}{" "}
+										<AnimatedNumber value={settings.plus_karte_first_price} />{" "}
 										€; ab 2. Karte{" "}
-										{settings.plus_karte_following_price
-											.toFixed(2)
-											.replace(".", ",")}{" "}
+										<AnimatedNumber
+											value={settings.plus_karte_following_price}
+										/>{" "}
 										€
 									</strong>
 								</p>

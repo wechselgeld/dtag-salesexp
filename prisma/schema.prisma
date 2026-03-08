@@ -84,8 +84,10 @@ model SalesArgument {
 }
 
 model SpecialPrice {
-  id       String    @id @default(cuid())
-  name     String
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  internalNote String?
   products Product[] @relation("ProductSpecialPrices")
 
   tiers SpecialPriceTier[]

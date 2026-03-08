@@ -52,6 +52,8 @@ const tierSchema = z.object({
 
 const specialPriceSchema = z.object({
     name: z.string().min(1),
+    description: z.string().optional(),
+    internalNote: z.string().optional(),
     productIds: z.array(z.string()).min(1),
     tiers: z.array(tierSchema).min(1),
     requiresMagentaTV: z.boolean().default(false),

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { TelekomLogo } from "@/components/shared/telekom-logo";
 import {
 	Home,
 	LayoutGrid,
@@ -236,26 +235,34 @@ export function SidebarNav() {
 			/>
 
 			{/* ───── Logo Area ───── */}
-			<div className="relative z-10 px-4 pt-5 pb-4 overflow-hidden">
-				<Link
-					href="/"
-					className="flex items-center gap-3 no-underline group shrink-0"
-				>
-					<TelekomLogo className="w-7 h-7 text-[#e20074] shrink-0 group-hover:scale-110 transition-transform duration-300" />
-					<div
-						className="leading-none overflow-hidden whitespace-nowrap transition-all duration-250"
-						style={{
-							opacity: collapsed ? 0 : 1,
-							width: collapsed ? 0 : "auto",
-							transitionProperty: "opacity, width"
-						}}
-					>
-						<div className="text-[1.1rem] font-extrabold text-[#e20074] tracking-tight">
-							Sales
-						</div>
-						<div className="text-[0.65rem] text-[#bbb] font-medium mt-0.5 tracking-wide">
-							Experience
-						</div>
+			<div className="relative z-10 px-4 pt-6 pb-4 overflow-hidden">
+				<Link href="/" className="block no-underline group shrink-0">
+					<div className="relative h-12 flex items-center justify-start overflow-hidden">
+						<AnimatePresence mode="wait" initial={false}>
+							{collapsed ? (
+								<motion.img
+									key="collapsed-logo"
+									src="/Deutsche_Telekom.svg"
+									alt="Telekom"
+									initial={{ opacity: 0, scale: 0.8 }}
+									animate={{ opacity: 1, scale: 1 }}
+									exit={{ opacity: 0, scale: 0.8 }}
+									transition={{ duration: 0.2 }}
+									className="w-8 h-8 select-none pointer-events-none group-hover:brightness-110 transition-all mx-auto"
+								/>
+							) : (
+								<motion.img
+									key="expanded-logo"
+									src="/se-logo.svg"
+									alt="Sales Experience"
+									initial={{ opacity: 0, x: 0 }}
+									animate={{ opacity: 1, x: 0 }}
+									exit={{ opacity: 0, x: -10 }}
+									transition={{ duration: 0.2 }}
+									className="h-full w-auto max-w-none select-none pointer-events-none group-hover:brightness-110 transition-all"
+								/>
+							)}
+						</AnimatePresence>
 					</div>
 				</Link>
 			</div>

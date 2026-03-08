@@ -9,6 +9,8 @@ export type SpecialPriceTier = {
 export type SpecialPrice = {
     id: string;
     name: string;
+    description?: string | null;
+    internalNote?: string | null;
     requiresMagentaTV: boolean;
     requiresSpeedUp: boolean;
     requiresMove: boolean;

@@ -8,6 +8,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { useMemo } from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 
 export function CombinedTimeline() {
 	const items = useBasketStore((state) => state.items);
@@ -61,7 +62,7 @@ export function CombinedTimeline() {
 				</span>
 				<div className="text-right">
 					<span className="text-[1.1rem] font-extrabold text-[#e20074] leading-none">
-						{averageTotal.toFixed(2)} €
+						<AnimatedNumber value={averageTotal} /> €
 					</span>
 					<span className="text-[0.6rem] text-[#b0b0b0] font-medium ml-1">
 						Ø mtl.

@@ -1,7 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc";
-import { Plus, Edit, Trash2, Search, Tag } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Tag, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Skeleton } from "@/components/shared/skeleton";
@@ -108,7 +108,20 @@ export default function AdminSpecialPricesPage() {
 										<div className="text-[0.85rem] font-semibold text-[#1a1a2e] flex items-center gap-2">
 											<Tag className="w-3.5 h-3.5 text-[#e20074]" />
 											{sp.name}
+											{(sp as any).internalNote && (
+												<span
+													title={(sp as any).internalNote}
+													className="ml-1 cursor-help"
+												>
+													<MessageSquare className="w-3.5 h-3.5 text-[#bbb] hover:text-[#e20074] transition-colors" />
+												</span>
+											)}
 										</div>
+										{(sp as any).description && (
+											<span className="text-[0.72rem] text-[#999] ml-5.5 block mt-0.5">
+												{(sp as any).description}
+											</span>
+										)}
 										{sp.requiresMagentaTV && (
 											<span className="text-[0.68rem] text-[#bbb] ml-5.5">
 												Benötigt MagentaTV

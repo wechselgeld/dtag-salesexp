@@ -28,6 +28,8 @@ const tierSchema = z.object({
 
 const specialPriceSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),
+	description: z.string().optional(),
+	internalNote: z.string().optional(),
 	productIds: z.array(z.string()),
 	requiresMagentaTV: z.boolean().default(false),
 	requiresSpeedUp: z.boolean().default(false),
@@ -66,6 +68,8 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 		mode: "onChange",
 		defaultValues: {
 			name: initialData?.name || "",
+			description: initialData?.description || "",
+			internalNote: initialData?.internalNote || "",
 			productIds: initialData?.products?.map((p: any) => p.id) || [],
 			requiresMagentaTV: initialData?.requiresMagentaTV || false,
 			requiresSpeedUp: initialData?.requiresSpeedUp || false,
@@ -213,6 +217,30 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 							error={errors.name?.message}
 							{...register("name")}
 						/>
+
+						<div className="flex flex-col gap-1.5">
+							<label className="text-[0.7rem] font-bold text-[#1a1a2e] uppercase tracking-wider ml-1">
+								Beschreibung (für Verkäufer sichtbar)
+							</label>
+							<textarea
+								placeholder="Kurze Beschreibung der Aktion, die für Verkäufer sichtbar ist..."
+								rows={2}
+								className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem] font-medium resize-none"
+								{...register("description")}
+							/>
+						</div>
+
+						<div className="flex flex-col gap-1.5">
+							<label className="text-[0.7rem] font-bold text-[#1a1a2e] uppercase tracking-wider ml-1">
+								Interner Vermerk (nur im Admin sichtbar)
+							</label>
+							<textarea
+								placeholder="Interne Notizen, z.B. Gültigkeitszeitraum, Quelle..."
+								rows={2}
+								className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem] font-medium resize-none"
+								{...register("internalNote")}
+							/>
+						</div>
 
 						<Input
 							label="Priorität (Höher gewinnt)"

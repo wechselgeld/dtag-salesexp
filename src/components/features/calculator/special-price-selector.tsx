@@ -82,6 +82,11 @@ export function SpecialPriceSelector({
 							<div className="text-[0.85rem] font-semibold text-[#1a1a2e]">
 								{sp.name}
 							</div>
+							{sp.description && (
+								<div className="text-[0.75rem] text-[#888] mt-0.5">
+									{sp.description}
+								</div>
+							)}
 							<div className="flex flex-wrap gap-1 mt-1">
 								{sp.tiers.map((tier, i) => (
 									<span

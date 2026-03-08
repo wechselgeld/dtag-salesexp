@@ -2,6 +2,7 @@
 
 import { CalculationResult } from "@/types/product";
 import { Coffee, Calculator, Tag, Calendar } from "lucide-react";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 
 interface Props {
 	calculation: CalculationResult;
@@ -72,7 +73,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 						Ø Monatlich
 					</div>
 					<div className="text-[0.68rem] text-[#b0b0b0] mt-1">
-						{averageMonthlyCost.toFixed(2)} €
+						<AnimatedNumber value={averageMonthlyCost} /> €
 					</div>
 				</div>
 
@@ -87,7 +88,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 						Regulär
 					</div>
 					<div className="text-[0.68rem] text-[#b0b0b0] mt-1">
-						{displayBasePrice.toFixed(2)} €
+						<AnimatedNumber value={displayBasePrice} /> €
 					</div>
 				</div>
 
@@ -106,8 +107,11 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 						Pro Tag
 					</div>
 					<div className="text-[0.68rem] text-[#b0b0b0] mt-1">
-						{dailyPriceTrivialization ||
-							`${(averageMonthlyCost / 30).toFixed(2)} €`}
+						{dailyPriceTrivialization || (
+							<>
+								<AnimatedNumber value={averageMonthlyCost / 30} /> €
+							</>
+						)}
 					</div>
 				</div>
 
@@ -122,7 +126,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 						24 Monate
 					</div>
 					<div className="text-[0.68rem] text-[#b0b0b0] mt-1">
-						{totalCost24Months.toFixed(2)} €
+						<AnimatedNumber value={totalCost24Months} /> €
 					</div>
 				</div>
 			</div>
@@ -135,7 +139,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 							Einmalige Kosten
 						</span>
 						<span className="text-[0.85rem] font-bold text-[#1a1a2e]">
-							{oneTimeCosts.total.toFixed(2)} €
+							<AnimatedNumber value={oneTimeCosts.total} /> €
 						</span>
 					</div>
 					{oneTimeCosts.breakdown.length > 0 && (
@@ -151,7 +155,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 											item.cost < 0 ? "text-green-600 font-medium" : ""
 										}
 									>
-										{item.cost.toFixed(2)} €
+										<AnimatedNumber value={item.cost} /> €
 									</span>
 								</div>
 							))}
@@ -188,7 +192,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 								)}
 							</div>
 							<span className="text-[0.88rem] font-bold text-[#1a1a2e]">
-								{period.price.toFixed(2)} €
+								<AnimatedNumber value={period.price} /> €
 							</span>
 						</div>
 					))}

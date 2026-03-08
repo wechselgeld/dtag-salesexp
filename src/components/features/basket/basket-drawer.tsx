@@ -28,6 +28,7 @@ import {
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { CombinedTimeline } from "./combined-timeline";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 import { CreditSelector } from "../calculator/credit-selector";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/shared/skeleton";
@@ -300,7 +301,9 @@ export function BasketDrawer() {
 							{totalCredits > 0 && (
 								<div className="flex justify-between items-center text-[0.75rem] text-[#00a878] mt-1 pr-1.5">
 									<span>Gutschrift</span>
-									<span>−{totalCredits.toFixed(2)} €</span>
+									<span>
+										−<AnimatedNumber value={totalCredits} /> €
+									</span>
 								</div>
 							)}
 						</div>
@@ -324,7 +327,7 @@ export function BasketDrawer() {
 												: `Monat ${step.start} - ${step.end}`}
 										</span>
 										<span className="text-[0.95rem] font-bold tracking-tight text-[#1a1a2e] flex items-center">
-											{step.total.toFixed(2)}
+											<AnimatedNumber value={step.total} />
 											<span className="ml-[3px] text-[0.75rem] font-normal text-[#aaa]">
 												€
 											</span>
@@ -339,12 +342,15 @@ export function BasketDrawer() {
 										Ø Monatlich
 									</span>
 									<span className="text-[0.6rem] text-[#bbb] font-medium">
-										ca. {items.length > 0 ? totals.daily.toFixed(2) : "0.00"} €
-										am Tag
+										ca.{" "}
+										<AnimatedNumber
+											value={items.length > 0 ? totals.daily : 0}
+										/>{" "}
+										€ am Tag
 									</span>
 								</div>
 								<span className="text-[1.3rem] font-extrabold tracking-tight text-[#e20074] flex items-center leading-none">
-									{totalMonthly.toFixed(2)}
+									<AnimatedNumber value={totalMonthly} />
 									<span className="ml-[3px] text-[0.8rem] font-normal text-[#e20074]/60">
 										€
 									</span>
