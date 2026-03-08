@@ -739,11 +739,16 @@ export function SidebarNav() {
 							FAQ
 						</Link>
 					</div>
-					<div className="text-center text-[0.58rem] text-[#ccc] mt-1.5 whitespace-nowrap">
-						<span className="text-[0.55rem] text-[#ddd] bg-[#f7f8fa] px-1.5 py-0.5 rounded font-mono tracking-wide mr-1.5">
-							v2.0
+					<div className="text-center text-[0.58rem] text-[#ccc] mt-1.5 whitespace-nowrap flex justify-center items-center">
+						<span className="text-[0.55rem] text-[#ddd] bg-[#f7f8fa] px-1.5 py-0.5 rounded font-mono font-bold shadow-sm tracking-wide mr-1.5">
+							v2.3
 						</span>
-						© {new Date().getFullYear()} Felix Kinze
+						<span>
+							&copy; {new Date().getFullYear()}{" "}
+							<span className="font-semibold bg-linear-to-r from-[#e20074] to-[#ff007f] bg-clip-text text-transparent">
+								Felix Kinze
+							</span>
+						</span>
 					</div>
 				</div>
 			</div>

@@ -18,6 +18,7 @@ import clsx from "clsx";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
 import { Skeleton } from "@/components/shared/skeleton";
 import Link from "next/link";
+import { GlobalFooter } from "@/components/shared/global-footer";
 import { z } from "zod";
 
 /* ──────────────────────────────────────────────
@@ -356,11 +357,10 @@ export default function SetupPage() {
 					)}
 				</motion.div>
 
-				{/* Footer */}
-				<div className="mt-8 text-center text-[0.75rem] font-medium text-[#bbb]">
-					&copy; {new Date().getFullYear()} Felix Kinze für Deutsche Telekom
-					Service GmbH &bull; Sales Experience
-				</div>
+				<GlobalFooter
+					className="pt-8 pb-0 mt-4 text-[#bbb]"
+					linkColor="text-[#bbb]"
+				/>
 			</div>
 		</div>
 	);

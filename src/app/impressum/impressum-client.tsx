@@ -1,8 +1,9 @@
 "use client";
 
-import { Building2, Info, FileText } from "lucide-react";
+import { Building2, Info, FileText, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
+import { GlobalFooter } from "@/components/shared/global-footer";
 
 export default function ImpressumPage() {
 	return (
@@ -113,19 +114,20 @@ export default function ImpressumPage() {
 					</section>
 
 					<div className="pt-6 border-t border-[#eaedf0] flex justify-center">
-						<Link
-							href="/setup"
-							className="inline-flex items-center justify-center px-6 py-3 bg-[#f7f8fa] hover:bg-[#eaedf0] text-[#1a1a2e] font-bold rounded-xl transition-colors"
+						<button
+							onClick={() => window.history.back()}
+							className="inline-flex items-center justify-center px-6 py-3 bg-[#f7f8fa] hover:bg-[#eaedf0] text-[#1a1a2e] font-bold rounded-xl transition-colors cursor-pointer border-none"
 						>
-							Zurück zum Login
-						</Link>
+							<ArrowLeft className="w-4 h-4 mr-2" />
+							Zurück
+						</button>
 					</div>
 				</div>
 
-				<div className="mt-8 text-center text-[0.75rem] font-medium text-[#bbb]">
-					&copy; {new Date().getFullYear()} Felix Kinze für Deutsche Telekom
-					Service GmbH &bull; Sales Experience
-				</div>
+				<GlobalFooter
+					className="pt-8 pb-0 mt-4 text-[#bbb]"
+					linkColor="text-[#bbb]"
+				/>
 			</div>
 		</div>
 	);

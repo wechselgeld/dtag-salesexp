@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
+import { GlobalFooter } from "@/components/shared/global-footer";
 import clsx from "clsx";
 
 const FAQ_ITEMS = [
@@ -81,10 +82,10 @@ export default function FAQPage() {
 					</div>
 				</div>
 
-				<div className="mt-8 text-center text-[0.75rem] font-medium text-[#bbb]">
-					&copy; {new Date().getFullYear()} Felix Kinze für Deutsche Telekom
-					Service GmbH &bull; Sales Experience
-				</div>
+				<GlobalFooter
+					className="pt-8 pb-0 mt-4 text-[#bbb]"
+					linkColor="text-[#bbb]"
+				/>
 			</div>
 		</div>
 	);

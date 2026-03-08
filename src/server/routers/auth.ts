@@ -1,4 +1,4 @@
-import { router, publicProcedure } from '@/server/trpc';
+import { router, publicProcedure, protectedProcedure } from '@/server/trpc';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { login, logout } from '@/lib/auth';
@@ -6,6 +6,13 @@ import { TRPCError } from '@trpc/server';
 import bcrypt from 'bcryptjs';
 
 export const authRouter = router({
+    me: protectedProcedure.query(({ ctx }) => {
+        return {
+            id: (ctx.session as any)?.sub as string,
+            role: (ctx.session as any)?.role as string,
+        };
+    }),
+
     login: publicProcedure
         .input(z.object({
             email: z.string().email(),

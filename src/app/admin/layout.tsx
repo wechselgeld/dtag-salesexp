@@ -11,7 +11,8 @@ import {
 	Users,
 	ArrowLeft,
 	Megaphone,
-	Layers
+	Layers,
+	Shield
 } from "lucide-react";
 import clsx from "clsx";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
@@ -43,6 +44,7 @@ export default function AdminLayout({
 		{ href: "/admin/addons", label: "Optionen", icon: Layers },
 		{ href: "/admin/credits", label: "Gutschriften", icon: Wallet },
 		{ href: "/admin/teams", label: "Teams", icon: Users },
+		{ href: "/admin/users", label: "Admins", icon: Shield },
 		{ href: "/admin/news", label: "Neuigkeiten", icon: Megaphone },
 		{ href: "/admin/settings", label: "Einstellungen", icon: Settings }
 	];

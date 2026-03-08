@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Lock, ShieldAlert } from "lucide-react";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
+import { GlobalFooter } from "@/components/shared/global-footer";
 import Link from "next/link";
 
 export function MaintenanceSplash() {
@@ -54,10 +55,10 @@ export function MaintenanceSplash() {
 					</div>
 				</div>
 
-				<div className="mt-14 text-center text-[0.75rem] font-medium text-[#c0c0c0]">
-					&copy; {new Date().getFullYear()} Felix Kinze für Deutsche Telekom
-					Service GmbH &bull; Via www.flxk.nz
-				</div>
+				<GlobalFooter
+					className="pt-14! pb-0! text-[#c0c0c0]"
+					linkColor="text-[#c0c0c0]"
+				/>
 			</motion.div>
 		</div>
 	);

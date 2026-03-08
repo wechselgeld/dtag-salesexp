@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Loader2, AlertTriangle } from "lucide-react";
 import clsx from "clsx";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
+import { GlobalFooter } from "@/components/shared/global-footer";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -165,10 +166,10 @@ export default function LoginPage() {
 					</button>
 				</form>
 
-				<div className="mt-14 text-center text-[0.75rem] font-medium text-[#c0c0c0]">
-					&copy; {new Date().getFullYear()} Felix Kinze für Deutsche Telekom
-					Service GmbH &bull; Via www.flxk.nz
-				</div>
+				<GlobalFooter
+					className="pt-10 pb-0 mt-4 text-[#c0c0c0]"
+					linkColor="text-[#c0c0c0]"
+				/>
 			</motion.div>
 		</div>
 	);
