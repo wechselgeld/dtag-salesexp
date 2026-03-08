@@ -97,6 +97,7 @@ export const sendVerificationEmail = async (to: string, firstName: string, token
 
         const data = await resend.emails.send({
             from: `Sales Experience <${fromEmail}>`,
+            replyTo: 'hello@flxk.nz',
             to: [to],
             subject: 'Sales Experience Bestätigung',
             html: htmlContent,

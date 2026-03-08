@@ -71,6 +71,20 @@ export const sessionRouter = router({
                 throw new TRPCError({ code: "FORBIDDEN", message: "IP address not allowed" });
             }
 
+            // Rate-Limiting: Max 3 requests per IP in the last 15 minutes
+            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+            const recentRequests = await ctx.prisma.salesSession.count({
+                where: {
+                    ip: clientIp,
+                    createdAt: { gte: fifteenMinutesAgo },
+                    isVerified: false
+                }
+            });
+
+            if (recentRequests >= 3) {
+                throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Zu viele Anfragen. Bitte versuche es später erneut." });
+            }
+
             const crypto = require('crypto');
             const token = crypto.randomBytes(32).toString('hex');
 
@@ -84,7 +98,8 @@ export const sessionRouter = router({
                     ip: clientIp,
                     userAgent: ctx.req?.headers.get('user-agent'),
                     isVerified: false,
-                    verificationToken: token
+                    verificationToken: token,
+                    verificationExpiresAt: new Date(Date.now() + 60 * 60 * 1000) // 1 hour validity
                 }
             });
 
@@ -102,6 +117,10 @@ export const sessionRouter = router({
             });
 
             if (!session) throw new TRPCError({ code: 'NOT_FOUND', message: 'Ungültiger oder abgelaufener Link' });
+
+            if (session.verificationExpiresAt && session.verificationExpiresAt < new Date()) {
+                throw new TRPCError({ code: 'FORBIDDEN', message: 'Der Link ist abgelaufen. Bitte fordere einen neuen an.' });
+            }
 
             if (!session.isVerified) {
                 await ctx.prisma.salesSession.update({

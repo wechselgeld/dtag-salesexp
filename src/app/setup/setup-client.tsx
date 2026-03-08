@@ -29,7 +29,12 @@ import { z } from "zod";
 const setupFormSchema = z.object({
 	firstName: z.string().trim().min(1, "Vorname ist erforderlich"),
 	lastName: z.string().trim().min(1, "Nachname ist erforderlich"),
-	email: z.string().email("Ungültige E-Mail-Adresse"),
+	email: z
+		.string()
+		.email("Ungültige E-Mail-Adresse")
+		.refine((val) => val.endsWith("@telekom.de"), {
+			message: "Es sind nur interne Adressen erlaubt."
+		}),
 	teamId: z.string().min(1, "Bitte wähle ein Team aus"),
 	acceptedTerms: z.literal(true),
 	acceptedPrivacy: z.literal(true)
@@ -89,6 +94,7 @@ export default function SetupPage() {
 	const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
+	const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
 	// Returning-user state
 	const [hasCompletedBefore, setHasCompletedBefore] = useState(false);
@@ -178,10 +184,18 @@ export default function SetupPage() {
 		[firstName, lastName, email, selectedTeamId, acceptedTerms, acceptedPrivacy]
 	);
 
-	const canSubmit =
-		validationResult.success && !isSubmitting && !pendingSessionId;
+	const anyFieldEmpty =
+		!firstName.trim() ||
+		!lastName.trim() ||
+		!email.trim() ||
+		!selectedTeamId ||
+		!acceptedTerms ||
+		!acceptedPrivacy;
+
+	const canSubmitClick = !anyFieldEmpty && !isSubmitting && !pendingSessionId;
 
 	const handleSubmit = useCallback(async () => {
+		setFormErrors({});
 		const result = setupFormSchema.safeParse({
 			firstName,
 			lastName,
@@ -191,7 +205,15 @@ export default function SetupPage() {
 			acceptedPrivacy
 		});
 
-		if (!result.success) return;
+		if (!result.success) {
+			const errors: Record<string, string> = {};
+			for (const issue of result.error.issues) {
+				const fieldName = String(issue.path[0]);
+				errors[fieldName] = issue.message;
+			}
+			setFormErrors(errors);
+			return;
+		}
 
 		setIsSubmitting(true);
 		requestVerification.mutate({
@@ -287,13 +309,19 @@ export default function SetupPage() {
 									<strong className="font-medium text-[#1a1a2e]">
 										{email}
 									</strong>{" "}
-									gesendet.
+									gesendet. Er ist 60 Minuten lang gültig.
 									<br />
 									<strong className="font-medium text-[#1a1a2e] underline underline-offset-2">
 										Bitte schließe diese Seite nicht.
 									</strong>
 								</p>
 							</div>
+							<button
+								onClick={() => setPendingSessionId(null)}
+								className="mt-2 px-4 py-2 text-[0.85rem] font-medium text-[#e20074] hover:bg-[#fdf2f8] rounded-xl transition-colors cursor-pointer"
+							>
+								E-Mail korrigieren / Zurück
+							</button>
 						</div>
 					) : (
 						/* Setup form */
@@ -421,27 +449,44 @@ export default function SetupPage() {
 										/>
 									</div>
 
-									{/* Submit button */}
-									<button
-										id="setup-submit-btn"
-										onClick={handleSubmit}
-										disabled={!canSubmit}
-										className={clsx(
-											"self-stretch px-6 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 outline-none text-[0.88rem] whitespace-nowrap",
-											canSubmit
-												? "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_6px_16px_-4px_rgba(226,0,116,0.3)] cursor-pointer active:scale-[0.98]"
-												: "bg-[#f7f8fa] text-[#ccc] border border-[#eaedf0] cursor-not-allowed"
+									{/* Submit button wrapper */}
+									<div className="flex flex-col items-end gap-2 self-stretch">
+										<button
+											id="setup-submit-btn"
+											onClick={handleSubmit}
+											disabled={!canSubmitClick}
+											className={clsx(
+												"h-[48px] px-6 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 outline-none text-[0.88rem] whitespace-nowrap",
+												canSubmitClick
+													? "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_6px_16px_-4px_rgba(226,0,116,0.3)] cursor-pointer active:scale-[0.98]"
+													: "bg-[#f7f8fa] text-[#ccc] border border-[#eaedf0] cursor-not-allowed"
+											)}
+										>
+											{isSubmitting ? (
+												<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+											) : (
+												<span className="flex items-center gap-2">
+													Setup abschließen
+													<ArrowRight
+														className="w-3.5 h-3.5"
+														strokeWidth={2.5}
+													/>
+												</span>
+											)}
+										</button>
+										{Object.keys(formErrors).length > 0 && (
+											<div className="text-right">
+												{Object.values(formErrors).map((err, i) => (
+													<p
+														key={i}
+														className="text-[#dc2626] text-[0.75rem] font-medium m-0"
+													>
+														{err}
+													</p>
+												))}
+											</div>
 										)}
-									>
-										{isSubmitting ? (
-											<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-										) : (
-											<span className="flex items-center gap-2">
-												Setup abschließen
-												<ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
-											</span>
-										)}
-									</button>
+									</div>
 								</div>
 							</section>
 						</div>
