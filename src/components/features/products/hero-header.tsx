@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import clsx from "clsx";
 import { useImageBrightness } from "@/hooks/use-image-brightness";
+import { Skeleton } from "@/components/shared/skeleton";
 
 interface HeroHeaderProps {
 	firstName: string;
@@ -38,6 +39,7 @@ export function HeroHeader({
 	categories
 }: HeroHeaderProps) {
 	const [time, setTime] = useState<Date | null>(null);
+	const dataReady = productsCount !== undefined && time !== null;
 	const [activeCategoryIdx, setActiveCategoryIdx] = useState(0);
 
 	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery();
@@ -112,10 +114,7 @@ export function HeroHeader({
 	];
 
 	return (
-		<motion.div
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}
+		<div
 			className={clsx(
 				"relative min-h-[140px] mb-10 flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full rounded-2xl",
 				headerBg ? "p-6 md:p-8" : "p-0"
@@ -139,10 +138,7 @@ export function HeroHeader({
 
 			{/* Left Content */}
 			<div className="relative z-10 flex flex-col max-w-2xl mt-1">
-				<motion.h1
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ delay: 0.3, duration: 0.5 }}
+				<h1
 					className={clsx(
 						"text-4xl md:text-[3.2rem] font-extrabold mb-4 tracking-tight leading-[1.1] whitespace-nowrap flex items-center gap-4 transition-colors duration-500",
 						textPrimaryClass
@@ -154,89 +150,101 @@ export function HeroHeader({
 					/>
 					<span>
 						{greeting},{" "}
-						<span className="text-[#e20074]">{firstName || "Agent"}</span>!
+						<span className="text-[#e20074]">
+							{firstName ? (
+								firstName
+							) : (
+								<Skeleton className="inline-block h-[0.8em] w-48 translate-y-[0.1em] rounded-xl" />
+							)}
+						</span>
+						!
 					</span>
-				</motion.h1>
+				</h1>
 
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ delay: 0.4, duration: 0.5 }}
+				<div
 					className={clsx(
 						"text-[1.1rem] leading-relaxed mb-0 font-medium whitespace-nowrap flex items-center transition-colors duration-500",
 						textSecondaryClass
 					)}
 				>
-					<span className="mr-1.5">Wähle zwischen</span>
-					{categories && categories.length > 0 ? (
-						<AnimatePresence mode="popLayout">
-							<motion.span
-								key={activeCategoryIdx}
-								layout="position"
-								initial={{ opacity: 0, scale: 0.95 }}
-								animate={{ opacity: 1, scale: 1 }}
-								exit={{ opacity: 0, scale: 0.95 }}
-								transition={{ duration: 0.3, ease: "easeInOut" }}
-								className="font-bold inline-block mr-0.5"
-								style={{ color: currentCategory?.color || "#e20074" }}
-							>
-								{currentCategory?.count}{" "}
-								{currentCategory?.name === "Endgeräte"
-									? "Endgeräten"
-									: currentCategory?.name}
-							</motion.span>
-						</AnimatePresence>
+					{!dataReady ? (
+						<Skeleton className="h-6 w-48 rounded-lg" />
 					) : (
-						<span className="text-[#e20074] font-bold">verschiedenen</span>
+						<>
+							<span className="mr-1.5">Wähle zwischen</span>
+							{categories && categories.length > 0 ? (
+								<AnimatePresence mode="popLayout">
+									<motion.span
+										key={activeCategoryIdx}
+										layout="position"
+										initial={{ opacity: 0, scale: 0.95 }}
+										animate={{ opacity: 1, scale: 1 }}
+										exit={{ opacity: 0, scale: 0.95 }}
+										transition={{ duration: 0.3, ease: "easeInOut" }}
+										className="font-bold inline-block mr-0.5"
+										style={{ color: currentCategory?.color || "#e20074" }}
+									>
+										{currentCategory?.count}{" "}
+										{currentCategory?.name === "Endgeräte"
+											? "Endgeräten"
+											: currentCategory?.name}
+									</motion.span>
+								</AnimatePresence>
+							) : (
+								<span className="text-[#e20074] font-bold">verschiedenen</span>
+							)}
+							<motion.span layout="position">
+								{currentCategory?.name === "Endgeräte" ? "." : "-Produkten."}
+							</motion.span>
+						</>
 					)}
-					<motion.span layout="position">
-						{currentCategory?.name === "Endgeräte" ? "." : "-Produkten."}
-					</motion.span>
-				</motion.div>
+				</div>
 			</div>
 
 			{/* Right Content - Info Widgets */}
-			<motion.div
-				initial={{ opacity: 0, scale: 0.95 }}
-				animate={{ opacity: 1, scale: 1 }}
-				transition={{ delay: 0.4, duration: 0.5 }}
-				className="relative z-10 grid grid-cols-2 gap-4 shrink-0 w-full xl:w-auto mt-6 xl:mt-0"
-			>
-				{insights.map((item, i) => (
-					<div
-						key={i}
-						className="group relative bg-white border border-[#e8e8e8] rounded-[20px] h-[88px] flex flex-col justify-center px-5 py-3 overflow-hidden transition-all duration-400 ease-out hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:border-[#ddd] xl:min-w-[180px]"
-						style={{ "--card-color": item.color } as React.CSSProperties}
-					>
-						{/* Hover gradient */}
-						<div
-							className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[20px]"
-							style={{
-								background: `linear-gradient(to right, transparent 20%, ${item.color}10 60%, ${item.color}18 100%)`
-							}}
-						/>
-
-						{/* Content row */}
-						<div className="relative z-10 flex items-center justify-between gap-3">
-							{/* Left: Text */}
-							<div className="flex flex-col">
-								<h3 className="text-[1.15rem] font-bold text-[#1a1a2e] m-0 leading-tight group-hover:text-(--card-color) transition-colors duration-300">
-									{item.label}
-								</h3>
-								<span className="text-[0.72rem] text-[#b5b5b5] font-medium mt-1 tracking-wide">
-									{item.value}
-								</span>
-							</div>
-
-							{/* Right: Icon */}
-							<item.icon
-								className="w-8 h-8 transition-all duration-400 text-[#c8c8c8] group-hover:text-(--card-color) group-hover:scale-110 shrink-0"
-								strokeWidth={1.5}
+			<div className="relative z-10 grid grid-cols-2 gap-4 shrink-0 w-full xl:w-auto mt-6 xl:mt-0">
+				{!dataReady
+					? [1, 2, 3, 4].map((i) => (
+							<Skeleton
+								key={i}
+								className="h-[88px] w-full xl:w-[180px] rounded-[20px]"
 							/>
-						</div>
-					</div>
-				))}
-			</motion.div>
-		</motion.div>
+						))
+					: insights.map((item, i) => (
+							<div
+								key={i}
+								className="group relative bg-white border border-[#e8e8e8] rounded-[20px] h-[88px] flex flex-col justify-center px-5 py-3 overflow-hidden transition-all duration-400 ease-out hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:border-[#ddd] xl:min-w-[180px]"
+								style={{ "--card-color": item.color } as React.CSSProperties}
+							>
+								{/* Hover gradient */}
+								<div
+									className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[20px]"
+									style={{
+										background: `linear-gradient(to right, transparent 20%, ${item.color}10 60%, ${item.color}18 100%)`
+									}}
+								/>
+
+								{/* Content row */}
+								<div className="relative z-10 flex items-center justify-between gap-3">
+									{/* Left: Text */}
+									<div className="flex flex-col">
+										<h3 className="text-[1.15rem] font-bold text-[#1a1a2e] m-0 leading-tight group-hover:text-(--card-color) transition-colors duration-300">
+											{item.label}
+										</h3>
+										<span className="text-[0.72rem] text-[#b5b5b5] font-medium mt-1 tracking-wide">
+											{item.value}
+										</span>
+									</div>
+
+									{/* Right: Icon */}
+									<item.icon
+										className="w-8 h-8 transition-all duration-400 text-[#c8c8c8] group-hover:text-(--card-color) group-hover:scale-110 shrink-0"
+										strokeWidth={1.5}
+									/>
+								</div>
+							</div>
+						))}
+			</div>
+		</div>
 	);
 }

@@ -1,3 +1,8 @@
+---
+name: DATABASE
+description: Workflow für die Datenbanken
+---
+
 # 🚀 Datenbank-Workflow (Prisma & Oracle MySQL)
 
 Dieses Projekt nutzt zwei getrennte Datenbank-Instanzen auf Oracle Cloud (MySQL). Um sicher zwischen Entwicklung (Dev) und Produktion (Prod) zu wechseln, folge diesem Leitfaden.

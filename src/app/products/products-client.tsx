@@ -73,12 +73,17 @@ export default function ProductsPage() {
 	const isLoading = sessionLoading || productsLoading;
 	const utils = trpc.useUtils();
 
-	const [firstName, setFirstName] = useState("");
+	const [firstName, setFirstName] = useState(() => {
+		if (typeof window !== "undefined") {
+			return localStorage.getItem(LS_KEY_FIRST_NAME) ?? "";
+		}
+		return "";
+	});
 
-	// Load stored first name
+	// Synchronize if storage changes (optional but good practice)
 	useEffect(() => {
 		const stored = localStorage.getItem(LS_KEY_FIRST_NAME) ?? "";
-		setFirstName(stored);
+		if (stored !== firstName) setFirstName(stored);
 	}, []);
 
 	// Prefetch all category products in background for "instant" load
