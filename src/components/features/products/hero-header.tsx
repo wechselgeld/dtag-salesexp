@@ -11,6 +11,9 @@ import {
 	Moon
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { trpc } from "@/lib/trpc";
+import clsx from "clsx";
+import { useImageBrightness } from "@/hooks/use-image-brightness";
 
 interface HeroHeaderProps {
 	firstName: string;
@@ -36,6 +39,21 @@ export function HeroHeader({
 }: HeroHeaderProps) {
 	const [time, setTime] = useState<Date | null>(null);
 	const [activeCategoryIdx, setActiveCategoryIdx] = useState(0);
+
+	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery();
+	const headerBg = designSettings?.header_background_image;
+	const isDark = useImageBrightness(headerBg);
+
+	const textPrimaryClass = headerBg
+		? isDark
+			? "text-white"
+			: "text-[#1a1a2e]"
+		: "text-[#1a1a2e]";
+	const textSecondaryClass = headerBg
+		? isDark
+			? "text-[#e0e0e0]"
+			: "text-[#555]"
+		: "text-[#666]";
 
 	// Client-side only time to avoid hydration mismatch
 	useEffect(() => {
@@ -66,7 +84,7 @@ export function HeroHeader({
 						month: "short"
 					}).format(time)
 				: "...",
-			color: "#0090d0"
+			color: "#e20074"
 		},
 		{
 			icon: Clock,
@@ -77,7 +95,7 @@ export function HeroHeader({
 						minute: "2-digit"
 					}).format(time) + " Uhr"
 				: "...",
-			color: "#7b61ff"
+			color: "#e20074"
 		},
 		{
 			icon: Building2,
@@ -89,7 +107,7 @@ export function HeroHeader({
 			icon: TrendingUp,
 			label: "Portfolio",
 			value: productsCount ? `${productsCount} Produkte` : "Lade...",
-			color: "#00a878"
+			color: "#e20074"
 		}
 	];
 
@@ -98,18 +116,40 @@ export function HeroHeader({
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}
-			className="relative mb-10 flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full"
+			className={clsx(
+				"relative min-h-[140px] mb-10 flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full rounded-2xl",
+				headerBg ? "p-6 md:p-8" : "p-0"
+			)}
 		>
+			{/* Optional Background Image */}
+			{headerBg && (
+				<div className="absolute inset-0 z-0 rounded-2xl overflow-hidden pointer-events-none transition-opacity duration-500 shadow-sm border border-[#e8e8e8]/50">
+					<div
+						className="absolute inset-0 bg-cover bg-center blur-xs scale-[1.05]"
+						style={{ backgroundImage: `url(${headerBg})` }}
+					/>
+					<div
+						className={clsx(
+							"absolute inset-0 transition-colors duration-500",
+							isDark ? "bg-[#1a1a2e]/40" : "bg-white/40"
+						)}
+					/>
+				</div>
+			)}
+
 			{/* Left Content */}
-			<div className="relative z-10 flex flex-col max-w-2xl">
+			<div className="relative z-10 flex flex-col max-w-2xl mt-1">
 				<motion.h1
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ delay: 0.3, duration: 0.5 }}
-					className="text-4xl md:text-[3.2rem] font-extrabold text-[#1a1a2e] mb-4 tracking-tight leading-[1.1] whitespace-nowrap flex items-center gap-4"
+					className={clsx(
+						"text-4xl md:text-[3.2rem] font-extrabold mb-4 tracking-tight leading-[1.1] whitespace-nowrap flex items-center gap-4 transition-colors duration-500",
+						textPrimaryClass
+					)}
 				>
 					<GreetingIcon
-						className="w-10 h-10 md:w-14 md:h-14 text-[#e20074]"
+						className="w-10 h-10 md:w-12 md:h-12 text-[#e20074]"
 						strokeWidth={2.5}
 					/>
 					<span>
@@ -122,7 +162,10 @@ export function HeroHeader({
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ delay: 0.4, duration: 0.5 }}
-					className="text-[1.1rem] text-[#666] leading-relaxed mb-0 font-medium whitespace-nowrap flex items-center"
+					className={clsx(
+						"text-[1.1rem] leading-relaxed mb-0 font-medium whitespace-nowrap flex items-center transition-colors duration-500",
+						textSecondaryClass
+					)}
 				>
 					<span className="mr-1.5">Wähle zwischen</span>
 					{categories && categories.length > 0 ? (

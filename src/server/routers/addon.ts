@@ -7,6 +7,7 @@ const addonFormSchema = z.object({
     name: z.string().min(1, "Name is required"),
     description: z.string().optional(),
     category: z.string().optional(),
+    imageUrl: z.string().optional(),
     isGlobal: z.boolean().default(false),
     isActive: z.boolean().default(true),
     requiresNoMagentaTV: z.boolean().default(false),

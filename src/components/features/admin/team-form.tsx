@@ -11,16 +11,23 @@ import clsx from "clsx";
 import { Input } from "@/components/shared/ui/input";
 
 const teamSchema = z.object({
-	name: z.string().min(1, "Name ist erforderlich")
+	name: z.string().min(1, "Name ist erforderlich"),
+	email: z
+		.string()
+		.email("Gültige E-Mail erforderlich")
+		.optional()
+		.or(z.literal(""))
 });
 
 type TeamFormData = z.infer<typeof teamSchema>;
 
 interface TeamFormProps {
 	mode: "create" | "edit";
+	teamId?: string;
+	initialData?: { name: string; email?: string | null };
 }
 
-export function TeamForm({ mode }: TeamFormProps) {
+export function TeamForm({ mode, teamId, initialData }: TeamFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
@@ -32,7 +39,8 @@ export function TeamForm({ mode }: TeamFormProps) {
 		resolver: zodResolver(teamSchema),
 		mode: "onChange",
 		defaultValues: {
-			name: ""
+			name: initialData?.name || "",
+			email: initialData?.email || ""
 		}
 	});
 
@@ -44,13 +52,24 @@ export function TeamForm({ mode }: TeamFormProps) {
 		}
 	});
 
+	const updateMutation = trpc.team.update.useMutation({
+		onSuccess: () => {
+			utils.team.list.invalidate();
+			utils.team.getById.invalidate({ id: teamId! });
+			router.push("/admin/teams");
+			router.refresh();
+		}
+	});
+
 	const onSubmit = (data: any) => {
 		if (mode === "create") {
 			createMutation.mutate(data);
+		} else if (mode === "edit" && teamId) {
+			updateMutation.mutate({ id: teamId, ...data });
 		}
 	};
 
-	const isPending = createMutation.isPending;
+	const isPending = createMutation.isPending || updateMutation.isPending;
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -94,6 +113,14 @@ export function TeamForm({ mode }: TeamFormProps) {
 							placeholder="z.B. Team Berlin Süd"
 							error={errors.name?.message as string}
 							{...register("name")}
+						/>
+
+						<Input
+							label="Team-E-Mail"
+							type="email"
+							placeholder="z.B. team06@telekom.de"
+							error={errors.email?.message as string}
+							{...register("email")}
 						/>
 						<p className="text-[0.7rem] text-[#888] m-0 -mt-2">
 							Nach der Erstellung kannst du dem Team spezifische Fokus-Produkte

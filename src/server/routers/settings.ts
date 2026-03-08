@@ -7,6 +7,26 @@ export const settingsRouter = router({
         return await prisma.systemSetting.findMany();
     }),
 
+    getDesignSettings: publicProcedure.query(async () => {
+        const settings = await prisma.systemSetting.findMany({
+            where: {
+                key: {
+                    in: ['magentatv_background_image', 'header_background_image']
+                }
+            }
+        });
+
+        const result: Record<string, string> = {
+            magentatv_background_image: '',
+            header_background_image: ''
+        };
+        settings.forEach((s) => {
+            result[s.key] = s.value;
+        });
+
+        return result;
+    }),
+
     getPricingSettings: publicProcedure.query(async () => {
         const settings = await prisma.systemSetting.findMany({
             where: {

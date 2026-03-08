@@ -71,6 +71,7 @@ function ProductPageContent() {
 		id
 	});
 	const { data: session } = trpc.session.getCurrent.useQuery();
+	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery();
 
 	const {
 		businessCase,
@@ -307,10 +308,15 @@ function ProductPageContent() {
 								href={product.magentaInfosUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="flex items-center gap-1.5 px-3.5 h-[46px] rounded-xl bg-[#e20074]/5 border border-[#e20074]/15 hover:bg-[#e20074]/10 transition-colors group/link shrink-0"
+								className="flex items-center gap-1.5 px-3.5 h-[46px] rounded-xl border transition-colors group/link shrink-0"
+								style={{
+									backgroundColor: `${catColor}0d`,
+									borderColor: `${catColor}26`
+								}}
 							>
 								<ExternalLink
-									className="w-4 h-4 text-[#e20074] group-hover/link:scale-110 transition-transform"
+									className="w-4 h-4 group-hover/link:scale-110 transition-transform"
+									style={{ color: catColor }}
 									strokeWidth={2.5}
 								/>
 							</a>
@@ -369,16 +375,16 @@ function ProductPageContent() {
 								</div>
 							) : (
 								<div className="flex items-baseline gap-1.5">
-									<span className="text-[0.7rem] font-semibold text-[#aaa] uppercase tracking-wider relative -top-px">
+									<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
 										Ab
 									</span>
 									<span
-										className="text-[1.4rem] font-extrabold tracking-tight leading-none"
+										className="text-[1.5rem] font-extrabold tracking-tight"
 										style={{ color: catColor }}
 									>
 										{product.basePrice.toFixed(2)} €
 									</span>
-									<span className="text-[0.8rem] text-[#b0b0b0] font-medium">
+									<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
 										/Monat
 									</span>
 								</div>
@@ -591,23 +597,47 @@ function ProductPageContent() {
 									}
 								}}
 								className={clsx(
-									"rounded-xl p-4 border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 group",
+									"relative rounded-xl p-4 border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 group overflow-hidden",
 									session?.team?.highlights.some(
 										(h) => h.category === "MAGENTA_TV_OTT"
 									) &&
 										!isMagentaTVSelected &&
-										"highlight-glow bg-white"
+										"highlight-glow bg-white",
+									isMagentaTVSelected &&
+										!designSettings?.magentatv_background_image
+										? "bg-white"
+										: ""
 								)}
 								style={{
 									borderColor: isMagentaTVSelected ? catColor : "#eaedf0",
-									backgroundColor: isMagentaTVSelected
-										? `${catColor}06`
-										: "white"
+									backgroundColor:
+										isMagentaTVSelected &&
+										!designSettings?.magentatv_background_image
+											? `${catColor}06`
+											: "white"
 								}}
 							>
+								{/* Background Image Overlay */}
+								{designSettings?.magentatv_background_image && (
+									<div
+										className={clsx(
+											"absolute -inset-0.5 z-0 transition-opacity duration-300 pointer-events-none",
+											isMagentaTVSelected ? "opacity-100" : "opacity-0"
+										)}
+									>
+										<div
+											className="absolute inset-0 bg-cover bg-center blur-[2px] scale-110"
+											style={{
+												backgroundImage: `url(${designSettings.magentatv_background_image})`
+											}}
+										/>
+										<div className="absolute inset-0 bg-[#1a1a2e]/40" />
+									</div>
+								)}
+
 								{/* TV+ Icon */}
 								<div
-									className="w-10 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center italic tracking-tighter text-[0.75rem] transition-all duration-200"
+									className="relative z-10 w-10 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center italic tracking-tighter text-[0.75rem] transition-all duration-200"
 									style={{
 										backgroundColor: isMagentaTVSelected
 											? catColor
@@ -621,9 +651,17 @@ function ProductPageContent() {
 									M TV
 								</div>
 
-								<div className="flex-1 flex flex-col justify-center items-start">
+								<div className="flex-1 flex flex-col justify-center items-start relative z-10">
 									<div className="flex items-center gap-2 mb-0.5">
-										<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] m-0">
+										<h3
+											className={clsx(
+												"text-[0.95rem] font-bold m-0 transition-colors",
+												isMagentaTVSelected &&
+													designSettings?.magentatv_background_image
+													? "text-white"
+													: "text-[#1a1a2e]"
+											)}
+										>
 											MagentaTV dazubuchen
 										</h3>
 										{session?.team?.highlights.some(
@@ -636,7 +674,15 @@ function ProductPageContent() {
 												</div>
 											)}
 									</div>
-									<p className="text-[0.78rem] text-[#999] m-0">
+									<p
+										className={clsx(
+											"text-[0.78rem] m-0 transition-colors",
+											isMagentaTVSelected &&
+												designSettings?.magentatv_background_image
+												? "text-[#ccc]"
+												: "text-[#999]"
+										)}
+									>
 										ab +
 										{settings.magentatv_smart_price
 											.toFixed(2)
@@ -647,7 +693,7 @@ function ProductPageContent() {
 
 								{/* Toggle circle */}
 								<div
-									className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+									className="relative z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
 									style={{
 										borderColor: isMagentaTVSelected ? catColor : "#ddd",
 										backgroundColor: isMagentaTVSelected
@@ -816,29 +862,6 @@ function ProductPageContent() {
 						<CostTimeline calculation={calculation} accentColor={catColor} />
 					</motion.div>
 
-					{/* Price Trivialization Card */}
-					<motion.div
-						id="tour-config-daily-price"
-						initial={{ opacity: 0, y: 8 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.32, duration: 0.35 }}
-						className="bg-[#f7f8fa] rounded-xl p-5 border border-[#eaedf0] flex flex-col items-start gap-1.5"
-					>
-						<span className="text-[0.65rem] text-[#999] uppercase font-bold tracking-widest">
-							Täglicher Preis
-						</span>
-						<span
-							className="text-[1.5rem] font-black tracking-tight"
-							style={{ color: catColor }}
-						>
-							{calculation.dailyPriceTrivialization}
-						</span>
-						<p className="text-[0.7rem] text-[#888] font-medium leading-relaxed m-0">
-							Das sind weniger als die Kosten für einen Kaffee am Tag – für
-							volles Entertainment.
-						</p>
-					</motion.div>
-
 					{/* CTA Button */}
 					<motion.button
 						id="tour-config-action"
@@ -846,8 +869,8 @@ function ProductPageContent() {
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.35, duration: 0.35 }}
 						onClick={handleAddToBasket}
-						className="w-full py-3.5 rounded-xl text-white font-bold text-[0.95rem] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer hover:shadow-[0_6px_20px_rgba(226,0,116,0.25)] active:scale-[0.98]"
-						style={{ backgroundColor: "#e20074" }}
+						className="w-full py-3.5 rounded-xl text-white font-bold text-[0.95rem] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer hover:brightness-110 hover:shadow-lg active:scale-[0.98]"
+						style={{ backgroundColor: catColor }}
 					>
 						<ShoppingCart className="w-4.5 h-4.5" />
 						{basketItemId ? "Konfiguration aktualisieren" : "In den Warenkorb"}

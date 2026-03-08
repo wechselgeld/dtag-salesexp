@@ -17,7 +17,8 @@ import {
 	ShieldAlert,
 	Loader2,
 	Save,
-	Euro
+	Euro,
+	Image as ImageIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
@@ -25,7 +26,7 @@ import { Input } from "@/components/shared/ui/input";
 
 export default function AdminSettingsPage() {
 	const [activeTab, setActiveTab] = useState<
-		"profile" | "security" | "system" | "pricing"
+		"profile" | "security" | "system" | "pricing" | "design"
 	>("profile");
 
 	const { data: user } = trpc.admin.getCurrentUser.useQuery();
@@ -45,6 +46,7 @@ export default function AdminSettingsPage() {
 				{[
 					{ id: "profile", label: "Profil", icon: User },
 					{ id: "pricing", label: "Preise", icon: Euro },
+					{ id: "design", label: "Design", icon: ImageIcon },
 					{ id: "security", label: "Sicherheit", icon: Lock },
 					{ id: "system", label: "System", icon: Hammer }
 				].map((tab) => (
@@ -70,6 +72,7 @@ export default function AdminSettingsPage() {
 						<ProfilePanel key="profile" user={user} />
 					)}
 					{activeTab === "pricing" && <PricingPanel key="pricing" />}
+					{activeTab === "design" && <DesignPanel key="design" />}
 					{activeTab === "security" && <SecurityPanel key="security" />}
 					{activeTab === "system" && <SystemPanel key="system" />}
 				</AnimatePresence>
@@ -704,6 +707,170 @@ function PricingPanel() {
 						{status === "pending"
 							? "Speichere..."
 							: "Preis-Konfiguration speichern"}
+					</button>
+				</div>
+			</form>
+		</motion.div>
+	);
+}
+
+function DesignPanel() {
+	const utils = trpc.useUtils();
+	const { data: designSettings, isLoading } =
+		trpc.settings.getDesignSettings.useQuery();
+
+	const [status, setStatus] = useState<
+		"idle" | "pending" | "success" | "error"
+	>("idle");
+
+	const updateMutation = trpc.settings.updateMany.useMutation({
+		onSuccess: () => {
+			utils.settings.getDesignSettings.invalidate();
+			setStatus("success");
+			setTimeout(() => setStatus("idle"), 3000);
+		},
+		onError: () => {
+			setStatus("error");
+			setTimeout(() => setStatus("idle"), 3000);
+		}
+	});
+
+	const [form, setForm] = useState({
+		magentatv_background_image: "",
+		header_background_image: ""
+	});
+
+	useEffect(() => {
+		if (designSettings) {
+			setForm({
+				magentatv_background_image:
+					designSettings.magentatv_background_image || "",
+				header_background_image: designSettings.header_background_image || ""
+			});
+		}
+	}, [designSettings]);
+
+	const handleChange = (key: keyof typeof form, value: string) => {
+		setForm((prev) => ({ ...prev, [key]: value }));
+	};
+
+	const handleSave = (e: React.FormEvent) => {
+		e.preventDefault();
+		setStatus("pending");
+		const changes = Object.entries(form).map(([key, value]) => ({
+			key,
+			value
+		}));
+		updateMutation.mutate(changes);
+	};
+
+	if (isLoading) {
+		return (
+			<div className="flex items-center gap-2 text-sm text-[#888]">
+				<Loader2 className="w-4 h-4 animate-spin" /> Lade Design
+				Einstellungen...
+			</div>
+		);
+	}
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 10 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -10 }}
+			className="space-y-6 max-w-3xl"
+		>
+			<form
+				onSubmit={handleSave}
+				className="bg-white border border-[#eaedf0] rounded-2xl shadow-sm overflow-hidden"
+			>
+				<div className="p-6 md:p-8 space-y-6">
+					<div className="flex items-center gap-4 mb-6">
+						<div className="w-14 h-14 bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl flex items-center justify-center">
+							<ImageIcon className="w-6 h-6 text-[#1a1a2e]" />
+						</div>
+						<div>
+							<h2 className="text-[1.4rem] font-extrabold text-[#1a1a2e] mb-1 tracking-tight">
+								Design & Medien
+							</h2>
+							<p className="text-[0.85rem] text-[#888] m-0">
+								Diese Einstellungen legen globale Bilder und Design-Elemente
+								fest.
+							</p>
+						</div>
+					</div>
+
+					{/* Globale Bilder */}
+					<div>
+						<h3 className="text-sm font-bold text-[#1a1a2e] uppercase tracking-wider mb-4 border-b pb-2">
+							Globale Bilder
+						</h3>
+						<div className="grid grid-cols-1 gap-5">
+							<Input
+								label="MagentaTV Hintergrundbild (URL)"
+								type="text"
+								placeholder="https://test.com/magentatv-bg.png"
+								value={form.magentatv_background_image}
+								onChange={(e) =>
+									handleChange("magentatv_background_image", e.target.value)
+								}
+							/>
+							<p className="text-[#888] text-[0.8rem] -mt-3">
+								Dieses Bild wird im Kalkulator als Hintergrund für
+								Zubuchoptionen verwendet, die &quot;MagentaTV&quot; im Namen
+								haben. Es wird automatisch abgedunkelt und weichgezeichnet.
+							</p>
+						</div>
+
+						<div className="grid grid-cols-1 gap-5 mt-5">
+							<Input
+								label="Header Hintergrundbild (URL)"
+								type="text"
+								placeholder="https://test.com/header-bg.png"
+								value={form.header_background_image}
+								onChange={(e) =>
+									handleChange("header_background_image", e.target.value)
+								}
+							/>
+							<p className="text-[#888] text-[0.8rem] -mt-3">
+								Dieses Bild wird im Header (Startseite) hinter dem Grußtext
+								angezeigt. Es wird automatisch leicht abgedunkelt.
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div className="bg-[#f7f8fa] p-5 border-t border-[#eaedf0] flex items-center justify-between">
+					<div>
+						{status === "success" && (
+							<span className="text-green-600 font-medium flex items-center gap-2 text-[0.85rem]">
+								<Check className="w-4 h-4" /> Erfolgreich gespeichert
+							</span>
+						)}
+						{status === "error" && (
+							<span className="text-red-500 font-medium flex items-center gap-2 text-[0.85rem]">
+								<AlertTriangle className="w-4 h-4" /> Fehler beim Speichern
+							</span>
+						)}
+					</div>
+					<button
+						type="submit"
+						disabled={status === "pending"}
+						className={clsx(
+							"px-6 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
+							status === "pending"
+								? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
+								: "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:-translate-y-0.5"
+						)}
+					>
+						{status === "pending" ? (
+							<Loader2 className="w-4 h-4 animate-spin" />
+						) : (
+							<Save className="w-4 h-4" />
+						)}
+						{status === "pending"
+							? "Speichere..."
+							: "Design-Konfiguration speichern"}
 					</button>
 				</div>
 			</form>

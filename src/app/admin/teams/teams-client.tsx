@@ -11,7 +11,8 @@ import {
 	X,
 	Search,
 	Tag,
-	Briefcase
+	Briefcase,
+	Pencil
 } from "lucide-react";
 import clsx from "clsx";
 import { Skeleton } from "@/components/shared/skeleton";
@@ -182,8 +183,15 @@ export default function TeamsPage() {
 											)}
 										</div>
 									</td>
-									<td className="py-3.5 px-5 text-right w-[150px]">
+									<td className="py-3.5 px-5 text-right w-[180px]">
 										<div className="flex items-center justify-end gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+											<Link
+												href={`/admin/teams/${team.id}`}
+												className="p-2 text-[#ccc] hover:text-[#0090d0] hover:bg-[#0090d0]/6 rounded-lg transition-all duration-150 cursor-pointer bg-transparent border-none inline-flex items-center justify-center"
+												title="Team bearbeiten"
+											>
+												<Pencil className="w-4 h-4" />
+											</Link>
 											<button
 												onClick={() => setManagingFocusTeamId(team.id)}
 												className="p-2 text-[#ccc] hover:text-[#ff6b00] hover:bg-[#ff6b00]/6 rounded-lg transition-all duration-150 cursor-pointer bg-transparent border-none"

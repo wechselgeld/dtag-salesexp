@@ -28,7 +28,7 @@ export const getSvgAsPngBase64 = async (url: string): Promise<string> => {
     });
 };
 
-export async function generateOfferPdf(items: BasketItem[], basketCredits: Credit[], settings: PricingSettings = DEFAULT_PRICING) {
+export async function generateOfferPdf(items: BasketItem[], basketCredits: Credit[], settings: PricingSettings = DEFAULT_PRICING, teamEmail: string = "team06@telekom.de") {
     // A4 dimensions: 210 x 297 mm
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pageWidth = 210;
@@ -448,7 +448,7 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-    const outroText = "Fragen, Unstimmigkeiten oder möchten Sie das Angebot direkt buchen? Wir rufen Sie zurück. Schreiben Sie uns dafür eine E-Mail an beratung-chemnitz@telekom.de und geben Sie die gewünschte Rückrufzeit- und Nummer an.";
+    const outroText = `Fragen, Unstimmigkeiten oder möchten Sie das Angebot direkt buchen? Wir rufen Sie zurück. Schreiben Sie uns dafür eine E-Mail an ${teamEmail} und geben Sie die gewünschte Rückrufzeit- und Nummer an.`;
     const splitOutro = doc.splitTextToSize(outroText, pageWidth - margin * 2);
     doc.text(splitOutro, margin, currentY);
 
@@ -456,7 +456,7 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(180, 180, 180);
-    doc.text("Jederzeit für Sie erreichbar unter beratung-chemnitz@telekom.de.", margin, pageHeight - 15);
+    doc.text(`Jederzeit für Sie erreichbar unter ${teamEmail}.`, margin, pageHeight - 15);
     doc.text("Deutsche Telekom Service GmbH @ Chemnitz", margin, pageHeight - 10);
     doc.text("Connecting your world.", pageWidth - margin, pageHeight - 10, { align: "right" });
 

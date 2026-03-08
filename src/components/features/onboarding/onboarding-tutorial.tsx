@@ -116,7 +116,8 @@ const STEPS: Step[] = [
 		content:
 			"Mit Admin-Rechten kannst Du hier Produkte, Preise und Team-Highlights pflegen.",
 		icon: ShieldCheck,
-		position: "top"
+		position: "top",
+		hint: "Neu: Verwalte globale Bilder und Design-Elemente jetzt im Reiter 'Design'."
 	},
 	{
 		targetId: "tour-search",
@@ -156,7 +157,8 @@ const STEPS: Step[] = [
 	{
 		targetId: "tour-config-entertainment",
 		title: "MagentaTV buchen",
-		content: "Hier kannst Du MagentaTV direkt zum Tarif hinzubuchen.",
+		content:
+			"Hier kannst Du MagentaTV direkt zum Tarif hinzubuchen. Es wird nun visuell ansprechend mit einem Hintergrundbild hervorgehoben.",
 		icon: Tv,
 		position: "right"
 	},
@@ -179,17 +181,19 @@ const STEPS: Step[] = [
 		targetId: "tour-config-timeline",
 		title: "Kostenübersicht",
 		content:
-			"Transparenter Überblick, wie sich der Preis im Laufe der 24 Monate entwickelt.",
+			"Erhalte einen sofortigen Überblick über die wichtigsten Preispunkte: Ø Monatlich, Regulär, Gesamt und Täglich.",
 		icon: TrendingUp,
-		position: "left"
+		position: "left",
+		hint: "Die neuen Preiskarten helfen Dir, die Zahlen schnell zu erfassen."
 	},
 	{
 		targetId: "tour-config-daily-price",
 		title: "Täglicher Preis",
-		content: "Brich den monatlichen Preis auf einen täglichen Wert runter.",
+		content:
+			"Präsentiere den Preis als kleinen, täglichen Betrag – oft so günstig wie ein Kaffee!",
 		icon: PiggyBank,
 		position: "left",
-		hint: "Nutze diesen psychologischen Anker im Verkaufsgespräch. Viele Kunden nehmen diesen Preis besser auf."
+		hint: "Nutze diesen psychologischen Anker im Verkaufsgespräch. Die Karte hebt diesen Wert nun besonders hervor."
 	},
 	{
 		targetId: "tour-config-action",

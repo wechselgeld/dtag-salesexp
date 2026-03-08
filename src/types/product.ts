@@ -32,6 +32,7 @@ export type Addon = {
     description: string | null;
     requiresNoMagentaTV: boolean;
     tiers: AddonTier[];
+    imageUrl?: string | null;
     isGlobal?: boolean;
     isActive?: boolean;
 };

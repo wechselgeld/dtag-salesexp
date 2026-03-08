@@ -16,10 +16,30 @@ export const teamRouter = router({
         });
     }),
 
-    create: protectedProcedure
+    getById: publicProcedure
         .input(z.object({
-            name: z.string().min(1)
+            id: z.string()
         }))
+        .query(async ({ ctx, input }) => {
+            return await ctx.prisma.team.findUnique({
+                where: { id: input.id },
+                include: {
+                    highlights: {
+                        include: {
+                            product: true
+                        }
+                    }
+                }
+            });
+        }),
+
+    create: protectedProcedure
+        .input(
+            z.object({
+                name: z.string().min(1),
+                email: z.string().email().optional()
+            })
+        )
         .mutation(async ({ ctx, input }) => {
             if (!ctx.session || (ctx.session.role !== 'ADMIN' && ctx.session.role !== 'TEAM_LEADER')) {
                 throw new TRPCError({ code: 'FORBIDDEN' });
@@ -27,8 +47,32 @@ export const teamRouter = router({
 
             return await ctx.prisma.team.create({
                 data: {
-                    name: input.name
+                    name: input.name,
+                    email: input.email || "team06@telekom.de"
                 }
+            });
+        }),
+
+    update: protectedProcedure
+        .input(z.object({
+            id: z.string(),
+            name: z.string().min(1).optional(),
+            email: z.string().email().optional()
+        }))
+        .mutation(async ({ ctx, input }) => {
+            if (!ctx.session || (ctx.session.role !== 'ADMIN' && ctx.session.role !== 'TEAM_LEADER')) {
+                throw new TRPCError({ code: 'FORBIDDEN' });
+            }
+
+            const { id, ...dataToUpdate } = input;
+
+            if (Object.keys(dataToUpdate).length === 0) {
+                throw new TRPCError({ code: 'BAD_REQUEST', message: 'No fields to update provided.' });
+            }
+
+            return await ctx.prisma.team.update({
+                where: { id },
+                data: dataToUpdate
             });
         }),
 

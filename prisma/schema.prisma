@@ -125,6 +125,8 @@ model Addon {
   isActive Boolean @default(true)
   requiresNoMagentaTV Boolean @default(false)
 
+  imageUrl String?
+
   tiers AddonTier[]
 
   compatibleProducts Product[]       @relation("ProductAddons")
@@ -188,8 +190,9 @@ model OneTimeCredit {
 }
 
 model Team {
-  id   String @id @default(cuid())
-  name String
+  id    String @id @default(cuid())
+  name  String
+  email String @default("team06@telekom.de")
 
   sessions   SalesSession[]
   highlights TeamHighlight[]

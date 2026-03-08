@@ -17,6 +17,7 @@ const addonSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),
 	description: z.string().optional(),
 	category: z.string().optional(),
+	imageUrl: z.string().optional(),
 	isGlobal: z.boolean().default(false),
 	isActive: z.boolean().default(true),
 	requiresNoMagentaTV: z.boolean().default(false),
@@ -61,6 +62,7 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 			name: initialData?.name || "",
 			description: initialData?.description || "",
 			category: initialData?.category || "",
+			imageUrl: initialData?.imageUrl || "",
 			isGlobal: initialData?.isGlobal || false,
 			isActive: initialData?.isActive ?? true,
 			requiresNoMagentaTV: initialData?.requiresNoMagentaTV || false,
@@ -171,6 +173,13 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 							placeholder="Kurze Beschreibung..."
 							error={errors.description?.message as string}
 							{...register("description")}
+						/>
+
+						<Input
+							label="Bild-URL (z. B. für MagentaTV Logo im Hintergrund)"
+							placeholder="https://example.com/image.png"
+							error={errors.imageUrl?.message as string}
+							{...register("imageUrl")}
 						/>
 
 						<div className="space-y-3 pt-2 border-t border-[#f0f0f0]">

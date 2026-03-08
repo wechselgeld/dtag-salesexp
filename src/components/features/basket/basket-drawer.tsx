@@ -74,8 +74,11 @@ export function BasketDrawer() {
 	} | null>(null);
 
 	const { data: availableCredits } = trpc.product.getOneTimeCredits.useQuery();
+	const { data: session } = trpc.session.getCurrent.useQuery();
 	const { clearAfterExport, offerTemplateText } = useSettingsStore();
 	const [isMounted, setIsMounted] = useState(false);
+
+	const teamEmail = session?.team?.email || "team06@telekom.de";
 
 	useEffect(() => {
 		setIsMounted(true);
@@ -361,14 +364,19 @@ export function BasketDrawer() {
 								id="tour-offer-action"
 								onClick={async () => {
 									setIsGenerating("generating");
-									await generateOfferPdf(items, basketCredits, settings);
+									await generateOfferPdf(
+										items,
+										basketCredits,
+										settings,
+										teamEmail
+									);
 
 									const subject = encodeURIComponent(
 										"Ihr persönliches Angebot der Telekom"
 									);
 									const bodyText = encodeURIComponent(offerTemplateText);
 
-									window.location.href = `mailto:Kunden-E-Mail hier einfügen?subject=${subject}&body=${bodyText}`;
+									window.location.href = `mailto:${teamEmail}?subject=${subject}&body=${bodyText}`;
 
 									setIsGenerating("success");
 									if (clearAfterExport) {
