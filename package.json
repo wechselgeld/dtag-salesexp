@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "manage-admins": "tsx scripts/manage-admins.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:push:dev": "dotenv -e .env.development -- prisma db push",
+    "db:push:prod": "dotenv -e .env.production -- prisma db push",
+    "db:seed:dev": "dotenv -e .env.development -- prisma db seed",
+    "db:seed:prod": "dotenv -e .env.production -- prisma db seed"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -51,6 +55,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/recharts": "^2.0.1",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "prisma": "6.1.0",

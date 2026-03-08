@@ -545,23 +545,18 @@ export default function ProductListPage() {
 																	transition={{ duration: 0.2 }}
 																	className="overflow-hidden"
 																>
-																	<div className="pt-3 pb-1 flex flex-col gap-2">
+																	<div className="pt-3 pb-1 flex flex-wrap gap-x-2.5 gap-y-2">
 																		{(product as any).salesArguments.map(
 																			(arg: any) => (
 																				<div
 																					key={arg.id}
-																					className="flex items-start gap-3 text-[0.8rem] bg-white p-3 rounded-xl border border-[#eaedf0] text-[#1a1a2e] shadow-[0_2px_8px_rgba(0,0,0,0.02)] group/item transition-all hover:border-[#ddd] hover:shadow-sm"
+																					className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#f7f8fa] border border-[#eaedf0] text-[0.78rem] font-semibold text-[#555] shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-default transition-all hover:bg-white hover:border-[#d1d5db]"
 																				>
-																					<div
-																						className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-transform duration-300 group-hover/item:scale-110"
-																						style={{
-																							backgroundColor: `${catColor}10`,
-																							color: catColor
-																						}}
-																					>
-																						<Sparkles className="w-3.5 h-3.5" />
-																					</div>
-																					<span className="font-semibold leading-relaxed mt-0.5 uppercase tracking-tight">
+																					<Sparkles
+																						className="w-3.5 h-3.5 shrink-0"
+																						style={{ color: catColor }}
+																					/>
+																					<span className="leading-tight">
 																						{arg.text}
 																					</span>
 																				</div>

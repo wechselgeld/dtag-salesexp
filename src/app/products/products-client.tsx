@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Smartphone, Wifi, Zap, Tv, Router, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { SearchBar } from "@/components/features/search/search-bar";
+import { HeroHeader } from "@/components/features/products/hero-header";
 import { NewsCarousel } from "@/components/features/news/news-carousel";
 import { trpc } from "@/lib/trpc";
 import clsx from "clsx";
@@ -61,17 +62,6 @@ const CATEGORIES = [
 ];
 
 /* ──────────────────────────────────────────────
-   Helpers
-   ────────────────────────────────────────────── */
-
-function getGreeting(): string {
-	const h = new Date().getHours();
-	if (h < 12) return "Guten Morgen";
-	if (h < 18) return "Guten Tag";
-	return "Guten Abend";
-}
-
-/* ──────────────────────────────────────────────
    Main Component
    ────────────────────────────────────────────── */
 
@@ -115,38 +105,23 @@ export default function ProductsPage() {
 			.filter((h) => h.category)
 			.map((h) => h.category) || [];
 
-	const greeting = getGreeting();
+	const categoryStats = CATEGORIES.map((c) => ({
+		name: c.title,
+		count: allProducts
+			? allProducts.filter((p) => p.category === c.id).length
+			: parseInt(c.stats) || 0,
+		color: c.color
+	}));
 
 	return (
 		<div className="min-h-full">
-			{/* ─── Personalised Header ─── */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
-				className="mb-10 pt-6"
-			>
-				{/* Greeting subtitle */}
-				<motion.p
-					initial={{ opacity: 0, y: 6 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.05, duration: 0.35, ease: EASE_OUT_EXPO }}
-					className="text-[0.85rem] font-bold text-[#bbb] uppercase tracking-[0.12em] mb-2"
-				>
-					{greeting}
-					{firstName ? `, ${firstName}` : ""}
-				</motion.p>
-
-				{/* Main heading */}
-				<motion.h1
-					initial={{ opacity: 0, y: 8 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.08, duration: 0.4, ease: EASE_OUT_EXPO }}
-					className="text-[2.4rem] md:text-[3rem] font-extrabold text-[#1a1a2e] mb-0 tracking-tight leading-[1.1]"
-				>
-					Wähle eine <span className="text-[#e20074]">Kategorie</span>.
-				</motion.h1>
-			</motion.div>
+			{/* ─── Hero Header ─── */}
+			<HeroHeader
+				firstName={firstName}
+				teamName={session?.team?.name}
+				productsCount={allProducts?.length}
+				categories={categoryStats}
+			/>
 
 			{/* ─── Search Bar ─── */}
 			<motion.div

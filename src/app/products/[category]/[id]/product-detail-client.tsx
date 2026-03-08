@@ -27,7 +27,8 @@ import {
 	Sparkles,
 	MessageSquare,
 	ChevronDown,
-	ListTodo
+	ListTodo,
+	ExternalLink
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -281,19 +282,14 @@ function ProductPageContent() {
 
 						{/* Sales Arguments */}
 						{product.salesArguments && product.salesArguments.length > 0 && (
-							<div className="flex flex-wrap gap-x-3 gap-y-2 mt-6">
+							<div className="flex flex-wrap gap-x-2.5 gap-y-2 mt-5">
 								{product.salesArguments.map((arg: any) => (
 									<div
 										key={arg.id}
-										className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[0.8rem] font-bold border cursor-default"
-										style={{
-											borderColor: `${catColor}25`,
-											color: catColor,
-											backgroundColor: `${catColor}08`
-										}}
+										className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f7f8fa] border border-[#eaedf0] text-[0.78rem] font-semibold text-[#555] shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-default transition-all hover:bg-white hover:border-[#d1d5db]"
 									>
 										<Sparkles
-											className="w-3.5 h-3.5 shrink-0 opacity-70"
+											className="w-3.5 h-3.5 shrink-0"
 											style={{ color: catColor }}
 										/>
 										<span className="leading-tight">{arg.text}</span>
@@ -303,66 +299,91 @@ function ProductPageContent() {
 						)}
 					</div>
 
-					{/* Right: Price highlight */}
-					<div className="text-right shrink-0 ml-6 flex flex-col items-end">
-						<div className="text-[0.65rem] font-semibold text-[#aaa] uppercase tracking-wider mb-1">
-							Ab
-						</div>
-						{product.category === "DEVICE" ? (
-							<div className="flex flex-col items-end gap-2.5">
-								{(product as any).purchasePrice > 0 && (
-									<div className="flex flex-col items-end">
-										<div
-											className={clsx(
-												"font-extrabold tracking-tight leading-none",
-												((product as any).rentalPrice || product.basePrice) > 0
-													? "text-[1.3rem]"
-													: "text-[1.8rem]"
-											)}
-											style={{ color: catColor }}
-										>
-											{(product as any).purchasePrice.toFixed(2)} €
-										</div>
-										<div className="text-[0.7rem] text-[#b0b0b0] font-bold mt-1 uppercase tracking-wider">
-											Kauf
-										</div>
-									</div>
-								)}
-								{((product as any).rentalPrice || product.basePrice) > 0 && (
-									<div className="flex flex-col items-end">
-										<div
-											className={clsx(
-												"font-extrabold tracking-tight leading-none",
-												(product as any).purchasePrice > 0
-													? "text-[1.3rem]"
-													: "text-[1.8rem]"
-											)}
-											style={{ color: catColor }}
-										>
-											{(
-												(product as any).rentalPrice || product.basePrice
-											).toFixed(2)}{" "}
-											€
-										</div>
-										<div className="text-[0.7rem] text-[#b0b0b0] font-bold mt-1 uppercase tracking-wider">
-											Miete
-										</div>
-									</div>
-								)}
-							</div>
-						) : (
-							<>
-								<div
-									className="text-[2rem] font-extrabold tracking-tight leading-none"
-									style={{ color: catColor }}
-								>
-									{product.basePrice.toFixed(2)} €
-								</div>
-								<div className="text-[0.72rem] text-[#b0b0b0] font-medium mt-0.5">
-									/Monat
-								</div>
-							</>
+					{/* Right: Price highlight & Actions */}
+					<div className="shrink-0 ml-6 flex items-start gap-4">
+						{/* MagentaInfos Link (Left of price) */}
+						{product.magentaInfosUrl && (
+							<a
+								href={product.magentaInfosUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="flex items-center gap-1.5 px-3.5 h-[46px] rounded-xl bg-[#e20074]/5 border border-[#e20074]/15 hover:bg-[#e20074]/10 transition-colors group/link shrink-0"
+							>
+								<ExternalLink
+									className="w-4 h-4 text-[#e20074] group-hover/link:scale-110 transition-transform"
+									strokeWidth={2.5}
+								/>
+							</a>
 						)}
+
+						{/* Price Card */}
+						<div className="bg-[#f7f8fa] border border-[#eaedf0] rounded-xl px-4 h-[46px] flex items-center shadow-sm">
+							{product.category === "DEVICE" ? (
+								<div className="flex items-center gap-2">
+									<span className="text-[0.7rem] font-semibold text-[#aaa] uppercase tracking-wider mt-0.5">
+										Ab
+									</span>
+									<div className="flex items-center gap-3">
+										{(product as any).purchasePrice > 0 && (
+											<div className="flex items-baseline gap-1.5">
+												<span
+													className={clsx(
+														"font-extrabold tracking-tight leading-none",
+														((product as any).rentalPrice ||
+															product.basePrice) > 0
+															? "text-[1.2rem]"
+															: "text-[1.4rem]"
+													)}
+													style={{ color: catColor }}
+												>
+													{(product as any).purchasePrice.toFixed(2)} €
+												</span>
+												<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
+													Kauf
+												</span>
+											</div>
+										)}
+										{((product as any).rentalPrice || product.basePrice) >
+											0 && (
+											<div className="flex items-baseline gap-1.5">
+												<span
+													className={clsx(
+														"font-extrabold tracking-tight leading-none",
+														(product as any).purchasePrice > 0
+															? "text-[1.2rem]"
+															: "text-[1.4rem]"
+													)}
+													style={{ color: catColor }}
+												>
+													{(
+														(product as any).rentalPrice || product.basePrice
+													).toFixed(2)}{" "}
+													€
+												</span>
+												<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
+													Miete
+												</span>
+											</div>
+										)}
+									</div>
+								</div>
+							) : (
+								<div className="flex items-baseline gap-1.5">
+									<span className="text-[0.7rem] font-semibold text-[#aaa] uppercase tracking-wider relative -top-px">
+										Ab
+									</span>
+									<span
+										className="text-[1.4rem] font-extrabold tracking-tight leading-none"
+										style={{ color: catColor }}
+									>
+										{product.basePrice.toFixed(2)} €
+									</span>
+									<span className="text-[0.8rem] text-[#b0b0b0] font-medium">
+										/Monat
+									</span>
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
 			</motion.div>

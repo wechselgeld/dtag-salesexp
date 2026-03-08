@@ -60,6 +60,7 @@ model Product {
   features     String? @db.Text // JSON string
   targetGroups String? @db.Text // JSON string array of target groups e.g. ["student", "family"]
   salesScript  String? @db.Text // Text for sales agents
+  magentaInfosUrl String? // Link to internal information platform
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

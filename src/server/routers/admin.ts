@@ -41,6 +41,7 @@ const productSchema = z.object({
     targetGroups: z.array(z.string()).default([]),
     salesArguments: z.array(z.string()).default([]),
     salesScript: z.string().optional().nullable(),
+    magentaInfosUrl: z.string().optional().nullable(),
 });
 
 const tierSchema = z.object({

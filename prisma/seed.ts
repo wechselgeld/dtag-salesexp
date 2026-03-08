@@ -34,6 +34,7 @@ async function main() {
             allowPlanChange: true,
             activationFeeNew: 39.95,
             features: JSON.stringify(['5G', 'Phone Flat', 'SMS Flat', 'EU Roaming']),
+            magentaInfosUrl: 'https://magentainfos.telekom.de/mobile/mobil-m',
         }
     })
 

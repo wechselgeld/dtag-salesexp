@@ -40,7 +40,8 @@ const productSchema = z.object({
 	features: z.array(z.string()).default([]),
 	targetGroups: z.array(z.string()).default([]),
 	salesArguments: z.array(z.string()).default([]),
-	salesScript: z.string().optional()
+	salesScript: z.string().optional(),
+	magentaInfosUrl: z.string().optional()
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -91,7 +92,8 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 			targetGroups: initialData?.targetGroups || [],
 			salesArguments:
 				initialData?.salesArguments?.map((a: any) => a.text) || [],
-			salesScript: initialData?.salesScript || ""
+			salesScript: initialData?.salesScript || "",
+			magentaInfosUrl: initialData?.magentaInfosUrl || ""
 		}
 	});
 
@@ -239,6 +241,13 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 							placeholder="z.B. „Herr [Name], ich sehe, dass Ihr aktueller Vertrag noch mit DSL 50 läuft...“"
 							error={errors.salesScript?.message}
 							{...register("salesScript")}
+						/>
+
+						<Input
+							label="MagentaInfos Link"
+							placeholder="https://magentainfos.telekom.de/..."
+							error={errors.magentaInfosUrl?.message}
+							{...register("magentaInfosUrl")}
 						/>
 
 						<div className="space-y-1.5 w-full">
