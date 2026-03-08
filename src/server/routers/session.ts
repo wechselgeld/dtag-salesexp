@@ -53,41 +53,68 @@ export const sessionRouter = router({
         return { success: true };
     }),
 
-    create: publicProcedure
+    requestVerification: publicProcedure
         .input(z.object({
             teamId: z.string(),
+            firstName: z.string().min(1),
+            lastName: z.string().min(1),
+            email: z.string().email(),
             acceptedTerms: z.literal(true),
         }))
         .mutation(async ({ ctx, input }) => {
-            // Verify IP before creating session
             const clientIp = ctx.ip || "127.0.0.1";
             const setting = await ctx.prisma.systemSetting.findUnique({
                 where: { key: 'allowed_ips' }
             });
 
             if (!checkIpIsAllowed(clientIp, setting?.value || "")) {
-                throw new TRPCError({
-                    code: "FORBIDDEN",
-                    message: "IP address not allowed"
-                });
+                throw new TRPCError({ code: "FORBIDDEN", message: "IP address not allowed" });
             }
 
-            // Create session record
+            const crypto = require('crypto');
+            const token = crypto.randomBytes(32).toString('hex');
+
             const session = await ctx.prisma.salesSession.create({
                 data: {
                     teamId: input.teamId,
+                    firstName: input.firstName,
+                    lastName: input.lastName,
+                    email: input.email,
                     acceptedTerms: input.acceptedTerms,
                     ip: clientIp,
                     userAgent: ctx.req?.headers.get('user-agent'),
+                    isVerified: false,
+                    verificationToken: token
                 }
             });
 
-            // Set cookie
+            const { sendVerificationEmail } = await import('@/lib/email');
+            await sendVerificationEmail(input.email, input.firstName, token);
+
+            return { sessionId: session.id };
+        }),
+
+    verifyEmail: publicProcedure
+        .input(z.object({ token: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const session = await ctx.prisma.salesSession.findUnique({
+                where: { verificationToken: input.token }
+            });
+
+            if (!session) throw new TRPCError({ code: 'NOT_FOUND', message: 'Ungültiger oder abgelaufener Link' });
+
+            if (!session.isVerified) {
+                await ctx.prisma.salesSession.update({
+                    where: { id: session.id },
+                    data: { isVerified: true, verificationToken: null }
+                });
+            }
+
             const { signSessionId } = await import('@/lib/auth');
-            const token = await signSessionId(session.id);
+            const signedToken = await signSessionId(session.id);
 
             const cookieStore = await cookies();
-            cookieStore.set('sales-session-id', token, {
+            cookieStore.set('sales-session-id', signedToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
@@ -95,7 +122,53 @@ export const sessionRouter = router({
                 maxAge: 60 * 60 * 24 * 30, // 30 days
             });
 
-            return { success: true };
+            return {
+                success: true,
+                firstName: session.firstName,
+                lastName: session.lastName,
+                email: session.email
+            };
+        }),
+
+    checkVerification: publicProcedure
+        .input(z.object({ sessionId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const session = await ctx.prisma.salesSession.findUnique({
+                where: { id: input.sessionId }
+            });
+            if (!session) return { verified: false };
+            return { verified: session.isVerified };
+        }),
+
+    finalizeLogin: publicProcedure
+        .input(z.object({ sessionId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const session = await ctx.prisma.salesSession.findUnique({
+                where: { id: input.sessionId }
+            });
+
+            if (!session || !session.isVerified) {
+                throw new TRPCError({ code: 'FORBIDDEN', message: 'Not verified' });
+            }
+
+            const { signSessionId } = await import('@/lib/auth');
+            const signedToken = await signSessionId(session.id);
+
+            const cookieStore = await cookies();
+            cookieStore.set('sales-session-id', signedToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/',
+                maxAge: 60 * 60 * 24 * 30, // 30 days
+            });
+
+            return {
+                success: true,
+                firstName: session.firstName,
+                lastName: session.lastName,
+                email: session.email
+            };
         }),
 
     getCurrent: publicProcedure.query(async ({ ctx }) => {
@@ -120,10 +193,28 @@ export const sessionRouter = router({
             }
         });
 
-        if (!session || !session.isActive) return null;
+        if (!session || !session.isActive || !session.isVerified) return null;
 
         return session;
     }),
+
+    updateTeam: publicProcedure
+        .input(z.object({ teamId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const cookieStore = await cookies();
+            const token = cookieStore.get('sales-session-id')?.value;
+            if (!token) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+            const { verifySessionId } = await import('@/lib/auth');
+            const sessionId = await verifySessionId(token);
+            if (!sessionId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+            await ctx.prisma.salesSession.update({
+                where: { id: sessionId },
+                data: { teamId: input.teamId }
+            });
+            return { success: true };
+        }),
 
     logout: publicProcedure.mutation(async () => {
         const cookieStore = await cookies();

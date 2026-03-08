@@ -173,7 +173,7 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 							>
 								<option value="ADMIN">Administrator (Vollzugriff)</option>
 								<option value="TEAM_LEADER">
-									Team Leader (Eingeschränkter Zugriff)
+									Teamleiter (Eingeschränkter Zugriff)
 								</option>
 							</select>
 						</div>

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { TRPCError } from '@trpc/server';
 import bcrypt from 'bcryptjs';
+import { sendWelcomeEmail, sendGoodbyeEmail } from '@/lib/email';
 
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
     if ((ctx.session as any)?.role !== 'ADMIN') {
@@ -46,7 +47,7 @@ export const adminUsersRouter = router({
             }
 
             const hash = await bcrypt.hash(input.password, 10);
-            return prisma.user.create({
+            const newUser = await prisma.user.create({
                 data: {
                     email: input.email,
                     password: hash,
@@ -54,6 +55,11 @@ export const adminUsersRouter = router({
                 },
                 select: { id: true, email: true, role: true, createdAt: true }
             });
+
+            // E-Mail synchron/asynchron versenden (hier fire-and-forget, um Response nicht zu verzögern)
+            sendWelcomeEmail(input.email, input.role, input.password).catch(console.error);
+
+            return newUser;
         }),
 
     update: adminProcedure
@@ -110,9 +116,14 @@ export const adminUsersRouter = router({
                 }
             }
 
-            return prisma.user.delete({
+            const deletedUser = await prisma.user.delete({
                 where: { id: input.id },
-                select: { id: true }
+                select: { id: true, email: true }
             });
+
+            // Sende Auf Wiedersehen E-Mail
+            sendGoodbyeEmail(deletedUser.email).catch(console.error);
+
+            return { id: deletedUser.id };
         })
 });

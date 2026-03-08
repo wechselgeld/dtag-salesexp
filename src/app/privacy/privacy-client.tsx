@@ -184,11 +184,29 @@ export default function PrivacyPage() {
 							anfallen, erfolgt die Nutzung auf Basis technischer
 							Bereitstellungsinteressen der Infrastruktur.
 						</p>
+						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
+							Resend (E-Mail-Versand)
+						</h3>
+						<p className="text-[0.95rem] text-[#555] leading-relaxed">
+							Wir nutzen für den Versand von systemseitigen E-Mails den Dienst
+							"Resend". Anbieter ist die Resend Inc., 2261 Market Street #4817,
+							San Francisco, CA 94114, USA. Wir haben den Dienst so
+							konfiguriert, dass der technische E-Mail-Versand über Server
+							innerhalb der Europäischen Union (Region: Irland, eu-west-1)
+							erfolgt. Dennoch können Metadaten (z. B. Empfängeradressen,
+							Zeitstempel, Versandstatus) zur Abrechnung und Analyse in die USA
+							übermittelt und dort gespeichert werden. Die Nutzung erfolgt auf
+							Grundlage unseres berechtigten Interesses an einem effizienten
+							Versand (Art. 6 Abs. 1 lit. f DSGVO). Die Datenübermittlung in die
+							USA wird durch das EU-U.S. Data Privacy Framework (sofern
+							zertifiziert) oder Standardvertragsklauseln (SCC) abgesichert.
+						</p>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed mt-2 p-4 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl">
-							Wir haben mit den oben genannten Anbietern (Cloudflare, Vercel &
-							Oracle) Verträge zur Auftragsverarbeitung (AVV) abgeschlossen.
-							Diese garantieren, dass die Dienstleister die Daten ausschließlich
-							nach unseren Weisungen und unter Einhaltung der DSGVO verarbeiten.
+							Wir haben mit den oben genannten Anbietern (Cloudflare, Vercel,
+							Oracle & Resend) Verträge zur Auftragsverarbeitung (AVV)
+							abgeschlossen. Diese garantieren, dass die Dienstleister die Daten
+							ausschließlich nach unseren Weisungen und unter Einhaltung der
+							DSGVO verarbeiten.
 						</p>
 					</section>
 

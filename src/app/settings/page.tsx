@@ -42,7 +42,7 @@ export default function SettingsPage() {
 	const router = useRouter();
 	const { data: session } = trpc.session.getCurrent.useQuery();
 	const { data: teams } = trpc.team.list.useQuery();
-	const createSession = trpc.session.create.useMutation({
+	const updateTeam = trpc.session.updateTeam.useMutation({
 		onSuccess: () => {
 			router.refresh();
 			setTeamSwitchOpen(false);
@@ -157,9 +157,8 @@ export default function SettingsPage() {
 													disabled={isCurrent || !!switchingTeam}
 													onClick={async () => {
 														setSwitchingTeam(team.id);
-														createSession.mutate({
-															teamId: team.id,
-															acceptedTerms: true
+														updateTeam.mutate({
+															teamId: team.id
 														});
 													}}
 													className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg text-[0.8rem] font-medium transition-all cursor-pointer border-none w-full text-left ${

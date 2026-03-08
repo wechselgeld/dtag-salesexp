@@ -10,6 +10,7 @@ import {
 	ArrowRight,
 	Users,
 	User,
+	Mail,
 	CheckCircle2,
 	RotateCcw,
 	ChevronRight
@@ -28,6 +29,7 @@ import { z } from "zod";
 const setupFormSchema = z.object({
 	firstName: z.string().trim().min(1, "Vorname ist erforderlich"),
 	lastName: z.string().trim().min(1, "Nachname ist erforderlich"),
+	email: z.string().email("Ungültige E-Mail-Adresse"),
 	teamId: z.string().min(1, "Bitte wähle ein Team aus"),
 	acceptedTerms: z.literal(true),
 	acceptedPrivacy: z.literal(true)
@@ -39,19 +41,27 @@ const setupFormSchema = z.object({
 
 const LS_KEY_FIRST_NAME = "setup-user-firstName";
 const LS_KEY_LAST_NAME = "setup-user-lastName";
+const LS_KEY_EMAIL = "setup-user-email";
 const LS_KEY_SETUP_DONE = "setup-completed";
 
-function getStoredName(): { firstName: string; lastName: string } {
-	if (typeof window === "undefined") return { firstName: "", lastName: "" };
+function getStoredUser(): {
+	firstName: string;
+	lastName: string;
+	email: string;
+} {
+	if (typeof window === "undefined")
+		return { firstName: "", lastName: "", email: "" };
 	return {
 		firstName: localStorage.getItem(LS_KEY_FIRST_NAME) ?? "",
-		lastName: localStorage.getItem(LS_KEY_LAST_NAME) ?? ""
+		lastName: localStorage.getItem(LS_KEY_LAST_NAME) ?? "",
+		email: localStorage.getItem(LS_KEY_EMAIL) ?? ""
 	};
 }
 
-function persistName(firstName: string, lastName: string) {
+function persistName(firstName: string, lastName: string, email: string) {
 	localStorage.setItem(LS_KEY_FIRST_NAME, firstName);
 	localStorage.setItem(LS_KEY_LAST_NAME, lastName);
+	localStorage.setItem(LS_KEY_EMAIL, email);
 }
 
 function markSetupComplete() {
@@ -73,10 +83,12 @@ export default function SetupPage() {
 	// Form state
 	const [firstName, setFirstName] = useState("");
 	const [lastName, setLastName] = useState("");
+	const [email, setEmail] = useState("");
 	const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
 	const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
 
 	// Returning-user state
 	const [hasCompletedBefore, setHasCompletedBefore] = useState(false);
@@ -89,24 +101,64 @@ export default function SetupPage() {
 		isError: isIpError,
 		error: ipError
 	} = trpc.session.verifyIp.useQuery(undefined, { retry: false });
-	const { data: existingSession } = trpc.session.getCurrent.useQuery();
+	const { data: existingSession, refetch: refetchCurrentSession } =
+		trpc.session.getCurrent.useQuery();
 
-	const createSession = trpc.session.create.useMutation({
-		onSuccess: () => {
-			persistName(firstName.trim(), lastName.trim());
-			markSetupComplete();
-			router.push("/products");
-			router.refresh();
+	const requestVerification = trpc.session.requestVerification.useMutation({
+		onSuccess: (data) => {
+			setIsSubmitting(false);
+			setPendingSessionId(data.sessionId);
+		},
+		onError: (error) => {
+			console.error("Setup failed", error);
+			setIsSubmitting(false);
 		}
 	});
 
-	// Hydrate stored name on mount
+	const { data: verificationStatus } = trpc.session.checkVerification.useQuery(
+		{ sessionId: pendingSessionId as string },
+		{
+			enabled: !!pendingSessionId,
+			refetchInterval: 3000 // Poll every 3 seconds
+		}
+	);
+
+	const finalizeLogin = trpc.session.finalizeLogin.useMutation({
+		onSuccess: (data) => {
+			persistName(
+				data.firstName?.trim() || "",
+				data.lastName?.trim() || "",
+				data.email?.trim() || ""
+			);
+			markSetupComplete();
+			refetchCurrentSession().then(() => {
+				router.push("/products");
+				router.refresh();
+			});
+		},
+		onError: console.error
+	});
+
+	// Hydrate stored user on mount
 	useEffect(() => {
-		const stored = getStoredName();
+		const stored = getStoredUser();
 		if (stored.firstName) setFirstName(stored.firstName);
 		if (stored.lastName) setLastName(stored.lastName);
+		if (stored.email) setEmail(stored.email);
 		setHasCompletedBefore(isSetupAlreadyDone());
 	}, []);
+
+	// Listen for verification success
+	useEffect(() => {
+		if (
+			verificationStatus?.verified &&
+			pendingSessionId &&
+			!finalizeLogin.isPending &&
+			!finalizeLogin.isSuccess
+		) {
+			finalizeLogin.mutate({ sessionId: pendingSessionId });
+		}
+	}, [verificationStatus?.verified, pendingSessionId, finalizeLogin]);
 
 	// Show welcome-back if user has completed setup before (localStorage persists
 	// beyond the 30-day session cookie, so data survives across re-setups)
@@ -118,19 +170,22 @@ export default function SetupPage() {
 			setupFormSchema.safeParse({
 				firstName,
 				lastName,
+				email,
 				teamId: selectedTeamId ?? "",
 				acceptedTerms,
 				acceptedPrivacy
 			}),
-		[firstName, lastName, selectedTeamId, acceptedTerms, acceptedPrivacy]
+		[firstName, lastName, email, selectedTeamId, acceptedTerms, acceptedPrivacy]
 	);
 
-	const canSubmit = validationResult.success && !isSubmitting;
+	const canSubmit =
+		validationResult.success && !isSubmitting && !pendingSessionId;
 
 	const handleSubmit = useCallback(async () => {
 		const result = setupFormSchema.safeParse({
 			firstName,
 			lastName,
+			email,
 			teamId: selectedTeamId ?? "",
 			acceptedTerms,
 			acceptedPrivacy
@@ -139,22 +194,21 @@ export default function SetupPage() {
 		if (!result.success) return;
 
 		setIsSubmitting(true);
-		try {
-			await createSession.mutateAsync({
-				teamId: result.data.teamId,
-				acceptedTerms: true
-			});
-		} catch (error) {
-			console.error("Setup failed", error);
-			setIsSubmitting(false);
-		}
+		requestVerification.mutate({
+			firstName: result.data.firstName,
+			lastName: result.data.lastName,
+			email: result.data.email,
+			teamId: result.data.teamId,
+			acceptedTerms: true
+		});
 	}, [
 		selectedTeamId,
 		acceptedTerms,
 		acceptedPrivacy,
 		firstName,
 		lastName,
-		createSession
+		email,
+		requestVerification
 	]);
 
 	/* ── Render ────────────────────────────── */
@@ -213,6 +267,34 @@ export default function SetupPage() {
 							}}
 							onReconfigure={() => setShowReconfigure(true)}
 						/>
+					) : pendingSessionId ? (
+						/* Waiting for Verification */
+						<div className="flex flex-col items-center text-center gap-5 py-4">
+							<div className="relative flex items-center justify-center mb-1">
+								{/* Rotating outline */}
+								<div className="absolute -inset-1.5 border-[3px] border-[#fdf2f8] border-t-[#e20074] rounded-full animate-spin" />
+								{/* Inner circle with icon */}
+								<div className="w-16 h-16 bg-[#fdf2f8] rounded-full flex items-center justify-center relative z-10">
+									<Mail className="w-8 h-8 text-[#e20074]" />
+								</div>
+							</div>
+							<div>
+								<h3 className="text-[1.1rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight">
+									Bitte überprüfe Dein Postfach
+								</h3>
+								<p className="text-[0.9rem] text-[#888] leading-relaxed max-w-md mx-auto">
+									Wir haben einen Bestätigungslink an{" "}
+									<strong className="font-medium text-[#1a1a2e]">
+										{email}
+									</strong>{" "}
+									gesendet.
+									<br />
+									<strong className="font-medium text-[#1a1a2e] underline underline-offset-2">
+										Bitte schließe diese Seite nicht.
+									</strong>
+								</p>
+							</div>
+						</div>
 					) : (
 						/* Setup form */
 						<div className="space-y-10">
@@ -220,7 +302,7 @@ export default function SetupPage() {
 							<section>
 								<SectionHeader
 									icon={<User className="w-5 h-5 text-[#e20074]" />}
-									title="Dein Name"
+									title="Persönliche Daten"
 									step={1}
 								/>
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
@@ -237,6 +319,15 @@ export default function SetupPage() {
 										placeholder="Mustermann"
 										value={lastName}
 										onChange={setLastName}
+									/>
+								</div>
+								<div className="mt-4">
+									<InputField
+										id="setup-email"
+										label="E-Mail-Adresse"
+										placeholder="max.mustermann@telekom.de"
+										value={email}
+										onChange={setEmail}
 									/>
 								</div>
 							</section>
