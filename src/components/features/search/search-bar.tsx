@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useRouter } from "next/navigation";
+import clsx from "clsx";
 
 interface SearchBarProps {
 	compact?: boolean;
@@ -114,32 +115,35 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 		filteredCategories.length > 0 || filteredProducts.length > 0;
 
 	return (
-		<motion.div
-			layoutId="search-bar-transition"
+		<div
 			ref={containerRef as any}
 			id="tour-search"
 			className={`relative z-30 ${compact ? "mb-6" : "mb-14"}`}
 		>
-			{/* Search input */}
-			<div
-				className={`
-					relative flex items-center border px-5 transition-all duration-300
-					${
-						open
-							? "border-[#e20074]/30 bg-white shadow-[0_0_0_3px_rgba(226,0,116,0.06),0_8px_32px_rgba(0,0,0,0.08)]"
-							: "border-[#e5e7eb] bg-[#f7f8fa] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
-					}
-					${compact ? "rounded-xl py-2.5" : "rounded-2xl py-3.5"}
-					${open && compact ? "rounded-b-none" : ""}
-					${open && !compact ? "rounded-b-none" : ""}
-				`}
+			{/* Search input container */}
+			<motion.div
+				initial={false}
+				animate={{
+					backgroundColor: open ? "#ffffff" : "#f7f8fa",
+					borderColor: open ? "rgba(226, 0, 116, 0.3)" : "#e5e7eb",
+					boxShadow: open
+						? "0 0 0 3px rgba(226, 0, 116, 0.06), 0 8px 32px rgba(0, 0, 0, 0.12)"
+						: "0 1px 3px rgba(0, 0, 0, 0.04)"
+				}}
+				transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+				className={clsx(
+					"relative flex items-center border px-5 z-50 transition-all duration-300",
+					compact ? "rounded-xl" : "rounded-2xl",
+					open && "rounded-b-none",
+					compact ? "py-2.5" : "py-3.5"
+				)}
 				onClick={() => {
 					setOpen(true);
 					setTimeout(() => inputRef.current?.focus(), 50);
 				}}
 			>
 				<Search
-					className={`mr-3 shrink-0 transition-colors duration-300 ${
+					className={`mr-3 shrink-0 transition-colors duration-400 ${
 						open ? "text-[#e20074]" : "text-[#b0b0b0]"
 					} ${compact ? "w-4 h-4" : "w-5 h-5"}`}
 				/>
@@ -171,144 +175,150 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 						⌘ K
 					</kbd>
 				)}
-			</div>
+			</motion.div>
 
 			{/* Results dropdown */}
 			<AnimatePresence>
 				{open && (
-					<motion.div
-						initial={{ opacity: 0, y: -4 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -4 }}
-						transition={{ duration: 0.15 }}
-						className={`
-							absolute left-0 right-0 top-full z-50 bg-white border border-t-0 border-[#e20074]/30
-							shadow-[0_12px_40px_rgba(0,0,0,0.1)] overflow-hidden max-h-[420px] overflow-y-auto scrollbar-none
-							${compact ? "rounded-b-xl" : "rounded-b-2xl"}
-						`}
-					>
-						{!hasResults && (
-							<div className="py-10 text-center">
-								<p className="text-[0.85rem] text-[#bbb] m-0">
-									Keine Ergebnisse für „{query}"
-								</p>
-							</div>
-						)}
+					<>
+						{/* Backdrop */}
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							transition={{ duration: 0.2 }}
+							className="fixed inset-0 z-40 bg-black/10"
+							onClick={() => setOpen(false)}
+						/>
 
-						{/* Categories */}
-						{filteredCategories.length > 0 && (
-							<div className="p-3 pb-1">
-								<div className="text-[0.6rem] uppercase tracking-[0.15em] text-[#ccc] font-semibold px-2 mb-2">
-									Kategorien
+						{/* Dropdown Content */}
+						<motion.div
+							initial={{ opacity: 0, y: -6 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: -6 }}
+							transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+							className={`
+								absolute left-0 right-0 top-full z-50 bg-white border border-t-0 border-[#e20074]/30
+								shadow-[0_12px_40px_rgba(0,0,0,0.08)] overflow-hidden max-h-[420px] overflow-y-auto scrollbar-none
+								${compact ? "rounded-b-xl" : "rounded-b-2xl"}
+							`}
+						>
+							{!hasResults && (
+								<div className="py-10 text-center">
+									<p className="text-[0.85rem] text-[#bbb] m-0">
+										Keine Ergebnisse für „{query}"
+									</p>
 								</div>
-								<div className="flex flex-wrap gap-1.5 px-1">
-									{filteredCategories.map((cat) => (
-										<button
-											key={cat.id}
-											onClick={() => navigate(`/products/${cat.id}`)}
-											className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#f7f8fa] border border-[#eaedf0] hover:border-[#ddd] transition-all duration-150 cursor-pointer text-[0.78rem] font-medium text-[#888] hover:text-[#1a1a2e]"
-										>
-											<span>{cat.icon}</span>
-											<span>{CATEGORY_NAMES[cat.id]}</span>
-										</button>
-									))}
-								</div>
-							</div>
-						)}
+							)}
 
-						{/* Products */}
-						{filteredProducts.length > 0 && (
-							<div className="p-3 pt-2">
-								<div className="text-[0.6rem] uppercase tracking-[0.15em] text-[#ccc] font-semibold px-2 mb-2">
-									Tarife{" "}
-									{query && (
-										<span className="normal-case tracking-normal text-[#ddd]">
-											· {filteredProducts.length} Ergebnis
-											{filteredProducts.length !== 1 ? "se" : ""}
-										</span>
-									)}
-								</div>
-								<div className="space-y-0.5">
-									{filteredProducts.map((product) => {
-										const catColor =
-											CATEGORY_COLORS[product.category] || "#e20074";
-										return (
+							{/* Categories */}
+							{filteredCategories.length > 0 && (
+								<div className="p-3 pb-1">
+									<div className="text-[0.6rem] uppercase tracking-[0.15em] text-[#ccc] font-semibold px-2 mb-2">
+										Kategorien
+									</div>
+									<div className="flex flex-wrap gap-1.5 px-1">
+										{filteredCategories.map((cat) => (
 											<button
-												key={product.id}
-												onClick={() =>
-													navigate(
-														`/products/${product.category}/${product.id}`
-													)
-												}
-												className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f8fa] transition-all duration-150 cursor-pointer text-left border-none bg-transparent group"
+												key={cat.id}
+												onClick={() => navigate(`/products/${cat.id}`)}
+												className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#f7f8fa] border border-[#eaedf0] hover:border-[#ddd] transition-all duration-150 cursor-pointer text-[0.78rem] font-medium text-[#888] hover:text-[#1a1a2e]"
 											>
-												{/* Category dot */}
-												<div
-													className="w-2 h-2 rounded-full shrink-0"
-													style={{ backgroundColor: catColor }}
-												/>
-
-												{/* Product info */}
-												<div className="flex-1 min-w-0">
-													<div
-														className="text-[0.82rem] font-semibold text-[#1a1a2e] truncate group-hover:text-[var(--cat-color)] transition-colors"
-														style={
-															{ "--cat-color": catColor } as React.CSSProperties
-														}
-													>
-														{product.name}
-													</div>
-													<div className="flex items-center gap-3 mt-0.5">
-														<span
-															className="text-[0.65rem] font-semibold uppercase tracking-wider"
-															style={{ color: catColor }}
-														>
-															{CATEGORY_NAMES[product.category]}
-														</span>
-														{product.downloadSpeed && (
-															<span className="text-[0.65rem] text-[#bbb] flex items-center gap-1">
-																<Zap className="w-3 h-3" />
-																{product.downloadSpeed} Mbit/s
-															</span>
-														)}
-														{product.dataVolume && (
-															<span className="text-[0.65rem] text-[#bbb] flex items-center gap-1">
-																<Wifi className="w-3 h-3" />
-																{product.dataVolume}
-															</span>
-														)}
-													</div>
-												</div>
-
-												{/* Price */}
-												<div className="text-right shrink-0 ml-2">
-													<div className="text-[0.88rem] font-bold text-[#1a1a2e]">
-														{product.basePrice.toFixed(2)} €
-													</div>
-													<div className="text-[0.6rem] text-[#ccc]">
-														/Monat
-													</div>
-												</div>
-
-												<ChevronRight className="w-3.5 h-3.5 text-[#ddd] group-hover:text-[#999] shrink-0 transition-colors" />
+												<span>{cat.icon}</span>
+												<span>{CATEGORY_NAMES[cat.id]}</span>
 											</button>
-										);
-									})}
+										))}
+									</div>
 								</div>
-							</div>
-						)}
-					</motion.div>
+							)}
+
+							{/* Products */}
+							{filteredProducts.length > 0 && (
+								<div className="p-3 pt-2">
+									<div className="text-[0.6rem] uppercase tracking-[0.15em] text-[#ccc] font-semibold px-2 mb-2">
+										Tarife{" "}
+										{query && (
+											<span className="normal-case tracking-normal text-[#ddd]">
+												· {filteredProducts.length} Ergebnis
+												{filteredProducts.length !== 1 ? "se" : ""}
+											</span>
+										)}
+									</div>
+									<div className="space-y-0.5">
+										{filteredProducts.map((product) => {
+											const catColor =
+												CATEGORY_COLORS[product.category] || "#e20074";
+											return (
+												<button
+													key={product.id}
+													onClick={() =>
+														navigate(
+															`/products/${product.category}/${product.id}`
+														)
+													}
+													className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f8fa] transition-all duration-150 cursor-pointer text-left border-none bg-transparent group"
+												>
+													{/* Category dot */}
+													<div
+														className="w-2 h-2 rounded-full shrink-0"
+														style={{ backgroundColor: catColor }}
+													/>
+
+													{/* Product info */}
+													<div className="flex-1 min-w-0">
+														<div
+															className="text-[0.82rem] font-semibold text-[#1a1a2e] truncate group-hover:text-(--cat-color) transition-colors"
+															style={
+																{
+																	"--cat-color": catColor
+																} as React.CSSProperties
+															}
+														>
+															{product.name}
+														</div>
+														<div className="flex items-center gap-3 mt-0.5">
+															<span
+																className="text-[0.65rem] font-semibold uppercase tracking-wider"
+																style={{ color: catColor }}
+															>
+																{CATEGORY_NAMES[product.category]}
+															</span>
+															{product.downloadSpeed && (
+																<span className="text-[0.65rem] text-[#bbb] flex items-center gap-1">
+																	<Zap className="w-3 h-3" />
+																	{product.downloadSpeed} Mbit/s
+																</span>
+															)}
+															{product.dataVolume && (
+																<span className="text-[0.65rem] text-[#bbb] flex items-center gap-1">
+																	<Wifi className="w-3 h-3" />
+																	{product.dataVolume}
+																</span>
+															)}
+														</div>
+													</div>
+
+													{/* Price */}
+													<div className="text-right shrink-0 ml-2">
+														<div className="text-[0.88rem] font-bold text-[#1a1a2e]">
+															{product.basePrice.toFixed(2)} €
+														</div>
+														<div className="text-[0.6rem] text-[#ccc]">
+															/Monat
+														</div>
+													</div>
+
+													<ChevronRight className="w-3.5 h-3.5 text-[#ddd] group-hover:text-[#999] shrink-0 transition-colors" />
+												</button>
+											);
+										})}
+									</div>
+								</div>
+							)}
+						</motion.div>
+					</>
 				)}
 			</AnimatePresence>
-
-			{/* Backdrop */}
-			{open && (
-				<div
-					className="fixed inset-0 z-40 bg-black/5"
-					onClick={() => setOpen(false)}
-					style={{ top: 0, left: 0, right: 0, bottom: 0 }}
-				/>
-			)}
-		</motion.div>
+		</div>
 	);
 }
