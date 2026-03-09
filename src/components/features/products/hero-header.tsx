@@ -116,7 +116,7 @@ export function HeroHeader({
 	return (
 		<div
 			className={clsx(
-				"relative min-h-[140px] mb-10 flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full rounded-2xl",
+				"relative min-h-[140px] mb-8 flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full rounded-2xl",
 				headerBg ? "p-6 md:p-8" : "p-0"
 			)}
 		>

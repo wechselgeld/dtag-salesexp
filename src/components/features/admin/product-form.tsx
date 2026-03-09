@@ -292,12 +292,40 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 							Leistungsdaten
 						</h3>
 
-						<Input
-							label="Datenvolumen (z.B. 20 GB)"
-							placeholder="20 GB"
-							error={errors.dataVolume?.message}
-							{...register("dataVolume")}
-						/>
+						<div className="space-y-4">
+							<div className="mb-2">
+								<Checkbox
+									id="unlimited-data"
+									checked={(watch("dataVolume") || "")
+										.toLowerCase()
+										.includes("unlimited")}
+									onChange={(e) => {
+										if (e.target.checked) {
+											setValue("dataVolume", "Unlimited", {
+												shouldValidate: true,
+												shouldDirty: true
+											});
+										} else {
+											setValue("dataVolume", "", {
+												shouldValidate: true,
+												shouldDirty: true
+											});
+										}
+									}}
+									label="Unbegrenztes Datenvolumen (Unlimited)"
+								/>
+							</div>
+
+							<Input
+								label="Datenvolumen (z.B. 20 GB)"
+								placeholder="20 GB"
+								error={errors.dataVolume?.message}
+								disabled={(watch("dataVolume") || "")
+									.toLowerCase()
+									.includes("unlimited")}
+								{...register("dataVolume")}
+							/>
+						</div>
 
 						<div className="grid grid-cols-2 gap-4">
 							<Input

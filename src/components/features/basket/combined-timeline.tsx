@@ -7,7 +7,14 @@ import {
 } from "@/hooks/use-cost-calculator";
 import { trpc } from "@/lib/trpc";
 import { useMemo } from "react";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import {
+	Bar,
+	BarChart,
+	ReferenceLine,
+	ResponsiveContainer,
+	Tooltip,
+	XAxis
+} from "recharts";
 import { AnimatedNumber } from "@/components/shared/animated-number";
 
 export function CombinedTimeline() {
@@ -127,16 +134,23 @@ export function CombinedTimeline() {
 								return null;
 							}}
 						/>
+						<ReferenceLine
+							y={averageTotal}
+							stroke="#e20074"
+							strokeDasharray="3 3"
+							strokeOpacity={0.5}
+							strokeWidth={1}
+						/>
 						<Bar
 							dataKey="total"
 							fill="url(#colorTotal)"
-							radius={[4, 4, 0, 0]}
+							radius={[7, 7, 0, 0]}
 							maxBarSize={14}
 						/>
 						<defs>
 							<linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-								<stop offset="5%" stopColor="#e20074" stopOpacity={0.85} />
-								<stop offset="95%" stopColor="#e20074" stopOpacity={0.4} />
+								<stop offset="0%" stopColor="#e20074" stopOpacity={0.2} />
+								<stop offset="100%" stopColor="#e20074" stopOpacity={1} />
 							</linearGradient>
 						</defs>
 					</BarChart>

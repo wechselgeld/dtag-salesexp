@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { trpc } from "@/lib/trpc";
+import { motion } from "framer-motion";
 
 interface Props {
 	addons: Addon[];
@@ -170,7 +171,8 @@ export function AddonSelector({
 									const tier = addon.tiers[0];
 									const isSelected = selectedIds.includes(tier.id);
 									return (
-										<button
+										<motion.button
+											whileTap={{ scale: 0.98 }}
 											onClick={() => handleToggle(addon, tier.id)}
 											className="flex items-center justify-between gap-3 shrink-0 px-2 py-1.5 rounded-lg outline-none cursor-pointer group transition-colors hover:bg-black/5 border-none bg-transparent ml-auto"
 										>
@@ -196,7 +198,7 @@ export function AddonSelector({
 													/>
 												)}
 											</div>
-										</button>
+										</motion.button>
 									);
 								})()}
 						</div>
@@ -209,8 +211,9 @@ export function AddonSelector({
 									.map((tier) => {
 										const isSelected = selectedIds.includes(tier.id);
 										return (
-											<button
+											<motion.button
 												key={tier.id}
+												whileTap={{ scale: 0.98 }}
 												onClick={() => handleToggle(addon, tier.id)}
 												className="px-3 py-1.5 rounded-lg border flex items-center gap-1.5 transition-all duration-200 text-[0.75rem] font-semibold flex-1 sm:flex-none justify-center cursor-pointer outline-none hover:-translate-y-px hover:shadow-sm active:scale-[0.98]"
 												style={{
@@ -228,7 +231,7 @@ export function AddonSelector({
 												>
 													+{tier.price.toFixed(2)}€
 												</span>
-											</button>
+											</motion.button>
 										);
 									})}
 							</div>

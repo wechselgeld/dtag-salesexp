@@ -163,7 +163,7 @@ function ProfilePanel({ user }: { user: any }) {
 							lokalen Datenbank verschlüsselt gespeichert.
 						</p>
 					</div>
-					<div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0 hidden md:flex">
+					<div className="w-16 h-16 bg-white/5 rounded-2xl hidden md:flex items-center justify-center border border-white/10 shrink-0">
 						<Shield className="w-8 h-8 text-white/40" />
 					</div>
 				</div>
@@ -333,28 +333,37 @@ function SystemPanel() {
 		setIsPending(false);
 	};
 
-	const { data: allowedIpsData, refetch: refetchIps } =
+	const { data: securitySettingsData, refetch: refetchSecurity } =
 		trpc.admin.getSecuritySettings.useQuery();
-	const updateIpsMutation = trpc.admin.updateSecuritySettings.useMutation({
-		onSuccess: () => refetchIps()
+	const updateSecurityMutation = trpc.admin.updateSecuritySettings.useMutation({
+		onSuccess: () => refetchSecurity()
 	});
 
 	const [allowedIps, setAllowedIps] = useState("");
-	const [isIpsPending, setIsIpsPending] = useState(false);
-	const [ipsSaved, setIpsSaved] = useState(false);
+	const [requireEmailVerification, setRequireEmailVerification] =
+		useState(true);
+	const [isSecurityPending, setIsSecurityPending] = useState(false);
+	const [securitySaved, setSecuritySaved] = useState(false);
 
 	// Update local state when data loads
-
 	useEffect(() => {
-		if (allowedIpsData !== undefined) setAllowedIps(allowedIpsData);
-	}, [allowedIpsData]);
+		if (securitySettingsData) {
+			setAllowedIps(securitySettingsData.allowedIps);
+			setRequireEmailVerification(
+				securitySettingsData.requireEmailVerification
+			);
+		}
+	}, [securitySettingsData]);
 
-	const handleSaveIps = async () => {
-		setIsIpsPending(true);
-		await updateIpsMutation.mutateAsync({ allowedIps });
-		setIsIpsPending(false);
-		setIpsSaved(true);
-		setTimeout(() => setIpsSaved(false), 3000);
+	const handleSaveSecurity = async () => {
+		setIsSecurityPending(true);
+		await updateSecurityMutation.mutateAsync({
+			allowedIps,
+			requireEmailVerification
+		});
+		setIsSecurityPending(false);
+		setSecuritySaved(true);
+		setTimeout(() => setSecuritySaved(false), 3000);
 	};
 
 	return (
@@ -451,21 +460,42 @@ function SystemPanel() {
 						</p>
 					</div>
 
+					<div className="mb-6 pt-4 border-t border-[#eaedf0] flex items-center justify-between">
+						<div>
+							<h3 className="text-[1rem] font-bold text-[#1a1a2e] mb-1">
+								E-Mail-Verifikation
+							</h3>
+							<p className="text-[0.8rem] text-[#888] m-0 max-w-sm">
+								Muss ein Code per E-Mail gesendet werden, um den internen
+								Bereich betreten zu dürfen? (Empfohlen)
+							</p>
+						</div>
+						<label className="relative inline-flex items-center cursor-pointer">
+							<input
+								type="checkbox"
+								className="sr-only peer"
+								checked={requireEmailVerification}
+								onChange={(e) => setRequireEmailVerification(e.target.checked)}
+							/>
+							<div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#e20074]"></div>
+						</label>
+					</div>
+
 					<button
-						onClick={handleSaveIps}
-						disabled={isIpsPending}
+						onClick={handleSaveSecurity}
+						disabled={isSecurityPending}
 						className={clsx(
 							"px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
-							isIpsPending
+							isSecurityPending
 								? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-								: ipsSaved
+								: securitySaved
 									? "bg-green-600 text-white hover:bg-green-700 shadow-[0_4px_14px_rgba(22,163,74,0.2)]"
 									: "bg-[#1a1a2e] text-white hover:bg-[#2a2a3e] shadow-[0_4px_14px_rgba(26,26,46,0.2)] hover:shadow-[0_6px_20px_rgba(26,26,46,0.3)] hover:-translate-y-0.5 border-2 border-transparent"
 						)}
 					>
-						{isIpsPending ? (
+						{isSecurityPending ? (
 							<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-						) : ipsSaved ? (
+						) : securitySaved ? (
 							<>
 								<Check className="w-4 h-4" />
 								Gespeichert
@@ -473,7 +503,7 @@ function SystemPanel() {
 						) : (
 							<>
 								<Save className="w-4 h-4" />
-								IP-Liste speichern
+								Sicherheits-Einstellungen speichern
 							</>
 						)}
 					</button>
@@ -737,7 +767,12 @@ function DesignPanel() {
 
 	const [form, setForm] = useState({
 		magentatv_background_image: "",
-		header_background_image: ""
+		header_background_image: "",
+		category_image_MOBILE: "",
+		category_image_FIBER: "",
+		category_image_DSL: "",
+		category_image_MAGENTA_TV_OTT: "",
+		category_image_DEVICE: ""
 	});
 
 	useEffect(() => {
@@ -745,7 +780,13 @@ function DesignPanel() {
 			setForm({
 				magentatv_background_image:
 					designSettings.magentatv_background_image || "",
-				header_background_image: designSettings.header_background_image || ""
+				header_background_image: designSettings.header_background_image || "",
+				category_image_MOBILE: designSettings.category_image_MOBILE || "",
+				category_image_FIBER: designSettings.category_image_FIBER || "",
+				category_image_DSL: designSettings.category_image_DSL || "",
+				category_image_MAGENTA_TV_OTT:
+					designSettings.category_image_MAGENTA_TV_OTT || "",
+				category_image_DEVICE: designSettings.category_image_DEVICE || ""
 			});
 		}
 	}, [designSettings]);
@@ -836,6 +877,65 @@ function DesignPanel() {
 								Dieses Bild wird im Header (Startseite) hinter dem Grußtext
 								angezeigt. Es wird automatisch leicht abgedunkelt.
 							</p>
+						</div>
+					</div>
+
+					{/* Kategorie Bilder */}
+					<div>
+						<h3 className="text-sm font-bold text-[#1a1a2e] uppercase tracking-wider mb-4 border-b pb-2 pt-4">
+							Kategorie-Karten (Hintergrundbilder)
+						</h3>
+						<p className="text-[0.8rem] text-[#888] mb-4">
+							Hinterlege Bilder (URLs) für die Kategorien auf der Startseite.
+							Wenn eingestellt, wird das Bild beim Hovern im Hintergrund leicht
+							abgedunkelt und weichgezeichnet eingeblendet.
+						</p>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+							<Input
+								label="Mobilfunk"
+								type="text"
+								placeholder="https://test.com/mobilfunk-bg.png"
+								value={form.category_image_MOBILE}
+								onChange={(e) =>
+									handleChange("category_image_MOBILE", e.target.value)
+								}
+							/>
+							<Input
+								label="Glasfaser"
+								type="text"
+								placeholder="https://test.com/glasfaser-bg.png"
+								value={form.category_image_FIBER}
+								onChange={(e) =>
+									handleChange("category_image_FIBER", e.target.value)
+								}
+							/>
+							<Input
+								label="Festnetz (DSL)"
+								type="text"
+								placeholder="https://test.com/festnetz-bg.png"
+								value={form.category_image_DSL}
+								onChange={(e) =>
+									handleChange("category_image_DSL", e.target.value)
+								}
+							/>
+							<Input
+								label="MagentaTV"
+								type="text"
+								placeholder="https://test.com/magentatv-cat-bg.png"
+								value={form.category_image_MAGENTA_TV_OTT}
+								onChange={(e) =>
+									handleChange("category_image_MAGENTA_TV_OTT", e.target.value)
+								}
+							/>
+							<Input
+								label="Endgeräte"
+								type="text"
+								placeholder="https://test.com/devices-bg.png"
+								value={form.category_image_DEVICE}
+								onChange={(e) =>
+									handleChange("category_image_DEVICE", e.target.value)
+								}
+							/>
 						</div>
 					</div>
 				</div>

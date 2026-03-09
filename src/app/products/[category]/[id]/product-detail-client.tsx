@@ -29,16 +29,17 @@ import {
 	MessageSquare,
 	ChevronDown,
 	ListTodo,
-	ExternalLink
+	ExternalLink,
+	Edit2
 } from "lucide-react";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import React, { useEffect, Suspense } from "react";
 import clsx from "clsx";
 import { useBasketStore } from "@/hooks/use-basket-store";
 import { SearchBar } from "@/components/features/search/search-bar";
 import { Skeleton } from "@/components/shared/skeleton";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: "#e20074",
@@ -59,6 +60,7 @@ function ProductPageContent() {
 	const params = useParams();
 	const id = params.id as string;
 	const category = params.category as string;
+	const router = useRouter();
 
 	const searchParams = useSearchParams();
 	const basketItemId = searchParams.get("basketItemId");
@@ -93,6 +95,24 @@ function ProductPageContent() {
 	} = useCostCalculator(product);
 
 	const [salesScriptOpen, setSalesScriptOpen] = React.useState(false);
+
+	const existingBasketItem = basketItemId
+		? items.find((i) => i.id === basketItemId)
+		: undefined;
+
+	const isSameConfig = !!(
+		existingBasketItem &&
+		existingBasketItem.config.businessCase === businessCase &&
+		existingBasketItem.config.magentaTVPackage === magentaTVPackage &&
+		JSON.stringify(
+			[...(existingBasketItem.config.selectedSpecialPriceIds || [])].sort()
+		) === JSON.stringify([...(selectedSpecialPriceIds || [])].sort()) &&
+		JSON.stringify(
+			[...(existingBasketItem.config.selectedAddonIds || [])].sort()
+		) === JSON.stringify([...(selectedAddonIds || [])].sort()) &&
+		existingBasketItem.config.hardwarePurchaseType === hardwarePurchaseType &&
+		existingBasketItem.config.plusKartenCount === plusKartenCount
+	);
 
 	useEffect(() => {
 		if (basketItemId && product && items) {
@@ -130,7 +150,7 @@ function ProductPageContent() {
 				</div>
 				<Skeleton className="h-4 w-32 mb-6" />
 
-				<div className="bg-white rounded-2xl border border-[#eaedf0] p-7 mb-6">
+				<div className="bg-linear-to-br from-white to-[#fcfafc] rounded-2xl border border-[#eaedf0] p-7 mb-6">
 					<div className="flex items-start justify-between">
 						<div className="flex-1">
 							<Skeleton className="h-10 w-3/4 max-w-lg mb-4" />
@@ -172,17 +192,18 @@ function ProductPageContent() {
 			selectedSpecialPriceIds,
 			magentaTVPackage,
 			selectedAddonIds,
-			vouchers: [],
-			credits: [],
+			vouchers: existingBasketItem?.config.vouchers || [],
+			credits: existingBasketItem?.config.credits || [],
 			hardwarePurchaseType,
 			plusKartenCount
 		};
 
-		if (basketItemId) {
-			updateItem(basketItemId, config);
+		if (existingBasketItem) {
+			updateItem(existingBasketItem.id, config);
 			setIsOpen(true);
 		} else {
-			addItem(product, config);
+			const newId = addItem(product, config);
+			router.replace(`?basketItemId=${newId}`, { scroll: false });
 		}
 	};
 
@@ -192,7 +213,10 @@ function ProductPageContent() {
 		: product.name;
 
 	return (
-		<div className="min-h-full">
+		<div
+			className="min-h-full"
+			style={{ "--cat-color": catColor } as React.CSSProperties}
+		>
 			{/* Search Bar */}
 			<div className="pt-2">
 				<SearchBar compact />
@@ -212,7 +236,7 @@ function ProductPageContent() {
 				initial={{ opacity: 0, y: 8 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ delay: 0.05, duration: 0.35 }}
-				className="bg-white rounded-xl border border-[#eaedf0] p-7 mb-6 relative overflow-hidden"
+				className="bg-linear-to-br from-white to-[#fcfafc] rounded-xl border border-[#eaedf0] p-7 mb-6 relative overflow-hidden"
 			>
 				{/* Category gradient */}
 				<div
@@ -511,10 +535,11 @@ function ProductPageContent() {
 								)}
 							>
 								{((product as any).rentalPrice || product.basePrice) > 0 && (
-									<button
+									<motion.button
+										whileTap={{ scale: 0.98 }}
 										onClick={() => setHardwarePurchaseType("RENT")}
 										className={clsx(
-											"flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer",
+											"flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer outline-none",
 											hardwarePurchaseType === "RENT"
 												? "bg-white shadow-sm"
 												: "bg-[#f7f8fa] hover:bg-white hover:border-[#ddd]"
@@ -535,13 +560,14 @@ function ProductPageContent() {
 											/>{" "}
 											€ mtl.
 										</span>
-									</button>
+									</motion.button>
 								)}
 								{(product as any).purchasePrice > 0 && (
-									<button
+									<motion.button
+										whileTap={{ scale: 0.98 }}
 										onClick={() => setHardwarePurchaseType("BUY")}
 										className={clsx(
-											"flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer",
+											"flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer outline-none",
 											hardwarePurchaseType === "BUY"
 												? "bg-white shadow-sm"
 												: "bg-[#f7f8fa] hover:bg-white hover:border-[#ddd]"
@@ -558,7 +584,7 @@ function ProductPageContent() {
 											<AnimatedNumber value={(product as any).purchasePrice} />{" "}
 											€
 										</span>
-									</button>
+									</motion.button>
 								)}
 							</div>
 						</ConfigSection>
@@ -595,7 +621,8 @@ function ProductPageContent() {
 							index={1}
 						>
 							{/* Main Toggle */}
-							<div
+							<motion.div
+								whileTap={{ scale: 0.98 }}
 								onClick={() => {
 									if (isMagentaTVSelected) {
 										setMagentaTVPackage(null);
@@ -629,7 +656,9 @@ function ProductPageContent() {
 									<div
 										className={clsx(
 											"absolute -inset-0.5 z-0 transition-opacity duration-300 pointer-events-none",
-											isMagentaTVSelected ? "opacity-100" : "opacity-0"
+											isMagentaTVSelected
+												? "opacity-100"
+												: "opacity-0 group-hover:opacity-100"
 										)}
 									>
 										<div
@@ -644,16 +673,12 @@ function ProductPageContent() {
 
 								{/* TV+ Icon */}
 								<div
-									className="relative z-10 w-10 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center italic tracking-tighter text-[0.75rem] transition-all duration-200"
-									style={{
-										backgroundColor: isMagentaTVSelected
-											? catColor
-											: "transparent",
-										color: isMagentaTVSelected ? "white" : catColor,
-										border: isMagentaTVSelected
-											? "none"
-											: `2px solid ${catColor}`
-									}}
+									className={clsx(
+										"relative z-10 w-10 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center italic tracking-tighter text-[0.75rem] transition-all duration-200 border-2",
+										isMagentaTVSelected
+											? "bg-(--cat-color) text-white border-transparent"
+											: "bg-transparent text-(--cat-color) border-(--cat-color) group-hover:text-white group-hover:border-white"
+									)}
 								>
 									M TV
 								</div>
@@ -663,10 +688,13 @@ function ProductPageContent() {
 										<h3
 											className={clsx(
 												"text-[0.95rem] font-bold m-0 transition-colors",
-												isMagentaTVSelected &&
-													designSettings?.magentatv_background_image
-													? "text-white"
-													: "text-[#1a1a2e]"
+												designSettings?.magentatv_background_image
+													? isMagentaTVSelected
+														? "text-white"
+														: "text-[#1a1a2e] group-hover:text-white"
+													: isMagentaTVSelected
+														? "text-(--cat-color)"
+														: "text-[#1a1a2e]"
 											)}
 										>
 											MagentaTV dazubuchen
@@ -684,9 +712,10 @@ function ProductPageContent() {
 									<p
 										className={clsx(
 											"text-[0.78rem] m-0 transition-colors",
-											isMagentaTVSelected &&
-												designSettings?.magentatv_background_image
-												? "text-[#ccc]"
+											designSettings?.magentatv_background_image
+												? isMagentaTVSelected
+													? "text-white/70"
+													: "text-[#999] group-hover:text-white/70"
 												: "text-[#999]"
 										)}
 									>
@@ -712,7 +741,7 @@ function ProductPageContent() {
 										<Check className="w-3 h-3 text-white" strokeWidth={3} />
 									)}
 								</div>
-							</div>
+							</motion.div>
 
 							{/* Package Options (shown when toggled on) */}
 							{isMagentaTVSelected && (
@@ -730,14 +759,15 @@ function ProductPageContent() {
 									).map(([key, pkg]) => {
 										const isSelected = magentaTVPackage === key;
 										return (
-											<div
+											<motion.div
 												key={key}
+												whileTap={{ scale: 0.98 }}
 												onClick={() => setMagentaTVPackage(key)}
 												className="rounded-xl p-3.5 border cursor-pointer transition-all duration-200"
 												style={{
 													borderColor: isSelected ? catColor : "#eaedf0",
 													backgroundColor: isSelected
-														? `${catColor}06`
+														? `${catColor}08`
 														: "#fafafa"
 												}}
 											>
@@ -815,7 +845,7 @@ function ProductPageContent() {
 														</ul>
 													</motion.div>
 												)}
-											</div>
+											</motion.div>
 										);
 									})}
 								</motion.div>
@@ -878,17 +908,62 @@ function ProductPageContent() {
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.35, duration: 0.35 }}
+						disabled={existingBasketItem && isSameConfig}
 						onClick={handleAddToBasket}
-						className="w-full py-3.5 rounded-xl text-white font-bold text-[0.95rem] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer hover:brightness-110 hover:shadow-lg active:scale-[0.98]"
-						style={{ backgroundColor: catColor }}
+						className={clsx(
+							"w-full py-3.5 rounded-xl font-bold text-[0.95rem] transition-all duration-300 flex items-center justify-center gap-2.5 outline-none relative overflow-hidden",
+							existingBasketItem && isSameConfig
+								? "bg-[#e5e7eb] text-[#9ca3af] shadow-none cursor-not-allowed"
+								: "text-white cursor-pointer hover:brightness-110 hover:shadow-lg active:scale-[0.98]"
+						)}
+						style={
+							existingBasketItem && isSameConfig
+								? undefined
+								: {
+										background: `linear-gradient(30deg, color-mix(in srgb, ${catColor}, white 25%) 0%, color-mix(in srgb, ${catColor}, black 6%) 100%)`,
+										boxShadow: `0 4px 14px -3px ${catColor}40`
+									}
+						}
 					>
-						<ShoppingCart className="w-4.5 h-4.5" />
-						{basketItemId ? "Konfiguration aktualisieren" : "In den Warenkorb"}
-						<ChevronRight className="w-4 h-4 opacity-60" />
+						<AnimatePresence mode="popLayout" initial={false}>
+							<motion.div
+								key={
+									existingBasketItem
+										? isSameConfig
+											? "update-disabled"
+											: "update-active"
+										: "add"
+								}
+								initial={{ opacity: 0, y: -20 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: 20 }}
+								transition={{ type: "spring", stiffness: 300, damping: 25 }}
+								className="flex items-center gap-2.5"
+							>
+								{existingBasketItem ? (
+									<>
+										{isSameConfig ? (
+											<Edit2 className="w-4.5 h-4.5" />
+										) : (
+											<Check className="w-4.5 h-4.5" />
+										)}
+										Konfiguration aktualisieren
+									</>
+								) : (
+									<>
+										<ShoppingCart className="w-4.5 h-4.5" />
+										In den Warenkorb
+									</>
+								)}
+								{!existingBasketItem && (
+									<ChevronRight className="w-4 h-4 opacity-60" />
+								)}
+							</motion.div>
+						</AnimatePresence>
 					</motion.button>
 
 					<p className="text-[0.7rem] text-center text-[#c0c0c0]">
-						{basketItemId
+						{existingBasketItem
 							? "Konfiguration wird im Warenkorb aktualisiert."
 							: "Produkt konfigurieren und zum Angebot hinzufügen."}
 					</p>

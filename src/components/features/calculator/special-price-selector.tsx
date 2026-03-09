@@ -2,6 +2,7 @@
 
 import { SpecialPrice } from "@/types/product";
 import clsx from "clsx";
+import { motion } from "framer-motion";
 
 interface Props {
 	specialPrices: SpecialPrice[];
@@ -51,8 +52,9 @@ export function SpecialPriceSelector({
 				const lowestPrice =
 					sp.tiers.length > 0 ? Math.min(...sp.tiers.map((t) => t.price)) : 0;
 				return (
-					<div
+					<motion.div
 						key={sp.id}
+						whileTap={{ scale: 0.98 }}
 						onClick={() => handleSelect(sp.id)}
 						className={clsx(
 							"flex items-center p-3.5 rounded-xl border cursor-pointer transition-all duration-200 group"
@@ -109,7 +111,7 @@ export function SpecialPriceSelector({
 						>
 							ab {lowestPrice.toFixed(2)} €
 						</span>
-					</div>
+					</motion.div>
 				);
 			})}
 		</div>

@@ -4,6 +4,8 @@ import { BusinessCase } from "@/hooks/use-cost-calculator";
 import { Check, UserPlus, Truck, RefreshCw, Zap, Star } from "lucide-react";
 import clsx from "clsx";
 
+import { motion } from "framer-motion";
+
 interface Product {
 	allowNewActivation: boolean;
 	allowMove: boolean;
@@ -68,14 +70,15 @@ export function BusinessCaseSelector({
 				const isSelected = selectedCase === item.id;
 
 				return (
-					<button
+					<motion.button
 						key={item.id}
+						whileTap={{ scale: 0.97 }}
 						onClick={() => onChange(item.id as BusinessCase)}
 						className={clsx(
 							"relative flex flex-col items-center text-center p-3.5 rounded-xl border-2 transition-all duration-200 cursor-pointer",
 							isSelected
-								? "bg-[var(--accent)]/[0.04]"
-								: "border-[#eaedf0] bg-white hover:border-[#ddd]",
+								? "bg-(--accent)/4"
+								: "border-[#eaedf0] bg-linear-to-br from-white to-[#fcfafc] hover:border-[#ddd]",
 							highlightedCases.includes(item.id as BusinessCase) &&
 								!isSelected &&
 								"highlight-glow"
@@ -121,7 +124,7 @@ export function BusinessCaseSelector({
 									TEAM-FOKUS
 								</div>
 							)}
-					</button>
+					</motion.button>
 				);
 			})}
 		</div>

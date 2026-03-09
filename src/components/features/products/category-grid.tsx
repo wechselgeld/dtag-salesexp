@@ -74,7 +74,7 @@ export function CategoryGrid() {
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: index * 0.06, duration: 0.4, ease: "easeOut" }}
 						className="
-							group relative bg-[#fafbfc] border border-[#eaedf0] rounded-2xl p-6
+							group relative bg-linear-to-br from-white to-[#fcfafc] border border-[#eaedf0] rounded-2xl p-6
 							cursor-pointer flex flex-col justify-between min-h-[180px]
 							transition-all duration-500 ease-out overflow-hidden
 							hover:border-transparent hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]
@@ -109,15 +109,15 @@ export function CategoryGrid() {
 							{/* Icon + Title row */}
 							<div className="flex items-start gap-4 mb-3">
 								<category.icon
-									className="w-7 h-7 flex-shrink-0 mt-0.5 transition-all duration-300 group-hover:scale-110"
+									className="w-7 h-7 shrink-0 mt-0.5 transition-all duration-300 group-hover:scale-110"
 									style={{ color: category.color }}
 									strokeWidth={1.8}
 								/>
 								<div className="flex-1 min-w-0">
-									<h3 className="text-[1.1rem] font-semibold text-[#1a1a2e] m-0 leading-tight group-hover:text-[var(--card-accent)] transition-colors duration-300">
+									<h3 className="text-[1.1rem] font-semibold text-[#1a1a2e] m-0 leading-tight group-hover:text-(--card-accent) transition-colors duration-300">
 										{category.name}
 									</h3>
-									<p className="text-[0.85rem] text-[#6a6a6a] m-0 mt-1 leading-relaxed">
+									<p className="text-[0.85rem] text-ds-text-light m-0 mt-1 leading-relaxed">
 										{category.sub}
 									</p>
 								</div>
@@ -128,7 +128,7 @@ export function CategoryGrid() {
 								<span className="text-[0.75rem] font-medium text-[#999] tracking-wide uppercase">
 									{category.stats}
 								</span>
-								<div className="w-8 h-8 rounded-full flex items-center justify-center text-[#ccc] group-hover:text-[var(--card-accent)] group-hover:translate-x-1 transition-all duration-300">
+								<div className="w-8 h-8 rounded-full flex items-center justify-center text-[#ccc] group-hover:text-(--card-accent) group-hover:translate-x-1 transition-all duration-300">
 									<svg
 										className="w-4 h-4"
 										fill="none"

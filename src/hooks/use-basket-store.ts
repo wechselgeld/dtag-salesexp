@@ -26,7 +26,7 @@ interface BasketState {
     items: BasketItem[];
     isOpen: boolean;
     basketCredits: Credit[];
-    addItem: (product: Product, config: BasketItem["config"]) => void;
+    addItem: (product: Product, config: BasketItem["config"]) => string;
     removeItem: (id: string) => void;
     restoreItem: (item: BasketItem) => void;
     updateItem: (id: string, config: Partial<BasketItem["config"]>) => void;
@@ -42,11 +42,12 @@ export const useBasketStore = create<BasketState>()(
             isOpen: false,
             basketCredits: [], // Global credits
             addItem: (product, config) => {
+                const newId = crypto.randomUUID();
                 set((state) => ({
                     items: [
                         ...state.items,
                         {
-                            id: crypto.randomUUID(),
+                            id: newId,
                             product,
                             config,
                             addedAt: Date.now()
@@ -54,6 +55,7 @@ export const useBasketStore = create<BasketState>()(
                     ],
                     isOpen: true
                 }));
+                return newId;
             },
             removeItem: (id) => {
                 set((state) => ({

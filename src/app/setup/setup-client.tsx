@@ -113,7 +113,11 @@ export default function SetupPage() {
 	const requestVerification = trpc.session.requestVerification.useMutation({
 		onSuccess: (data) => {
 			setIsSubmitting(false);
-			setPendingSessionId(data.sessionId);
+			if (data.bypassed) {
+				finalizeLogin.mutate({ sessionId: data.sessionId });
+			} else {
+				setPendingSessionId(data.sessionId);
+			}
 		},
 		onError: (error) => {
 			console.error("Setup failed", error);
@@ -145,6 +149,26 @@ export default function SetupPage() {
 		onError: console.error
 	});
 
+	const reloginReturningUser = trpc.session.reloginReturningUser.useMutation({
+		onSuccess: (data) => {
+			persistName(
+				data.firstName?.trim() || "",
+				data.lastName?.trim() || "",
+				data.email?.trim() || ""
+			);
+			markSetupComplete();
+			refetchCurrentSession().then(() => {
+				router.push("/products");
+				router.refresh();
+			});
+		},
+		onError: (error) => {
+			console.error("Relogin failed:", error);
+			// Fallback to Reconfigure flow if re-login failed (e.g., cleared from DB)
+			setShowReconfigure(true);
+		}
+	});
+
 	// Hydrate stored user on mount
 	useEffect(() => {
 		const stored = getStoredUser();
@@ -170,24 +194,36 @@ export default function SetupPage() {
 	// beyond the 30-day session cookie, so data survives across re-setups)
 	const isReturningUser = hasCompletedBefore;
 
+	const { data: isEmailRequiredGlobally } =
+		trpc.session.getIsEmailRequired.useQuery();
+
 	// Zod-based validation
 	const validationResult = useMemo(
 		() =>
 			setupFormSchema.safeParse({
 				firstName,
 				lastName,
-				email,
+				email:
+					isEmailRequiredGlobally === false ? "no-reply@telekom.de" : email,
 				teamId: selectedTeamId ?? "",
 				acceptedTerms,
 				acceptedPrivacy
 			}),
-		[firstName, lastName, email, selectedTeamId, acceptedTerms, acceptedPrivacy]
+		[
+			firstName,
+			lastName,
+			email,
+			selectedTeamId,
+			acceptedTerms,
+			acceptedPrivacy,
+			isEmailRequiredGlobally
+		]
 	);
 
 	const anyFieldEmpty =
 		!firstName.trim() ||
 		!lastName.trim() ||
-		!email.trim() ||
+		(isEmailRequiredGlobally !== false && !email.trim()) ||
 		!selectedTeamId ||
 		!acceptedTerms ||
 		!acceptedPrivacy;
@@ -199,7 +235,7 @@ export default function SetupPage() {
 		const result = setupFormSchema.safeParse({
 			firstName,
 			lastName,
-			email,
+			email: isEmailRequiredGlobally === false ? "no-reply@telekom.de" : email,
 			teamId: selectedTeamId ?? "",
 			acceptedTerms,
 			acceptedPrivacy
@@ -284,8 +320,13 @@ export default function SetupPage() {
 							firstName={firstName}
 							lastName={lastName}
 							teamName={existingSession?.team?.name}
+							isReloggingIn={reloginReturningUser.isPending}
 							onContinue={() => {
-								router.push("/products");
+								if (existingSession) {
+									router.push("/products");
+								} else if (!reloginReturningUser.isPending) {
+									reloginReturningUser.mutate({ email });
+								}
 							}}
 							onReconfigure={() => setShowReconfigure(true)}
 						/>
@@ -349,15 +390,17 @@ export default function SetupPage() {
 										onChange={setLastName}
 									/>
 								</div>
-								<div className="mt-4">
-									<InputField
-										id="setup-email"
-										label="E-Mail-Adresse"
-										placeholder="max.mustermann@telekom.de"
-										value={email}
-										onChange={setEmail}
-									/>
-								</div>
+								{isEmailRequiredGlobally !== false && (
+									<div className="mt-4">
+										<InputField
+											id="setup-email"
+											label="E-Mail-Adresse"
+											placeholder="max.mustermann@telekom.de"
+											value={email}
+											onChange={setEmail}
+										/>
+									</div>
+								)}
 							</section>
 
 							{/* Divider */}
@@ -692,6 +735,7 @@ function WelcomeBackCard({
 	firstName: string;
 	lastName: string;
 	teamName?: string;
+	isReloggingIn?: boolean;
 	onContinue: () => void;
 	onReconfigure: () => void;
 }) {
@@ -735,21 +779,28 @@ function WelcomeBackCard({
 				</div>
 			)}
 
-			{/* Actions */}
 			<div className="flex flex-col sm:flex-row gap-3 w-full mt-2">
 				<button
 					onClick={onReconfigure}
-					className="flex-1 h-[52px] rounded-2xl bg-[#f7f8fa] border border-[#eaedf0] text-[#666] font-bold text-[0.9rem] hover:bg-[#eaedf0] transition-all cursor-pointer flex items-center justify-center gap-2 outline-none active:scale-[0.98]"
+					disabled={isReloggingIn}
+					className="flex-1 h-[52px] rounded-2xl bg-[#f7f8fa] border border-[#eaedf0] text-[#666] font-bold text-[0.9rem] hover:bg-[#eaedf0] transition-all cursor-pointer flex items-center justify-center gap-2 outline-none active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					<RotateCcw className="w-4 h-4" />
 					Neu einrichten
 				</button>
 				<button
 					onClick={onContinue}
-					className="flex-[1.5] h-[52px] rounded-2xl bg-[#e20074] hover:bg-[#c70066] text-white font-bold text-[0.9rem] shadow-[0_8px_20px_-6px_rgba(226,0,116,0.35)] transition-all cursor-pointer flex items-center justify-center gap-2 outline-none hover:-translate-y-0.5 active:scale-[0.98]"
+					disabled={isReloggingIn}
+					className="flex-[1.5] h-[52px] rounded-2xl bg-[#e20074] hover:bg-[#c70066] text-white font-bold text-[0.9rem] shadow-[0_8px_20px_-6px_rgba(226,0,116,0.35)] transition-all cursor-pointer flex items-center justify-center gap-2 outline-none hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					Weiter zur Sales Experience
-					<ChevronRight className="w-4 h-4" strokeWidth={2.5} />
+					{isReloggingIn ? (
+						<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+					) : (
+						<>
+							Weiter zur Sales Experience
+							<ChevronRight className="w-4 h-4" strokeWidth={2.5} />
+						</>
+					)}
 				</button>
 			</div>
 		</div>

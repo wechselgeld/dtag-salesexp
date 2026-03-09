@@ -23,7 +23,9 @@ import {
 	UserPlus,
 	Sparkles,
 	Settings2,
-	RotateCcw
+	RotateCcw,
+	Edit2,
+	Tag
 } from "lucide-react";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
@@ -465,6 +467,7 @@ function BasketItemCard({
 	settings: PricingSettings;
 }) {
 	const router = useRouter();
+	const [isBadgeHovered, setIsBadgeHovered] = useState(false);
 	const calculation = calculateProductCosts({
 		product: item.product,
 		businessCase: item.config.businessCase,
@@ -577,6 +580,34 @@ function BasketItemCard({
 						</div>
 					)}
 
+				{/* Selected Special Prices */}
+				{item.config.selectedSpecialPriceIds?.length > 0 &&
+					item.product.specialPrices && (
+						<div className="flex flex-col gap-1.5 mb-3">
+							{item.config.selectedSpecialPriceIds.map((spId) => {
+								const sp = item.product.specialPrices.find(
+									(p) => p.id === spId
+								);
+								if (!sp) return null;
+								return (
+									<div
+										key={spId}
+										className="flex items-center justify-between text-[0.72rem] font-medium"
+									>
+										<div
+											className="flex items-center gap-1.5"
+											style={{ color: catColor }}
+										>
+											<Tag className="w-3.5 h-3.5" />
+											<span className="truncate max-w-[150px]">{sp.name}</span>
+										</div>
+										<span className="text-[#00a878] font-bold">Aktion</span>
+									</div>
+								);
+							})}
+						</div>
+					)}
+
 				{/* PlusKarten */}
 				{item.config.plusKartenCount !== undefined &&
 					item.config.plusKartenCount > 0 && (
@@ -636,12 +667,57 @@ function BasketItemCard({
 						item.config.selectedSpecialPriceIds?.length > 0 ||
 						item.config.vouchers?.length > 0 ||
 						item.config.magentaTVPackage) && (
-						<div className="flex items-center gap-1.5 px-2 py-1 rounded-[6px] bg-[#f7f8fa] border border-[#eaedf0]/60">
-							<Settings2 className="w-[10px] h-[10px] text-[#aaa]" />
-							<span className="text-[0.62rem] font-medium text-[#888] uppercase tracking-wide">
-								Konfiguriert
-							</span>
-						</div>
+						<motion.div
+							layout
+							onHoverStart={() => setIsBadgeHovered(true)}
+							onHoverEnd={() => setIsBadgeHovered(false)}
+							className={clsx(
+								"overflow-hidden flex items-center h-[26px] px-2 rounded-[6px] border transition-colors duration-300 cursor-pointer",
+								isBadgeHovered
+									? "bg-[#fff7ed] border-[#fed7aa]"
+									: "bg-[#f0fdf4] border-[#bbf7d0]"
+							)}
+						>
+							<AnimatePresence mode="popLayout" initial={false}>
+								{!isBadgeHovered ? (
+									<motion.div
+										key="erledigt"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{
+											type: "tween",
+											ease: "easeInOut",
+											duration: 0.2
+										}}
+										className="flex items-center gap-1.5 whitespace-nowrap"
+									>
+										<Check className="w-[11px] h-[11px] text-[#16a34a] stroke-3" />
+										<span className="text-[0.62rem] font-bold text-[#16a34a] tracking-wide">
+											Erledigt
+										</span>
+									</motion.div>
+								) : (
+									<motion.div
+										key="editieren"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{
+											type: "tween",
+											ease: "easeInOut",
+											duration: 0.2
+										}}
+										className="flex items-center gap-1.5 whitespace-nowrap"
+									>
+										<Edit2 className="w-[11px] h-[11px] text-[#ea580c] stroke-[2.5]" />
+										<span className="text-[0.62rem] font-bold text-[#ea580c] tracking-wide">
+											Editieren?
+										</span>
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</motion.div>
 					)}
 				</div>
 			</div>

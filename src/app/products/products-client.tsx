@@ -70,6 +70,7 @@ export default function ProductsPage() {
 		trpc.session.getCurrent.useQuery();
 	const { data: allProducts, isLoading: productsLoading } =
 		trpc.product.getAllProducts.useQuery();
+	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery();
 	const isLoading = sessionLoading || productsLoading;
 	const utils = trpc.useUtils();
 
@@ -162,6 +163,9 @@ export default function ProductsPage() {
 								index={index}
 								isHighlighted={highlightedCategories.includes(category.id)}
 								dynamicStats={getStats(category.id, category.stats)}
+								backgroundImage={
+									designSettings?.[`category_image_${category.id}`] || null
+								}
 							/>
 						))}
 					</div>
@@ -175,6 +179,9 @@ export default function ProductsPage() {
 								index={index + 3}
 								isHighlighted={highlightedCategories.includes(category.id)}
 								dynamicStats={getStats(category.id, category.stats)}
+								backgroundImage={
+									designSettings?.[`category_image_${category.id}`] || null
+								}
 							/>
 						))}
 					</div>
@@ -195,12 +202,14 @@ function CategoryCard({
 	category,
 	index,
 	isHighlighted,
-	dynamicStats
+	dynamicStats,
+	backgroundImage
 }: {
 	category: (typeof CATEGORIES)[number];
 	index: number;
 	isHighlighted?: boolean;
 	dynamicStats: string;
+	backgroundImage?: string | null;
 }) {
 	const utils = trpc.useUtils();
 
@@ -229,7 +238,7 @@ function CategoryCard({
 					ease: EASE_OUT_EXPO
 				}}
 				className={clsx(
-					"group relative bg-white border rounded-[20px] h-full flex flex-col justify-center",
+					"group relative bg-linear-to-br from-white to-[#fcfafc] border rounded-[20px] h-full flex flex-col justify-center",
 					"px-7 py-5 cursor-pointer overflow-hidden",
 					"transition-all duration-400 ease-out",
 					"hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:border-[#ddd]",
@@ -241,13 +250,26 @@ function CategoryCard({
 					} as React.CSSProperties
 				}
 			>
-				{/* Hover gradient */}
-				<div
-					className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[20px]"
-					style={{
-						background: `linear-gradient(to right, transparent 20%, ${category.color}10 60%, ${category.color}18 100%)`
-					}}
-				/>
+				{/* Hover gradient - fallback if no image */}
+				{!backgroundImage && (
+					<div
+						className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[20px]"
+						style={{
+							background: `linear-gradient(to right, transparent 20%, ${category.color}10 60%, ${category.color}18 100%)`
+						}}
+					/>
+				)}
+
+				{/* Hover Background Image Overlay */}
+				{backgroundImage && (
+					<div className="absolute -inset-0.5 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[20px] overflow-hidden">
+						<div
+							className="absolute inset-0 bg-cover bg-center blur-[1.5px] scale-110"
+							style={{ backgroundImage: `url(${backgroundImage})` }}
+						/>
+						<div className="absolute inset-0 bg-[#1a1a2e]/30" />
+					</div>
+				)}
 
 				{/* Content row */}
 				<div className="relative z-10 flex items-center justify-between">
@@ -259,17 +281,36 @@ function CategoryCard({
 								TEAM-FOKUS
 							</div>
 						)}
-						<h3 className="text-[1.15rem] font-bold text-[#1a1a2e] m-0 leading-tight group-hover:text-(--card-color) transition-colors duration-300">
+						<h3
+							className={clsx(
+								"text-[1.15rem] font-bold m-0 leading-tight transition-colors duration-300",
+								backgroundImage
+									? "text-[#1a1a2e] group-hover:text-white"
+									: "text-[#1a1a2e] group-hover:text-(--card-color)"
+							)}
+						>
 							{category.title}
 						</h3>
-						<span className="text-[0.72rem] text-[#b5b5b5] font-medium mt-1 tracking-wide">
+						<span
+							className={clsx(
+								"text-[0.72rem] font-medium mt-1 tracking-wide transition-colors duration-300",
+								backgroundImage
+									? "text-[#b5b5b5] group-hover:text-[#eee]"
+									: "text-[#b5b5b5]"
+							)}
+						>
 							{dynamicStats}
 						</span>
 					</div>
 
 					{/* Right: Icon */}
 					<category.icon
-						className="w-8 h-8 transition-all duration-400 text-[#c8c8c8] group-hover:text-(--card-color) group-hover:scale-110"
+						className={clsx(
+							"w-8 h-8 transition-all duration-400 group-hover:scale-110",
+							backgroundImage
+								? "text-[#c8c8c8] group-hover:text-white"
+								: "text-[#c8c8c8] group-hover:text-(--card-color)"
+						)}
 						strokeWidth={1.5}
 					/>
 				</div>

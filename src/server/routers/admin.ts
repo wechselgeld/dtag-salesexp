@@ -106,17 +106,31 @@ export const adminRouter = router({
         const setting = await prisma.systemSetting.findUnique({
             where: { key: 'allowed_ips' }
         });
-        return setting?.value || "";
+        const requireEmail = await prisma.systemSetting.findUnique({
+            where: { key: 'require_email_verification' }
+        });
+        return {
+            allowedIps: setting?.value || "",
+            requireEmailVerification: requireEmail?.value !== 'false'
+        };
     }),
 
     updateSecuritySettings: protectedProcedure
-        .input(z.object({ allowedIps: z.string() }))
+        .input(z.object({ allowedIps: z.string(), requireEmailVerification: z.boolean().optional() }))
         .mutation(async ({ input }) => {
-            return await prisma.systemSetting.upsert({
+            await prisma.systemSetting.upsert({
                 where: { key: 'allowed_ips' },
                 update: { value: input.allowedIps },
                 create: { key: 'allowed_ips', value: input.allowedIps }
             });
+            if (input.requireEmailVerification !== undefined) {
+                await prisma.systemSetting.upsert({
+                    where: { key: 'require_email_verification' },
+                    update: { value: input.requireEmailVerification.toString() },
+                    create: { key: 'require_email_verification', value: input.requireEmailVerification.toString() }
+                });
+            }
+            return { success: true };
         }),
 
     // --- Product CRUD ---

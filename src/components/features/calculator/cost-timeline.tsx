@@ -72,7 +72,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 					<div className="text-[0.8rem] font-semibold leading-tight transition-colors text-[#1a1a2e]">
 						Ø Monatlich
 					</div>
-					<div className="text-[0.68rem] text-[#b0b0b0] mt-1">
+					<div className="text-[1.0rem] font-extrabold mt-1">
 						<AnimatedNumber value={averageMonthlyCost} /> €
 					</div>
 				</div>
@@ -87,7 +87,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 					<div className="text-[0.8rem] font-semibold leading-tight transition-colors text-[#888]">
 						Regulär
 					</div>
-					<div className="text-[0.68rem] text-[#b0b0b0] mt-1">
+					<div className="text-[1.0rem] font-semibold text-[#b0b0b0] mt-1">
 						<AnimatedNumber value={displayBasePrice} /> €
 					</div>
 				</div>
@@ -106,7 +106,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 					<div className="text-[0.8rem] font-semibold leading-tight transition-colors text-[#1a1a2e]">
 						Pro Tag
 					</div>
-					<div className="text-[0.68rem] text-[#b0b0b0] mt-1">
+					<div className="text-[1.0rem] font-extrabold mt-1">
 						{dailyPriceTrivialization || (
 							<>
 								<AnimatedNumber value={averageMonthlyCost / 30} /> €
@@ -125,7 +125,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 					<div className="text-[0.8rem] font-semibold leading-tight transition-colors text-[#888]">
 						24 Monate
 					</div>
-					<div className="text-[0.68rem] text-[#b0b0b0] mt-1">
+					<div className="text-[1.0rem] font-semibold text-[#b0b0b0] mt-1">
 						<AnimatedNumber value={totalCost24Months} /> €
 					</div>
 				</div>

@@ -11,14 +11,27 @@ export const settingsRouter = router({
         const settings = await prisma.systemSetting.findMany({
             where: {
                 key: {
-                    in: ['magentatv_background_image', 'header_background_image']
+                    in: [
+                        'magentatv_background_image',
+                        'header_background_image',
+                        'category_image_MOBILE',
+                        'category_image_FIBER',
+                        'category_image_DSL',
+                        'category_image_MAGENTA_TV_OTT',
+                        'category_image_DEVICE'
+                    ]
                 }
             }
         });
 
         const result: Record<string, string> = {
             magentatv_background_image: '',
-            header_background_image: ''
+            header_background_image: '',
+            category_image_MOBILE: '',
+            category_image_FIBER: '',
+            category_image_DSL: '',
+            category_image_MAGENTA_TV_OTT: '',
+            category_image_DEVICE: ''
         };
         settings.forEach((s) => {
             result[s.key] = s.value;

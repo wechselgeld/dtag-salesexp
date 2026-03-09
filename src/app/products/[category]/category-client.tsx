@@ -19,10 +19,10 @@ import {
 	Asterisk,
 	ArrowUpDown,
 	ArrowUp,
-	ArrowDown,
 	Check,
 	Plus,
-	Sparkles
+	Sparkles,
+	ArrowDown
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -31,6 +31,100 @@ import { SearchBar } from "@/components/features/search/search-bar";
 import { useSettingsStore } from "@/hooks/use-settings-store";
 import { useBasketStore } from "@/hooks/use-basket-store";
 import { Skeleton } from "@/components/shared/skeleton";
+
+/* --- Custom UI Icons --- */
+const SpeedTacho = ({
+	percentage,
+	color
+}: {
+	percentage: number;
+	color: string;
+}) => {
+	const angle = (percentage / 100) * 180 - 90;
+	return (
+		<svg
+			width="24"
+			height="24"
+			viewBox="0 0 24 24"
+			className="shrink-0 drop-shadow-sm mb-1"
+		>
+			<path
+				d="M 3 17 A 9 9 0 0 1 21 17"
+				fill="none"
+				stroke={color}
+				strokeOpacity="0.25"
+				strokeWidth="3.5"
+				strokeLinecap="round"
+			/>
+			<g
+				style={{
+					transform: `rotate(${angle}deg)`,
+					transformOrigin: "12px 17px",
+					transition: "transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)"
+				}}
+			>
+				<polygon points="12,17 10,17 12,8 14,17" fill={color} />
+			</g>
+			<circle cx="12" cy="17" r="3" fill={color} />
+		</svg>
+	);
+};
+
+const VolumeBars = ({
+	percentage,
+	color
+}: {
+	percentage: number;
+	color: string;
+}) => {
+	const level =
+		percentage <= 25 ? 1 : percentage <= 50 ? 2 : percentage <= 75 ? 3 : 4;
+	return (
+		<svg
+			width="20"
+			height="20"
+			viewBox="0 0 24 24"
+			className="shrink-0 drop-shadow-sm"
+		>
+			<rect
+				x="3"
+				y="15"
+				width="3.5"
+				height="5"
+				rx="1.5"
+				fill={level >= 1 ? color : `${color}30`}
+				style={{ transition: "fill 0.4s ease-out" }}
+			/>
+			<rect
+				x="8.5"
+				y="11"
+				width="3.5"
+				height="9"
+				rx="1.5"
+				fill={level >= 2 ? color : `${color}30`}
+				style={{ transition: "fill 0.4s ease-out 0.1s" }}
+			/>
+			<rect
+				x="14"
+				y="7"
+				width="3.5"
+				height="13"
+				rx="1.5"
+				fill={level >= 3 ? color : `${color}30`}
+				style={{ transition: "fill 0.4s ease-out 0.2s" }}
+			/>
+			<rect
+				x="19.5"
+				y="3"
+				width="3.5"
+				height="17"
+				rx="1.5"
+				fill={level >= 4 ? color : `${color}30`}
+				style={{ transition: "fill 0.4s ease-out 0.3s" }}
+			/>
+		</svg>
+	);
+};
 
 export default function ProductListPage() {
 	const params = useParams();
@@ -176,6 +270,62 @@ export default function ProductListPage() {
 		});
 	}, [products, activeFilter, sortOption]);
 
+	// Calculate dynamic percentage for speed and data volume
+	const productMetrics = useMemo(() => {
+		if (!products) return { speeds: {}, volumes: {} };
+
+		const speedSet = new Set<number>();
+		const volumeSet = new Set<number>();
+
+		products.forEach((p) => {
+			if (p.downloadSpeed && p.downloadSpeed > 0) speedSet.add(p.downloadSpeed);
+			if (p.dataVolume) {
+				const lower = p.dataVolume.toLowerCase();
+				if (lower.includes("unbegrenzt") || lower.includes("unlimited")) {
+					volumeSet.add(Infinity);
+				} else {
+					const match = p.dataVolume.match(/(\d+)/);
+					if (match) volumeSet.add(parseInt(match[1], 10));
+				}
+			}
+		});
+
+		const uniqueSpeeds = Array.from(speedSet).sort((a, b) => a - b);
+		const uniqueVolumes = Array.from(volumeSet).sort((a, b) => a - b);
+
+		const speeds: Record<string, number> = {};
+		const volumes: Record<string, number> = {};
+
+		products.forEach((p) => {
+			if (p.downloadSpeed && p.downloadSpeed > 0) {
+				const idx = uniqueSpeeds.indexOf(p.downloadSpeed);
+				speeds[p.id] =
+					uniqueSpeeds.length > 0
+						? ((idx + 1) / uniqueSpeeds.length) * 100
+						: 100;
+			}
+			if (p.dataVolume) {
+				const lower = p.dataVolume.toLowerCase();
+				let val = 0;
+				if (lower.includes("unbegrenzt") || lower.includes("unlimited")) {
+					val = Infinity;
+				} else {
+					const match = p.dataVolume.match(/(\d+)/);
+					if (match) val = parseInt(match[1], 10);
+				}
+				if (val > 0 || val === Infinity) {
+					const idx = uniqueVolumes.indexOf(val);
+					volumes[p.id] =
+						uniqueVolumes.length > 0
+							? ((idx + 1) / uniqueVolumes.length) * 100
+							: 100;
+				}
+			}
+		});
+
+		return { speeds, volumes };
+	}, [products]);
+
 	return (
 		<div className="min-h-full">
 			{/* Search Bar */}
@@ -224,7 +374,7 @@ export default function ProductListPage() {
 								"flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border whitespace-nowrap transition-all duration-200 cursor-pointer outline-none",
 								activeFilterId === filter.id
 									? "text-white shadow-md"
-									: "bg-white border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]"
+									: "bg-linear-to-br from-white to-[#fcfafc] border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]"
 							)}
 							style={{
 								backgroundColor:
@@ -257,7 +407,7 @@ export default function ProductListPage() {
 								"flex items-center gap-2 px-4 py-2.5 rounded-xl border whitespace-nowrap transition-all duration-200 cursor-pointer outline-none",
 								sortOption !== "default"
 									? "text-white shadow-md"
-									: "bg-white border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]"
+									: "bg-linear-to-br from-white to-[#fcfafc] border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]"
 							)}
 							style={{
 								backgroundColor:
@@ -358,7 +508,7 @@ export default function ProductListPage() {
 						{[1, 2, 3, 4, 5, 6].map((i) => (
 							<div
 								key={i}
-								className="h-auto bg-white rounded-2xl border border-[#eaedf0] overflow-hidden flex flex-col justify-between"
+								className="h-auto bg-linear-to-br from-white to-[#fcfafc] rounded-2xl border border-[#eaedf0] overflow-hidden flex flex-col justify-between"
 							>
 								{/* Skeleton Top Section matching content padding */}
 								<div className="p-5">
@@ -416,7 +566,7 @@ export default function ProductListPage() {
 										style={{ "--cat-color": catColor } as React.CSSProperties}
 										data-cursor="view"
 										className={clsx(
-											"bg-white rounded-2xl flex flex-col justify-between transition-all duration-300 group border relative cursor-pointer overflow-hidden",
+											"bg-linear-to-br from-white to-[#fcfafc] rounded-2xl flex flex-col justify-between transition-all duration-300 group border relative cursor-pointer overflow-hidden",
 											isFocused ? "highlight-glow" : "border-[#eaedf0]",
 											compactView ? "p-3.5" : "p-5"
 										)}
@@ -441,25 +591,70 @@ export default function ProductListPage() {
 												</div>
 											)}
 
-											{/* Title + Duration on same line */}
+											{/* Title + Duration + Stats indicator on same line */}
 											<div
 												className={clsx(
 													"flex items-baseline justify-between",
 													compactView ? "mb-1.5" : "mb-3"
 												)}
 											>
-												<h3
-													className={clsx(
-														"font-bold transition-colors duration-300 leading-tight m-0",
-														compactView ? "text-[0.95rem]" : "text-[1.15rem]",
-														isFocused
-															? ""
-															: "text-[#1a1a2e] group-hover:text-[var(--cat-color)]"
-													)}
-													style={isFocused ? { color: catColor } : undefined}
-												>
-													{product.name}
-												</h3>
+												<div className="flex items-center gap-3">
+													<h3
+														className={clsx(
+															"font-bold transition-colors duration-300 leading-tight m-0 flex items-center gap-2",
+															compactView ? "text-[0.95rem]" : "text-[1.15rem]",
+															isFocused
+																? ""
+																: "text-[#1a1a2e] group-hover:text-[var(--cat-color)]"
+														)}
+														style={isFocused ? { color: catColor } : undefined}
+													>
+														{product.name}
+													</h3>
+
+													{/* Speed / Volume Visualizer */}
+													{product.category === "MOBILE" &&
+													product.dataVolume ? (
+														<div
+															className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold text-[0.7rem] uppercase tracking-wide group-hover:scale-[1.02] transition-transform"
+															style={{
+																backgroundColor: `${catColor}0d`,
+																borderColor: `${catColor}25`,
+																color: catColor
+															}}
+														>
+															<VolumeBars
+																percentage={
+																	productMetrics.volumes[product.id] || 0
+																}
+																color={catColor}
+															/>
+															<span className="mt-0.5">
+																{product.dataVolume}
+															</span>
+														</div>
+													) : product.category !== "DEVICE" &&
+													  product.downloadSpeed ? (
+														<div
+															className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold text-[0.7rem] uppercase tracking-wide group-hover:scale-[1.02] transition-transform"
+															style={{
+																backgroundColor: `${catColor}0d`,
+																borderColor: `${catColor}25`,
+																color: catColor
+															}}
+														>
+															<SpeedTacho
+																percentage={
+																	productMetrics.speeds[product.id] || 0
+																}
+																color={catColor}
+															/>
+															<span className="mt-0.5">
+																{product.downloadSpeed} Mbit/s
+															</span>
+														</div>
+													) : null}
+												</div>
 												{product.contractDuration && (
 													<span className="text-[0.68rem] font-medium text-[#c0c0c0] uppercase tracking-wider ml-3 shrink-0">
 														{product.contractDuration}M
@@ -474,35 +669,18 @@ export default function ProductListPage() {
 												</p>
 											)}
 
-											{/* Specs - compact inline */}
-											<div className="flex items-center gap-4 text-[0.8rem] text-[#888]">
-												{product.category === "DEVICE"
-													? (product as any).deviceManufacturer && (
-															<div className="flex items-center gap-1.5">
-																<Smartphone className="w-3.5 h-3.5 text-[#bbb]" />
-																<span className="font-medium text-[#666]">
-																	{(product as any).deviceManufacturer}
-																</span>
-															</div>
-														)
-													: product.dataVolume && (
-															<div className="flex items-center gap-1.5">
-																<Wifi className="w-3.5 h-3.5 text-[#bbb]" />
-																<span className="font-medium text-[#666]">
-																	{product.dataVolume}
-																</span>
-															</div>
-														)}
-												{(product.downloadSpeed ?? 0) > 0 &&
-													product.category !== "DEVICE" && (
+											{/* Specs - compact inline (REMOVED: Now displayed beside the title) */}
+											{product.category === "DEVICE" &&
+												(product as any).deviceManufacturer && (
+													<div className="flex items-center gap-4 text-[0.8rem] text-[#888]">
 														<div className="flex items-center gap-1.5">
-															<Zap className="w-3.5 h-3.5 text-[#bbb]" />
+															<Smartphone className="w-3.5 h-3.5 text-[#bbb]" />
 															<span className="font-medium text-[#666]">
-																{product.downloadSpeed} Mbit/s
+																{(product as any).deviceManufacturer}
 															</span>
 														</div>
-													)}
-											</div>
+													</div>
+												)}
 
 											{/* Sales Arguments (Collapsible) */}
 											{(product as any).salesArguments &&
@@ -683,7 +861,7 @@ export default function ProductListPage() {
 														className={clsx(
 															"px-3 py-1.5 rounded-xl font-semibold text-[0.8rem] transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95",
 															isFocused
-																? "bg-[#e20074] text-white hover:bg-[#c2005c] hover:shadow-[0_4px_12px_rgba(226,0,116,0.2)]"
+																? "bg-[#e20074] text-white hover:bg-magenta-600 hover:shadow-[0_4px_12px_rgba(226,0,116,0.2)]"
 																: "bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:bg-[#1a1a2e] hover:text-white hover:border-[#1a1a2e]"
 														)}
 													>
