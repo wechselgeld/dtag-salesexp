@@ -137,7 +137,7 @@ export const WelcomeEmail = ({
 				<Container style={container}>
 					<Section style={logoContainer}>
 						<Img
-							src={`${appUrl}/se-logo.png`}
+							src={`${appUrl}/se-logo.svg`}
 							alt="Sales Experience Logo"
 							width="180"
 						/>
