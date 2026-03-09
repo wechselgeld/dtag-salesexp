@@ -9,9 +9,15 @@ export function useImageBrightness(imageUrl?: string) {
             return;
         }
 
+        // First, preload the image WITHOUT crossOrigin to ensure it gets
+        // into the browser cache for CSS background-image usage.
+        const preload = new Image();
+        preload.src = imageUrl;
+
+        // Then, attempt brightness detection with crossOrigin for canvas access.
+        // If CORS fails, we gracefully fall back to isDark = true.
         const img = new Image();
         img.crossOrigin = 'Anonymous';
-        img.src = imageUrl;
 
         img.onload = () => {
             try {
@@ -19,7 +25,10 @@ export function useImageBrightness(imageUrl?: string) {
                 canvas.width = img.width;
                 canvas.height = img.height;
                 const ctx = canvas.getContext('2d');
-                if (!ctx) return;
+                if (!ctx) {
+                    setIsDark(true);
+                    return;
+                }
 
                 ctx.drawImage(img, 0, 0);
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -42,8 +51,7 @@ export function useImageBrightness(imageUrl?: string) {
 
                 setIsDark(luminance < 0.5);
             } catch (e) {
-                console.error("Could not calculate image brightness", e);
-                // Fallback to true (dark) if CORS error
+                // Canvas tainted by CORS – fall back to dark
                 setIsDark(true);
             }
         };
@@ -51,7 +59,10 @@ export function useImageBrightness(imageUrl?: string) {
         img.onerror = () => {
             setIsDark(true);
         };
+
+        img.src = imageUrl;
     }, [imageUrl]);
 
     return isDark;
 }
+
