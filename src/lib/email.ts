@@ -25,21 +25,22 @@ export const sendWelcomeEmail = async (
     const loginUrl = `${appUrl}/login`;
 
     try {
-        const htmlContent = await render(
-            React.createElement(WelcomeEmail, {
-                email: to,
-                role,
-                tempPassword,
-                loginUrl,
-                appUrl,
-            })
-        );
+        const element = React.createElement(WelcomeEmail, {
+            email: to,
+            role,
+            tempPassword,
+            loginUrl,
+            appUrl,
+        });
+        const htmlContent = await render(element);
+        const textContent = await render(element, { plainText: true });
 
         const data = await resend.emails.send({
             from: `Sales Experience <${fromEmail}>`,
             to: [to],
             subject: 'Dein Account wurde erstellt',
             html: htmlContent,
+            text: textContent,
         });
 
         console.log('Account email sent successfully', data);
@@ -59,15 +60,16 @@ export const sendGoodbyeEmail = async (to: string) => {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     try {
-        const htmlContent = await render(
-            React.createElement(GoodbyeEmail, { email: to, appUrl })
-        );
+        const element = React.createElement(GoodbyeEmail, { email: to, appUrl });
+        const htmlContent = await render(element);
+        const textContent = await render(element, { plainText: true });
 
         const data = await resend.emails.send({
             from: `Sales Experience <${fromEmail}>`,
             to: [to],
             subject: 'Dein Profil wurde entfernt',
             html: htmlContent,
+            text: textContent,
         });
 
         console.log('Goodbye email sent successfully', data);
@@ -87,13 +89,13 @@ export const sendVerificationEmail = async (to: string, firstName: string, token
     const verificationLink = `${appUrl}/verify/${token}`;
 
     try {
-        const htmlContent = await render(
-            React.createElement(VerificationEmail, {
-                firstName,
-                verificationLink,
-                appUrl,
-            })
-        );
+        const element = React.createElement(VerificationEmail, {
+            firstName,
+            verificationLink,
+            appUrl,
+        });
+        const htmlContent = await render(element);
+        const textContent = await render(element, { plainText: true });
 
         const data = await resend.emails.send({
             from: `Sales Experience <${fromEmail}>`,
@@ -101,6 +103,7 @@ export const sendVerificationEmail = async (to: string, firstName: string, token
             to: [to],
             subject: 'Sales Experience Bestätigung',
             html: htmlContent,
+            text: textContent,
         });
 
         console.log('Verification email sent successfully', data);
