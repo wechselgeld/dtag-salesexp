@@ -719,11 +719,11 @@ function ProductPageContent() {
 												: "text-[#999]"
 										)}
 									>
-										ab +
+										ab{" "}
 										{settings.magentatv_smart_price
 											.toFixed(2)
-											.replace(".", ",")}
-										€ mtl. · Kombivorteil
+											.replace(".", ",")}{" "}
+										€ mtl.
 									</p>
 								</div>
 
@@ -867,6 +867,7 @@ function ProductPageContent() {
 							isMagentaTVSelected={isMagentaTVSelected}
 							businessCase={businessCase}
 							accentColor={catColor}
+							basePrice={product.basePrice}
 						/>
 					</ConfigSection>
 
