@@ -729,6 +729,7 @@ function WelcomeBackCard({
 	firstName,
 	lastName,
 	teamName,
+	isReloggingIn,
 	onContinue,
 	onReconfigure
 }: {

@@ -109,11 +109,11 @@
 		--input: 240 3.7% 15.9%;
 		--ring: 329 100% 44%;
 	}
-  * {
-    @apply border-border outline-ring/50;
+	* {
+		@apply border-border outline-ring/50;
 	}
-  body {
-    @apply bg-background text-foreground;
+	body {
+		@apply bg-background text-foreground;
 	}
 }
 
