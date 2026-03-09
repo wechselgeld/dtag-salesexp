@@ -269,20 +269,68 @@
 		display: none; /* Chrome/Safari/Webkit */
 	}
 
-	@keyframes highlight-pulse-glow {
-		0%,
-		100% {
-			box-shadow: 0 0 8px rgba(255, 213, 79, 0.4);
-			border-color: rgba(255, 213, 79, 0.5);
+	@property --glow-angle {
+		syntax: "<angle>";
+		initial-value: 0deg;
+		inherits: false;
+	}
+
+	@keyframes spin-glow {
+		0% {
+			--glow-angle: 0deg;
 		}
-		50% {
-			box-shadow: 0 0 13px 2px rgba(255, 213, 79, 0.85);
-			border-color: rgba(255, 213, 79, 1);
+		100% {
+			--glow-angle: 360deg;
 		}
 	}
 
 	.highlight-glow {
-		animation: highlight-pulse-glow 3.5s ease-in-out infinite !important;
+		position: relative;
+		border-color: rgba(255, 213, 79, 0.4) !important;
+	}
+
+	.highlight-glow::before,
+	.highlight-glow::after {
+		content: "";
+		position: absolute;
+		inset: -2px;
+		border-radius: inherit;
+		padding: 4px;
+		-webkit-mask:
+			linear-gradient(#fff 0 0) content-box,
+			linear-gradient(#fff 0 0);
+		mask:
+			linear-gradient(#fff 0 0) content-box,
+			linear-gradient(#fff 0 0);
+		-webkit-mask-composite: xor;
+		mask-composite: exclude;
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	.highlight-glow::before {
+		background: conic-gradient(
+			from var(--glow-angle),
+			transparent 0%,
+			transparent 75%,
+			rgba(255, 213, 79, 0.2) 80%,
+			rgba(255, 213, 79, 1) 95%,
+			transparent 100%
+		);
+		animation: spin-glow 4s linear infinite;
+	}
+
+	.highlight-glow::after {
+		background: conic-gradient(
+			from var(--glow-angle),
+			transparent 0%,
+			transparent 25%,
+			rgba(255, 213, 79, 0.2) 30%,
+			rgba(255, 213, 79, 1) 45%,
+			transparent 50%,
+			transparent 100%
+		);
+		animation: spin-glow 4s linear infinite;
 	}
 }
 
