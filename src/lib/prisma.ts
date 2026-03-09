@@ -47,14 +47,9 @@ const prismaClientSingleton = () => {
         async $allOperations({ model, operation, args, query }) {
           return pRetry(
             async () => {
-              return query(args)
-            },
-            {
-              retries: 3,
-              minTimeout: 100,
-              maxTimeout: 1000,
-              randomize: true, // adds jitter
-              onFailedAttempt: (error) => {
+              try {
+                return await query(args)
+              } catch (error) {
                 // Check if the error is a Prisma client known request error
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const err = error as any
@@ -65,14 +60,32 @@ const prismaClientSingleton = () => {
                   typeof err.code === 'string' &&
                   RETRYABLE_ERROR_CODES.includes(err.code)
                 ) {
-                  // NOTE: error.attemptNumber starts at 1
+                  throw error // Rethrow to be caught and retried by pRetry
+                } else {
+                  // If it's not a retryable error, abort immediately.
+                  // p-retry will unwrap AbortError and throw the original error.
+                  throw new AbortError(error as Error)
+                }
+              }
+            },
+            {
+              retries: 3,
+              minTimeout: 100,
+              maxTimeout: 1000,
+              randomize: true, // adds jitter
+              onFailedAttempt: (error) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const err = error as any
+                if (
+                  err &&
+                  typeof err === 'object' &&
+                  'code' in err &&
+                  typeof err.code === 'string' &&
+                  RETRYABLE_ERROR_CODES.includes(err.code)
+                ) {
                   console.warn(
                     `[Prisma Retry Warning] ${model}.${operation} failed with code ${err.code}. Retrying... (Attempt ${error.attemptNumber} of 4)`
                   )
-                } else {
-                  // If it's not a retryable error, abort immediately
-                  // This relies on p-retry's throw error mechanism
-                  throw new AbortError(error as unknown as Error)
                 }
               },
             }
