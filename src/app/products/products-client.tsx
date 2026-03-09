@@ -74,17 +74,13 @@ export default function ProductsPage() {
 	const isLoading = sessionLoading || productsLoading;
 	const utils = trpc.useUtils();
 
-	const [firstName, setFirstName] = useState(() => {
-		if (typeof window !== "undefined") {
-			return localStorage.getItem(LS_KEY_FIRST_NAME) ?? "";
-		}
-		return "";
-	});
+	const [firstName, setFirstName] = useState("");
+	const [isMounted, setIsMounted] = useState(false);
 
-	// Synchronize if storage changes (optional but good practice)
 	useEffect(() => {
+		setIsMounted(true);
 		const stored = localStorage.getItem(LS_KEY_FIRST_NAME) ?? "";
-		if (stored !== firstName) setFirstName(stored);
+		setFirstName(stored);
 	}, []);
 
 	// Prefetch all category products in background for "instant" load
@@ -123,7 +119,7 @@ export default function ProductsPage() {
 		<div className="min-h-full">
 			{/* ─── Hero Header ─── */}
 			<HeroHeader
-				firstName={firstName}
+				firstName={isMounted ? firstName : ""}
 				teamName={session?.team?.name}
 				productsCount={allProducts?.length}
 				categories={categoryStats}
