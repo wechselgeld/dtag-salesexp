@@ -246,7 +246,8 @@ function CategoryCard({
 				)}
 				style={
 					{
-						"--card-color": category.color
+						"--card-color": category.color,
+						borderColor: isHighlighted ? category.color : undefined
 					} as React.CSSProperties
 				}
 			>

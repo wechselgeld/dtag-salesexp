@@ -835,9 +835,25 @@ export default function ProductListPage() {
 													className={clsx(
 														"px-2.5 py-1.5 h-full rounded-xl transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-95",
 														isFocused
-															? "bg-[#e20074]/10 text-[#e20074] border border-[#e20074]/20 hover:bg-[#e20074] hover:text-white"
-															: "bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:bg-[#e20074] hover:text-white hover:border-[#e20074]"
+															? "text-white border-transparent"
+															: "bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:text-white"
 													)}
+													style={{
+														backgroundColor: isFocused ? catColor : undefined,
+														borderColor: isFocused ? catColor : undefined
+													}}
+													onMouseEnter={(e) => {
+														if (!isFocused) {
+															e.currentTarget.style.backgroundColor = catColor;
+															e.currentTarget.style.borderColor = catColor;
+														}
+													}}
+													onMouseLeave={(e) => {
+														if (!isFocused) {
+															e.currentTarget.style.backgroundColor = "";
+															e.currentTarget.style.borderColor = "";
+														}
+													}}
 													title="Hinzufügen"
 												>
 													<Plus className="w-5 h-5 shrink-0" />
@@ -861,9 +877,15 @@ export default function ProductListPage() {
 														className={clsx(
 															"px-3 py-1.5 rounded-xl font-semibold text-[0.8rem] transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95",
 															isFocused
-																? "bg-[#e20074] text-white hover:bg-magenta-600 hover:shadow-[0_4px_12px_rgba(226,0,116,0.2)]"
+																? "text-white hover:shadow-lg"
 																: "bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:bg-[#1a1a2e] hover:text-white hover:border-[#1a1a2e]"
 														)}
+														style={{
+															backgroundColor: isFocused ? catColor : undefined,
+															boxShadow: isFocused
+																? `0 4px 12px ${catColor}33`
+																: undefined
+														}}
 													>
 														Konfigurieren
 														<ArrowLeft className="w-3.5 h-3.5 rotate-180" />

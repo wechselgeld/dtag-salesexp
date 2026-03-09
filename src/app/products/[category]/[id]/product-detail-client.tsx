@@ -643,7 +643,13 @@ function ProductPageContent() {
 										: ""
 								)}
 								style={{
-									borderColor: isMagentaTVSelected ? catColor : "#eaedf0",
+									borderColor: isMagentaTVSelected
+										? catColor
+										: session?.team?.highlights.some(
+													(h) => h.category === "MAGENTA_TV_OTT"
+											  )
+											? catColor
+											: "#eaedf0",
 									backgroundColor:
 										isMagentaTVSelected &&
 										!designSettings?.magentatv_background_image
