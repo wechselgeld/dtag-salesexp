@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { motion, AnimatePresence } from "framer-motion";
@@ -107,6 +107,22 @@ export default function SetupPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
 	const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+	// Dynamic card height to avoid jumping during AnimatePresence mode="wait"
+	const cardRef = useRef<HTMLDivElement>(null);
+	const [cardHeight, setCardHeight] = useState<number | "auto">("auto");
+
+	useEffect(() => {
+		if (!cardRef.current) return;
+		const observer = new ResizeObserver((entries) => {
+			setCardHeight(
+				entries[0].borderBoxSize?.[0]?.blockSize ??
+					entries[0].target.getBoundingClientRect().height
+			);
+		});
+		observer.observe(cardRef.current);
+		return () => observer.disconnect();
+	}, []);
 
 	// Returning-user state
 	const [hasCompletedBefore, setHasCompletedBefore] = useState(false);
@@ -317,11 +333,18 @@ export default function SetupPage() {
 	const renderStep1 = () => (
 		<motion.div
 			key="step1"
-			initial={{ opacity: 0, x: 20 }}
-			animate={{ opacity: 1, x: 0 }}
-			exit={{ opacity: 0, x: -20 }}
-			transition={{ duration: 0.3 }}
-			className="space-y-6"
+			initial={{ opacity: 0, x: 15 }}
+			animate={{
+				opacity: 1,
+				x: 0,
+				transition: { delay: 0.4, duration: 0.3, ease: "easeOut" }
+			}}
+			exit={{
+				opacity: 0,
+				x: -15,
+				transition: { duration: 0.2, ease: "easeIn" }
+			}}
+			className="space-y-6 w-full"
 		>
 			<SectionHeader
 				icon={<Globe className="w-5 h-5 text-[#e20074]" />}
@@ -382,11 +405,18 @@ export default function SetupPage() {
 	const renderStep2 = () => (
 		<motion.div
 			key="step2"
-			initial={{ opacity: 0, x: 20 }}
-			animate={{ opacity: 1, x: 0 }}
-			exit={{ opacity: 0, x: -20 }}
-			transition={{ duration: 0.3 }}
-			className="space-y-6"
+			initial={{ opacity: 0, x: 15 }}
+			animate={{
+				opacity: 1,
+				x: 0,
+				transition: { delay: 0.4, duration: 0.3, ease: "easeOut" }
+			}}
+			exit={{
+				opacity: 0,
+				x: -15,
+				transition: { duration: 0.2, ease: "easeIn" }
+			}}
+			className="space-y-6 w-full"
 		>
 			<SectionHeader
 				icon={<MapPin className="w-5 h-5 text-[#e20074]" />}
@@ -453,11 +483,18 @@ export default function SetupPage() {
 	const renderStep3 = () => (
 		<motion.div
 			key="step3"
-			initial={{ opacity: 0, x: 20 }}
-			animate={{ opacity: 1, x: 0 }}
-			exit={{ opacity: 0, x: -20 }}
-			transition={{ duration: 0.3 }}
-			className="space-y-6"
+			initial={{ opacity: 0, x: 15 }}
+			animate={{
+				opacity: 1,
+				x: 0,
+				transition: { delay: 0.4, duration: 0.3, ease: "easeOut" }
+			}}
+			exit={{
+				opacity: 0,
+				x: -15,
+				transition: { duration: 0.2, ease: "easeIn" }
+			}}
+			className="space-y-6 w-full"
 		>
 			<SectionHeader
 				icon={<Users className="w-5 h-5 text-[#e20074]" />}
@@ -519,11 +556,18 @@ export default function SetupPage() {
 	const renderStep4 = () => (
 		<motion.div
 			key="step4"
-			initial={{ opacity: 0, x: 20 }}
-			animate={{ opacity: 1, x: 0 }}
-			exit={{ opacity: 0, x: -20 }}
-			transition={{ duration: 0.3 }}
-			className="space-y-8"
+			initial={{ opacity: 0, x: 15 }}
+			animate={{
+				opacity: 1,
+				x: 0,
+				transition: { delay: 0.4, duration: 0.3, ease: "easeOut" }
+			}}
+			exit={{
+				opacity: 0,
+				x: -15,
+				transition: { duration: 0.2, ease: "easeIn" }
+			}}
+			className="space-y-8 w-full"
 		>
 			<section>
 				<SectionHeader
@@ -678,84 +722,93 @@ export default function SetupPage() {
 				{/* ─── Main Card ─── */}
 				<motion.div
 					initial={{ opacity: 0, y: 15 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{
-						duration: 0.5,
-						delay: 0.1,
-						ease: [0.16, 1, 0.3, 1]
+					animate={{
+						opacity: 1,
+						y: 0,
+						height:
+							typeof cardHeight === "number" && cardHeight > 0
+								? cardHeight
+								: "auto"
 					}}
-					className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] p-8 sm:p-12"
+					transition={{
+						height: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+						opacity: { duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] },
+						y: { duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }
+					}}
+					className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] overflow-hidden relative"
 				>
-					{/* Loading state */}
-					{isIpLoading ? (
-						<div className="flex flex-col items-center gap-4 py-12">
-							<div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
-							<p className="text-[#888] text-[0.9rem] font-medium">
-								Überprüfe Zugriffsberechtigung…
-							</p>
-						</div>
-					) : isIpError ? (
-						/* IP blocked */
-						<IpBlockedCard error={ipError} />
-					) : isReturningUser && !showReconfigure ? (
-						/* Returning user – already set up */
-						<WelcomeBackCard
-							firstName={firstName}
-							lastName={lastName}
-							teamName={existingSession?.team?.name}
-							isReloggingIn={reloginReturningUser.isPending}
-							onContinue={() => {
-								if (existingSession) {
-									router.push("/products");
-								} else if (!reloginReturningUser.isPending) {
-									reloginReturningUser.mutate({ email });
-								}
-							}}
-							onReconfigure={() => setShowReconfigure(true)}
-						/>
-					) : pendingSessionId ? (
-						/* Waiting for Verification */
-						<div className="flex flex-col items-center text-center gap-5 py-4">
-							<div className="relative flex items-center justify-center mb-1">
-								{/* Rotating outline */}
-								<div className="absolute -inset-1.5 border-[3px] border-[#fdf2f8] border-t-[#e20074] rounded-full animate-spin" />
-								{/* Inner circle with icon */}
-								<div className="w-16 h-16 bg-[#fdf2f8] rounded-full flex items-center justify-center relative z-10">
-									<Mail className="w-8 h-8 text-[#e20074]" />
-								</div>
-							</div>
-							<div>
-								<h3 className="text-[1.1rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight">
-									Bitte überprüfe Dein Postfach
-								</h3>
-								<p className="text-[0.9rem] text-[#888] leading-relaxed max-w-md mx-auto">
-									Wir haben einen Bestätigungslink an{" "}
-									<strong className="font-medium text-[#1a1a2e]">
-										{email}
-									</strong>{" "}
-									gesendet. Er ist 60 Minuten lang gültig.
-									<br />
-									<strong className="font-medium text-[#1a1a2e] underline underline-offset-2">
-										Bitte schließe diese Seite nicht.
-									</strong>
+					<div ref={cardRef} className="p-8 sm:p-12">
+						{/* Loading state */}
+						{isIpLoading ? (
+							<div className="flex flex-col items-center gap-4 py-12">
+								<div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
+								<p className="text-[#888] text-[0.9rem] font-medium">
+									Überprüfe Zugriffsberechtigung…
 								</p>
 							</div>
-							<button
-								onClick={() => setPendingSessionId(null)}
-								className="mt-2 px-4 py-2 text-[0.85rem] font-medium text-[#e20074] hover:bg-[#fdf2f8] rounded-xl transition-colors cursor-pointer"
-							>
-								E-Mail korrigieren / Zurück
-							</button>
-						</div>
-					) : (
-						/* Multi-step form */
-						<AnimatePresence mode="wait">
-							{currentStep === 1 && renderStep1()}
-							{currentStep === 2 && renderStep2()}
-							{currentStep === 3 && renderStep3()}
-							{currentStep === 4 && renderStep4()}
-						</AnimatePresence>
-					)}
+						) : isIpError ? (
+							/* IP blocked */
+							<IpBlockedCard error={ipError} />
+						) : isReturningUser && !showReconfigure ? (
+							/* Returning user – already set up */
+							<WelcomeBackCard
+								firstName={firstName}
+								lastName={lastName}
+								teamName={existingSession?.team?.name}
+								isReloggingIn={reloginReturningUser.isPending}
+								onContinue={() => {
+									if (existingSession) {
+										router.push("/products");
+									} else if (!reloginReturningUser.isPending) {
+										reloginReturningUser.mutate({ email });
+									}
+								}}
+								onReconfigure={() => setShowReconfigure(true)}
+							/>
+						) : pendingSessionId ? (
+							/* Waiting for Verification */
+							<div className="flex flex-col items-center text-center gap-5 py-4">
+								<div className="relative flex items-center justify-center mb-1">
+									{/* Rotating outline */}
+									<div className="absolute -inset-1.5 border-[3px] border-[#fdf2f8] border-t-[#e20074] rounded-full animate-spin" />
+									{/* Inner circle with icon */}
+									<div className="w-16 h-16 bg-[#fdf2f8] rounded-full flex items-center justify-center relative z-10">
+										<Mail className="w-8 h-8 text-[#e20074]" />
+									</div>
+								</div>
+								<div>
+									<h3 className="text-[1.1rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight">
+										Bitte überprüfe Dein Postfach
+									</h3>
+									<p className="text-[0.9rem] text-[#888] leading-relaxed max-w-md mx-auto">
+										Wir haben einen Bestätigungslink an{" "}
+										<strong className="font-medium text-[#1a1a2e]">
+											{email}
+										</strong>{" "}
+										gesendet. Er ist 60 Minuten lang gültig.
+										<br />
+										<strong className="font-medium text-[#1a1a2e] underline underline-offset-2">
+											Bitte schließe diese Seite nicht.
+										</strong>
+									</p>
+								</div>
+								<button
+									onClick={() => setPendingSessionId(null)}
+									className="mt-2 px-4 py-2 text-[0.85rem] font-medium text-[#e20074] hover:bg-[#fdf2f8] rounded-xl transition-colors cursor-pointer"
+								>
+									E-Mail korrigieren / Zurück
+								</button>
+							</div>
+						) : (
+							/* Multi-step form */
+							<AnimatePresence mode="wait" initial={false}>
+								{currentStep === 1 && renderStep1()}
+								{currentStep === 2 && renderStep2()}
+								{currentStep === 3 && renderStep3()}
+								{currentStep === 4 && renderStep4()}
+							</AnimatePresence>
+						)}
+					</div>
 				</motion.div>
 
 				<GlobalFooter
