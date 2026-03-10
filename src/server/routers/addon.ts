@@ -19,6 +19,14 @@ const tierSchema = z.object({
     price: z.number().min(0),
 });
 
+const editorProcedure = protectedProcedure.use(({ ctx, next }) => {
+    const session = ctx.session as any;
+    if (session?.role !== 'ADMIN' && !session?.isEditor) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Du benötigst Editor-Rechte für diese Aktion.' });
+    }
+    return next({ ctx });
+});
+
 export const addonRouter = router({
     list: protectedProcedure.query(async () => {
         return prisma.addon.findMany({
@@ -47,7 +55,7 @@ export const addonRouter = router({
             };
         }),
 
-    create: protectedProcedure
+    create: editorProcedure
         .input(addonFormSchema.extend({
             productIds: z.array(z.string()),
             tiers: z.array(tierSchema)
@@ -66,7 +74,7 @@ export const addonRouter = router({
             });
         }),
 
-    update: protectedProcedure
+    update: editorProcedure
         .input(addonFormSchema.extend({
             id: z.string(),
             productIds: z.array(z.string()),
@@ -92,7 +100,7 @@ export const addonRouter = router({
             });
         }),
 
-    delete: protectedProcedure
+    delete: editorProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
             return prisma.addon.delete({ where: { id: input.id } });

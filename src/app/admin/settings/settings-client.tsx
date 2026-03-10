@@ -23,6 +23,11 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { Input } from "@/components/shared/ui/input";
+import {
+	AdminPageHeader,
+	AdminFormSection,
+	AdminFormContainer
+} from "@/components/shared/ui/admin-ui";
 
 export default function AdminSettingsPage() {
 	const [activeTab, setActiveTab] = useState<
@@ -30,52 +35,56 @@ export default function AdminSettingsPage() {
 	>("profile");
 
 	const { data: user } = trpc.admin.getCurrentUser.useQuery();
+	const isAdmin = user?.role === "ADMIN";
+
+	const tabs = [
+		{ id: "profile", label: "Profil", icon: User, show: true },
+		{ id: "security", label: "Sicherheit", icon: Lock, show: true },
+		{ id: "pricing", label: "Preise", icon: Euro, show: isAdmin },
+		{ id: "design", label: "Design", icon: ImageIcon, show: isAdmin },
+		{ id: "system", label: "System", icon: Hammer, show: isAdmin }
+	].filter((t) => t.show);
 
 	return (
-		<div className="space-y-6">
-			<div>
-				<h1 className="text-[1.6rem] font-extrabold text-[#1a1a2e] tracking-tight mb-1">
-					Einstellungen
-				</h1>
-				<p className="text-[0.85rem] text-[#999] m-0">
-					Verwalte Dein Profil und die globalen Systemeinstellungen.
-				</p>
-			</div>
+		<div className="space-y-8 pb-12">
+			<AdminPageHeader
+				title="Einstellungen"
+				subtitle="Verwalte Dein Profil und die globalen Systemeinstellungen."
+				backHref="/admin"
+			/>
 
-			<nav className="flex gap-2 p-1 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl w-fit">
-				{[
-					{ id: "profile", label: "Profil", icon: User },
-					{ id: "pricing", label: "Preise", icon: Euro },
-					{ id: "design", label: "Design", icon: ImageIcon },
-					{ id: "security", label: "Sicherheit", icon: Lock },
-					{ id: "system", label: "System", icon: Hammer }
-				].map((tab) => (
-					<button
-						key={tab.id}
-						onClick={() => setActiveTab(tab.id as any)}
-						className={clsx(
-							"flex items-center gap-2 px-5 py-2 rounded-lg text-[0.82rem] font-semibold transition-all duration-200 cursor-pointer border-none",
-							activeTab === tab.id
-								? "bg-white text-[#1a1a2e] shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-[#eaedf0]"
-								: "bg-transparent text-[#888] hover:text-[#1a1a2e]"
+			<div className="flex flex-col gap-8">
+				<nav className="flex flex-wrap gap-2 p-1.5 bg-[#f0f2f5] border border-[#eaedf0] rounded-2xl w-fit">
+					{tabs.map((tab) => (
+						<button
+							key={tab.id}
+							onClick={() => setActiveTab(tab.id as any)}
+							className={clsx(
+								"flex items-center gap-2.5 px-6 py-2.5 rounded-xl text-[0.85rem] font-bold transition-all duration-300 cursor-pointer border-none",
+								activeTab === tab.id
+									? "bg-white text-[#e20074] shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#eaedf0]"
+									: "bg-transparent text-[#888] hover:text-[#1a1a2e] hover:bg-white/50"
+							)}
+						>
+							<tab.icon className="w-4 h-4" />
+							{tab.label}
+						</button>
+					))}
+				</nav>
+
+				<AdminFormContainer>
+					<AnimatePresence mode="wait">
+						{activeTab === "profile" && (
+							<ProfilePanel key="profile" user={user} />
 						)}
-					>
-						<tab.icon className="w-3.5 h-3.5" />
-						{tab.label}
-					</button>
-				))}
-			</nav>
-
-			<div className="min-h-[500px]">
-				<AnimatePresence mode="wait">
-					{activeTab === "profile" && (
-						<ProfilePanel key="profile" user={user} />
-					)}
-					{activeTab === "pricing" && <PricingPanel key="pricing" />}
-					{activeTab === "design" && <DesignPanel key="design" />}
-					{activeTab === "security" && <SecurityPanel key="security" />}
-					{activeTab === "system" && <SystemPanel key="system" />}
-				</AnimatePresence>
+						{activeTab === "pricing" && <PricingPanel key="pricing" />}
+						{activeTab === "design" && <DesignPanel key="design" />}
+						{activeTab === "security" && (
+							<SecurityPanel key="security" isAdmin={isAdmin} />
+						)}
+						{activeTab === "system" && <SystemPanel key="system" />}
+					</AnimatePresence>
+				</AdminFormContainer>
 			</div>
 		</div>
 	);
@@ -108,7 +117,13 @@ function ProfilePanel({ user }: { user: any }) {
 								{user?.role || "ADMIN"}
 							</span>
 							<span className="px-2.5 py-0.5 bg-[#f7f8fa] text-[#888] rounded-lg text-[0.65rem] font-bold uppercase tracking-wider border border-[#eaedf0]">
-								Globaler Zugriff
+								{user?.team?.name
+									? `Team: ${user.team.name}`
+									: user?.location?.name
+										? user.location.name
+										: user?.odRegion?.name
+											? user.odRegion.name
+											: "Globaler Zugriff"}
 							</span>
 						</div>
 					</div>
@@ -172,7 +187,7 @@ function ProfilePanel({ user }: { user: any }) {
 	);
 }
 
-function SecurityPanel() {
+function SecurityPanel({ isAdmin }: { isAdmin: boolean }) {
 	const [oldPassword, setOldPassword] = useState("");
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
@@ -215,124 +230,6 @@ function SecurityPanel() {
 		mutation.mutate({ oldPassword, newPassword });
 	};
 
-	return (
-		<motion.div
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, y: -10 }}
-			className="space-y-6"
-		>
-			<form
-				onSubmit={handleSubmit}
-				className="bg-white border border-[#eaedf0] rounded-2xl p-6 shadow-sm max-w-2xl space-y-6"
-			>
-				<div className="flex items-center gap-3">
-					<div className="w-10 h-10 bg-[#f7f8fa] rounded-xl flex items-center justify-center border border-[#eaedf0]">
-						<Lock className="w-5 h-5 text-[#888]" />
-					</div>
-					<h3 className="text-[1.1rem] font-extrabold text-[#1a1a2e] m-0">
-						Passwort ändern
-					</h3>
-				</div>
-
-				<div className="space-y-5">
-					<Input
-						label="Aktuelles Passwort"
-						type="password"
-						required
-						value={oldPassword}
-						onChange={(e) => setOldPassword(e.target.value)}
-						placeholder="••••••••••••"
-						className="font-mono text-lg tracking-widest"
-					/>
-
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-						<Input
-							label="Neues Passwort"
-							type="password"
-							required
-							value={newPassword}
-							onChange={(e) => setNewPassword(e.target.value)}
-							placeholder="••••••••••••"
-							className="font-mono text-lg tracking-widest"
-						/>
-						<Input
-							label="Passwort bestätigen"
-							type="password"
-							required
-							value={confirmPassword}
-							onChange={(e) => setConfirmPassword(e.target.value)}
-							placeholder="••••••••••••"
-							className="font-mono text-lg tracking-widest"
-						/>
-					</div>
-				</div>
-
-				{status === "error" && (
-					<motion.div
-						initial={{ opacity: 0, scale: 0.98 }}
-						animate={{ opacity: 1, scale: 1 }}
-						className="p-3.5 bg-red-50 text-red-600 rounded-xl text-[0.85rem] font-semibold flex gap-2 items-center border border-red-100"
-					>
-						<AlertTriangle className="w-4 h-4 shrink-0" />
-						{errorMsg}
-					</motion.div>
-				)}
-
-				{status === "success" && (
-					<motion.div
-						initial={{ opacity: 0, scale: 0.98 }}
-						animate={{ opacity: 1, scale: 1 }}
-						className="p-3.5 bg-green-50 text-green-700 rounded-xl text-[0.85rem] font-semibold flex gap-2 items-center border border-green-100"
-					>
-						<Check className="w-4 h-4 shrink-0" />
-						Passwort wurde erfolgreich aktualisiert.
-					</motion.div>
-				)}
-
-				<div className="pt-2">
-					<button
-						type="submit"
-						disabled={status === "pending"}
-						className={clsx(
-							"px-5 py-2.5 rounded-xl font-semibold text-white flex items-center gap-2 transition-all duration-200 text-[0.82rem] cursor-pointer shadow-[0_4px_14px_rgba(226,0,116,0.25)] hover:shadow-[0_6px_20px_rgba(226,0,116,0.3)] hover:-translate-y-0.5 active:scale-95",
-							status === "pending"
-								? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-								: "bg-[#e20074] hover:bg-[#c70066]"
-						)}
-					>
-						{status === "pending" ? (
-							<Loader2 className="w-4 h-4 animate-spin" />
-						) : (
-							<Save className="w-4 h-4" />
-						)}
-						{status === "pending"
-							? "Wird gespeichert..."
-							: "Änderungen speichern"}
-					</button>
-				</div>
-			</form>
-		</motion.div>
-	);
-}
-
-function SystemPanel() {
-	const { data: isMaintenance, refetch } =
-		trpc.admin.getMaintenanceStatus.useQuery();
-	const toggleMutation = trpc.admin.toggleMaintenanceMode.useMutation({
-		onSuccess: () => {
-			refetch();
-		}
-	});
-
-	const [isPending, setIsPending] = useState(false);
-
-	const handleToggle = async () => {
-		setIsPending(true);
-		await toggleMutation.mutateAsync({ enabled: !isMaintenance });
-		setIsPending(false);
-	};
-
 	const { data: securitySettingsData, refetch: refetchSecurity } =
 		trpc.admin.getSecuritySettings.useQuery();
 	const updateSecurityMutation = trpc.admin.updateSecuritySettings.useMutation({
@@ -345,7 +242,6 @@ function SystemPanel() {
 	const [isSecurityPending, setIsSecurityPending] = useState(false);
 	const [securitySaved, setSecuritySaved] = useState(false);
 
-	// Update local state when data loads
 	useEffect(() => {
 		if (securitySettingsData) {
 			setAllowedIps(securitySettingsData.allowedIps);
@@ -371,157 +267,252 @@ function SystemPanel() {
 			initial={{ opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -10 }}
-			className="space-y-6 max-w-3xl"
+			className="space-y-8"
 		>
-			<div className="bg-white border border-[#eaedf0] rounded-2xl p-6 md:p-8 shadow-sm overflow-hidden relative">
-				{isMaintenance && (
-					<div className="absolute top-0 right-0 p-5">
-						<div className="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-600 rounded-lg text-[0.7rem] font-bold border border-red-100 uppercase tracking-wider animate-pulse">
-							<div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-							Aktiv
+			<AdminFormSection
+				title="Passwort ändern"
+				description="Aktualisiere Deine Zugangsdaten regelmäßig."
+				icon={Lock}
+			>
+				<form onSubmit={handleSubmit} className="space-y-6">
+					<Input
+						label="Aktuelles Passwort"
+						type="password"
+						required
+						value={oldPassword}
+						onChange={(e) => setOldPassword(e.target.value)}
+						placeholder="••••••••••••"
+						className="font-mono text-lg tracking-widest"
+					/>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<Input
+							label="Neues Passwort"
+							type="password"
+							required
+							value={newPassword}
+							onChange={(e) => setNewPassword(e.target.value)}
+							placeholder="••••••••••••"
+							className="font-mono text-lg tracking-widest"
+						/>
+						<Input
+							label="Passwort bestätigen"
+							type="password"
+							required
+							value={confirmPassword}
+							onChange={(e) => setConfirmPassword(e.target.value)}
+							placeholder="••••••••••••"
+							className="font-mono text-lg tracking-widest"
+						/>
+					</div>
+
+					{status === "error" && (
+						<div className="p-4 bg-red-50 text-red-600 rounded-2xl text-[0.85rem] font-bold border border-red-100 flex gap-2 items-center">
+							<AlertTriangle className="w-4 h-4 shrink-0" />
+							{errorMsg}
 						</div>
-					</div>
-				)}
+					)}
 
-				<div className="max-w-xl">
-					<div className="w-14 h-14 bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl flex items-center justify-center mb-6">
-						<Hammer className="w-6 h-6 text-[#1a1a2e]" />
-					</div>
+					{status === "success" && (
+						<div className="p-4 bg-green-50 text-green-700 rounded-2xl text-[0.85rem] font-bold border border-green-100 flex gap-2 items-center">
+							<Check className="w-4 h-4 shrink-0" />
+							Passwort wurde erfolgreich aktualisiert.
+						</div>
+					)}
 
-					<h2 className="text-[1.4rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight">
-						Wartungsmodus
-					</h2>
-					<p className="text-[0.85rem] text-[#888] leading-relaxed mb-8">
-						Wenn der Wartungsmodus aktiviert ist, wird der Zugriff auf das
-						Sales-Tool für alle nicht-administrativen Nutzer gesperrt.
-					</p>
+					<button
+						type="submit"
+						disabled={status === "pending"}
+						className={clsx(
+							"px-6 py-2.5 rounded-xl font-black text-white flex items-center gap-2 transition-all duration-300 text-[0.85rem] cursor-pointer shadow-md active:scale-95",
+							status === "pending"
+								? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
+								: "bg-[#1a1a2e] hover:bg-[#2a2a3e] hover:shadow-lg hover:-translate-y-0.5"
+						)}
+					>
+						{status === "pending" ? (
+							<Loader2 className="w-4 h-4 animate-spin" />
+						) : (
+							<Save className="w-4 h-4" />
+						)}
+						{status === "pending" ? "Speichere..." : "Passwort aktualisieren"}
+					</button>
+				</form>
+			</AdminFormSection>
 
-					<div className="mb-8">
-						<div className="flex gap-3 items-start p-4 bg-[#f7f8fa] rounded-xl border border-[#eaedf0]">
-							<ShieldAlert className="w-5 h-5 text-[#999] shrink-0 mt-0.5" />
-							<p className="text-[0.8rem] text-[#666] m-0 leading-relaxed">
-								<span className="font-bold text-[#1a1a2e]">
-									Sicherheits-Sperre:
-								</span>{" "}
-								Laufende Beratungsvorgänge werden unterbrochen und Agenten
-								können keine neuen Angebote erstellen.
+			{isAdmin && (
+				<AdminFormSection
+					title="Globale Sicherheit"
+					description="IP-Beschränkungen und E-Mail Verifikation für das Setup."
+					icon={Shield}
+				>
+					<div className="space-y-6">
+						<div className="space-y-2">
+							<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
+								Erlaubte IP-Adressen (CIDR)
+							</label>
+							<textarea
+								value={allowedIps}
+								onChange={(e) => setAllowedIps(e.target.value)}
+								placeholder="Beispiele:&#10;192.168.1.1&#10;10.0.0.0/8"
+								className="w-full h-32 px-5 py-4 rounded-2xl border border-[#eaedf0] bg-[#f7f8fa] text-[#1a1a2e] focus:outline-none focus:bg-white focus:border-[#e20074] transition-all text-[0.9rem] font-mono resize-none"
+							/>
+							<p className="text-[0.7rem] text-[#888] font-medium">
+								Lasse das Feld leer, um den Zugriff weltweit zu erlauben. Eine
+								IP pro Zeile.
 							</p>
 						</div>
+
+						<div className="p-6 bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl flex items-center justify-between">
+							<div>
+								<h4 className="text-[1rem] font-bold text-[#1a1a2e] m-0 mb-1">
+									E-Mail Verifikation
+								</h4>
+								<p className="text-[0.8rem] text-[#888] m-0 max-w-sm">
+									Verlangt einen Code per E-Mail beim Setup-Prozess. (Empfohlen)
+								</p>
+							</div>
+							<label className="relative inline-flex items-center cursor-pointer">
+								<input
+									type="checkbox"
+									className="sr-only peer"
+									checked={requireEmailVerification}
+									onChange={(e) =>
+										setRequireEmailVerification(e.target.checked)
+									}
+								/>
+								<div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#e20074]"></div>
+							</label>
+						</div>
+
+						<button
+							onClick={handleSaveSecurity}
+							disabled={isSecurityPending}
+							className={clsx(
+								"w-full px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
+								isSecurityPending
+									? "bg-[#ddd] shadow-none text-[#999]"
+									: securitySaved
+										? "bg-green-600 text-white shadow-md shadow-green-100"
+										: "bg-[#1a1a2e] text-white hover:bg-[#2a2a3e] shadow-md"
+							)}
+						>
+							{isSecurityPending ? (
+								<Loader2 className="w-4 h-4 animate-spin" />
+							) : securitySaved ? (
+								<Check className="w-4 h-4" />
+							) : (
+								<Save className="w-4 h-4" />
+							)}
+							{securitySaved ? "Gespeichert" : "Sicherheit speichern"}
+						</button>
 					</div>
+				</AdminFormSection>
+			)}
+		</motion.div>
+	);
+}
+
+function SystemPanel() {
+	const { data: isMaintenance, refetch } =
+		trpc.admin.getMaintenanceStatus.useQuery();
+	const toggleMutation = trpc.admin.toggleMaintenanceMode.useMutation({
+		onSuccess: () => {
+			refetch();
+		}
+	});
+
+	const [isPending, setIsPending] = useState(false);
+
+	const handleToggle = async () => {
+		setIsPending(true);
+		await toggleMutation.mutateAsync({ enabled: !isMaintenance });
+		setIsPending(false);
+	};
+
+	if (!isMaintenance && isMaintenance === undefined) {
+		return (
+			<div className="flex items-center gap-2 text-[0.85rem] text-[#888]">
+				<Loader2 className="w-4 h-4 animate-spin" /> Lade Systemstatus...
+			</div>
+		);
+	}
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 10 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -10 }}
+			className="space-y-6"
+		>
+			<AdminFormSection
+				title="Wartungsarbeiten"
+				description="Steuere die Verfügbarkeit des Sales-Tools."
+				icon={Hammer}
+			>
+				<div className="p-8 border-2 border-dashed border-[#eaedf0] rounded-3xl flex flex-col items-center text-center">
+					<div
+						className={clsx(
+							"w-20 h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500",
+							isMaintenance
+								? "bg-red-50 text-red-600 shadow-lg shadow-red-100 animate-pulse"
+								: "bg-green-50 text-green-600 shadow-lg shadow-green-100"
+						)}
+					>
+						{isMaintenance ? (
+							<ShieldAlert className="w-10 h-10" />
+						) : (
+							<Check className="w-10 h-10" />
+						)}
+					</div>
+
+					<h3 className="text-[1.3rem] font-extrabold text-[#1a1a2e] m-0 mb-2">
+						{isMaintenance ? "Wartungsmodus ist AKTIV" : "Tool ist BEREIT"}
+					</h3>
+					<p className="text-[0.9rem] text-[#888] max-w-sm m-0 mb-8 leading-relaxed">
+						{isMaintenance
+							? "Das Sales-Tool ist aktuell für alle Nutzer gesperrt. Nur Administratoren haben Zugriff."
+							: "Das Tool ist für alle registrierten Mitarbeiter uneingeschränkt nutzbar."}
+					</p>
 
 					<button
 						onClick={handleToggle}
 						disabled={isPending}
 						className={clsx(
-							"px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
+							"px-8 py-3.5 rounded-2xl font-black text-[0.85rem] transition-all duration-300 flex items-center gap-3 active:scale-95 shadow-md",
 							isMaintenance
-								? "bg-white text-red-600 border-2 border-red-200 hover:bg-red-50"
-								: "bg-[#1a1a2e] text-white hover:bg-[#2a2a3e] shadow-[0_4px_14px_rgba(26,26,46,0.2)] hover:shadow-[0_6px_20px_rgba(26,26,46,0.3)] hover:-translate-y-0.5 border-2 border-transparent"
+								? "bg-white text-red-600 border border-red-200 hover:bg-red-50"
+								: "bg-[#1a1a2e] text-white hover:bg-[#2a2a3e] hover:shadow-lg hover:-translate-y-0.5"
 						)}
 					>
 						{isPending ? (
-							<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+							<Loader2 className="w-4 h-4 animate-spin" />
+						) : isMaintenance ? (
+							"Wartungsmodus beenden"
 						) : (
-							<>
-								{isMaintenance
-									? "Wartungsmodus deaktivieren"
-									: "Wartungsmodus jetzt aktivieren"}
-								{!isMaintenance && <ArrowRight className="w-4 h-4" />}
-							</>
+							"Wartungsmodus aktivieren"
 						)}
+						{!isPending && !isMaintenance && <ArrowRight className="w-4 h-4" />}
 					</button>
 				</div>
-			</div>
+			</AdminFormSection>
 
-			<div className="bg-white border border-[#eaedf0] rounded-2xl p-6 md:p-8 shadow-sm overflow-hidden relative">
-				<div className="max-w-xl">
-					<div className="w-14 h-14 bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl flex items-center justify-center mb-6">
-						<Shield className="w-6 h-6 text-[#1a1a2e]" />
-					</div>
-
-					<h2 className="text-[1.4rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight">
-						IP-Zugriffsbeschränkung
-					</h2>
-					<p className="text-[0.85rem] text-[#888] leading-relaxed mb-6">
-						Lege hier fest, aus welchen IP-Adressen oder IP-Ranges (CIDR) der
-						Zugriff auf die Setup-Seite erlaubt ist. Ist diese Liste leer, ist
-						der Zugriff weltweit aus allen Netzen gestattet.
-					</p>
-
-					<div className="space-y-4 mb-6">
-						<textarea
-							value={allowedIps}
-							onChange={(e) => setAllowedIps(e.target.value)}
-							placeholder="Beispiele:&#10;192.168.1.1&#10;10.0.0.0/8&#10;2001:db8::/32"
-							className="w-full h-32 px-5 py-4 rounded-2xl border border-[#eaedf0] bg-[#f7f8fa] text-[#1a1a2e] focus:outline-none focus:bg-white focus:border-[#e20074]/30 focus:shadow-[0_0_0_4px_rgba(226,0,116,0.06)] transition-all text-[0.95rem] font-mono resize-none placeholder:text-[#ccc]"
-						/>
-						<p className="text-[0.75rem] text-[#999] m-0">
-							Trage eine IPv4/IPv6-Adresse oder ein CIDR-Subnetz pro Zeile ein.
+			<div className="bg-[#1a1a2e] rounded-3xl p-8 text-white relative overflow-hidden shadow-xl">
+				<div className="absolute top-0 right-0 w-64 h-64 bg-[#e20074]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+				<div className="relative z-10 flex items-center justify-between gap-6">
+					<div>
+						<h3 className="text-[1.2rem] font-extrabold mb-2 text-white tracking-tight m-0">
+							System Architektur
+						</h3>
+						<p className="text-[#a1a1aa] text-[0.9rem] leading-relaxed max-w-xl m-0">
+							Deine Instanz läuft auf der aktuellen Version der Sales
+							Experience-Plattform. Alle Daten werden DSGVO-konform in der
+							lokalen Datenbank verschlüsselt gespeichert.
 						</p>
 					</div>
-
-					<div className="mb-6 pt-4 border-t border-[#eaedf0] flex items-center justify-between">
-						<div>
-							<h3 className="text-[1rem] font-bold text-[#1a1a2e] mb-1">
-								E-Mail-Verifikation
-							</h3>
-							<p className="text-[0.8rem] text-[#888] m-0 max-w-sm">
-								Muss ein Code per E-Mail gesendet werden, um den internen
-								Bereich betreten zu dürfen? (Empfohlen)
-							</p>
-						</div>
-						<label className="relative inline-flex items-center cursor-pointer">
-							<input
-								type="checkbox"
-								className="sr-only peer"
-								checked={requireEmailVerification}
-								onChange={(e) => setRequireEmailVerification(e.target.checked)}
-							/>
-							<div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#e20074]"></div>
-						</label>
+					<div className="w-20 h-20 bg-white/5 rounded-3xl hidden md:flex items-center justify-center border border-white/10 shrink-0">
+						<Shield className="w-10 h-10 text-white/20" />
 					</div>
-
-					<button
-						onClick={handleSaveSecurity}
-						disabled={isSecurityPending}
-						className={clsx(
-							"px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
-							isSecurityPending
-								? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-								: securitySaved
-									? "bg-green-600 text-white hover:bg-green-700 shadow-[0_4px_14px_rgba(22,163,74,0.2)]"
-									: "bg-[#1a1a2e] text-white hover:bg-[#2a2a3e] shadow-[0_4px_14px_rgba(26,26,46,0.2)] hover:shadow-[0_6px_20px_rgba(26,26,46,0.3)] hover:-translate-y-0.5 border-2 border-transparent"
-						)}
-					>
-						{isSecurityPending ? (
-							<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-						) : securitySaved ? (
-							<>
-								<Check className="w-4 h-4" />
-								Gespeichert
-							</>
-						) : (
-							<>
-								<Save className="w-4 h-4" />
-								Sicherheits-Einstellungen speichern
-							</>
-						)}
-					</button>
-				</div>
-			</div>
-
-			<div className="bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl p-6 flex gap-4 items-center">
-				<div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-[#eaedf0]">
-					<Shield className="w-5 h-5 text-[#888]" />
-				</div>
-				<div>
-					<h4 className="text-[#1a1a2e] font-bold m-0 text-[0.9rem] mb-1">
-						Admin-Privileg
-					</h4>
-					<p className="text-[#888] m-0 text-[0.8rem]">
-						Du als Administrator kannst das Tool auch während der
-						Wartungsarbeiten weiterhin nutzen, um Änderungen zu testen.
-					</p>
 				</div>
 			</div>
 		</motion.div>
@@ -591,155 +582,130 @@ function PricingPanel() {
 
 	if (isLoading) {
 		return (
-			<div className="flex items-center gap-2 text-sm text-[#888]">
+			<div className="flex items-center gap-2 text-[0.85rem] text-[#888]">
 				<Loader2 className="w-4 h-4 animate-spin" /> Lade Preise...
 			</div>
 		);
 	}
+
+	const SaveButton = (
+		<button
+			onClick={handleSave}
+			disabled={status === "pending"}
+			className={clsx(
+				"px-6 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
+				status === "pending"
+					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
+					: "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:-translate-y-0.5"
+			)}
+		>
+			{status === "pending" ? (
+				<Loader2 className="w-4 h-4 animate-spin" />
+			) : (
+				<Save className="w-4 h-4" />
+			)}
+			Preise speichern
+		</button>
+	);
 
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -10 }}
-			className="space-y-6 max-w-3xl"
+			className="space-y-6"
 		>
-			<form
-				onSubmit={handleSave}
-				className="bg-white border border-[#eaedf0] rounded-2xl shadow-sm overflow-hidden"
+			<AdminFormSection
+				title="MagentaTV Pakete"
+				description="Monatliche Grundpreise der TV-Optionen."
+				icon={Euro}
 			>
-				<div className="p-6 md:p-8 space-y-6">
-					<div className="flex items-center gap-4 mb-6">
-						<div className="w-14 h-14 bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl flex items-center justify-center">
-							<Euro className="w-6 h-6 text-[#1a1a2e]" />
-						</div>
-						<div>
-							<h2 className="text-[1.4rem] font-extrabold text-[#1a1a2e] mb-1 tracking-tight">
-								Globale Preise
-							</h2>
-							<p className="text-[0.85rem] text-[#888] m-0">
-								Diese Preise werden global für Hardware-Versand,
-								MagentaTV-Pakete und PlusKarten angewendet.
-							</p>
-						</div>
-					</div>
-
-					{/* MagentaTV Preise */}
-					<div>
-						<h3 className="text-sm font-bold text-[#1a1a2e] uppercase tracking-wider mb-4 border-b pb-2">
-							MagentaTV
-						</h3>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-							<Input
-								label="MagentaTV Smart"
-								type="number"
-								step="0.01"
-								value={form.magentatv_smart_price}
-								onChange={(e) =>
-									handleChange("magentatv_smart_price", e.target.value)
-								}
-							/>
-							<Input
-								label="MagentaTV SmartStream"
-								type="number"
-								step="0.01"
-								value={form.magentatv_smartstream_price}
-								onChange={(e) =>
-									handleChange("magentatv_smartstream_price", e.target.value)
-								}
-							/>
-							<Input
-								label="MagentaTV MegaStream"
-								type="number"
-								step="0.01"
-								value={form.magentatv_megastream_price}
-								onChange={(e) =>
-									handleChange("magentatv_megastream_price", e.target.value)
-								}
-							/>
-						</div>
-					</div>
-
-					{/* PlusKarten */}
-					<div>
-						<h3 className="text-sm font-bold text-[#1a1a2e] uppercase tracking-wider mb-4 border-b pb-2 pt-2">
-							PlusKarten
-						</h3>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-							<Input
-								label="PlusKarte (Erste)"
-								type="number"
-								step="0.01"
-								value={form.plus_karte_first_price}
-								onChange={(e) =>
-									handleChange("plus_karte_first_price", e.target.value)
-								}
-							/>
-							<Input
-								label="PlusKarte (Jede weitere)"
-								type="number"
-								step="0.01"
-								value={form.plus_karte_following_price}
-								onChange={(e) =>
-									handleChange("plus_karte_following_price", e.target.value)
-								}
-							/>
-						</div>
-					</div>
-
-					{/* Sonstiges */}
-					<div>
-						<h3 className="text-sm font-bold text-[#1a1a2e] uppercase tracking-wider mb-4 border-b pb-2 pt-2">
-							Einmalige Kosten
-						</h3>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-							<Input
-								label="Hardware Versandpauschale"
-								type="number"
-								step="0.01"
-								value={form.shipping_hardware_fee}
-								onChange={(e) =>
-									handleChange("shipping_hardware_fee", e.target.value)
-								}
-							/>
-						</div>
-					</div>
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<Input
+						label="MagentaTV Smart"
+						type="number"
+						step="0.01"
+						value={form.magentatv_smart_price}
+						onChange={(e) =>
+							handleChange("magentatv_smart_price", e.target.value)
+						}
+					/>
+					<Input
+						label="MagentaTV SmartStream"
+						type="number"
+						step="0.01"
+						value={form.magentatv_smartstream_price}
+						onChange={(e) =>
+							handleChange("magentatv_smartstream_price", e.target.value)
+						}
+					/>
+					<Input
+						label="MagentaTV MegaStream"
+						type="number"
+						step="0.01"
+						value={form.magentatv_megastream_price}
+						onChange={(e) =>
+							handleChange("magentatv_megastream_price", e.target.value)
+						}
+					/>
 				</div>
+			</AdminFormSection>
 
-				<div className="bg-[#f7f8fa] p-5 border-t border-[#eaedf0] flex items-center justify-between">
-					<div>
-						{status === "success" && (
-							<span className="text-green-600 font-medium flex items-center gap-2 text-[0.85rem]">
-								<Check className="w-4 h-4" /> Erfolgreich gespeichert
-							</span>
-						)}
-						{status === "error" && (
-							<span className="text-red-500 font-medium flex items-center gap-2 text-[0.85rem]">
+			<AdminFormSection
+				title="Zusatzkarten & Gebühren"
+				description="Preise für PlusKarten und Versand."
+				icon={Tag}
+			>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<Input
+						label="PlusKarte (Erste)"
+						type="number"
+						step="0.01"
+						value={form.plus_karte_first_price}
+						onChange={(e) =>
+							handleChange("plus_karte_first_price", e.target.value)
+						}
+					/>
+					<Input
+						label="PlusKarte (Jede weitere)"
+						type="number"
+						step="0.01"
+						value={form.plus_karte_following_price}
+						onChange={(e) =>
+							handleChange("plus_karte_following_price", e.target.value)
+						}
+					/>
+					<Input
+						label="Hardware Versandpauschale"
+						type="number"
+						step="0.01"
+						value={form.shipping_hardware_fee}
+						onChange={(e) =>
+							handleChange("shipping_hardware_fee", e.target.value)
+						}
+					/>
+				</div>
+			</AdminFormSection>
+
+			<div className="flex items-center justify-between p-6 bg-[#f7f8fa] border border-[#eaedf0] rounded-3xl">
+				<div className="flex flex-col">
+					{(status === "success" && (
+						<p className="text-green-600 font-bold text-[0.85rem] m-0 flex items-center gap-2">
+							<Check className="w-4 h-4" /> Änderungen gespeichert
+						</p>
+					)) ||
+						(status === "error" && (
+							<p className="text-red-500 font-bold text-[0.85rem] m-0 flex items-center gap-2">
 								<AlertTriangle className="w-4 h-4" /> Fehler beim Speichern
-							</span>
+							</p>
+						)) || (
+							<p className="text-[#888] font-medium text-[0.8rem] m-0">
+								Änderungen werden sofort für alle Nutzer übernommen.
+							</p>
 						)}
-					</div>
-					<button
-						type="submit"
-						disabled={status === "pending"}
-						className={clsx(
-							"px-6 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
-							status === "pending"
-								? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-								: "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:-translate-y-0.5"
-						)}
-					>
-						{status === "pending" ? (
-							<Loader2 className="w-4 h-4 animate-spin" />
-						) : (
-							<Save className="w-4 h-4" />
-						)}
-						{status === "pending"
-							? "Speichere..."
-							: "Preis-Konfiguration speichern"}
-					</button>
 				</div>
-			</form>
+				{SaveButton}
+			</div>
 		</motion.div>
 	);
 }
@@ -807,173 +773,145 @@ function DesignPanel() {
 
 	if (isLoading) {
 		return (
-			<div className="flex items-center gap-2 text-sm text-[#888]">
+			<div className="flex items-center gap-2 text-[0.85rem] text-[#888]">
 				<Loader2 className="w-4 h-4 animate-spin" /> Lade Design
 				Einstellungen...
 			</div>
 		);
 	}
 
+	const SaveButton = (
+		<button
+			onClick={handleSave}
+			disabled={status === "pending"}
+			className={clsx(
+				"px-6 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
+				status === "pending"
+					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
+					: "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:-translate-y-0.5"
+			)}
+		>
+			{status === "pending" ? (
+				<Loader2 className="w-4 h-4 animate-spin" />
+			) : (
+				<Save className="w-4 h-4" />
+			)}
+			Design speichern
+		</button>
+	);
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -10 }}
-			className="space-y-6 max-w-3xl"
+			className="space-y-6"
 		>
-			<form
-				onSubmit={handleSave}
-				className="bg-white border border-[#eaedf0] rounded-2xl shadow-sm overflow-hidden"
+			<AdminFormSection
+				title="Hintergrundbilder"
+				description="Bilder für Header und MagentaTV-Bereiche."
+				icon={ImageIcon}
 			>
-				<div className="p-6 md:p-8 space-y-6">
-					<div className="flex items-center gap-4 mb-6">
-						<div className="w-14 h-14 bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl flex items-center justify-center">
-							<ImageIcon className="w-6 h-6 text-[#1a1a2e]" />
-						</div>
-						<div>
-							<h2 className="text-[1.4rem] font-extrabold text-[#1a1a2e] mb-1 tracking-tight">
-								Design & Medien
-							</h2>
-							<p className="text-[0.85rem] text-[#888] m-0">
-								Diese Einstellungen legen globale Bilder und Design-Elemente
-								fest.
-							</p>
-						</div>
-					</div>
-
-					{/* Globale Bilder */}
+				<div className="space-y-6">
 					<div>
-						<h3 className="text-sm font-bold text-[#1a1a2e] uppercase tracking-wider mb-4 border-b pb-2">
-							Globale Bilder
-						</h3>
-						<div className="grid grid-cols-1 gap-5">
-							<Input
-								label="MagentaTV Hintergrundbild (URL)"
-								type="text"
-								placeholder="https://test.com/magentatv-bg.png"
-								value={form.magentatv_background_image}
-								onChange={(e) =>
-									handleChange("magentatv_background_image", e.target.value)
-								}
-							/>
-							<p className="text-[#888] text-[0.8rem] -mt-3">
-								Dieses Bild wird im Kalkulator als Hintergrund für
-								Zubuchoptionen verwendet, die &quot;MagentaTV&quot; im Namen
-								haben. Es wird automatisch abgedunkelt und weichgezeichnet.
-							</p>
-						</div>
-
-						<div className="grid grid-cols-1 gap-5 mt-5">
-							<Input
-								label="Header Hintergrundbild (URL)"
-								type="text"
-								placeholder="https://test.com/header-bg.png"
-								value={form.header_background_image}
-								onChange={(e) =>
-									handleChange("header_background_image", e.target.value)
-								}
-							/>
-							<p className="text-[#888] text-[0.8rem] -mt-3">
-								Dieses Bild wird im Header (Startseite) hinter dem Grußtext
-								angezeigt. Es wird automatisch leicht abgedunkelt.
-							</p>
-						</div>
-					</div>
-
-					{/* Kategorie Bilder */}
-					<div>
-						<h3 className="text-sm font-bold text-[#1a1a2e] uppercase tracking-wider mb-4 border-b pb-2 pt-4">
-							Kategorie-Karten (Hintergrundbilder)
-						</h3>
-						<p className="text-[0.8rem] text-[#888] mb-4">
-							Hinterlege Bilder (URLs) für die Kategorien auf der Startseite.
-							Wenn eingestellt, wird das Bild beim Hovern im Hintergrund leicht
-							abgedunkelt und weichgezeichnet eingeblendet.
+						<Input
+							label="MagentaTV Hintergrundbild (URL)"
+							type="text"
+							placeholder="https://test.com/magentatv-bg.png"
+							value={form.magentatv_background_image}
+							onChange={(e) =>
+								handleChange("magentatv_background_image", e.target.value)
+							}
+						/>
+						<p className="text-[#888] text-[0.75rem] mt-2 font-medium">
+							Wird für Zubuchoptionen mit &quot;MagentaTV&quot; im Namen
+							verwendet.
 						</p>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-							<Input
-								label="Mobilfunk"
-								type="text"
-								placeholder="https://test.com/mobilfunk-bg.png"
-								value={form.category_image_MOBILE}
-								onChange={(e) =>
-									handleChange("category_image_MOBILE", e.target.value)
-								}
-							/>
-							<Input
-								label="Glasfaser"
-								type="text"
-								placeholder="https://test.com/glasfaser-bg.png"
-								value={form.category_image_FIBER}
-								onChange={(e) =>
-									handleChange("category_image_FIBER", e.target.value)
-								}
-							/>
-							<Input
-								label="Festnetz (DSL)"
-								type="text"
-								placeholder="https://test.com/festnetz-bg.png"
-								value={form.category_image_DSL}
-								onChange={(e) =>
-									handleChange("category_image_DSL", e.target.value)
-								}
-							/>
-							<Input
-								label="MagentaTV"
-								type="text"
-								placeholder="https://test.com/magentatv-cat-bg.png"
-								value={form.category_image_MAGENTA_TV_OTT}
-								onChange={(e) =>
-									handleChange("category_image_MAGENTA_TV_OTT", e.target.value)
-								}
-							/>
-							<Input
-								label="Endgeräte"
-								type="text"
-								placeholder="https://test.com/devices-bg.png"
-								value={form.category_image_DEVICE}
-								onChange={(e) =>
-									handleChange("category_image_DEVICE", e.target.value)
-								}
-							/>
-						</div>
 					</div>
-				</div>
 
-				<div className="bg-[#f7f8fa] p-5 border-t border-[#eaedf0] flex items-center justify-between">
 					<div>
-						{status === "success" && (
-							<span className="text-green-600 font-medium flex items-center gap-2 text-[0.85rem]">
-								<Check className="w-4 h-4" /> Erfolgreich gespeichert
-							</span>
-						)}
-						{status === "error" && (
-							<span className="text-red-500 font-medium flex items-center gap-2 text-[0.85rem]">
-								<AlertTriangle className="w-4 h-4" /> Fehler beim Speichern
-							</span>
-						)}
+						<Input
+							label="Header Hintergrundbild (URL)"
+							type="text"
+							placeholder="https://test.com/header-bg.png"
+							value={form.header_background_image}
+							onChange={(e) =>
+								handleChange("header_background_image", e.target.value)
+							}
+						/>
+						<p className="text-[#888] text-[0.75rem] mt-2 font-medium">
+							Hintergrund für den Grußtext auf der Startseite.
+						</p>
 					</div>
-					<button
-						type="submit"
-						disabled={status === "pending"}
-						className={clsx(
-							"px-6 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
-							status === "pending"
-								? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-								: "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:-translate-y-0.5"
-						)}
-					>
-						{status === "pending" ? (
-							<Loader2 className="w-4 h-4 animate-spin" />
-						) : (
-							<Save className="w-4 h-4" />
-						)}
-						{status === "pending"
-							? "Speichere..."
-							: "Design-Konfiguration speichern"}
-					</button>
 				</div>
-			</form>
+			</AdminFormSection>
+
+			<AdminFormSection
+				title="Kategorien (Hover-Effekte)"
+				description="Bilder für die Auswahl-Karten auf der Startseite."
+				icon={Tag}
+			>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<Input
+						label="Mobilfunk"
+						type="text"
+						value={form.category_image_MOBILE}
+						onChange={(e) =>
+							handleChange("category_image_MOBILE", e.target.value)
+						}
+					/>
+					<Input
+						label="Glasfaser"
+						type="text"
+						value={form.category_image_FIBER}
+						onChange={(e) =>
+							handleChange("category_image_FIBER", e.target.value)
+						}
+					/>
+					<Input
+						label="Festnetz (DSL)"
+						type="text"
+						value={form.category_image_DSL}
+						onChange={(e) => handleChange("category_image_DSL", e.target.value)}
+					/>
+					<Input
+						label="MagentaTV"
+						type="text"
+						value={form.category_image_MAGENTA_TV_OTT}
+						onChange={(e) =>
+							handleChange("category_image_MAGENTA_TV_OTT", e.target.value)
+						}
+					/>
+					<Input
+						label="Endgeräte"
+						type="text"
+						value={form.category_image_DEVICE}
+						onChange={(e) =>
+							handleChange("category_image_DEVICE", e.target.value)
+						}
+					/>
+				</div>
+			</AdminFormSection>
+
+			<div className="flex items-center justify-between p-6 bg-[#f7f8fa] border border-[#eaedf0] rounded-3xl">
+				<div className="flex flex-col">
+					{(status === "success" && (
+						<p className="text-green-600 font-bold text-[0.85rem] m-0 flex items-center gap-2">
+							<Check className="w-4 h-4" /> Änderungen gespeichert
+						</p>
+					)) ||
+						(status === "error" && (
+							<p className="text-red-500 font-bold text-[0.85rem] m-0 flex items-center gap-2">
+								<AlertTriangle className="w-4 h-4" /> Fehler beim Speichern
+							</p>
+						)) || (
+							<p className="text-[#888] font-medium text-[0.8rem] m-0">
+								Bilder werden sofort im Tool aktualisiert.
+							</p>
+						)}
+				</div>
+				{SaveButton}
+			</div>
 		</motion.div>
 	);
 }

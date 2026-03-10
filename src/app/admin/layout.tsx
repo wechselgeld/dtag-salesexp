@@ -12,12 +12,27 @@ import {
 	ArrowLeft,
 	Megaphone,
 	Layers,
-	Shield
+	Shield,
+	MapPin,
+	Globe
 } from "lucide-react";
 import clsx from "clsx";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
 import { DeleteConfirmToast } from "@/components/shared/delete-confirm-toast";
 import { trpc } from "@/lib/trpc";
+import { LucideIcon } from "lucide-react";
+
+interface MenuItem {
+	href: string;
+	label: string;
+	icon: LucideIcon;
+}
+
+interface MenuGroup {
+	title: string;
+	show: boolean;
+	items: MenuItem[];
+}
 
 export default function AdminLayout({
 	children
@@ -34,19 +49,60 @@ export default function AdminLayout({
 		}
 	});
 
+	const { data: currentUser } = trpc.auth.me.useQuery();
+
 	const handleLogout = async () => {
 		logoutMutation.mutate();
 	};
 
-	const navItems = [
-		{ href: "/admin/products", label: "Produkte", icon: Box },
-		{ href: "/admin/special-prices", label: "Aktionen", icon: Tag },
-		{ href: "/admin/addons", label: "Optionen", icon: Layers },
-		{ href: "/admin/credits", label: "Gutschriften", icon: Wallet },
-		{ href: "/admin/teams", label: "Teams", icon: Users },
-		{ href: "/admin/users", label: "Admins", icon: Shield },
-		{ href: "/admin/news", label: "Neuigkeiten", icon: Megaphone },
-		{ href: "/admin/settings", label: "Einstellungen", icon: Settings }
+	const role = currentUser?.role;
+	const isEditor = currentUser?.isEditor || role === "ADMIN";
+
+	const menuGroups: MenuGroup[] = [
+		{
+			title: "Katalog & Konditionen",
+			show: isEditor,
+			items: [
+				{ href: "/admin/products", label: "Produkte", icon: Box },
+				{ href: "/admin/special-prices", label: "Aktionen", icon: Tag },
+				{ href: "/admin/addons", label: "Optionen", icon: Layers },
+				{ href: "/admin/credits", label: "Gutschriften", icon: Wallet }
+			]
+		},
+		{
+			title: "Organisation",
+			show: true,
+			items: [
+				...(role === "ADMIN"
+					? [{ href: "/admin/od-regions", label: "OD-Bereiche", icon: Globe }]
+					: []),
+				...(role === "ADMIN" || role === "OD_MANAGER"
+					? [{ href: "/admin/locations", label: "Standorte", icon: MapPin }]
+					: []),
+				{ href: "/admin/teams", label: "Teams", icon: Users }
+			]
+		},
+		{
+			title: "Inhalte",
+			show: isEditor,
+			items: [{ href: "/admin/news", label: "Neuigkeiten", icon: Megaphone }]
+		},
+		{
+			title: "System",
+			show: true,
+			items: [
+				...(role === "ADMIN" ||
+				role === "OD_MANAGER" ||
+				role === "LOCATION_MANAGER"
+					? [{ href: "/admin/users", label: "Benutzer", icon: Shield }]
+					: []),
+				{
+					href: "/admin/settings",
+					label: "Einstellungen",
+					icon: Settings
+				}
+			]
+		}
 	];
 
 	return (
@@ -78,40 +134,49 @@ export default function AdminLayout({
 				</div>
 
 				{/* Navigation */}
-				<nav className="flex-1 px-4 space-y-0.5">
-					<div className="text-[0.6rem] uppercase tracking-[0.15em] text-[#ccc] font-semibold mb-3 px-3">
-						Verwaltung
-					</div>
-					{navItems.map((item) => {
-						const isActive = pathname.startsWith(item.href);
-						return (
-							<Link
-								key={item.href}
-								href={item.href}
-								className={clsx(
-									"flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all duration-200 no-underline text-[0.82rem]",
-									isActive
-										? "bg-[#f7f8fa] text-[#e20074] font-semibold"
-										: "text-[#888] hover:bg-[#f7f8fa] hover:text-[#1a1a2e]"
-								)}
-							>
-								<div
-									className={clsx(
-										"w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200",
-										isActive
-											? "bg-[#e20074]/[0.08] text-[#e20074]"
-											: "bg-transparent text-[#bbb]"
-									)}
-								>
-									<item.icon
-										className="w-4 h-4"
-										strokeWidth={isActive ? 2 : 1.5}
-									/>
+				<nav className="flex-1 px-4 py-2 space-y-6 overflow-y-auto custom-scrollbar">
+					{menuGroups
+						.filter((group) => group.show && group.items.length > 0)
+						.map((group) => (
+							<div key={group.title} className="space-y-1">
+								<div className="text-[0.6rem] uppercase tracking-[0.15em] text-[#bbb] font-bold px-3 mb-2 flex items-center justify-between">
+									<span>{group.title}</span>
+									<span className="h-px bg-[#eaedf0] flex-1 ml-3 mt-px"></span>
 								</div>
-								{item.label}
-							</Link>
-						);
-					})}
+								<div className="space-y-0.5">
+									{group.items.map((item) => {
+										const isActive = pathname.startsWith(item.href);
+										return (
+											<Link
+												key={item.href}
+												href={item.href}
+												className={clsx(
+													"flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all duration-200 no-underline text-[0.82rem] group",
+													isActive
+														? "bg-[#e20074]/5 text-[#e20074] font-semibold"
+														: "text-[#888] hover:bg-[#f7f8fa] hover:text-[#1a1a2e]"
+												)}
+											>
+												<div
+													className={clsx(
+														"w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200",
+														isActive
+															? "bg-[#e20074] text-white shadow-[0_4px_10px_rgba(226,0,116,0.25)]"
+															: "bg-[#f7f8fa] text-[#bbb] group-hover:bg-[#eaedf0] group-hover:text-[#888]"
+													)}
+												>
+													<item.icon
+														className="w-4 h-4"
+														strokeWidth={isActive ? 2.5 : 1.5}
+													/>
+												</div>
+												{item.label}
+											</Link>
+										);
+									})}
+								</div>
+							</div>
+						))}
 				</nav>
 
 				{/* Footer */}

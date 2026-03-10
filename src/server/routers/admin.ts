@@ -65,6 +65,21 @@ const specialPriceSchema = z.object({
     discountType: z.enum(["ABSOLUTE", "RELATIVE"]).default("ABSOLUTE"),
 });
 
+const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+    if ((ctx.session as any)?.role !== 'ADMIN') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Nur Administratoren erlaubt.' });
+    }
+    return next({ ctx });
+});
+
+const editorProcedure = protectedProcedure.use(({ ctx, next }) => {
+    const session = ctx.session as any;
+    if (session?.role !== 'ADMIN' && !session?.isEditor) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Du benötigst Editor-Rechte für diese Aktion.' });
+    }
+    return next({ ctx });
+});
+
 export const adminRouter = router({
     getDashboardStats: protectedProcedure.query(async () => {
         return {
@@ -79,7 +94,16 @@ export const adminRouter = router({
         const userId = ctx.session?.sub as string;
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { id: true, email: true, role: true }
+            select: {
+                id: true,
+                email: true,
+                role: true,
+                isEditor: true,
+                createdAt: true,
+                odRegion: { select: { name: true } },
+                location: { select: { name: true } },
+                team: { select: { name: true } }
+            }
         });
         if (!user) throw new TRPCError({ code: 'NOT_FOUND' });
         return user;
@@ -92,7 +116,7 @@ export const adminRouter = router({
         return setting?.value === 'true';
     }),
 
-    toggleMaintenanceMode: protectedProcedure
+    toggleMaintenanceMode: adminProcedure
         .input(z.object({ enabled: z.boolean() }))
         .mutation(async ({ input }) => {
             return await prisma.systemSetting.upsert({
@@ -115,7 +139,7 @@ export const adminRouter = router({
         };
     }),
 
-    updateSecuritySettings: protectedProcedure
+    updateSecuritySettings: adminProcedure
         .input(z.object({ allowedIps: z.string(), requireEmailVerification: z.boolean().optional() }))
         .mutation(async ({ input }) => {
             await prisma.systemSetting.upsert({
@@ -134,7 +158,7 @@ export const adminRouter = router({
         }),
 
     // --- Product CRUD ---
-    createProduct: protectedProcedure
+    createProduct: editorProcedure
         .input(productSchema)
         .mutation(async ({ input }) => {
             const { features, targetGroups, salesArguments, ...data } = input;
@@ -155,7 +179,7 @@ export const adminRouter = router({
             });
         }),
 
-    updateProduct: protectedProcedure
+    updateProduct: editorProcedure
         .input(productSchema.extend({ id: z.string() }))
         .mutation(async ({ input }) => {
             const { id, features, targetGroups, salesArguments, ...data } = input;
@@ -181,7 +205,7 @@ export const adminRouter = router({
             });
         }),
 
-    deleteProduct: protectedProcedure
+    deleteProduct: editorProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
             return await prisma.product.delete({
@@ -224,7 +248,7 @@ export const adminRouter = router({
             return sp;
         }),
 
-    createSpecialPrice: protectedProcedure
+    createSpecialPrice: editorProcedure
         .input(specialPriceSchema)
         .mutation(async ({ input }) => {
             const { tiers, productIds, ...data } = input;
@@ -238,7 +262,7 @@ export const adminRouter = router({
             });
         }),
 
-    updateSpecialPrice: protectedProcedure
+    updateSpecialPrice: editorProcedure
         .input(specialPriceSchema.extend({ id: z.string() }))
         .mutation(async ({ input }) => {
             const { id, tiers, productIds, ...data } = input;
@@ -254,7 +278,7 @@ export const adminRouter = router({
             });
         }),
 
-    deleteSpecialPrice: protectedProcedure
+    deleteSpecialPrice: editorProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
             return await prisma.specialPrice.delete({
@@ -280,7 +304,7 @@ export const adminRouter = router({
                 return credit;
             }),
 
-        create: protectedProcedure
+        create: editorProcedure
             .input(z.object({
                 name: z.string().min(1, "Name is required"),
                 value: z.number().min(0, "Value must be positive"),
@@ -292,7 +316,7 @@ export const adminRouter = router({
                 });
             }),
 
-        update: protectedProcedure
+        update: editorProcedure
             .input(z.object({
                 id: z.string(),
                 name: z.string().min(1, "Name is required"),
@@ -307,7 +331,7 @@ export const adminRouter = router({
                 });
             }),
 
-        delete: protectedProcedure
+        delete: editorProcedure
             .input(z.object({ id: z.string() }))
             .mutation(async ({ input }) => {
                 return prisma.oneTimeCredit.delete({
@@ -324,7 +348,7 @@ export const adminRouter = router({
             });
         }),
 
-        create: protectedProcedure
+        create: editorProcedure
             .input(z.object({
                 title: z.string().min(1),
                 content: z.string().min(1),
@@ -334,7 +358,7 @@ export const adminRouter = router({
                 return prisma.news.create({ data: input });
             }),
 
-        delete: protectedProcedure
+        delete: editorProcedure
             .input(z.object({ id: z.string() }))
             .mutation(async ({ input }) => {
                 return prisma.news.delete({ where: { id: input.id } });
@@ -359,7 +383,7 @@ export const adminRouter = router({
                 });
             }),
 
-        create: protectedProcedure
+        create: editorProcedure
             .input(z.object({
                 text: z.string().min(1),
                 productId: z.string(),
@@ -369,7 +393,7 @@ export const adminRouter = router({
                 return prisma.salesArgument.create({ data: input });
             }),
 
-        update: protectedProcedure
+        update: editorProcedure
             .input(z.object({
                 id: z.string(),
                 text: z.string().min(1),
@@ -381,7 +405,7 @@ export const adminRouter = router({
                 return prisma.salesArgument.update({ where: { id }, data });
             }),
 
-        delete: protectedProcedure
+        delete: editorProcedure
             .input(z.object({ id: z.string() }))
             .mutation(async ({ input }) => {
                 return prisma.salesArgument.delete({ where: { id: input.id } });

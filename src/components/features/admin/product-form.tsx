@@ -3,7 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Save, ArrowLeft, Plus, X } from "lucide-react";
+import {
+	Loader2,
+	Save,
+	ArrowLeft,
+	Plus,
+	X,
+	Package,
+	Zap,
+	Smartphone,
+	Settings,
+	Tv,
+	Users,
+	ListChecks,
+	MessageSquareQuote,
+	Euro,
+	CheckCircle2
+} from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +27,11 @@ import * as z from "zod";
 import clsx from "clsx";
 import { Input } from "@/components/shared/ui/input";
 import { Textarea } from "@/components/shared/ui/textarea";
-import { Checkbox } from "@/components/shared/ui/checkbox";
+import {
+	AdminPageHeader,
+	AdminFormSection,
+	AdminFormContainer
+} from "@/components/shared/ui/admin-ui";
 
 const productSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),
@@ -60,6 +80,7 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 		handleSubmit,
 		watch,
 		setValue,
+		getValues,
 		formState: { errors }
 	} = useForm({
 		resolver: zodResolver(productSchema),
@@ -138,10 +159,12 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 	};
 
 	const removeFeature = (idx: number) => {
-		const currentFeatures = watch("features") || [];
+		const currentFeatures = getValues("features") || [];
+		const featuresArray = Array.isArray(currentFeatures) ? currentFeatures : [];
 		setValue(
 			"features",
-			currentFeatures.filter((_, i) => i !== idx)
+			featuresArray.filter((_, i) => i !== idx),
+			{ shouldDirty: true }
 		);
 	};
 
@@ -154,397 +177,428 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 	};
 
 	const removeSalesArgument = (idx: number) => {
-		const currentArgs = watch("salesArguments") || [];
+		const currentArgs = getValues("salesArguments") || [];
+		const argsArray = Array.isArray(currentArgs) ? currentArgs : [];
 		setValue(
 			"salesArguments",
-			currentArgs.filter((_, i) => i !== idx)
+			argsArray.filter((_, i) => i !== idx),
+			{ shouldDirty: true }
 		);
 	};
 
 	const toggleTargetGroup = (id: string) => {
-		const currentGroups = watch("targetGroups") || [];
-		if (currentGroups.includes(id)) {
+		const currentGroups = getValues("targetGroups") || [];
+		const groupsArray = Array.isArray(currentGroups) ? currentGroups : [];
+
+		if (groupsArray.includes(id)) {
 			setValue(
 				"targetGroups",
-				currentGroups.filter((tg) => tg !== id)
+				groupsArray.filter((tg) => tg !== id),
+				{ shouldDirty: true }
 			);
 		} else {
-			setValue("targetGroups", [...currentGroups, id]);
+			setValue("targetGroups", [...groupsArray, id], { shouldDirty: true });
 		}
 	};
 
 	const isPending = createMutation.isPending || updateMutation.isPending;
 
 	const category = watch("category");
-	const cAllowNewActivation = watch("allowNewActivation");
-	const cAllowMove = watch("allowMove");
-	const cAllowPlanChange = watch("allowPlanChange");
-	const cAllowSpeedUp = watch("allowSpeedUp");
 	const cFeatures = watch("features") || [];
 	const cTargetGroups = watch("targetGroups") || [];
 	const cSalesArguments = watch("salesArguments") || [];
 
+	const targetGroupsArray = Array.isArray(cTargetGroups) ? cTargetGroups : [];
+
+	const SaveButton = (
+		<button
+			type="submit"
+			form="product-form"
+			disabled={isPending}
+			className={clsx(
+				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
+				isPending
+					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
+					: "bg-[#e20074] hover:bg-[#c70066]"
+			)}
+		>
+			{isPending ? (
+				<Loader2 className="w-4 h-4 animate-spin" />
+			) : (
+				<Save className="w-5 h-5" />
+			)}
+			Produkt speichern
+		</button>
+	);
+
 	return (
-		<form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<Link
-					href="/admin/products"
-					className="text-[#999] hover:text-[#1a1a2e] flex items-center gap-2 transition-colors text-[0.85rem] no-underline"
-				>
-					<ArrowLeft className="w-4 h-4" /> Zurück
-				</Link>
-				<button
-					type="submit"
-					disabled={isPending}
-					className={clsx(
-						"px-5 py-2.5 rounded-xl font-semibold text-white flex items-center gap-2 transition-all duration-200 text-[0.82rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.25)] hover:shadow-[0_6px_20px_rgba(226,0,116,0.3)] hover:-translate-y-0.5",
-						isPending
-							? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-							: "bg-[#e20074] hover:bg-[#c70066]"
-					)}
-				>
-					{isPending ? (
-						<Loader2 className="w-4 h-4 animate-spin" />
-					) : (
-						<Save className="w-4 h-4" />
-					)}
-					Speichern
-				</button>
-			</div>
+		<div className="space-y-8 pb-12">
+			<AdminPageHeader
+				title={
+					mode === "create" ? "Neues Produkt anlegen" : "Produkt bearbeiten"
+				}
+				subtitle={
+					mode === "create"
+						? "Erstelle einen neuen Tarif oder Hardware für das Portfolio."
+						: `Konfiguration für ${initialData?.name}`
+				}
+				backHref="/admin/products"
+				action={SaveButton}
+			/>
 
-			<div className="flex flex-col md:flex-row gap-6">
-				{/* Left Column */}
-				<div className="flex-1 space-y-6">
-					{/* Basic Info */}
-					<div className="bg-white rounded-2xl p-6 border border-[#eaedf0] space-y-5">
-						<h3 className="text-[1rem] font-bold text-[#1a1a2e] border-b border-[#f0f0f0] pb-2 m-0">
-							Basisdaten
-						</h3>
-
-						<Input
-							label="Name"
-							placeholder="z.B. MagentaMobil M"
-							error={errors.name?.message}
-							{...register("name")}
-						/>
+			<form id="product-form" onSubmit={handleSubmit(onSubmit)}>
+				<AdminFormContainer>
+					<AdminFormSection
+						title="Basisdaten"
+						description="Allgemeine Produktinformationen."
+						icon={Package}
+					>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<Input
+								label="Name"
+								placeholder="z.B. MagentaMobil M"
+								error={errors.name?.message}
+								{...register("name")}
+							/>
+							<div className="flex flex-col gap-1.5">
+								<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
+									Kategorie
+								</label>
+								<select
+									{...register("category")}
+									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:outline-none focus:border-[#e20074] transition-all text-[0.9rem]"
+								>
+									<option value="MOBILE">Mobilfunk</option>
+									<option value="FIBER">Glasfaser</option>
+									<option value="DSL">DSL</option>
+									<option value="MAGENTA_TV_OTT">MagentaTV (OTT)</option>
+									<option value="DEVICE">Hardware</option>
+								</select>
+							</div>
+						</div>
 
 						<Textarea
 							label="Beschreibung"
 							placeholder="Kurze Beschreibung des Tarifs..."
 							error={errors.description?.message}
 							{...register("description")}
+							rows={3}
 						/>
 
-						<Textarea
-							label="Gesprächsleitfaden / Überleitung (Sales Script)"
-							placeholder="z.B. „Herr [Name], ich sehe, dass Ihr aktueller Vertrag noch mit DSL 50 läuft...“"
-							error={errors.salesScript?.message}
-							{...register("salesScript")}
-						/>
-
-						<Input
-							label="MagentaInfos Link"
-							placeholder="https://magentainfos.telekom.de/..."
-							error={errors.magentaInfosUrl?.message}
-							{...register("magentaInfosUrl")}
-						/>
-
-						<div className="space-y-1.5 w-full">
-							<label className="block text-[0.75rem] font-semibold text-[#888]">
-								Kategorie
-							</label>
-							<select
-								{...register("category")}
-								className="w-full px-4 py-2.5 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
-							>
-								<option value="MOBILE">Mobilfunk</option>
-								<option value="FIBER">Glasfaser</option>
-								<option value="DSL">DSL</option>
-								<option value="MAGENTA_TV_OTT">MagentaTV (OTT)</option>
-								<option value="DEVICE">Hardware</option>
-							</select>
-						</div>
-
-						{category !== "DEVICE" && (
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							{category !== "DEVICE" && (
+								<div className="relative">
+									<Input
+										label="Basispreis (€ / Monat)"
+										type="number"
+										step="0.01"
+										placeholder="0.00"
+										error={errors.basePrice?.message}
+										{...register("basePrice", { valueAsNumber: true })}
+										className="pl-10"
+									/>
+									<div className="absolute left-4 top-[38px] text-[#bbb]">
+										<Euro className="w-4 h-4" />
+									</div>
+								</div>
+							)}
 							<Input
-								label="Basispreis (€)"
+								label="Laufzeit (Monate)"
 								type="number"
-								step="0.01"
-								placeholder="0.00"
-								error={errors.basePrice?.message}
-								{...register("basePrice", { valueAsNumber: true })}
+								placeholder="24"
+								error={errors.contractDuration?.message}
+								{...register("contractDuration", { valueAsNumber: true })}
 							/>
-						)}
+						</div>
+					</AdminFormSection>
 
-						<Input
-							label="Laufzeit (Monate)"
-							type="number"
-							placeholder="24"
-							error={errors.contractDuration?.message}
-							{...register("contractDuration", { valueAsNumber: true })}
-						/>
-					</div>
+					<AdminFormSection
+						title="Leistungsdaten"
+						description="Technische Spezifikationen und Limits."
+						icon={Zap}
+					>
+						<div className="space-y-6">
+							<div className="p-4 bg-[#f7f8fa] rounded-2xl border border-[#eaedf0] flex flex-col gap-4">
+								<label className="flex items-center gap-3 cursor-pointer group">
+									<input
+										type="checkbox"
+										checked={(watch("dataVolume") || "")
+											.toLowerCase()
+											.includes("unlimited")}
+										onChange={(e) => {
+											setValue(
+												"dataVolume",
+												e.target.checked ? "Unlimited" : "",
+												{ shouldValidate: true, shouldDirty: true }
+											);
+										}}
+										className="w-5 h-5 rounded border-[#eaedf0] text-[#e20074] focus:ring-[#e20074]"
+									/>
+									<span className="text-[0.85rem] font-bold text-[#1a1a2e]">
+										Unbegrenztes Datenvolumen (Unlimited)
+									</span>
+								</label>
 
-					{/* Technical Specs */}
-					<div className="bg-white rounded-2xl p-6 border border-[#eaedf0] space-y-5">
-						<h3 className="text-[1rem] font-bold text-[#1a1a2e] border-b border-[#f0f0f0] pb-2 m-0">
-							Leistungsdaten
-						</h3>
-
-						<div className="space-y-4">
-							<div className="mb-2">
-								<Checkbox
-									id="unlimited-data"
-									checked={(watch("dataVolume") || "")
+								<Input
+									label="Datenvolumen (z.B. 20 GB)"
+									placeholder="20 GB"
+									error={errors.dataVolume?.message}
+									disabled={(watch("dataVolume") || "")
 										.toLowerCase()
 										.includes("unlimited")}
-									onChange={(e) => {
-										if (e.target.checked) {
-											setValue("dataVolume", "Unlimited", {
-												shouldValidate: true,
-												shouldDirty: true
-											});
-										} else {
-											setValue("dataVolume", "", {
-												shouldValidate: true,
-												shouldDirty: true
-											});
-										}
-									}}
-									label="Unbegrenztes Datenvolumen (Unlimited)"
+									{...register("dataVolume")}
 								/>
 							</div>
 
-							<Input
-								label="Datenvolumen (z.B. 20 GB)"
-								placeholder="20 GB"
-								error={errors.dataVolume?.message}
-								disabled={(watch("dataVolume") || "")
-									.toLowerCase()
-									.includes("unlimited")}
-								{...register("dataVolume")}
-							/>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+								<Input
+									label="Download-Speed (Mbit/s)"
+									type="number"
+									placeholder="0"
+									error={errors.downloadSpeed?.message}
+									{...register("downloadSpeed", { valueAsNumber: true })}
+								/>
+								<Input
+									label="Upload-Speed (Mbit/s)"
+									type="number"
+									placeholder="0"
+									error={errors.uploadSpeed?.message}
+									{...register("uploadSpeed", { valueAsNumber: true })}
+								/>
+							</div>
 						</div>
-
-						<div className="grid grid-cols-2 gap-4">
-							<Input
-								label="Download (Mbit/s)"
-								type="number"
-								placeholder="0"
-								error={errors.downloadSpeed?.message}
-								{...register("downloadSpeed", { valueAsNumber: true })}
-							/>
-							<Input
-								label="Upload (Mbit/s)"
-								type="number"
-								placeholder="0"
-								error={errors.uploadSpeed?.message}
-								{...register("uploadSpeed", { valueAsNumber: true })}
-							/>
-						</div>
-					</div>
+					</AdminFormSection>
 
 					{category === "DEVICE" && (
-						<div className="bg-white rounded-2xl p-6 border border-[#eaedf0] space-y-5">
-							<h3 className="text-[1rem] font-bold text-[#1a1a2e] border-b border-[#f0f0f0] pb-2 m-0">
-								Geräte-Spezifikationen
-							</h3>
-							<p className="text-[0.7rem] text-[#888] mb-4 m-0 mt-[-5px]">
-								Hier kannst Du Einmal- und Mietpreise für Hardware definieren.
-								Einer von beiden Werten kann `0` bleiben, wenn die Kaufart nicht
-								angeboten wird.
-							</p>
-
+						<AdminFormSection
+							title="Hardware"
+							description="Hersteller und Hardware-Preise."
+							icon={Smartphone}
+						>
 							<Input
 								label="Hersteller"
-								placeholder="z.B. Apple, AVM"
+								placeholder="z.B. Apple, AVM, Samsung"
 								error={errors.deviceManufacturer?.message}
 								{...register("deviceManufacturer")}
 							/>
-
-							<div className="grid grid-cols-2 gap-4">
-								<Input
-									label="Kaufpreis (€)"
-									type="number"
-									step="0.01"
-									placeholder="0.00"
-									error={errors.purchasePrice?.message}
-									{...register("purchasePrice", { valueAsNumber: true })}
-								/>
-								<Input
-									label="Mietpreis (€/Monat)"
-									type="number"
-									step="0.01"
-									placeholder="0.00"
-									error={errors.rentalPrice?.message}
-									{...register("rentalPrice", { valueAsNumber: true })}
-								/>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+								<div className="relative">
+									<Input
+										label="Einmalzahlung (€)"
+										type="number"
+										step="0.01"
+										placeholder="0.00"
+										error={errors.purchasePrice?.message}
+										{...register("purchasePrice", { valueAsNumber: true })}
+										className="pl-10"
+									/>
+									<div className="absolute left-4 top-[38px] text-[#bbb]">
+										<Euro className="w-4 h-4" />
+									</div>
+								</div>
+								<div className="relative">
+									<Input
+										label="Mietpreis pro Monat (€)"
+										type="number"
+										step="0.01"
+										placeholder="0.00"
+										error={errors.rentalPrice?.message}
+										{...register("rentalPrice", { valueAsNumber: true })}
+										className="pl-10"
+									/>
+									<div className="absolute left-4 top-[38px] text-[#bbb]">
+										<Euro className="w-4 h-4" />
+									</div>
+								</div>
 							</div>
-						</div>
+						</AdminFormSection>
 					)}
-				</div>
 
-				{/* Right Column */}
-				<div className="w-full md:w-[450px] space-y-6">
-					{/* Business Cases & Fees */}
-					<div className="bg-white rounded-2xl p-6 border border-[#eaedf0] shadow-sm space-y-5">
-						<h3 className="text-[1rem] font-bold text-[#1a1a2e] border-b border-[#f0f0f0] pb-2 m-0">
-							Geschäftsfälle & Gebühren
-						</h3>
-
-						<div className="space-y-4">
-							<div className="p-4 bg-[#f7f8fa] rounded-xl border border-[#eaedf0] space-y-3">
-								<Checkbox
-									label="Neubereitstellung erlauben"
-									{...register("allowNewActivation")}
-								/>
-								<Input
-									label="Anschlussgebühr (€)"
-									type="number"
-									step="0.01"
-									disabled={!cAllowNewActivation}
-									{...register("activationFeeNew", { valueAsNumber: true })}
-								/>
-							</div>
-
-							<div className="p-4 bg-[#f7f8fa] rounded-xl border border-[#eaedf0] space-y-3">
-								<Checkbox label="Umzug erlauben" {...register("allowMove")} />
-								<Input
-									label="Umzugsgebühr (€)"
-									type="number"
-									step="0.01"
-									disabled={!cAllowMove}
-									{...register("activationFeeMove", { valueAsNumber: true })}
-								/>
-							</div>
-
-							<div className="p-4 bg-[#f7f8fa] rounded-xl border border-[#eaedf0] space-y-3">
-								<Checkbox
-									label="Tarifwechsel erlauben"
-									{...register("allowPlanChange")}
-								/>
-								<Input
-									label="Wechselgebühr (€)"
-									type="number"
-									step="0.01"
-									disabled={!cAllowPlanChange}
-									{...register("activationFeePlanChange", {
-										valueAsNumber: true
-									})}
-								/>
-							</div>
-
-							<div className="p-4 bg-[#f7f8fa] rounded-xl border border-[#eaedf0] space-y-3">
-								<Checkbox
-									label="Speed Up erlauben"
-									{...register("allowSpeedUp")}
-								/>
-								<Input
-									label="Speed Up Gebühr (€)"
-									type="number"
-									step="0.01"
-									disabled={!cAllowSpeedUp}
-									{...register("activationFeeSpeedUp", {
-										valueAsNumber: true
-									})}
-								/>
-							</div>
+					<AdminFormSection
+						title="Geschäftsfälle & Gebühren"
+						description="Optionen für Bereitstellung und Wechsel."
+						icon={Settings}
+					>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							{[
+								{
+									id: "allowNewActivation",
+									label: "Neubereitstellung",
+									fee: "activationFeeNew"
+								},
+								{ id: "allowMove", label: "Umzug", fee: "activationFeeMove" },
+								{
+									id: "allowPlanChange",
+									label: "Tarifwechsel",
+									fee: "activationFeePlanChange"
+								},
+								{
+									id: "allowSpeedUp",
+									label: "Speed Up",
+									fee: "activationFeeSpeedUp"
+								}
+							].map((item) => (
+								<div
+									key={item.id}
+									className="p-5 rounded-3xl bg-[#f7f8fa] border border-[#eaedf0] space-y-4"
+								>
+									<label className="flex items-center gap-3 cursor-pointer group">
+										<input
+											type="checkbox"
+											{...register(item.id as any)}
+											className="w-5 h-5 rounded border-[#eaedf0] text-[#e20074] focus:ring-[#e20074]"
+										/>
+										<span className="text-[0.85rem] font-extrabold text-[#1a1a2e] uppercase tracking-wider">
+											{item.label} erlauben
+										</span>
+									</label>
+									<div className="relative">
+										<Input
+											label={`Gebühr in €`}
+											type="number"
+											step="0.01"
+											disabled={!watch(item.id as any)}
+											{...register(item.fee as any, { valueAsNumber: true })}
+											className="pl-10"
+										/>
+										<div className="absolute left-4 top-[38px] text-[#bbb]">
+											<Euro className="w-4 h-4" />
+										</div>
+									</div>
+								</div>
+							))}
 						</div>
-					</div>
+					</AdminFormSection>
 
-					{/* MagentaTV Options */}
-					<div className="bg-white rounded-2xl p-6 border border-[#eaedf0] space-y-5">
-						<h3 className="text-[1rem] font-bold text-[#1a1a2e] border-b border-[#f0f0f0] pb-2 m-0">
-							MagentaTV Optionen
-						</h3>
-						<Checkbox
-							label="MagentaTV zubuchbar"
-							{...register("allowMagentaTV")}
-						/>
-					</div>
+					<AdminFormSection
+						title="MagentaTV"
+						description="Sichtbarkeit bei TV-Optionen."
+						icon={Tv}
+					>
+						<div className="p-6 rounded-[2rem] bg-[#e20074]/5 border border-[#e20074]/10">
+							<label className="flex items-center gap-4 cursor-pointer">
+								<input
+									type="checkbox"
+									{...register("allowMagentaTV")}
+									className="w-6 h-6 rounded border-[#e20074]/20 text-[#e20074] focus:ring-[#e20074]"
+								/>
+								<div className="flex flex-col">
+									<span className="text-[1rem] font-bold text-[#e20074]">
+										MagentaTV zubuchbar
+									</span>
+									<span className="text-[0.75rem] text-[#e20074]/70 font-medium italic">
+										Wenn aktiviert, wird dieses Produkt im Konfigurator für
+										TV-Optionen vorgeschlagen.
+									</span>
+								</div>
+							</label>
+						</div>
+					</AdminFormSection>
 
-					{/* Extras */}
-					<div className="bg-white rounded-2xl p-6 border border-[#eaedf0] space-y-6">
-						<div>
-							<h3 className="text-[1rem] font-bold text-[#1a1a2e] border-b border-[#f0f0f0] pb-2 m-0 mb-3">
-								Zielgruppen (Filter)
-							</h3>
-
-							<div className="flex flex-wrap gap-2">
-								{[
-									{ id: "student", label: "Student & Young" },
-									{ id: "family", label: "Familie mit Kids" },
-									{ id: "senior", label: "Ältere Personen" },
-									{ id: "power", label: "Stream/Gaming" },
-									{ id: "business", label: "Home-Office" }
-								].map((tg) => (
+					<AdminFormSection
+						title="Zielgruppen"
+						description="Filter-Tags für Verkäufer."
+						icon={Users}
+					>
+						<div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+							{[
+								{ id: "student", label: "Student & Young" },
+								{ id: "family", label: "Familie mit Kids" },
+								{ id: "senior", label: "Ältere Personen" },
+								{ id: "power", label: "Stream/Gaming" },
+								{ id: "business", label: "Home-Office" }
+							].map((tg) => {
+								const isSelected = targetGroupsArray.includes(tg.id);
+								return (
 									<label
 										key={tg.id}
 										className={clsx(
-											"flex items-center gap-2 px-3 py-1.5 rounded-xl border cursor-pointer hover:border-[#ff69b4] transition-colors",
-											cTargetGroups.includes(tg.id)
-												? "border-[#e20074] bg-[#e20074]/5"
-												: "border-[#eaedf0] bg-white"
+											"flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all",
+											isSelected
+												? "border-[#e20074] bg-[#e20074]/5 shadow-sm"
+												: "border-[#eaedf0] bg-white hover:border-[#e20074]/30"
 										)}
 									>
 										<input
 											type="checkbox"
-											checked={cTargetGroups.includes(tg.id)}
-											onChange={() => toggleTargetGroup(tg.id)}
-											className="sr-only"
+											checked={isSelected}
+											onChange={(e) => {
+												e.stopPropagation();
+												toggleTargetGroup(tg.id);
+											}}
+											className="opacity-0 absolute w-0 h-0"
 										/>
+										<div
+											className={clsx(
+												"w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all",
+												isSelected
+													? "bg-[#e20074] border-[#e20074]"
+													: "bg-white border-[#ddd]"
+											)}
+										>
+											{isSelected && (
+												<CheckCircle2 className="w-3.5 h-3.5 text-white" />
+											)}
+										</div>
 										<span
 											className={clsx(
-												"text-sm font-medium",
-												cTargetGroups.includes(tg.id)
-													? "text-[#e20074]"
-													: "text-[#555]"
+												"text-[0.8rem] font-bold",
+												isSelected ? "text-[#e20074]" : "text-[#555]"
 											)}
 										>
 											{tg.label}
 										</span>
 									</label>
-								))}
-							</div>
+								);
+							})}
 						</div>
+					</AdminFormSection>
 
-						<div>
-							<h3 className="text-[1rem] font-bold text-[#1a1a2e] border-b border-[#f0f0f0] pb-2 m-0 mb-3">
-								Features
-							</h3>
+					<AdminFormSection
+						title="Features & Details"
+						description="Zusatzinfos und Produktvorteile."
+						icon={ListChecks}
+						action={
+							<span className="text-[0.7rem] font-bold bg-[#f7f8fa] px-3 py-1.5 rounded-xl border border-[#eaedf0]">
+								{cFeatures.length} Features
+							</span>
+						}
+					>
+						<div className="space-y-4">
 							<div className="flex gap-2">
-								<Input
-									placeholder="Feature hinzufügen..."
-									value={newFeature}
-									onChange={(e) => setNewFeature(e.target.value)}
-									onKeyDown={(e) => {
-										if (e.key === "Enter") {
-											e.preventDefault();
-											addFeature();
-										}
-									}}
-								/>
+								<div className="flex-1">
+									<Input
+										placeholder="z.B. 5G inklusive, EU-Roaming..."
+										value={newFeature}
+										onChange={(e) => setNewFeature(e.target.value)}
+										onKeyDown={(e) => {
+											if (e.key === "Enter") {
+												e.preventDefault();
+												addFeature();
+											}
+										}}
+									/>
+								</div>
 								<button
 									type="button"
 									onClick={addFeature}
-									className="bg-zinc-800 text-white p-2.5 rounded-xl hover:bg-zinc-700 transition active:scale-95 h-[42px] mt-[1.5px]"
+									className="bg-[#1a1a2e] text-white px-4 h-[44px] rounded-xl font-bold flex items-center justify-center active:scale-95 transition-transform mt-[1.5px]"
 								>
-									<Plus className="w-4 h-4" />
+									<Plus className="w-5 h-5" />
 								</button>
 							</div>
 
-							<div className="flex flex-wrap gap-2 mt-4">
+							<div className="flex flex-wrap gap-2 pt-2">
 								{cFeatures.map((feature: string, idx: number) => (
 									<div
 										key={idx}
-										className="flex items-center gap-2 bg-[#f7f8fa] border border-[#eaedf0] pl-3 pr-2 py-1.5 rounded-lg text-[0.85rem]"
+										className="flex items-center gap-2 bg-white border border-[#eaedf0] pl-4 pr-2 py-2 rounded-xl text-[0.85rem] font-bold shadow-sm group hover:border-[#dc2626]/30 transition-all"
 									>
-										<span>{feature}</span>
+										<span className="text-[#1a1a2e]">{feature}</span>
 										<button
 											type="button"
 											onClick={() => removeFeature(idx)}
-											className="text-[#aaa] hover:text-[#dc2626] ml-2"
+											className="text-[#ccc] hover:text-[#dc2626] p-1 rounded-lg transition-colors"
 										>
 											<X className="w-4 h-4" />
 										</button>
@@ -552,53 +606,80 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 								))}
 							</div>
 						</div>
+					</AdminFormSection>
 
-						<div>
-							<h3 className="text-[1rem] font-bold text-[#1a1a2e] border-b border-[#f0f0f0] pb-2 m-0 mb-3">
-								Verkaufsargumente
-							</h3>
-							<div className="flex gap-2">
-								<Input
-									placeholder="z.B. Bestes Netz laut Connect..."
-									value={newSalesArgument}
-									onChange={(e) => setNewSalesArgument(e.target.value)}
-									onKeyDown={(e) => {
-										if (e.key === "Enter") {
-											e.preventDefault();
-											addSalesArgument();
-										}
-									}}
-								/>
-								<button
-									type="button"
-									onClick={addSalesArgument}
-									className="bg-[#e20074] text-white p-2.5 rounded-xl hover:bg-[#c70066] transition active:scale-95 h-[42px] mt-[1.5px]"
-								>
-									<Plus className="w-4 h-4" />
-								</button>
-							</div>
+					<AdminFormSection
+						title="Sales Intelligence"
+						description="Leitfaden und Argumentationshilfen."
+						icon={MessageSquareQuote}
+					>
+						<div className="space-y-6">
+							<Textarea
+								label="Gesprächsleitfaden / Überleitung (Sales Script)"
+								placeholder="Wie schlägt der Verkäufer dieses Produkt vor?"
+								error={errors.salesScript?.message}
+								{...register("salesScript")}
+								rows={4}
+							/>
 
-							<div className="flex flex-wrap gap-2 mt-4">
-								{cSalesArguments.map((arg: string, idx: number) => (
-									<div
-										key={idx}
-										className="flex items-center justify-between w-full bg-[#f7f8fa] border border-[#eaedf0] px-3 py-2.5 rounded-lg text-[0.85rem]"
+							<Input
+								label="MagentaInfos Link (Vertriebsinfos)"
+								placeholder="https://magentainfos.telekom.de/..."
+								error={errors.magentaInfosUrl?.message}
+								{...register("magentaInfosUrl")}
+							/>
+
+							<div className="space-y-4 pt-4">
+								<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
+									Verkaufsargumente (USP)
+								</label>
+								<div className="flex gap-2">
+									<div className="flex-1">
+										<Input
+											placeholder="z.B. Bestes Preis-Leistungs-Verhältnis..."
+											value={newSalesArgument}
+											onChange={(e) => setNewSalesArgument(e.target.value)}
+											onKeyDown={(e) => {
+												if (e.key === "Enter") {
+													e.preventDefault();
+													addSalesArgument();
+												}
+											}}
+										/>
+									</div>
+									<button
+										type="button"
+										onClick={addSalesArgument}
+										className="bg-[#e20074] text-white px-4 h-[44px] rounded-xl font-bold flex items-center justify-center active:scale-95 transition-transform mt-[1.5px]"
 									>
-										<span>{arg}</span>
-										<button
-											type="button"
-											onClick={() => removeSalesArgument(idx)}
-											className="text-[#aaa] hover:text-[#dc2626] ml-2"
+										<Plus className="w-5 h-5" />
+									</button>
+								</div>
+
+								<div className="space-y-2 pt-2">
+									{cSalesArguments.map((arg: string, idx: number) => (
+										<div
+											key={idx}
+											className="flex items-center justify-between w-full bg-[#f7f8fa] border border-[#eaedf0] px-5 py-4 rounded-2xl text-[0.85rem] font-medium group hover:bg-white hover:border-[#e20074]/30 transition-all"
 										>
-											<X className="w-4 h-4" />
-										</button>
-									</div>
-								))}
+											<span className="text-[#1a1a2e] leading-relaxed">
+												{arg}
+											</span>
+											<button
+												type="button"
+												onClick={() => removeSalesArgument(idx)}
+												className="text-[#ccc] hover:text-[#dc2626] p-1 rounded-lg transition-colors ml-4 shrink-0"
+											>
+												<X className="w-5 h-5" />
+											</button>
+										</div>
+									))}
+								</div>
 							</div>
 						</div>
-					</div>
-				</div>
-			</div>
-		</form>
+					</AdminFormSection>
+				</AdminFormContainer>
+			</form>
+		</div>
 	);
 }

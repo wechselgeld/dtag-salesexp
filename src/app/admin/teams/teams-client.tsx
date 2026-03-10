@@ -9,10 +9,11 @@ import {
 	Loader2,
 	Star,
 	X,
-	Search,
 	Tag,
 	Briefcase,
-	Pencil
+	Pencil,
+	MapPin,
+	Search
 } from "lucide-react";
 import clsx from "clsx";
 import { Skeleton } from "@/components/shared/skeleton";
@@ -38,7 +39,16 @@ const BUSINESS_CASES = [
 export default function TeamsPage() {
 	const utils = trpc.useContext();
 	const { data: allProducts } = trpc.product.getAllProducts.useQuery();
-	const { data: teams, isLoading } = trpc.team.list.useQuery();
+
+	const [selectedLocationId, setSelectedLocationId] = useState<string>("all");
+	const { data: locations, isLoading: isLocationsLoading } =
+		trpc.location.list.useQuery();
+
+	const { data: teams, isLoading } = trpc.team.list.useQuery(
+		selectedLocationId !== "all"
+			? { locationId: selectedLocationId }
+			: undefined
+	);
 
 	const deleteTeam = trpc.team.delete.useMutation({
 		onSuccess: () => utils.team.list.invalidate()
@@ -112,7 +122,6 @@ export default function TeamsPage() {
 				</Link>
 			</div>
 
-			{/* Search */}
 			<div className="flex flex-col md:flex-row gap-4 mb-6">
 				<div className="relative flex-1">
 					<Search className="w-4 h-4 text-[#bbb] absolute left-4 top-1/2 -translate-y-1/2" />
@@ -123,6 +132,38 @@ export default function TeamsPage() {
 						onChange={(e) => setTeamSearchQuery(e.target.value)}
 						className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
 					/>
+				</div>
+				<div className="w-full md:w-[250px] relative">
+					<select
+						value={selectedLocationId}
+						onChange={(e) => setSelectedLocationId(e.target.value)}
+						disabled={isLocationsLoading}
+						className="w-full pl-4 pr-10 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem] appearance-none disabled:opacity-50"
+					>
+						<option value="all">Alle Standorte</option>
+						{locations?.map((loc) => (
+							<option key={loc.id} value={loc.id}>
+								{loc.name}
+							</option>
+						))}
+					</select>
+					<div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+						<svg
+							width="12"
+							height="8"
+							viewBox="0 0 12 8"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M1.5 1.75L6 6.25L10.5 1.75"
+								stroke="#bbb"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							/>
+						</svg>
+					</div>
 				</div>
 			</div>
 
@@ -158,6 +199,9 @@ export default function TeamsPage() {
 								<th className="px-5 py-3.5 font-semibold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
 									Name
 								</th>
+								<th className="px-5 py-3.5 font-semibold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
+									Standort
+								</th>
 								<th className="px-5 py-3.5 font-semibold text-[#aaa] text-[0.72rem] uppercase tracking-wider text-right">
 									Aktionen
 								</th>
@@ -182,6 +226,16 @@ export default function TeamsPage() {
 												</span>
 											)}
 										</div>
+									</td>
+									<td className="py-3.5 px-5 text-[0.8rem] text-[#666]">
+										{(team as any).location?.name ? (
+											<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#f0f2f5] border border-[#eaedf0] text-[#1a1a2e] font-medium">
+												<MapPin className="w-3 h-3 text-[#888]" />
+												{(team as any).location.name}
+											</span>
+										) : (
+											<span className="text-[#bbb] italic">Kein Standort</span>
+										)}
 									</td>
 									<td className="py-3.5 px-5 text-right w-[180px]">
 										<div className="flex items-center justify-end gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">

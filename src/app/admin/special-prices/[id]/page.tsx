@@ -30,12 +30,5 @@ export default function EditSpecialPricePage() {
 		);
 	}
 
-	return (
-		<div>
-			<h1 className="text-2xl font-bold text-zinc-900 mb-8">
-				Aktion bearbeiten: {sp.name}
-			</h1>
-			<SpecialPriceForm mode="edit" initialData={sp} />
-		</div>
-	);
+	return <SpecialPriceForm mode="edit" initialData={sp} />;
 }

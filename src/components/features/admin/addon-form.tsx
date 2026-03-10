@@ -6,12 +6,28 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import clsx from "clsx";
-import { Save, Loader2, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import {
+	Save,
+	Loader2,
+	ArrowLeft,
+	Plus,
+	Trash2,
+	Settings,
+	Box,
+	ListChecks,
+	Layers,
+	Globe,
+	Euro
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Input } from "@/components/shared/ui/input";
 import { Textarea } from "@/components/shared/ui/textarea";
-import { Checkbox } from "@/components/shared/ui/checkbox";
+import {
+	AdminPageHeader,
+	AdminFormSection,
+	AdminFormContainer
+} from "@/components/shared/ui/admin-ui";
 
 const addonSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),
@@ -112,6 +128,27 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 
 	const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
+	const SaveButton = (
+		<button
+			type="submit"
+			form="addon-form"
+			disabled={isSubmitting}
+			className={clsx(
+				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
+				isSubmitting
+					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
+					: "bg-[#e20074] hover:bg-[#c70066]"
+			)}
+		>
+			{isSubmitting ? (
+				<Loader2 className="w-4 h-4 animate-spin" />
+			) : (
+				<Save className="w-5 h-5" />
+			)}
+			Option speichern
+		</button>
+	);
+
 	const handleProductToggle = (productId: string) => {
 		setSelectedProductIds((prev) =>
 			prev.includes(productId)
@@ -121,46 +158,25 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 	};
 
 	return (
-		<form
-			id="addonForm"
-			onSubmit={handleSubmit(onSubmit)}
-			className="space-y-8"
-		>
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<Link
-					href="/admin/addons"
-					className="text-[#999] hover:text-[#1a1a2e] flex items-center gap-2 transition-colors text-[0.85rem] no-underline"
-				>
-					<ArrowLeft className="w-4 h-4" /> Zurück
-				</Link>
-				<button
-					type="submit"
-					disabled={isSubmitting}
-					className={clsx(
-						"px-5 py-2.5 rounded-xl font-semibold text-white flex items-center gap-2 transition-all duration-200 text-[0.82rem] cursor-pointer active:scale-95",
-						isSubmitting
-							? "bg-[#ddd] cursor-not-allowed"
-							: "bg-[#e20074] hover:bg-[#c70066]"
-					)}
-				>
-					{isSubmitting ? (
-						<Loader2 className="w-4 h-4 animate-spin" />
-					) : (
-						<Save className="w-4 h-4" />
-					)}
-					Speichern
-				</button>
-			</div>
+		<div className="space-y-8 pb-12">
+			<AdminPageHeader
+				title={isEditMode ? "Zusatzoption bearbeiten" : "Neue Zusatzoption"}
+				subtitle={
+					isEditMode
+						? `Verwalte die Konfiguration für ${initialData?.name}`
+						: "Erstelle eine neue Option (z.B. Netflix, MagentaTV One), die zu Produkten hinzu gebucht werden kann."
+				}
+				backHref="/admin/addons"
+				action={SaveButton}
+			/>
 
-			<div className="flex flex-col md:flex-row gap-6">
-				{/* Left Column: Basic Settings */}
-				<div className="flex-1 space-y-6">
-					<div className="bg-white p-6 rounded-2xl border border-[#eaedf0] shadow-sm space-y-5">
-						<h2 className="text-[1rem] font-extrabold text-[#1a1a2e]">
-							Basisdaten
-						</h2>
-
+			<form id="addon-form" onSubmit={handleSubmit(onSubmit)}>
+				<AdminFormContainer>
+					<AdminFormSection
+						title="Basisdaten"
+						description="Name und Beschreibung der Option."
+						icon={Settings}
+					>
 						<Input
 							label="Name (z.B. Netflix)"
 							placeholder="Options-Gruppenname"
@@ -176,171 +192,264 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 						/>
 
 						<Input
-							label="Bild-URL (z. B. für MagentaTV Logo im Hintergrund)"
+							label="Bild-URL (Für Hintergrundbilder)"
 							placeholder="https://example.com/image.png"
 							error={errors.imageUrl?.message as string}
 							{...register("imageUrl")}
 						/>
+					</AdminFormSection>
 
-						<div className="space-y-3 pt-2 border-t border-[#f0f0f0]">
-							<h4 className="text-[0.8rem] font-bold text-[#1a1a2e] m-0 mb-3">
-								Bedingungen
-							</h4>
+					<AdminFormSection
+						title="Bedingungen"
+						description="Steuere die Sichtbarkeit und Abhängigkeiten."
+						icon={ListChecks}
+					>
+						<div className="space-y-4">
+							<div className="flex items-start gap-4 p-5 bg-[#f7f8fa] border border-[#eaedf0] rounded-[1.5rem]">
+								<div className="relative flex items-center">
+									<input
+										type="checkbox"
+										id="isActive"
+										{...register("isActive")}
+										className="peer w-6 h-6 rounded-lg border-[#eaedf0] text-[#e20074] focus:ring-[#e20074] cursor-pointer appearance-none bg-white transition-all checked:bg-[#e20074] checked:border-[#e20074]"
+									/>
+									<div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white opacity-0 peer-checked:opacity-100 transition-opacity">
+										<svg
+											width="12"
+											height="10"
+											viewBox="0 0 12 10"
+											fill="none"
+											xmlns="http://www.w3.org/2000/svg"
+										>
+											<path
+												d="M1 5L4.5 8.5L11 1.5"
+												stroke="currentColor"
+												strokeWidth="3"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+											/>
+										</svg>
+									</div>
+								</div>
+								<div>
+									<label
+										htmlFor="isActive"
+										className="text-[0.85rem] font-bold text-[#1a1a2e] cursor-pointer"
+									>
+										Option ist aktiv
+									</label>
+									<p className="text-[0.75rem] text-[#888] m-0 mt-0.5 leading-relaxed">
+										Inaktive Optionen werden den Verkäufern nicht zur Auswahl
+										angeboten.
+									</p>
+								</div>
+							</div>
 
-							<Checkbox
-								label="Aktiv (für Verkäufer auswählbar)"
-								{...register("isActive")}
-							/>
-
-							<Checkbox
-								label="Nur ohne MagentaTV buchbar"
-								{...register("requiresNoMagentaTV")}
-							/>
-						</div>
-					</div>
-
-					<div className="bg-white p-6 rounded-2xl border border-[#eaedf0] shadow-sm">
-						<div className="flex items-center justify-between mb-4">
-							<h2 className="text-[1rem] font-extrabold text-[#1a1a2e]">
-								Produkte{" "}
-								<span className="text-[#888] font-medium text-sm">
-									(
-									{isGlobal
-										? "Alle"
-										: `${selectedProductIds.length} ausgewählt`}
-									)
-								</span>
-							</h2>
-							<div className="flex items-center gap-2 text-sm pt-1">
-								<Checkbox
-									label="Für alle Produkte (Global)"
-									{...register("isGlobal")}
-								/>
+							<div className="flex items-start gap-4 p-5 bg-[#fff8f1] border border-[#ffedd5] rounded-[1.5rem]">
+								<div className="relative flex items-center">
+									<input
+										type="checkbox"
+										id="requiresNoMagentaTV"
+										{...register("requiresNoMagentaTV")}
+										className="peer w-6 h-6 rounded-lg border-[#fed7aa] text-[#f97316] focus:ring-[#f97316] cursor-pointer appearance-none bg-white transition-all checked:bg-[#f97316] checked:border-[#f97316]"
+									/>
+									<div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white opacity-0 peer-checked:opacity-100 transition-opacity">
+										<svg
+											width="12"
+											height="10"
+											viewBox="0 0 12 10"
+											fill="none"
+											xmlns="http://www.w3.org/2000/svg"
+										>
+											<path
+												d="M1 5L4.5 8.5L11 1.5"
+												stroke="currentColor"
+												strokeWidth="3"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+											/>
+										</svg>
+									</div>
+								</div>
+								<div>
+									<label
+										htmlFor="requiresNoMagentaTV"
+										className="text-[0.7rem] font-bold text-[#1a1a2e] cursor-pointer uppercase tracking-wider"
+									>
+										Ausschluss-Logik
+									</label>
+									<p className="text-[0.75rem] text-[#9a3412] m-0 mt-0.5 leading-relaxed font-bold">
+										Nur ohne MagentaTV buchbar
+									</p>
+									<p className="text-[0.65rem] text-[#9a3412] m-0 mt-0.5 opacity-70">
+										Option wird ausgeblendet, sobald MagentaTV im Warenkorb
+										liegt.
+									</p>
+								</div>
 							</div>
 						</div>
+					</AdminFormSection>
 
-						{!isGlobal && (
-							<div className="bg-[#f7f8fa] border border-[#eaedf0] rounded-xl p-4 max-h-[300px] overflow-y-auto space-y-1">
-								{allProducts?.map(
-									(product: { id: string; name: string; category: string }) => (
-										<label
-											key={product.id}
-											className={clsx(
-												"flex items-center gap-3 p-2 rounded-xl transition-colors cursor-pointer group",
-												selectedProductIds.includes(product.id)
-													? "bg-[#e20074]/5 border border-[#e20074]/20"
-													: "hover:bg-white border border-transparent"
-											)}
-										>
-											<div className="relative flex items-center pt-[2px]">
-												<input
-													type="checkbox"
-													checked={selectedProductIds.includes(product.id)}
-													onChange={() => handleProductToggle(product.id)}
-													className="peer sr-only"
-												/>
-												<div className="w-4 h-4 rounded border-2 border-[#ddd] bg-white peer-checked:bg-[#e20074] peer-checked:border-[#e20074] transition-all flex items-center justify-center group-hover:border-[#e20074]/50">
-													<svg
-														className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
-														viewBox="0 0 14 10"
-														fill="none"
-													>
-														<path
-															d="M1 5L4.5 8.5L13 1"
-															stroke="currentColor"
-															strokeWidth="2"
-															strokeLinecap="round"
-															strokeLinejoin="round"
-														/>
-													</svg>
-												</div>
+					<AdminFormSection
+						title="Produkte"
+						description="Für welche Tarife ist diese Option verfügbar?"
+						icon={Box}
+						action={
+							<div className="flex items-center gap-2 bg-[#f7f8fa] px-3 py-1.5 rounded-xl border border-[#eaedf0]">
+								<input
+									type="checkbox"
+									id="isGlobal"
+									{...register("isGlobal")}
+									className="w-4 h-4 rounded border-[#eaedf0] text-[#e20074] focus:ring-[#e20074]"
+								/>
+								<label
+									htmlFor="isGlobal"
+									className="text-[0.75rem] font-bold text-[#1a1a2e] cursor-pointer"
+								>
+									Global (Alle)
+								</label>
+							</div>
+						}
+					>
+						{!isGlobal ? (
+							<div className="bg-[#f7f8fa] border border-[#eaedf0] border-dashed rounded-[2rem] p-6 max-h-[400px] overflow-y-auto space-y-2 custom-scrollbar">
+								{allProducts?.map((product: any) => (
+									<label
+										key={product.id}
+										className={clsx(
+											"flex items-center gap-4 p-4 rounded-3xl transition-all cursor-pointer group",
+											selectedProductIds.includes(product.id)
+												? "bg-white shadow-md border border-[#e20074]/10"
+												: "hover:bg-white/50 border border-transparent"
+										)}
+									>
+										<div className="relative flex items-center shrink-0">
+											<input
+												type="checkbox"
+												checked={selectedProductIds.includes(product.id)}
+												onChange={() => handleProductToggle(product.id)}
+												className="peer sr-only"
+											/>
+											<div className="w-5 h-5 rounded-lg border-2 border-[#ddd] bg-white peer-checked:bg-[#e20074] peer-checked:border-[#e20074] transition-all flex items-center justify-center group-hover:border-[#e20074]/50">
+												<svg
+													className="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+													viewBox="0 0 14 10"
+													fill="none"
+												>
+													<path
+														d="M1 5L4.5 8.5L13 1"
+														stroke="currentColor"
+														strokeWidth="3"
+														strokeLinecap="round"
+														strokeLinejoin="round"
+													/>
+												</svg>
 											</div>
-											<div className="flex flex-col">
-												<span className="text-[0.85rem] font-bold text-[#1a1a2e]">
-													{product.name}
-												</span>
-											</div>
-											<span className="ml-auto text-[0.6rem] font-bold uppercase tracking-wider text-[#999]">
+										</div>
+										<div className="flex flex-col flex-1">
+											<span className="text-[0.85rem] font-bold text-[#1a1a2e]">
+												{product.name}
+											</span>
+											<span className="text-[0.65rem] font-bold uppercase tracking-wider text-[#999] mt-0.5">
 												{product.category}
 											</span>
-										</label>
-									)
-								)}
+										</div>
+									</label>
+								))}
+							</div>
+						) : (
+							<div className="bg-[#e20074]/5 border border-[#e20074]/10 rounded-[2rem] p-8 text-center">
+								<Globe className="w-8 h-8 text-[#e20074] mx-auto mb-3 opacity-50" />
+								<p className="text-[0.85rem] font-bold text-[#e20074] m-0">
+									Globale Verfügbarkeit aktiv
+								</p>
+								<p className="text-[0.75rem] text-[#e20074] m-0 mt-1 opacity-70 italic text-center mx-auto">
+									Diese Option wird bei absolut jedem Tarif angezeigt.
+								</p>
 							</div>
 						)}
-					</div>
-				</div>
-				<div className="w-full md:w-[450px] space-y-6">
-					<div className="bg-white p-6 rounded-2xl border border-[#eaedf0] shadow-sm space-y-4">
-						<div className="flex items-center justify-between mb-2">
-							<h2 className="text-[1rem] font-extrabold text-[#1a1a2e]">
-								Varianten / Optionen
-							</h2>
+					</AdminFormSection>
+
+					<AdminFormSection
+						title="Varianten & Preise"
+						description="Erstelle verschiedene Ausführungen dieser Option."
+						icon={Layers}
+						action={
 							<button
 								type="button"
 								onClick={() => append({ name: "", price: 0 })}
-								className="text-[0.75rem] font-bold text-[#e20074] flex items-center gap-1 hover:bg-[#e20074]/10 px-2 py-1 rounded transition-colors"
+								className="text-[0.7rem] font-bold text-white bg-[#e20074] hover:bg-[#c70066] flex items-center gap-1 px-3 py-1.5 rounded-xl transition-all shadow-sm active:scale-95"
 							>
-								<Plus className="w-3.5 h-3.5" /> Variante hinzufügen
+								<Plus className="w-3.5 h-3.5" /> Hinzufügen
 							</button>
-						</div>
-
-						<p className="text-[0.75rem] text-[#888] leading-tight mb-4 m-0 mt-[-5px]">
-							Erstelle eine oder mehrere Varianten (z.B. "Standard", "Premium")
-							für diese Option. Der Benutzer kann genau eine davon auswählen.
+						}
+					>
+						<p className="text-[0.75rem] text-[#888] leading-relaxed mb-6 -mt-3">
+							Der Benutzer kann zur Laufzeit genau eine dieser Varianten
+							auswählen (z.B. Standard 2 Geräte vs Premium 4 Geräte).
 						</p>
 
 						{errors.tiers?.root && (
-							<p className="text-red-500 text-xs mt-1 mb-2">
+							<div className="bg-red-50 text-red-600 p-4 rounded-2xl mb-6 text-[0.8rem] border border-red-100 font-medium">
 								{errors.tiers.root.message}
-							</p>
+							</div>
 						)}
 
 						<div className="space-y-4">
 							{tiers.map((field, index) => (
 								<div
 									key={field.id}
-									className="p-4 border border-[#eaedf0] rounded-xl bg-[#fafafa] relative group"
+									className="p-6 border border-[#eaedf0] rounded-3xl bg-white shadow-sm hover:shadow-md transition-shadow relative group animate-in slide-in-from-bottom-2 duration-300"
 								>
-									<div className="flex justify-between items-center mb-3">
-										<span className="text-[0.7rem] font-bold text-[#888] uppercase tracking-wider">
+									<div className="flex justify-between items-center mb-5 pb-3 border-b border-[#f7f8fa]">
+										<span className="text-[0.7rem] font-extrabold text-[#1a1a2e] uppercase tracking-widest bg-[#f7f8fa] px-3 py-1 rounded-lg">
 											Variante {index + 1}
 										</span>
 										{tiers.length > 1 && (
 											<button
 												type="button"
 												onClick={() => remove(index)}
-												className="text-[#bbb] hover:text-[#dc2626] transition-colors bg-transparent border-none cursor-pointer"
+												className="text-[#bbb] hover:text-[#dc2626] transition-colors p-2 hover:bg-red-50 rounded-xl active:scale-90"
 											>
-												<Trash2 className="w-4 h-4" />
+												<Trash2 className="w-4.5 h-4.5" />
 											</button>
 										)}
 									</div>
 
-									<div className="space-y-4">
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 										<Input
 											label="Name (z.B. Premium)"
 											placeholder="Varianten-Name"
 											error={errors.tiers?.[index]?.name?.message}
 											{...register(`tiers.${index}.name`)}
 										/>
-										<Input
-											label="Preis (€ / Monat)"
-											type="number"
-											step="0.01"
-											placeholder="10.00"
-											error={errors.tiers?.[index]?.price?.message}
-											{...register(`tiers.${index}.price`, {
-												valueAsNumber: true
-											})}
-										/>
+										<div className="flex flex-col gap-1.5">
+											<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
+												Preis (€ / Monat)
+											</label>
+											<div className="relative">
+												<Input
+													type="number"
+													step="0.01"
+													placeholder="10.00"
+													error={errors.tiers?.[index]?.price?.message}
+													{...register(`tiers.${index}.price`, {
+														valueAsNumber: true
+													})}
+													className="pl-10"
+												/>
+												<div className="absolute left-4 top-[38px] text-[#bbb]">
+													<Euro className="w-4 h-4" />
+												</div>
+											</div>
+										</div>
 									</div>
 								</div>
 							))}
 						</div>
-					</div>
-				</div>
-			</div>
-		</form>
+					</AdminFormSection>
+				</AdminFormContainer>
+			</form>
+		</div>
 	);
 }

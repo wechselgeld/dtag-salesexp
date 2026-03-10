@@ -13,7 +13,10 @@ import {
 	Mail,
 	CheckCircle2,
 	RotateCcw,
-	ChevronRight
+	ChevronRight,
+	MapPin,
+	ArrowLeft,
+	Globe
 } from "lucide-react";
 import clsx from "clsx";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
@@ -35,6 +38,8 @@ const setupFormSchema = z.object({
 		.refine((val) => val.endsWith("@telekom.de"), {
 			message: "Es sind nur interne Adressen erlaubt."
 		}),
+	odRegionId: z.string().min(1, "Bitte wähle einen OD-Bereich aus"),
+	locationId: z.string().min(1, "Bitte wähle einen Standort aus"),
 	teamId: z.string().min(1, "Bitte wähle ein Team aus"),
 	acceptedTerms: z.literal(true),
 	acceptedPrivacy: z.literal(true)
@@ -86,9 +91,16 @@ export default function SetupPage() {
 	const router = useRouter();
 
 	// Form state
+	const [currentStep, setCurrentStep] = useState(1);
 	const [firstName, setFirstName] = useState("");
 	const [lastName, setLastName] = useState("");
 	const [email, setEmail] = useState("");
+	const [selectedOdRegionId, setSelectedOdRegionId] = useState<string | null>(
+		null
+	);
+	const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
+		null
+	);
 	const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
 	const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
@@ -101,7 +113,17 @@ export default function SetupPage() {
 	const [showReconfigure, setShowReconfigure] = useState(false);
 
 	// Data fetching
-	const { data: teams, isLoading: isTeamsLoading } = trpc.team.list.useQuery();
+	const { data: odRegions, isLoading: isOdRegionsLoading } =
+		trpc.odRegion.list.useQuery();
+	const { data: locations, isLoading: isLocationsLoading } =
+		trpc.location.list.useQuery(
+			selectedOdRegionId ? { odRegionId: selectedOdRegionId } : undefined,
+			{ enabled: !!selectedOdRegionId }
+		);
+	const { data: teams, isLoading: isTeamsLoading } = trpc.team.list.useQuery(
+		selectedLocationId ? { locationId: selectedLocationId } : undefined,
+		{ enabled: !!selectedLocationId }
+	);
 	const {
 		isLoading: isIpLoading,
 		isError: isIpError,
@@ -224,11 +246,27 @@ export default function SetupPage() {
 		!firstName.trim() ||
 		!lastName.trim() ||
 		(isEmailRequiredGlobally !== false && !email.trim()) ||
+		!selectedOdRegionId ||
+		!selectedLocationId ||
 		!selectedTeamId ||
 		!acceptedTerms ||
 		!acceptedPrivacy;
 
 	const canSubmitClick = !anyFieldEmpty && !isSubmitting && !pendingSessionId;
+
+	const handleNextStep = () => {
+		if (currentStep === 1 && selectedOdRegionId) {
+			setCurrentStep(2);
+		} else if (currentStep === 2 && selectedLocationId) {
+			setCurrentStep(3);
+		} else if (currentStep === 3 && selectedTeamId) {
+			setCurrentStep(4);
+		}
+	};
+
+	const handlePrevStep = () => {
+		if (currentStep > 1) setCurrentStep(currentStep - 1);
+	};
 
 	const handleSubmit = useCallback(async () => {
 		setFormErrors({});
@@ -236,6 +274,8 @@ export default function SetupPage() {
 			firstName,
 			lastName,
 			email: isEmailRequiredGlobally === false ? "no-reply@telekom.de" : email,
+			odRegionId: selectedOdRegionId ?? "",
+			locationId: selectedLocationId ?? "",
 			teamId: selectedTeamId ?? "",
 			acceptedTerms,
 			acceptedPrivacy
@@ -260,16 +300,359 @@ export default function SetupPage() {
 			acceptedTerms: true
 		});
 	}, [
+		selectedOdRegionId,
+		selectedLocationId,
 		selectedTeamId,
 		acceptedTerms,
 		acceptedPrivacy,
 		firstName,
 		lastName,
 		email,
+		isEmailRequiredGlobally,
 		requestVerification
 	]);
 
-	/* ── Render ────────────────────────────── */
+	/* ── Render Helpers ────────────────────────────── */
+
+	const renderStep1 = () => (
+		<motion.div
+			key="step1"
+			initial={{ opacity: 0, x: 20 }}
+			animate={{ opacity: 1, x: 0 }}
+			exit={{ opacity: 0, x: -20 }}
+			transition={{ duration: 0.3 }}
+			className="space-y-6"
+		>
+			<SectionHeader
+				icon={<Globe className="w-5 h-5 text-[#e20074]" />}
+				title="OD-Bereich wählen"
+				step={1}
+			/>
+
+			{isOdRegionsLoading ? (
+				<div className="grid grid-cols-2 gap-3 mt-5">
+					{Array.from({ length: 4 }).map((_, i) => (
+						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
+					))}
+				</div>
+			) : odRegions?.length === 0 ? (
+				<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
+					Bisher wurden keine OD-Bereiche angelegt.
+				</div>
+			) : (
+				<div className="grid grid-cols-2 gap-3 mt-5">
+					<AnimatePresence>
+						{odRegions
+							?.filter((region: any) => region.isActive)
+							.map((region: any, index: number) => (
+								<SelectionTile
+									key={region.id}
+									name={region.name}
+									isSelected={selectedOdRegionId === region.id}
+									onClick={() => {
+										setSelectedOdRegionId(region.id);
+										setSelectedLocationId(null);
+										setSelectedTeamId(null);
+									}}
+									index={index}
+								/>
+							))}
+					</AnimatePresence>
+				</div>
+			)}
+
+			<div className="flex justify-end pt-4 border-t border-[#eaedf0] mt-8">
+				<button
+					onClick={handleNextStep}
+					disabled={!selectedOdRegionId}
+					className={clsx(
+						"px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2",
+						selectedOdRegionId
+							? "bg-[#e20074] text-white hover:bg-[#c70066] cursor-pointer"
+							: "bg-[#eaedf0] text-[#aaa] cursor-not-allowed"
+					)}
+				>
+					Weiter
+					<ArrowRight className="w-4 h-4" />
+				</button>
+			</div>
+		</motion.div>
+	);
+
+	const renderStep2 = () => (
+		<motion.div
+			key="step2"
+			initial={{ opacity: 0, x: 20 }}
+			animate={{ opacity: 1, x: 0 }}
+			exit={{ opacity: 0, x: -20 }}
+			transition={{ duration: 0.3 }}
+			className="space-y-6"
+		>
+			<SectionHeader
+				icon={<MapPin className="w-5 h-5 text-[#e20074]" />}
+				title="Standort wählen"
+				step={2}
+			/>
+
+			{isLocationsLoading ? (
+				<div className="grid grid-cols-2 gap-3 mt-5">
+					{Array.from({ length: 4 }).map((_, i) => (
+						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
+					))}
+				</div>
+			) : locations?.length === 0 ? (
+				<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
+					Bisher wurden keine Standorte angelegt.
+				</div>
+			) : (
+				<div className="grid grid-cols-2 gap-3 mt-5">
+					<AnimatePresence>
+						{locations
+							?.filter((loc) => loc.isActive)
+							.map((loc: any, index: number) => (
+								<SelectionTile
+									key={loc.id}
+									name={loc.name}
+									isSelected={selectedLocationId === loc.id}
+									onClick={() => {
+										setSelectedLocationId(loc.id);
+										setSelectedTeamId(null);
+									}}
+									index={index}
+								/>
+							))}
+					</AnimatePresence>
+				</div>
+			)}
+
+			<div className="flex justify-between pt-4 border-t border-[#eaedf0] mt-8">
+				<button
+					onClick={handlePrevStep}
+					className="px-5 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2 text-[#666] bg-[#f7f8fa] hover:bg-[#eaedf0] cursor-pointer"
+				>
+					<ArrowLeft className="w-4 h-4" />
+					Zurück
+				</button>
+				<button
+					onClick={handleNextStep}
+					disabled={!selectedLocationId}
+					className={clsx(
+						"px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2",
+						selectedLocationId
+							? "bg-[#e20074] text-white hover:bg-[#c70066] cursor-pointer"
+							: "bg-[#eaedf0] text-[#aaa] cursor-not-allowed"
+					)}
+				>
+					Weiter
+					<ArrowRight className="w-4 h-4" />
+				</button>
+			</div>
+		</motion.div>
+	);
+
+	const renderStep3 = () => (
+		<motion.div
+			key="step3"
+			initial={{ opacity: 0, x: 20 }}
+			animate={{ opacity: 1, x: 0 }}
+			exit={{ opacity: 0, x: -20 }}
+			transition={{ duration: 0.3 }}
+			className="space-y-6"
+		>
+			<SectionHeader
+				icon={<Users className="w-5 h-5 text-[#e20074]" />}
+				title="Vertriebsteam wählen"
+				step={3}
+			/>
+
+			{isTeamsLoading ? (
+				<div className="grid grid-cols-2 gap-3 mt-5">
+					{Array.from({ length: 4 }).map((_, i) => (
+						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
+					))}
+				</div>
+			) : teams?.length === 0 ? (
+				<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
+					In diesem Standort wurden noch keine Teams angelegt.
+				</div>
+			) : (
+				<div className="grid grid-cols-2 gap-3 mt-5">
+					<AnimatePresence>
+						{teams?.map((team: any, index: number) => (
+							<SelectionTile
+								key={team.id}
+								name={team.name}
+								isSelected={selectedTeamId === team.id}
+								onClick={() => setSelectedTeamId(team.id)}
+								index={index}
+							/>
+						))}
+					</AnimatePresence>
+				</div>
+			)}
+
+			<div className="flex justify-between pt-4 border-t border-[#eaedf0] mt-8">
+				<button
+					onClick={handlePrevStep}
+					className="px-5 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2 text-[#666] bg-[#f7f8fa] hover:bg-[#eaedf0] cursor-pointer"
+				>
+					<ArrowLeft className="w-4 h-4" />
+					Zurück
+				</button>
+				<button
+					onClick={handleNextStep}
+					disabled={!selectedTeamId}
+					className={clsx(
+						"px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2",
+						selectedTeamId
+							? "bg-[#e20074] text-white hover:bg-[#c70066] cursor-pointer"
+							: "bg-[#eaedf0] text-[#aaa] cursor-not-allowed"
+					)}
+				>
+					Weiter
+					<ArrowRight className="w-4 h-4" />
+				</button>
+			</div>
+		</motion.div>
+	);
+
+	const renderStep4 = () => (
+		<motion.div
+			key="step4"
+			initial={{ opacity: 0, x: 20 }}
+			animate={{ opacity: 1, x: 0 }}
+			exit={{ opacity: 0, x: -20 }}
+			transition={{ duration: 0.3 }}
+			className="space-y-8"
+		>
+			<section>
+				<SectionHeader
+					icon={<User className="w-5 h-5 text-[#e20074]" />}
+					title="Persönliche Daten"
+					step={4}
+				/>
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
+					<InputField
+						id="setup-first-name"
+						label="Vorname"
+						placeholder="Max"
+						value={firstName}
+						onChange={setFirstName}
+					/>
+					<InputField
+						id="setup-last-name"
+						label="Nachname"
+						placeholder="Mustermann"
+						value={lastName}
+						onChange={setLastName}
+					/>
+				</div>
+				{isEmailRequiredGlobally !== false && (
+					<div className="mt-4">
+						<InputField
+							id="setup-email"
+							label="E-Mail-Adresse"
+							placeholder="max.mustermann@telekom.de"
+							value={email}
+							onChange={setEmail}
+						/>
+					</div>
+				)}
+			</section>
+
+			{/* Divider */}
+			<div className="h-px bg-[#eaedf0]" />
+
+			<section>
+				{/* Notice box */}
+				<div className="bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl p-5 mb-6">
+					<div className="flex gap-4">
+						<ShieldAlert className="w-[18px] h-[18px] text-[#888] shrink-0 mt-[2px]" />
+						<div className="flex flex-col gap-1.5">
+							<h3 className="text-[0.85rem] font-bold text-[#1a1a2e] m-0 leading-none">
+								Interner Nutzungshinweis
+							</h3>
+							<p className="text-[0.8rem] text-[#888] leading-relaxed m-0">
+								Dieses Tool dient ausschließlich internen Beratungs- und
+								Schulungszwecken. Es handelt sich um keine rechtsverbindliche
+								Preisliste. Die Weitergabe an Dritte ist strikt untersagt.
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div className="flex items-stretch justify-between gap-6 flex-wrap">
+					<div className="flex flex-col gap-2.5">
+						<CheckboxRow
+							checked={acceptedTerms}
+							onChange={() => setAcceptedTerms(!acceptedTerms)}
+							label="Nutzungshinweis akzeptiert"
+						/>
+						<CheckboxRow
+							checked={acceptedPrivacy}
+							onChange={() => setAcceptedPrivacy(!acceptedPrivacy)}
+							label={
+								<>
+									<Link
+										href="/privacy"
+										className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2"
+									>
+										Datenschutz
+									</Link>{" "}
+									akzeptiert
+								</>
+							}
+						/>
+					</div>
+
+					<div className="flex flex-col items-end gap-2 self-stretch">
+						<button
+							id="setup-submit-btn"
+							onClick={handleSubmit}
+							disabled={!canSubmitClick}
+							className={clsx(
+								"h-[48px] px-6 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 outline-none text-[0.88rem] whitespace-nowrap",
+								canSubmitClick
+									? "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_6px_16px_-4px_rgba(226,0,116,0.3)] cursor-pointer active:scale-[0.98]"
+									: "bg-[#f7f8fa] text-[#ccc] border border-[#eaedf0] cursor-not-allowed"
+							)}
+						>
+							{isSubmitting ? (
+								<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+							) : (
+								<span className="flex items-center gap-2">
+									Setup abschließen
+									<ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
+								</span>
+							)}
+						</button>
+						{Object.keys(formErrors).length > 0 && (
+							<div className="text-right">
+								{Object.values(formErrors).map((err, i) => (
+									<p
+										key={i}
+										className="text-[#dc2626] text-[0.75rem] font-medium m-0"
+									>
+										{err}
+									</p>
+								))}
+							</div>
+						)}
+					</div>
+				</div>
+			</section>
+
+			<div className="flex justify-start pt-4 border-t border-[#eaedf0] mt-8">
+				<button
+					onClick={handlePrevStep}
+					className="px-5 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2 text-[#666] bg-[#f7f8fa] hover:bg-[#eaedf0] cursor-pointer"
+				>
+					<ArrowLeft className="w-4 h-4" />
+					Zurück
+				</button>
+			</div>
+		</motion.div>
+	);
 
 	return (
 		<div className="min-h-screen py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074]">
@@ -365,174 +748,13 @@ export default function SetupPage() {
 							</button>
 						</div>
 					) : (
-						/* Setup form */
-						<div className="space-y-10">
-							{/* ─── Section 1: Name ─── */}
-							<section>
-								<SectionHeader
-									icon={<User className="w-5 h-5 text-[#e20074]" />}
-									title="Persönliche Daten"
-									step={1}
-								/>
-								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
-									<InputField
-										id="setup-first-name"
-										label="Vorname"
-										placeholder="Max"
-										value={firstName}
-										onChange={setFirstName}
-									/>
-									<InputField
-										id="setup-last-name"
-										label="Nachname"
-										placeholder="Mustermann"
-										value={lastName}
-										onChange={setLastName}
-									/>
-								</div>
-								{isEmailRequiredGlobally !== false && (
-									<div className="mt-4">
-										<InputField
-											id="setup-email"
-											label="E-Mail-Adresse"
-											placeholder="max.mustermann@telekom.de"
-											value={email}
-											onChange={setEmail}
-										/>
-									</div>
-								)}
-							</section>
-
-							{/* Divider */}
-							<div className="h-px bg-[#eaedf0]" />
-
-							{/* ─── Section 2: Team ─── */}
-							<section>
-								<SectionHeader
-									icon={<Users className="w-5 h-5 text-[#e20074]" />}
-									title="Dein Vertriebsteam"
-									step={2}
-								/>
-
-								{isTeamsLoading ? (
-									<div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">
-										{Array.from({ length: 6 }).map((_, i) => (
-											<Skeleton
-												key={i}
-												className="h-[48px] w-full rounded-xl"
-											/>
-										))}
-									</div>
-								) : teams?.length === 0 ? (
-									<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
-										Bisher wurden keine Teams angelegt.
-									</div>
-								) : (
-									<div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">
-										<AnimatePresence>
-											{teams?.map((team, index) => (
-												<TeamTile
-													key={team.id}
-													name={team.name}
-													isSelected={selectedTeamId === team.id}
-													onClick={() => setSelectedTeamId(team.id)}
-													index={index}
-												/>
-											))}
-										</AnimatePresence>
-									</div>
-								)}
-							</section>
-
-							{/* Divider */}
-							<div className="h-px bg-[#eaedf0]" />
-
-							{/* ─── Section 3: Agreements + Submit ─── */}
-							<section>
-								{/* Notice box */}
-								<div className="bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl p-5 mb-6">
-									<div className="flex gap-4">
-										<ShieldAlert className="w-[18px] h-[18px] text-[#888] shrink-0 mt-[2px]" />
-										<div className="flex flex-col gap-1.5">
-											<h3 className="text-[0.85rem] font-bold text-[#1a1a2e] m-0 leading-none">
-												Interner Nutzungshinweis
-											</h3>
-											<p className="text-[0.8rem] text-[#888] leading-relaxed m-0">
-												Dieses Tool dient ausschließlich internen Beratungs- und
-												Schulungszwecken. Es handelt sich um keine
-												rechtsverbindliche Preisliste. Die Weitergabe an Dritte
-												ist strikt untersagt.
-											</p>
-										</div>
-									</div>
-								</div>
-
-								{/* Checkboxes left + Submit right */}
-								<div className="flex items-stretch justify-between gap-6 flex-wrap">
-									<div className="flex flex-col gap-2.5">
-										<CheckboxRow
-											checked={acceptedTerms}
-											onChange={() => setAcceptedTerms(!acceptedTerms)}
-											label="Nutzungshinweis akzeptiert"
-										/>
-										<CheckboxRow
-											checked={acceptedPrivacy}
-											onChange={() => setAcceptedPrivacy(!acceptedPrivacy)}
-											label={
-												<>
-													<Link
-														href="/privacy"
-														className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2"
-													>
-														Datenschutz
-													</Link>{" "}
-													akzeptiert
-												</>
-											}
-										/>
-									</div>
-
-									{/* Submit button wrapper */}
-									<div className="flex flex-col items-end gap-2 self-stretch">
-										<button
-											id="setup-submit-btn"
-											onClick={handleSubmit}
-											disabled={!canSubmitClick}
-											className={clsx(
-												"h-[48px] px-6 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 outline-none text-[0.88rem] whitespace-nowrap",
-												canSubmitClick
-													? "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_6px_16px_-4px_rgba(226,0,116,0.3)] cursor-pointer active:scale-[0.98]"
-													: "bg-[#f7f8fa] text-[#ccc] border border-[#eaedf0] cursor-not-allowed"
-											)}
-										>
-											{isSubmitting ? (
-												<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-											) : (
-												<span className="flex items-center gap-2">
-													Setup abschließen
-													<ArrowRight
-														className="w-3.5 h-3.5"
-														strokeWidth={2.5}
-													/>
-												</span>
-											)}
-										</button>
-										{Object.keys(formErrors).length > 0 && (
-											<div className="text-right">
-												{Object.values(formErrors).map((err, i) => (
-													<p
-														key={i}
-														className="text-[#dc2626] text-[0.75rem] font-medium m-0"
-													>
-														{err}
-													</p>
-												))}
-											</div>
-										)}
-									</div>
-								</div>
-							</section>
-						</div>
+						/* Multi-step form */
+						<AnimatePresence mode="wait">
+							{currentStep === 1 && renderStep1()}
+							{currentStep === 2 && renderStep2()}
+							{currentStep === 3 && renderStep3()}
+							{currentStep === 4 && renderStep4()}
+						</AnimatePresence>
 					)}
 				</motion.div>
 
@@ -606,8 +828,8 @@ function InputField({
 	);
 }
 
-/** Team selection tile */
-function TeamTile({
+/** Location or Team selection tile */
+function SelectionTile({
 	name,
 	isSelected,
 	onClick,

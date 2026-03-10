@@ -2,19 +2,12 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
-import clsx from "clsx";
-import {
-	Save,
-	Loader2,
-	ArrowLeft,
-	Euro,
-	ToggleLeft,
-	FileText
-} from "lucide-react";
+import { Save, Loader2, ArrowLeft, Globe, ToggleLeft } from "lucide-react";
 import Link from "next/link";
+import clsx from "clsx";
 import { Input } from "@/components/shared/ui/input";
 import {
 	AdminPageHeader,
@@ -22,23 +15,23 @@ import {
 	AdminFormSection
 } from "@/components/shared/ui/admin-ui";
 
-const creditSchema = z.object({
+const odRegionSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),
-	value: z.number().min(0, "Wert muss positiv sein"),
 	isActive: z.boolean().default(true)
 });
 
-type CreditFormData = z.infer<typeof creditSchema>;
+type OdRegionFormData = z.infer<typeof odRegionSchema>;
 
-interface CreditFormProps {
-	initialData?: { name: string; value: number; isActive: boolean; id: string };
-	isEditMode?: boolean;
+interface OdRegionFormProps {
+	mode: "create" | "edit";
+	id?: string;
+	initialData?: {
+		name: string;
+		isActive: boolean;
+	};
 }
 
-export function CreditForm({
-	initialData,
-	isEditMode = false
-}: CreditFormProps) {
+export function OdRegionForm({ mode, id, initialData }: OdRegionFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
@@ -47,117 +40,89 @@ export function CreditForm({
 		handleSubmit,
 		formState: { errors }
 	} = useForm({
-		resolver: zodResolver(creditSchema),
+		resolver: zodResolver(odRegionSchema),
 		mode: "onChange",
 		defaultValues: {
-			name: initialData ? initialData.name : "",
-			value: initialData ? initialData.value : 0,
-			isActive: initialData ? initialData.isActive : true
+			name: initialData?.name || "",
+			isActive: initialData?.isActive ?? true
 		}
 	});
 
-	const createMutation = trpc.admin.oneTimeCredit.create.useMutation({
+	const createMutation = trpc.odRegion.create.useMutation({
 		onSuccess: () => {
-			utils.admin.oneTimeCredit.list.invalidate();
-			utils.admin.oneTimeCredit.getById.invalidate();
-			router.push("/admin/credits");
+			utils.odRegion.list.invalidate();
+			router.push("/admin/od-regions");
 			router.refresh();
 		}
 	});
 
-	const updateMutation = trpc.admin.oneTimeCredit.update.useMutation({
+	const updateMutation = trpc.odRegion.update.useMutation({
 		onSuccess: () => {
-			utils.admin.oneTimeCredit.list.invalidate();
-			utils.admin.oneTimeCredit.getById.invalidate();
-			router.push("/admin/credits");
+			utils.odRegion.list.invalidate();
+			router.push("/admin/od-regions");
 			router.refresh();
 		}
 	});
 
-	const onSubmit = (data: CreditFormData) => {
-		if (isEditMode && initialData) {
-			updateMutation.mutate({ ...data, id: initialData.id });
-		} else {
+	const onSubmit = (data: OdRegionFormData) => {
+		if (mode === "create") {
 			createMutation.mutate(data);
+		} else if (mode === "edit" && id) {
+			updateMutation.mutate({ id, ...data });
 		}
 	};
 
-	const isSubmitting = createMutation.isPending || updateMutation.isPending;
+	const isPending = createMutation.isPending || updateMutation.isPending;
 
 	const SaveButton = (
 		<button
 			type="submit"
-			form="credit-form"
-			disabled={isSubmitting}
+			form="od-region-form"
+			disabled={isPending}
 			className={clsx(
 				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
-				isSubmitting
+				isPending
 					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
 					: "bg-[#e20074] hover:bg-[#c70066]"
 			)}
 		>
-			{isSubmitting ? (
+			{isPending ? (
 				<Loader2 className="w-4 h-4 animate-spin" />
 			) : (
 				<Save className="w-5 h-5" />
 			)}
-			Gutschrift speichern
+			Bereich speichern
 		</button>
 	);
 
 	return (
 		<div className="space-y-8 pb-12">
 			<AdminPageHeader
-				title={isEditMode ? "Gutschrift bearbeiten" : "Neue Gutschrift"}
+				title={mode === "create" ? "Neuer OD-Bereich" : "OD-Bereich bearbeiten"}
 				subtitle={
-					isEditMode
-						? `Verwalte die Details für ${initialData?.name}`
-						: "Erstelle eine neue Einmal-Gutschrift für Produkte."
+					mode === "create"
+						? "Erstelle einen neuen Verbund von Standorten."
+						: `Verwalte die Einstellungen für ${initialData?.name}`
 				}
-				backHref="/admin/credits"
+				backHref="/admin/od-regions"
 				action={SaveButton}
 			/>
 
-			<form id="credit-form" onSubmit={handleSubmit(onSubmit)}>
+			<form id="od-region-form" onSubmit={handleSubmit(onSubmit)}>
 				<AdminFormContainer>
 					<AdminFormSection
-						title="Details"
-						description="Name und Wert der Gutschrift."
-						icon={FileText}
+						title="Stammdaten"
+						description="Name und Status des Verbunds."
+						icon={Globe}
 					>
 						<Input
-							label="Bezeichnung"
-							placeholder="z.B. Anschlusspreisbefreiung"
+							label="Name des OD-Bereichs"
+							placeholder="z.B. OD Süd"
 							error={errors.name?.message as string}
 							{...register("name")}
 						/>
 
-						<div className="flex flex-col gap-1.5">
-							<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-								Wert in Euro (€)
-							</label>
-							<div className="relative">
-								<Input
-									type="number"
-									step="0.01"
-									placeholder="0.00"
-									error={errors.value?.message as string}
-									{...register("value", { valueAsNumber: true })}
-									className="pl-10"
-								/>
-								<div className="absolute left-4 top-[38px] text-[#bbb]">
-									<Euro className="w-4 h-4" />
-								</div>
-							</div>
-						</div>
-					</AdminFormSection>
-
-					<AdminFormSection
-						title="Status"
-						description="Sichtbarkeit für Verkäufer."
-						icon={ToggleLeft}
-					>
-						<div className="flex items-center gap-4 p-5 bg-[#f7f8fa] border border-[#eaedf0] rounded-[1.5rem]">
+						<div className="flex items-center gap-4 p-5 bg-[#f7f8fa] border border-[#eaedf0] rounded-[1.5rem] mt-2">
 							<div className="relative flex items-center">
 								<input
 									type="checkbox"
@@ -188,11 +153,10 @@ export function CreditForm({
 									htmlFor="isActive"
 									className="text-[0.85rem] font-bold text-[#1a1a2e] cursor-pointer"
 								>
-									Gutschrift ist aktiv
+									OD-Bereich ist aktiv
 								</label>
 								<p className="text-[0.75rem] text-[#888] m-0 mt-0.5">
-									Inaktive Gutschriften werden den Verkäufern nicht zur Auswahl
-									angeboten.
+									Inaktive Bereiche werden im Setup-Wizard ausgeblendet.
 								</p>
 							</div>
 						</div>

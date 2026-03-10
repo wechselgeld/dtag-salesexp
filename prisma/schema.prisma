@@ -10,10 +10,47 @@ datasource db {
 // Models
 
 model User {
+  id         String    @id @default(cuid())
+  email      String    @unique
+  password   String
+  role       String    @default("TEAM_LEADER") // "ADMIN", "OD_MANAGER", "LOCATION_MANAGER", "TEAM_LEADER"
+  isEditor   Boolean   @default(false)
+  
+  odRegionId String?
+  odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: SetNull)
+  
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  teamId     String?
+  team       Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model OdRegion {
   id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      String   @default("ADMIN") // "ADMIN", "TEAM_LEADER"
+  name      String
+  isActive  Boolean  @default(true)
+  
+  locations Location[]
+  users     User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Location {
+  id        String   @id @default(cuid())
+  name      String
+  isActive  Boolean  @default(true)
+  odRegionId String?
+  odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: SetNull)
+
+  teams     Team[]
+  users     User[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -192,9 +229,14 @@ model OneTimeCredit {
 }
 
 model Team {
-  id    String @id @default(cuid())
-  name  String
-  email String @default("team06@telekom.de")
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @default("team06@telekom.de")
+  
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  
+  users      User[]
 
   sessions   SalesSession[]
   highlights TeamHighlight[]

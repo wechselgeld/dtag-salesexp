@@ -13,9 +13,9 @@ export async function middleware(req: NextRequest) {
             return NextResponse.redirect(new URL('/login', req.url));
         }
 
-        // Role check (Optional: Ensure user is ADMIN)
-        if (session.role !== 'ADMIN' && session.role !== 'TEAM_LEADER') {
-            // Could redirect to unauthorized page or just home
+        // Role check
+        const roles = ['ADMIN', 'OD_MANAGER', 'LOCATION_MANAGER', 'TEAM_LEADER'];
+        if (!roles.includes(session.role as string)) {
             return NextResponse.redirect(new URL('/', req.url));
         }
     }

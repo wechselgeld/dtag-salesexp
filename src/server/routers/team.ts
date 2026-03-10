@@ -3,18 +3,42 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 export const teamRouter = router({
-    list: publicProcedure.query(async ({ ctx }) => {
-        return await ctx.prisma.team.findMany({
-            include: {
-                highlights: {
-                    include: {
-                        product: true
-                    }
+    list: publicProcedure
+        .input(z.object({
+            locationId: z.string().optional(),
+            odRegionId: z.string().optional()
+        }).optional())
+        .query(async ({ ctx, input }) => {
+            const session = ctx.session as any;
+
+            let securityFilter: any = {};
+            if (session?.role) {
+                if (session.role === 'OD_MANAGER' && session.odRegionId) {
+                    securityFilter = { location: { odRegionId: session.odRegionId } };
+                } else if (session.role === 'LOCATION_MANAGER' && session.locationId) {
+                    securityFilter = { locationId: session.locationId };
+                } else if (session.role === 'TEAM_LEADER' && session.teamId) {
+                    securityFilter = { id: session.teamId };
                 }
-            },
-            orderBy: { name: 'asc' }
-        });
-    }),
+            }
+
+            return await ctx.prisma.team.findMany({
+                where: {
+                    ...securityFilter,
+                    ...(input?.locationId ? { locationId: input.locationId } : {}),
+                    ...(input?.odRegionId ? { location: { odRegionId: input.odRegionId } } : {})
+                },
+                include: {
+                    location: true,
+                    highlights: {
+                        include: {
+                            product: true
+                        }
+                    }
+                },
+                orderBy: { name: 'asc' }
+            });
+        }),
 
     getById: publicProcedure
         .input(z.object({
@@ -24,6 +48,7 @@ export const teamRouter = router({
             return await ctx.prisma.team.findUnique({
                 where: { id: input.id },
                 include: {
+                    location: true,
                     highlights: {
                         include: {
                             product: true
@@ -37,18 +62,21 @@ export const teamRouter = router({
         .input(
             z.object({
                 name: z.string().min(1),
-                email: z.string().email().optional()
+                email: z.string().email().optional().or(z.literal("")).transform(v => v === "" ? undefined : v),
+                locationId: z.string().optional().or(z.literal("")).transform(v => v === "" ? undefined : v)
             })
         )
         .mutation(async ({ ctx, input }) => {
-            if (!ctx.session || (ctx.session.role !== 'ADMIN' && ctx.session.role !== 'TEAM_LEADER')) {
-                throw new TRPCError({ code: 'FORBIDDEN' });
+            const role = (ctx.session as any)?.role;
+            if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER')) {
+                throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung zum Erstellen von Teams.' });
             }
 
             return await ctx.prisma.team.create({
                 data: {
                     name: input.name,
-                    email: input.email || "team06@telekom.de"
+                    email: input.email || "team06@telekom.de",
+                    locationId: input.locationId
                 }
             });
         }),
@@ -57,10 +85,12 @@ export const teamRouter = router({
         .input(z.object({
             id: z.string(),
             name: z.string().min(1).optional(),
-            email: z.string().email().optional()
+            email: z.string().email().optional(),
+            locationId: z.string().optional().nullable()
         }))
         .mutation(async ({ ctx, input }) => {
-            if (!ctx.session || (ctx.session.role !== 'ADMIN' && ctx.session.role !== 'TEAM_LEADER')) {
+            const role = (ctx.session as any)?.role;
+            if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER' && role !== 'TEAM_LEADER')) {
                 throw new TRPCError({ code: 'FORBIDDEN' });
             }
 
@@ -81,8 +111,9 @@ export const teamRouter = router({
             id: z.string()
         }))
         .mutation(async ({ ctx, input }) => {
-            if (!ctx.session || ctx.session.role !== 'ADMIN') {
-                throw new TRPCError({ code: 'FORBIDDEN' });
+            const role = (ctx.session as any)?.role;
+            if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER')) {
+                throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung zum Löschen dieses Teams.' });
             }
 
             try {
@@ -112,7 +143,8 @@ export const teamRouter = router({
             businessCase: z.string().optional()
         }))
         .mutation(async ({ ctx, input }) => {
-            if (!ctx.session || (ctx.session.role !== 'ADMIN' && ctx.session.role !== 'TEAM_LEADER')) {
+            const role = (ctx.session as any)?.role;
+            if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER' && role !== 'TEAM_LEADER')) {
                 throw new TRPCError({ code: 'FORBIDDEN' });
             }
 

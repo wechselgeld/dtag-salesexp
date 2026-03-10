@@ -27,7 +27,15 @@ export default async function EditUserPage({
 				userId={user.id}
 				initialData={{
 					email: user.email,
-					role: user.role as "ADMIN" | "TEAM_LEADER"
+					role: user.role as
+						| "ADMIN"
+						| "OD_MANAGER"
+						| "LOCATION_MANAGER"
+						| "TEAM_LEADER",
+					isEditor: user.isEditor,
+					odRegionId: user.odRegionId,
+					locationId: user.locationId,
+					teamId: user.teamId
 				}}
 			/>
 		</main>

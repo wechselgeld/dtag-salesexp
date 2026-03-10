@@ -6,11 +6,23 @@ import { TRPCError } from '@trpc/server';
 import bcrypt from 'bcryptjs';
 
 export const authRouter = router({
-    me: protectedProcedure.query(({ ctx }) => {
-        return {
-            id: (ctx.session as any)?.sub as string,
-            role: (ctx.session as any)?.role as string,
-        };
+    me: protectedProcedure.query(async ({ ctx }) => {
+        const session = ctx.session as any;
+        const user = await prisma.user.findUnique({
+            where: { id: session.sub },
+            select: {
+                id: true,
+                role: true,
+                isEditor: true,
+                odRegionId: true,
+                locationId: true,
+                teamId: true
+            }
+        });
+
+        if (!user) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+        return user;
     }),
 
     login: publicProcedure

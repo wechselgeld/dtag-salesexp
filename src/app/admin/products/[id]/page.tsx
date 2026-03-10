@@ -30,12 +30,5 @@ export default function EditProductPage() {
 		);
 	}
 
-	return (
-		<div>
-			<h1 className="text-2xl font-bold text-zinc-900 mb-8">
-				Produkt bearbeiten: {product.name}
-			</h1>
-			<ProductForm mode="edit" initialData={product} />
-		</div>
-	);
+	return <ProductForm mode="edit" initialData={product} />;
 }

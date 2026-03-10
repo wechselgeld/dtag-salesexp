@@ -25,7 +25,11 @@ export default async function EditTeamPage({
 			<TeamForm
 				mode="edit"
 				teamId={team.id}
-				initialData={{ name: team.name, email: team.email }}
+				initialData={{
+					name: team.name,
+					email: team.email,
+					locationId: team.locationId
+				}}
 			/>
 		</main>
 	);

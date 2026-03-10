@@ -2,19 +2,19 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
-import clsx from "clsx";
 import {
 	Save,
 	Loader2,
 	ArrowLeft,
-	Euro,
-	ToggleLeft,
-	FileText
+	MapPin,
+	Globe,
+	ToggleLeft
 } from "lucide-react";
 import Link from "next/link";
+import clsx from "clsx";
 import { Input } from "@/components/shared/ui/input";
 import {
 	AdminPageHeader,
@@ -22,131 +22,160 @@ import {
 	AdminFormSection
 } from "@/components/shared/ui/admin-ui";
 
-const creditSchema = z.object({
+const locationSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),
-	value: z.number().min(0, "Wert muss positiv sein"),
-	isActive: z.boolean().default(true)
+	isActive: z.boolean().default(true),
+	odRegionId: z
+		.string()
+		.min(1, "Zuordnung zu einem OD-Bereich ist erforderlich")
 });
 
-type CreditFormData = z.infer<typeof creditSchema>;
+type LocationFormData = z.infer<typeof locationSchema>;
 
-interface CreditFormProps {
-	initialData?: { name: string; value: number; isActive: boolean; id: string };
-	isEditMode?: boolean;
+interface LocationFormProps {
+	mode: "create" | "edit";
+	id?: string;
+	initialData?: {
+		name: string;
+		isActive: boolean;
+		odRegionId?: string | null;
+	};
 }
 
-export function CreditForm({
-	initialData,
-	isEditMode = false
-}: CreditFormProps) {
+export function LocationForm({ mode, id, initialData }: LocationFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
+
+	const { data: odRegions, isLoading: isLoadingOdRegions } =
+		trpc.odRegion.list.useQuery();
 
 	const {
 		register,
 		handleSubmit,
 		formState: { errors }
 	} = useForm({
-		resolver: zodResolver(creditSchema),
+		resolver: zodResolver(locationSchema),
 		mode: "onChange",
 		defaultValues: {
-			name: initialData ? initialData.name : "",
-			value: initialData ? initialData.value : 0,
-			isActive: initialData ? initialData.isActive : true
+			name: initialData?.name || "",
+			isActive: initialData?.isActive ?? true,
+			odRegionId: initialData?.odRegionId || ""
 		}
 	});
 
-	const createMutation = trpc.admin.oneTimeCredit.create.useMutation({
+	const createMutation = trpc.location.create.useMutation({
 		onSuccess: () => {
-			utils.admin.oneTimeCredit.list.invalidate();
-			utils.admin.oneTimeCredit.getById.invalidate();
-			router.push("/admin/credits");
+			utils.location.list.invalidate();
+			router.push("/admin/locations");
 			router.refresh();
 		}
 	});
 
-	const updateMutation = trpc.admin.oneTimeCredit.update.useMutation({
+	const updateMutation = trpc.location.update.useMutation({
 		onSuccess: () => {
-			utils.admin.oneTimeCredit.list.invalidate();
-			utils.admin.oneTimeCredit.getById.invalidate();
-			router.push("/admin/credits");
+			utils.location.list.invalidate();
+			router.push("/admin/locations");
 			router.refresh();
 		}
 	});
 
-	const onSubmit = (data: CreditFormData) => {
-		if (isEditMode && initialData) {
-			updateMutation.mutate({ ...data, id: initialData.id });
-		} else {
+	const onSubmit = (data: LocationFormData) => {
+		if (mode === "create") {
 			createMutation.mutate(data);
+		} else if (mode === "edit" && id) {
+			updateMutation.mutate({ id, ...data });
 		}
 	};
 
-	const isSubmitting = createMutation.isPending || updateMutation.isPending;
+	const isPending = createMutation.isPending || updateMutation.isPending;
 
 	const SaveButton = (
 		<button
 			type="submit"
-			form="credit-form"
-			disabled={isSubmitting}
+			form="location-form"
+			disabled={isPending}
 			className={clsx(
 				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
-				isSubmitting
+				isPending
 					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
 					: "bg-[#e20074] hover:bg-[#c70066]"
 			)}
 		>
-			{isSubmitting ? (
+			{isPending ? (
 				<Loader2 className="w-4 h-4 animate-spin" />
 			) : (
 				<Save className="w-5 h-5" />
 			)}
-			Gutschrift speichern
+			Standort speichern
 		</button>
 	);
 
 	return (
 		<div className="space-y-8 pb-12">
 			<AdminPageHeader
-				title={isEditMode ? "Gutschrift bearbeiten" : "Neue Gutschrift"}
+				title={mode === "create" ? "Neuer Standort" : "Standort bearbeiten"}
 				subtitle={
-					isEditMode
-						? `Verwalte die Details für ${initialData?.name}`
-						: "Erstelle eine neue Einmal-Gutschrift für Produkte."
+					mode === "create"
+						? "Füge einen neuen physischen Standort zum System hinzu."
+						: `Verwalte die Einstellungen für ${initialData?.name}`
 				}
-				backHref="/admin/credits"
+				backHref="/admin/locations"
 				action={SaveButton}
 			/>
 
-			<form id="credit-form" onSubmit={handleSubmit(onSubmit)}>
+			<form id="location-form" onSubmit={handleSubmit(onSubmit)}>
 				<AdminFormContainer>
 					<AdminFormSection
-						title="Details"
-						description="Name und Wert der Gutschrift."
-						icon={FileText}
+						title="Stammdaten"
+						description="Name und grundlegende Info."
+						icon={MapPin}
 					>
 						<Input
-							label="Bezeichnung"
-							placeholder="z.B. Anschlusspreisbefreiung"
+							label="Name des Standorts"
+							placeholder="z.B. Berlin"
 							error={errors.name?.message as string}
 							{...register("name")}
 						/>
+					</AdminFormSection>
 
-						<div className="flex flex-col gap-1.5">
+					<AdminFormSection
+						title="Zuordnung"
+						description="Wähle den übergeordneten OD-Bereich."
+						icon={Globe}
+					>
+						<div className="flex flex-col gap-1.5 pt-2">
 							<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-								Wert in Euro (€)
+								OD-Bereich
 							</label>
 							<div className="relative">
-								<Input
-									type="number"
-									step="0.01"
-									placeholder="0.00"
-									error={errors.value?.message as string}
-									{...register("value", { valueAsNumber: true })}
-									className="pl-10"
-								/>
-								<div className="absolute left-4 top-[38px] text-[#bbb]">
-									<Euro className="w-4 h-4" />
+								<select
+									{...register("odRegionId")}
+									disabled={isLoadingOdRegions}
+									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all disabled:opacity-50 appearance-none cursor-pointer"
+								>
+									<option value="">(Wähle einen Bereich)</option>
+									{odRegions?.map((r: any) => (
+										<option key={r.id} value={r.id}>
+											{r.name}
+										</option>
+									))}
+								</select>
+								<div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#bbb]">
+									<svg
+										width="12"
+										height="8"
+										viewBox="0 0 12 8"
+										fill="none"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<path
+											d="M1.5 1.75L6 6.25L10.5 1.75"
+											stroke="currentColor"
+											strokeWidth="2"
+											strokeLinecap="round"
+											strokeLinejoin="round"
+										/>
+									</svg>
 								</div>
 							</div>
 						</div>
@@ -154,7 +183,7 @@ export function CreditForm({
 
 					<AdminFormSection
 						title="Status"
-						description="Sichtbarkeit für Verkäufer."
+						description="Sichtbarkeit im System."
 						icon={ToggleLeft}
 					>
 						<div className="flex items-center gap-4 p-5 bg-[#f7f8fa] border border-[#eaedf0] rounded-[1.5rem]">
@@ -188,11 +217,10 @@ export function CreditForm({
 									htmlFor="isActive"
 									className="text-[0.85rem] font-bold text-[#1a1a2e] cursor-pointer"
 								>
-									Gutschrift ist aktiv
+									Standort ist aktiv
 								</label>
 								<p className="text-[0.75rem] text-[#888] m-0 mt-0.5">
-									Inaktive Gutschriften werden den Verkäufern nicht zur Auswahl
-									angeboten.
+									Inaktive Standorte werden im Setup-Wizard ausgeblendet.
 								</p>
 							</div>
 						</div>
