@@ -14,7 +14,8 @@ import {
 	Layers,
 	Shield,
 	MapPin,
-	Globe
+	Globe,
+	Activity
 } from "lucide-react";
 import clsx from "clsx";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
@@ -79,7 +80,8 @@ export default function AdminLayout({
 				...(role === "ADMIN" || role === "OD_MANAGER"
 					? [{ href: "/admin/locations", label: "Standorte", icon: MapPin }]
 					: []),
-				{ href: "/admin/teams", label: "Teams", icon: Users }
+				{ href: "/admin/teams", label: "Teams", icon: Users },
+				{ href: "/admin/sessions", label: "Sessions", icon: Activity }
 			]
 		},
 		{

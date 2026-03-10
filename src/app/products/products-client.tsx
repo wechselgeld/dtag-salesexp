@@ -68,8 +68,9 @@ const CATEGORIES = [
 export default function ProductsPage() {
 	const { data: session, isLoading: sessionLoading } =
 		trpc.session.getCurrent.useQuery();
-	const { data: allProducts, isLoading: productsLoading } =
+	const { data: allProductsData, isLoading: productsLoading } =
 		trpc.product.getAllProducts.useQuery();
+	const allProducts = allProductsData?.items || [];
 	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery();
 	const isLoading = sessionLoading || productsLoading;
 	const utils = trpc.useUtils();

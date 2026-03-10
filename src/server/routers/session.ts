@@ -1,4 +1,4 @@
-import { router, publicProcedure } from "../trpc";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { cookies } from "next/headers";
 import { TRPCError } from "@trpc/server";
@@ -325,5 +325,51 @@ export const sessionRouter = router({
         const cookieStore = await cookies();
         cookieStore.delete('sales-session-id');
         return true;
-    })
+    }),
+
+    list: protectedProcedure
+        .input(z.object({
+            limit: z.number().min(1).max(100).default(50),
+            cursor: z.string().nullish(),
+        }).optional())
+        .query(async ({ ctx, input }) => {
+            const limit = input?.limit ?? 50;
+            const cursor = input?.cursor;
+            const session = ctx.session as any;
+
+            let where: any = {};
+            if (session.role === 'OD_MANAGER' && session.odRegionId) {
+                where = { team: { location: { odRegionId: session.odRegionId } } };
+            } else if (session.role === 'LOCATION_MANAGER' && session.locationId) {
+                where = { team: { locationId: session.locationId } };
+            } else if (session.role === 'TEAM_LEADER' && session.teamId) {
+                where = { teamId: session.teamId };
+            }
+
+            const items = await ctx.prisma.salesSession.findMany({
+                take: limit + 1,
+                cursor: cursor ? { id: cursor } : undefined,
+                where,
+                include: {
+                    team: {
+                        include: {
+                            location: {
+                                include: {
+                                    odRegion: true
+                                }
+                            }
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+
+            let nextCursor: typeof cursor | undefined = undefined;
+            if (items.length > limit) {
+                const nextItem = items.pop();
+                nextCursor = nextItem!.id;
+            }
+
+            return { items, nextCursor };
+        }),
 });

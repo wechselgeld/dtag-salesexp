@@ -1,12 +1,13 @@
 "use client";
 
 import { trpc } from "@/lib/trpc";
-import { Plus, Edit, Trash2, Search, CheckCircle } from "lucide-react";
+import { Plus, Edit, Trash2, Search, CheckCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import clsx from "clsx";
 import { Skeleton } from "@/components/shared/skeleton";
 import { confirmDelete } from "@/components/shared/delete-confirm-toast";
+import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: "#e20074",
@@ -28,10 +29,20 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export default function AdminProductsPage() {
 	const [search, setSearch] = useState("");
-	const utils = trpc.useUtils();
-	const { data: products, isLoading } = trpc.product.getAllProducts.useQuery();
-
 	const [filterCat, setFilterCat] = useState<string | "ALL">("ALL");
+	const utils = trpc.useUtils();
+
+	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+		trpc.product.getAllProducts.useInfiniteQuery(
+			{
+				limit: 20,
+				search: search || undefined,
+				category: filterCat === "ALL" ? undefined : filterCat
+			},
+			{
+				getNextPageParam: (lastPage) => lastPage.nextCursor
+			}
+		);
 
 	const deleteMutation = trpc.admin.deleteProduct.useMutation({
 		onSuccess: () => {
@@ -40,32 +51,19 @@ export default function AdminProductsPage() {
 	});
 
 	const processedProducts = useMemo(() => {
-		if (!products) return [];
-		return products.filter((p) => {
-			const matchesSearch =
-				p.name.toLowerCase().includes(search.toLowerCase()) ||
-				p.category.toLowerCase().includes(search.toLowerCase()) ||
-				CATEGORY_LABELS[p.category]
-					?.toLowerCase()
-					.includes(search.toLowerCase());
-			const matchesCategory = filterCat === "ALL" || p.category === filterCat;
-			return matchesSearch && matchesCategory;
-		});
-	}, [products, search, filterCat]);
+		return data?.pages.flatMap((page) => page.items) || [];
+	}, [data]);
 
 	const allCategories = Object.keys(CATEGORY_LABELS);
 
 	return (
-		<div>
-			<div className="flex justify-between items-center mb-6">
-				<div>
-					<h1 className="text-[1.6rem] font-extrabold text-[#1a1a2e] tracking-tight mb-1">
-						Produktverwaltung
-					</h1>
-					<p className="text-[0.85rem] text-[#999] m-0">
-						Verwalte hier alle Tarife und Hardware.
-					</p>
-				</div>
+		<div className="space-y-6 pb-20">
+			<div className="flex justify-between items-center">
+				<AdminPageHeader
+					title="Produktverwaltung"
+					subtitle="Verwalte hier alle Tarife und Hardware."
+					backHref="/admin"
+				/>
 
 				<Link
 					href="/admin/products/new"
@@ -77,7 +75,7 @@ export default function AdminProductsPage() {
 			</div>
 
 			{/* Search & Filters */}
-			<div className="flex flex-col md:flex-row gap-4 mb-6">
+			<div className="flex flex-col md:flex-row gap-4">
 				<div className="relative flex-1">
 					<Search className="w-4 h-4 text-[#bbb] absolute left-4 top-1/2 -translate-y-1/2" />
 					<input
@@ -102,6 +100,7 @@ export default function AdminProductsPage() {
 					</button>
 					{allCategories.map((catKey) => {
 						const isSelected = filterCat === catKey;
+						const catColor = CATEGORY_COLORS[catKey] || "#e20074";
 						return (
 							<button
 								key={catKey}
@@ -109,9 +108,10 @@ export default function AdminProductsPage() {
 								className={clsx(
 									"px-4 py-2.5 rounded-xl font-medium text-[0.78rem] transition-colors whitespace-nowrap cursor-pointer active:scale-95",
 									isSelected
-										? "bg-[#e20074]/10 text-[#e20074] border border-[#e20074]/20"
+										? "bg-[#1a1a2e] text-white border-transparent"
 										: "bg-white border border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa]"
 								)}
+								style={isSelected ? { backgroundColor: catColor } : {}}
 							>
 								{CATEGORY_LABELS[catKey]}
 							</button>
@@ -120,114 +120,137 @@ export default function AdminProductsPage() {
 				</div>
 			</div>
 
-			{/* Product table */}
-			<div className="bg-white rounded-2xl border border-[#eaedf0] overflow-hidden">
-				{isLoading ? (
+			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
+				{isLoading && processedProducts.length === 0 ? (
 					<div className="flex flex-col gap-3 p-5">
 						{[1, 2, 3, 4, 5].map((i) => (
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
 				) : processedProducts.length === 0 ? (
-					<div className="p-16 flex flex-col items-center justify-center text-center">
+					<div className="p-20 flex flex-col items-center justify-center text-center">
 						<div className="w-16 h-16 bg-[#f7f8fa] rounded-2xl flex items-center justify-center mb-4 border border-[#eaedf0]">
 							<Search className="w-6 h-6 text-[#ccc]" />
 						</div>
-						<h3 className="text-[1rem] font-bold text-[#1a1a2e] mb-1">
+						<h3 className="text-[1.1rem] font-bold text-[#1a1a2e] mb-1">
 							Keine Produkte gefunden
 						</h3>
 						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0">
-							Es wurden keine Produkte für die aktuelle Suche oder Kategorie
-							gefunden.
+							Versuche es mit einem anderen Suchbegriff oder Filter.
 						</p>
 					</div>
 				) : (
-					<table className="w-full text-left">
-						<thead>
-							<tr className="border-b border-[#eaedf0]">
-								<th className="px-5 py-3.5 font-semibold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
-									Name
-								</th>
-								<th className="px-5 py-3.5 font-semibold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
-									Kategorie
-								</th>
-								<th className="px-5 py-3.5 font-semibold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
-									Basispreis
-								</th>
-								<th className="px-5 py-3.5 font-semibold text-[#aaa] text-[0.72rem] uppercase tracking-wider text-right">
-									Aktionen
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{processedProducts.map((product) => {
-								const catColor = CATEGORY_COLORS[product.category] || "#e20074";
-								return (
-									<tr
-										key={product.id}
-										className="border-b border-[#f0f0f0] last:border-b-0 group hover:bg-white hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative z-0 hover:z-10 transition-all duration-300"
-									>
-										<td className="px-5 py-3.5">
-											<div className="text-[0.85rem] font-semibold text-[#1a1a2e]">
-												{product.name}
-											</div>
-											{product.hasMagentaTVBundle && (
-												<div className="flex items-center gap-1 mt-0.5">
-													<CheckCircle
-														className="w-3 h-3"
-														style={{ color: catColor }}
-													/>
-													<span
-														className="text-[0.68rem] font-medium"
-														style={{ color: catColor }}
-													>
-														TV Bundle verfügbar
+					<div className="overflow-x-auto">
+						<table className="w-full text-left">
+							<thead>
+								<tr className="border-b border-[#eaedf0] bg-[#fcfcfd]">
+									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
+										Tarif / Hardware
+									</th>
+									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
+										Kategorie
+									</th>
+									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
+										Grundpreis
+									</th>
+									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider text-right font-bold">
+										Aktionen
+									</th>
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-[#f0f0f0]">
+								{processedProducts.map((p) => {
+									const catColor = CATEGORY_COLORS[p.category] || "#e20074";
+									return (
+										<tr
+											key={p.id}
+											className="hover:bg-[#fcfcfd] transition-colors group"
+										>
+											<td className="px-6 py-4">
+												<div className="flex flex-col">
+													<span className="text-[0.9rem] font-bold text-[#1a1a2e]">
+														{p.name}
 													</span>
+													{p.hasMagentaTVBundle && (
+														<div className="flex items-center gap-1 mt-0.5">
+															<CheckCircle
+																className="w-3 h-3"
+																style={{ color: catColor }}
+															/>
+															<span
+																className="text-[0.65rem] font-bold"
+																style={{ color: catColor }}
+															>
+																TV Bundle verfügbar
+															</span>
+														</div>
+													)}
 												</div>
-											)}
-										</td>
-										<td className="px-5 py-3.5">
-											<span
-												className="px-2.5 py-1 rounded-lg text-[0.7rem] font-semibold uppercase tracking-wider"
-												style={{
-													color: catColor,
-													backgroundColor: `${catColor}0a`
-												}}
-											>
-												{CATEGORY_LABELS[product.category] || product.category}
-											</span>
-										</td>
-										<td className="px-5 py-3.5 text-[0.85rem] font-semibold text-[#1a1a2e]">
-											{product.basePrice.toFixed(2)} €
-										</td>
-										<td className="px-5 py-3.5 text-right">
-											<div className="flex items-center justify-end gap-1">
-												<Link
-													href={`/admin/products/${product.id}`}
-													className="p-2 text-[#aaa] hover:text-[#e20074] hover:bg-[#e20074]/10 rounded-lg transition-all duration-150 no-underline"
-												>
-													<Edit className="w-4 h-4" />
-												</Link>
-												<button
-													onClick={() => {
-														confirmDelete({
-															id: product.id,
-															name: product.name,
-															onConfirm: () =>
-																deleteMutation.mutate({ id: product.id })
-														});
+											</td>
+											<td className="px-6 py-4">
+												<span
+													className="px-2.5 py-1 rounded-lg text-[0.68rem] font-extrabold uppercase tracking-wider"
+													style={{
+														color: catColor,
+														backgroundColor: `${catColor}10`,
+														border: `1px solid ${catColor}20`
 													}}
-													className="p-2 text-[#aaa] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all duration-150 cursor-pointer bg-transparent border-none active:scale-95"
 												>
-													<Trash2 className="w-4 h-4" />
-												</button>
-											</div>
-										</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>
+													{CATEGORY_LABELS[p.category] || p.category}
+												</span>
+											</td>
+											<td className="px-6 py-4 text-[0.9rem] font-bold text-[#1a1a2e]">
+												{p.basePrice?.toLocaleString("de-DE", {
+													style: "currency",
+													currency: "EUR"
+												})}
+											</td>
+											<td className="px-6 py-4 text-right">
+												<div className="flex items-center justify-end gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+													<Link
+														href={`/admin/products/${p.id}`}
+														className="p-2 text-[#ccc] hover:text-[#0090d0] hover:bg-[#0090d0]/10 rounded-lg transition-all"
+													>
+														<Edit className="w-4 h-4" />
+													</Link>
+													<button
+														onClick={() =>
+															confirmDelete({
+																id: p.id,
+																name: p.name,
+																onConfirm: () =>
+																	deleteMutation.mutate({ id: p.id })
+															})
+														}
+														className="p-2 text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all cursor-pointer border-none bg-transparent"
+													>
+														<Trash2 className="w-4 h-4" />
+													</button>
+												</div>
+											</td>
+										</tr>
+									);
+								})}
+							</tbody>
+						</table>
+					</div>
+				)}
+
+				{hasNextPage && (
+					<div className="p-8 border-t border-[#f0f0f0] flex justify-center bg-[#fcfcfd]">
+						<button
+							onClick={() => fetchNextPage()}
+							disabled={isFetchingNextPage}
+							className="flex items-center gap-2 bg-white hover:bg-[#f7f8fa] text-[#1a1a2e] px-8 py-3 rounded-2xl font-bold transition-all border border-[#eaedf0] shadow-sm hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-[0.85rem]"
+						>
+							{isFetchingNextPage ? (
+								<Loader2 className="w-5 h-5 animate-spin" />
+							) : (
+								<Plus className="w-5 h-5" />
+							)}
+							{isFetchingNextPage ? "Wird geladen..." : "Mehr Produkte laden"}
+						</button>
+					</div>
 				)}
 			</div>
 		</div>

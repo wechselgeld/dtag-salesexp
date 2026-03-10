@@ -41,8 +41,9 @@ export function TeamForm({ mode, teamId, initialData }: TeamFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
-	const { data: locations, isLoading: isLoadingLocations } =
+	const { data: locationsData, isLoading: isLoadingLocations } =
 		trpc.location.list.useQuery();
+	const locations = locationsData?.items;
 
 	const {
 		register,

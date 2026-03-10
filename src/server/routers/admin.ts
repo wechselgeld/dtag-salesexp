@@ -158,6 +158,51 @@ export const adminRouter = router({
         }),
 
     // --- Product CRUD ---
+    getAllProducts: protectedProcedure
+        .input(z.object({
+            limit: z.number().min(1).max(100).default(50),
+            cursor: z.string().nullish(),
+            search: z.string().optional(),
+            category: z.string().optional(),
+        }))
+        .query(async ({ input }) => {
+            const limit = input.limit ?? 50;
+            const { cursor, search, category } = input;
+
+            let where: any = { isActive: true };
+            if (search) {
+                where.OR = [
+                    { name: { contains: search } },
+                    { description: { contains: search } }
+                ];
+            }
+            if (category && category !== 'ALL') {
+                where.category = category;
+            }
+
+            const items = await prisma.product.findMany({
+                take: limit + 1,
+                cursor: cursor ? { id: cursor } : undefined,
+                where,
+                orderBy: { priority: 'desc' },
+            });
+
+            let nextCursor: typeof cursor | undefined = undefined;
+            if (items.length > limit) {
+                const nextItem = items.pop();
+                nextCursor = nextItem!.id;
+            }
+
+            return {
+                items: items.map(product => ({
+                    ...product,
+                    features: product.features ? JSON.parse(product.features) : [],
+                    // @ts-ignore
+                    targetGroups: (product as any).targetGroups ? JSON.parse((product as any).targetGroups) : []
+                })),
+                nextCursor
+            };
+        }),
     createProduct: editorProcedure
         .input(productSchema)
         .mutation(async ({ input }) => {
@@ -230,12 +275,40 @@ export const adminRouter = router({
         }),
 
     // --- Special Price CRUD ---
-    getAllSpecialPrices: protectedProcedure.query(async () => {
-        return await prisma.specialPrice.findMany({
-            include: { products: true, tiers: { orderBy: { fromMonth: 'asc' } } },
-            orderBy: { createdAt: 'desc' }
-        });
-    }),
+    getAllSpecialPrices: protectedProcedure
+        .input(z.object({
+            limit: z.number().min(1).max(100).default(50),
+            cursor: z.string().nullish(),
+            search: z.string().optional(),
+        }))
+        .query(async ({ input }) => {
+            const limit = input.limit ?? 50;
+            const { cursor, search } = input;
+
+            let where: any = {};
+            if (search) {
+                where.OR = [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { description: { contains: search, mode: 'insensitive' } }
+                ];
+            }
+
+            const items = await prisma.specialPrice.findMany({
+                take: limit + 1,
+                cursor: cursor ? { id: cursor } : undefined,
+                where,
+                include: { products: true, tiers: { orderBy: { fromMonth: 'asc' } } },
+                orderBy: { createdAt: 'desc' }
+            });
+
+            let nextCursor: typeof cursor | undefined = undefined;
+            if (items.length > limit) {
+                const nextItem = items.pop();
+                nextCursor = nextItem!.id;
+            }
+
+            return { items, nextCursor };
+        }),
 
     getSpecialPriceById: protectedProcedure
         .input(z.object({ id: z.string() }))
@@ -288,11 +361,41 @@ export const adminRouter = router({
 
     // One-Time Credits Management
     oneTimeCredit: router({
-        list: protectedProcedure.query(async () => {
-            return prisma.oneTimeCredit.findMany({
-                orderBy: { createdAt: 'desc' },
-            });
-        }),
+        list: protectedProcedure
+            .input(z.object({
+                limit: z.number().min(1).max(100).default(50),
+                cursor: z.string().nullish(),
+                search: z.string().optional(),
+            }))
+            .query(async ({ input }) => {
+                const limit = input.limit ?? 50;
+                const { cursor, search } = input;
+
+                let where: any = {};
+                if (search) {
+                    where.OR = [
+                        { name: { contains: search, mode: 'insensitive' } },
+                        // Value is a float, so we can't search it directly with contains.
+                        // We could cast it but for credits usually name search is sufficient.
+                        // { value: { equals: parseFloat(search) || undefined } }
+                    ];
+                }
+
+                const items = await prisma.oneTimeCredit.findMany({
+                    take: limit + 1,
+                    cursor: cursor ? { id: cursor } : undefined,
+                    where,
+                    orderBy: { createdAt: 'desc' },
+                });
+
+                let nextCursor: typeof cursor | undefined = undefined;
+                if (items.length > limit) {
+                    const nextItem = items.pop();
+                    nextCursor = nextItem!.id;
+                }
+
+                return { items, nextCursor };
+            }),
 
         getById: protectedProcedure
             .input(z.object({ id: z.string() }))
@@ -342,11 +445,39 @@ export const adminRouter = router({
 
     // --- News CRUD ---
     news: router({
-        list: protectedProcedure.query(async () => {
-            return prisma.news.findMany({
-                orderBy: { createdAt: 'desc' },
-            });
-        }),
+        list: protectedProcedure
+            .input(z.object({
+                limit: z.number().min(1).max(100).default(50),
+                cursor: z.string().nullish(),
+                search: z.string().optional(),
+            }))
+            .query(async ({ input }) => {
+                const limit = input.limit ?? 50;
+                const { cursor, search } = input;
+
+                let where: any = {};
+                if (search) {
+                    where.OR = [
+                        { title: { contains: search, mode: 'insensitive' } },
+                        { content: { contains: search, mode: 'insensitive' } }
+                    ];
+                }
+
+                const items = await prisma.news.findMany({
+                    take: limit + 1,
+                    cursor: cursor ? { id: cursor } : undefined,
+                    where,
+                    orderBy: { createdAt: 'desc' },
+                });
+
+                let nextCursor: typeof cursor | undefined = undefined;
+                if (items.length > limit) {
+                    const nextItem = items.pop();
+                    nextCursor = nextItem!.id;
+                }
+
+                return { items, nextCursor };
+            }),
 
         create: editorProcedure
             .input(z.object({

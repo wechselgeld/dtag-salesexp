@@ -41,7 +41,8 @@ export default function SettingsPage() {
 	} = useSettingsStore();
 	const router = useRouter();
 	const { data: session } = trpc.session.getCurrent.useQuery();
-	const { data: teams } = trpc.team.list.useQuery();
+	const { data: teamsData } = trpc.team.list.useQuery();
+	const teams = teamsData?.items;
 	const updateTeam = trpc.session.updateTeam.useMutation({
 		onSuccess: () => {
 			router.refresh();

@@ -44,7 +44,8 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 
-	const { data: products } = trpc.product.getAllProducts.useQuery();
+	const { data: productsData } = trpc.product.getAllProducts.useQuery();
+	const products = productsData?.items;
 
 	// Filter results
 	const filteredCategories = useMemo(() => {

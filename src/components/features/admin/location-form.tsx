@@ -46,8 +46,9 @@ export function LocationForm({ mode, id, initialData }: LocationFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
-	const { data: odRegions, isLoading: isLoadingOdRegions } =
+	const { data: odRegionsData, isLoading: isLoadingOdRegions } =
 		trpc.odRegion.list.useQuery();
+	const odRegions = odRegionsData?.items;
 
 	const {
 		register,

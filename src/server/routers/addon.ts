@@ -28,15 +28,45 @@ const editorProcedure = protectedProcedure.use(({ ctx, next }) => {
 });
 
 export const addonRouter = router({
-    list: protectedProcedure.query(async () => {
-        return prisma.addon.findMany({
-            include: {
-                compatibleProducts: { select: { id: true, name: true, category: true } },
-                tiers: true
-            },
-            orderBy: { name: 'asc' },
-        });
-    }),
+    list: protectedProcedure
+        .input(z.object({
+            limit: z.number().min(1).max(100).default(50),
+            cursor: z.string().nullish(),
+            search: z.string().optional(),
+        }).optional())
+        .query(async ({ input }) => {
+            const limit = input?.limit ?? 50;
+            const cursor = input?.cursor;
+            const search = input?.search;
+
+            let where: any = {};
+            if (search) {
+                where.OR = [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { description: { contains: search, mode: 'insensitive' } },
+                    { internalNote: { contains: search, mode: 'insensitive' } }
+                ];
+            }
+
+            const items = await prisma.addon.findMany({
+                take: limit + 1,
+                cursor: cursor ? { id: cursor } : undefined,
+                where,
+                include: {
+                    compatibleProducts: { select: { id: true, name: true, category: true } },
+                    tiers: true
+                },
+                orderBy: { name: 'asc' },
+            });
+
+            let nextCursor: typeof cursor | undefined = undefined;
+            if (items.length > limit) {
+                const nextItem = items.pop();
+                nextCursor = nextItem!.id;
+            }
+
+            return { items, nextCursor };
+        }),
 
     getById: protectedProcedure
         .input(z.object({ id: z.string() }))

@@ -18,7 +18,14 @@ const permissionProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 export const adminUsersRouter = router({
     list: permissionProcedure
-        .query(async ({ ctx }) => {
+        .input(z.object({
+            limit: z.number().min(1).max(100).default(50),
+            cursor: z.string().nullish(),
+            search: z.string().optional(),
+        }))
+        .query(async ({ ctx, input }) => {
+            const limit = input.limit ?? 50;
+            const { cursor } = input;
             const session = ctx.session as any;
 
             let where: any = {};
@@ -41,7 +48,13 @@ export const adminUsersRouter = router({
                 where = { teamId: session.teamId };
             }
 
-            return prisma.user.findMany({
+            if (input.search) {
+                where.email = { contains: input.search, mode: 'insensitive' };
+            }
+
+            const items = await prisma.user.findMany({
+                take: limit + 1,
+                cursor: cursor ? { id: cursor } : undefined,
                 where,
                 select: {
                     id: true,
@@ -58,6 +71,14 @@ export const adminUsersRouter = router({
                 },
                 orderBy: { createdAt: 'desc' }
             });
+
+            let nextCursor: typeof cursor | undefined = undefined;
+            if (items.length > limit) {
+                const nextItem = items.pop();
+                nextCursor = nextItem!.id;
+            }
+
+            return { items, nextCursor };
         }),
 
     create: permissionProcedure

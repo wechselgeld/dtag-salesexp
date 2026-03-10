@@ -335,14 +335,14 @@ export default function SetupPage() {
 						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
 					))}
 				</div>
-			) : odRegions?.length === 0 ? (
+			) : odRegions?.items?.length === 0 ? (
 				<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
 					Bisher wurden keine OD-Bereiche angelegt.
 				</div>
 			) : (
 				<div className="grid grid-cols-2 gap-3 mt-5">
 					<AnimatePresence>
-						{odRegions
+						{odRegions?.items
 							?.filter((region: any) => region.isActive)
 							.map((region: any, index: number) => (
 								<SelectionTile
@@ -400,15 +400,15 @@ export default function SetupPage() {
 						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
 					))}
 				</div>
-			) : locations?.length === 0 ? (
+			) : locations?.items?.length === 0 ? (
 				<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
 					Bisher wurden keine Standorte angelegt.
 				</div>
 			) : (
 				<div className="grid grid-cols-2 gap-3 mt-5">
 					<AnimatePresence>
-						{locations
-							?.filter((loc) => loc.isActive)
+						{locations?.items
+							?.filter((loc: any) => loc.isActive)
 							.map((loc: any, index: number) => (
 								<SelectionTile
 									key={loc.id}
@@ -471,14 +471,14 @@ export default function SetupPage() {
 						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
 					))}
 				</div>
-			) : teams?.length === 0 ? (
+			) : teams?.items?.length === 0 ? (
 				<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
 					In diesem Standort wurden noch keine Teams angelegt.
 				</div>
 			) : (
 				<div className="grid grid-cols-2 gap-3 mt-5">
 					<AnimatePresence>
-						{teams?.map((team: any, index: number) => (
+						{teams?.items?.map((team: any, index: number) => (
 							<SelectionTile
 								key={team.id}
 								name={team.name}

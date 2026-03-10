@@ -59,7 +59,8 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
-	const { data: allProducts } = trpc.product.getAllProducts.useQuery();
+	const { data: allProductsData } = trpc.product.getAllProducts.useQuery();
+	const allProducts = allProductsData?.items;
 
 	const [selectedProductIds, setSelectedProductIds] = useState<string[]>(
 		initialData?.productIds || []

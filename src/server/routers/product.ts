@@ -77,12 +77,45 @@ export const productRouter = router({
             };
         }),
 
-    getAllProducts: publicProcedure.query(async () => {
-        return await prisma.product.findMany({
-            where: { isActive: true },
-            orderBy: { priority: 'desc' },
-        });
-    }),
+    getAllProducts: publicProcedure
+        .input(z.object({
+            limit: z.number().min(1).max(100).default(50),
+            cursor: z.string().nullish(),
+            search: z.string().optional(),
+            category: z.string().optional(),
+        }).optional())
+        .query(async ({ input }) => {
+            const limit = input?.limit ?? 50;
+            const cursor = input?.cursor;
+            const search = input?.search;
+            const category = input?.category;
+
+            let where: any = { isActive: true };
+            if (search) {
+                where.OR = [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { description: { contains: search, mode: 'insensitive' } }
+                ];
+            }
+            if (category && category !== 'ALL') {
+                where.category = category;
+            }
+
+            const items = await prisma.product.findMany({
+                take: limit + 1,
+                cursor: cursor ? { id: cursor } : undefined,
+                where,
+                orderBy: { priority: 'desc' },
+            });
+
+            let nextCursor: typeof cursor | undefined = undefined;
+            if (items.length > limit) {
+                const nextItem = items.pop();
+                nextCursor = nextItem!.id;
+            }
+
+            return { items, nextCursor };
+        }),
 
     getOneTimeCredits: publicProcedure.query(async () => {
         return await prisma.oneTimeCredit.findMany({

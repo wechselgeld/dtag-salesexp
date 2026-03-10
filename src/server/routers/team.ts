@@ -6,9 +6,15 @@ export const teamRouter = router({
     list: publicProcedure
         .input(z.object({
             locationId: z.string().optional(),
-            odRegionId: z.string().optional()
+            odRegionId: z.string().optional(),
+            limit: z.number().min(1).max(100).default(50),
+            cursor: z.string().nullish(),
+            search: z.string().optional(),
         }).optional())
         .query(async ({ ctx, input }) => {
+            const limit = input?.limit ?? 50;
+            const cursor = input?.cursor;
+            const search = input?.search;
             const session = ctx.session as any;
 
             let securityFilter: any = {};
@@ -22,12 +28,23 @@ export const teamRouter = router({
                 }
             }
 
-            return await ctx.prisma.team.findMany({
-                where: {
-                    ...securityFilter,
-                    ...(input?.locationId ? { locationId: input.locationId } : {}),
-                    ...(input?.odRegionId ? { location: { odRegionId: input.odRegionId } } : {})
-                },
+            let where: any = {
+                ...securityFilter,
+                ...(input?.locationId ? { locationId: input.locationId } : {}),
+                ...(input?.odRegionId ? { location: { odRegionId: input.odRegionId } } : {})
+            };
+
+            if (search) {
+                where.OR = [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { internalNote: { contains: search, mode: 'insensitive' } }
+                ];
+            }
+
+            const items = await ctx.prisma.team.findMany({
+                take: limit + 1,
+                cursor: cursor ? { id: cursor } : undefined,
+                where,
                 include: {
                     location: true,
                     highlights: {
@@ -38,6 +55,14 @@ export const teamRouter = router({
                 },
                 orderBy: { name: 'asc' }
             });
+
+            let nextCursor: typeof cursor | undefined = undefined;
+            if (items.length > limit) {
+                const nextItem = items.pop();
+                nextCursor = nextItem!.id;
+            }
+
+            return { items, nextCursor };
         }),
 
     getById: publicProcedure

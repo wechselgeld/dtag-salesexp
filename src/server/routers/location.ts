@@ -5,9 +5,15 @@ import { TRPCError } from '@trpc/server';
 export const locationRouter = router({
     list: publicProcedure
         .input(z.object({
-            odRegionId: z.string().optional()
+            odRegionId: z.string().optional(),
+            limit: z.number().min(1).max(100).default(50),
+            cursor: z.string().nullish(),
+            search: z.string().optional(),
         }).optional())
         .query(async ({ ctx, input }) => {
+            const limit = input?.limit ?? 50;
+            const cursor = input?.cursor;
+            const search = input?.search;
             const session = ctx.session as any;
             let securityFilter: any = {};
             if (session?.role) {
@@ -23,14 +29,33 @@ export const locationRouter = router({
                 }
             }
 
-            return await ctx.prisma.location.findMany({
-                where: {
-                    ...securityFilter,
-                    ...(input?.odRegionId ? { odRegionId: input.odRegionId } : {})
-                },
+            let where: any = {
+                ...securityFilter,
+                ...(input?.odRegionId ? { odRegionId: input.odRegionId } : {})
+            };
+
+            if (search) {
+                where.OR = [
+                    { name: { contains: search, mode: 'insensitive' } },
+                    { internalNote: { contains: search, mode: 'insensitive' } }
+                ];
+            }
+
+            const items = await ctx.prisma.location.findMany({
+                take: limit + 1,
+                cursor: cursor ? { id: cursor } : undefined,
+                where,
                 include: { odRegion: true },
                 orderBy: { name: 'asc' }
             });
+
+            let nextCursor: typeof cursor | undefined = undefined;
+            if (items.length > limit) {
+                const nextItem = items.pop();
+                nextCursor = nextItem!.id;
+            }
+
+            return { items, nextCursor };
         }),
 
     getById: publicProcedure

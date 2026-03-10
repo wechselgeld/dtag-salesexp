@@ -56,13 +56,17 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 
 	const { data: currentUser } = trpc.auth.me.useQuery();
 
-	const { data: odRegions, isLoading: isLoadingOdRegions } =
+	const { data: odRegionsData, isLoading: isLoadingOdRegions } =
 		trpc.odRegion.list.useQuery();
+	const odRegions = odRegionsData?.items;
 
-	const { data: locations, isLoading: isLoadingLocations } =
+	const { data: locationsData, isLoading: isLoadingLocations } =
 		trpc.location.list.useQuery();
+	const locations = locationsData?.items;
 
-	const { data: teams, isLoading: isLoadingTeams } = trpc.team.list.useQuery();
+	const { data: teamsData, isLoading: isLoadingTeams } =
+		trpc.team.list.useQuery();
+	const teams = teamsData?.items;
 
 	const {
 		register,

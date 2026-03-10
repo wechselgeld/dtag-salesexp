@@ -62,7 +62,8 @@ interface SpecialPriceFormProps {
 export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
-	const { data: products } = trpc.product.getAllProducts.useQuery();
+	const { data: productsData } = trpc.product.getAllProducts.useQuery();
+	const products = productsData?.items || [];
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
