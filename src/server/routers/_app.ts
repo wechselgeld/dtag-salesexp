@@ -11,6 +11,7 @@ import { settingsRouter } from './settings';
 import { adminUsersRouter } from './adminUsers';
 import { locationRouter } from './location';
 import { odRegionRouter } from './odRegion';
+import { analyticsRouter } from './analytics';
 
 export const appRouter = router({
     health: publicProcedure.query(() => {
@@ -28,6 +29,7 @@ export const appRouter = router({
     adminUsers: adminUsersRouter,
     location: locationRouter,
     odRegion: odRegionRouter,
+    analytics: analyticsRouter,
     public: router({
         getActiveAnnouncements: publicProcedure.query(async () => {
             const { prisma } = await import('@/lib/prisma');

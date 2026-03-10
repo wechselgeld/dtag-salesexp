@@ -15,7 +15,8 @@ import {
 	Shield,
 	MapPin,
 	Globe,
-	Activity
+	Activity,
+	BarChart3
 } from "lucide-react";
 import clsx from "clsx";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
@@ -81,7 +82,8 @@ export default function AdminLayout({
 					? [{ href: "/admin/locations", label: "Standorte", icon: MapPin }]
 					: []),
 				{ href: "/admin/teams", label: "Teams", icon: Users },
-				{ href: "/admin/sessions", label: "Sessions", icon: Activity }
+				{ href: "/admin/sessions", label: "Sessions", icon: Activity },
+				{ href: "/admin/analytics", label: "Statistiken", icon: BarChart3 }
 			]
 		},
 		{

@@ -37,6 +37,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import React, { useEffect, Suspense } from "react";
 import clsx from "clsx";
 import { useBasketStore } from "@/hooks/use-basket-store";
+import { useAnalytics } from "@/hooks/use-analytics";
 import { SearchBar } from "@/components/features/search/search-bar";
 import { Skeleton } from "@/components/shared/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
@@ -66,6 +67,7 @@ function ProductPageContent() {
 	const basketItemId = searchParams.get("basketItemId");
 
 	const { items, updateItem, addItem, setIsOpen } = useBasketStore();
+	const { trackProductView, trackBasketAdd } = useAnalytics();
 
 	const catColor = CATEGORY_COLORS[category] || "#e20074";
 	const catName = CATEGORY_NAMES[category] || category;
@@ -74,7 +76,12 @@ function ProductPageContent() {
 		id
 	});
 	const { data: session } = trpc.session.getCurrent.useQuery();
-	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery();
+	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery(
+		undefined,
+		{
+			staleTime: 10 * 60 * 1000 // 10min – design settings rarely change
+		}
+	);
 
 	const {
 		businessCase,
@@ -142,6 +149,14 @@ function ProductPageContent() {
 		setHardwarePurchaseType
 	]);
 
+	// Track product view (deduplicated per component lifecycle)
+	// Must be before early return to follow Rules of Hooks
+	useEffect(() => {
+		if (product && id) {
+			trackProductView(id, category);
+		}
+	}, [product, id, category, trackProductView]);
+
 	if (isLoading || !product) {
 		return (
 			<div className="min-h-full">
@@ -205,6 +220,9 @@ function ProductPageContent() {
 			const newId = addItem(product, config);
 			router.replace(`?basketItemId=${newId}`, { scroll: false });
 		}
+
+		// Track basket add
+		trackBasketAdd(product.id, product.category);
 	};
 
 	// Merged product name
@@ -874,6 +892,17 @@ function ProductPageContent() {
 							businessCase={businessCase}
 							accentColor={catColor}
 							basePrice={product.basePrice}
+							tvBasePrice={
+								isMagentaTVSelected
+									? magentaTVPackage === "smart"
+										? settings.magentatv_smart_price
+										: magentaTVPackage === "smartstream"
+											? settings.magentatv_smartstream_price
+											: magentaTVPackage === "megastream"
+												? settings.magentatv_megastream_price
+												: 0
+									: 0
+							}
 						/>
 					</ConfigSection>
 

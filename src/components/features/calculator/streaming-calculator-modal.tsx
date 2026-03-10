@@ -155,7 +155,12 @@ export function StreamingCalculatorModal({
 	const [selectedPlan, setSelectedPlan] = useState<string>("mtv-smartstream");
 	const [mounted, setMounted] = useState(false);
 
-	const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery();
+	const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery(
+		undefined,
+		{
+			staleTime: 10 * 60 * 1000
+		}
+	);
 	const settings = pricingSettings || DEFAULT_PRICING;
 
 	const dynamicPlans = useMemo(

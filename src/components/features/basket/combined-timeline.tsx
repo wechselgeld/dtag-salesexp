@@ -19,7 +19,12 @@ import { AnimatedNumber } from "@/components/shared/animated-number";
 
 export function CombinedTimeline() {
 	const items = useBasketStore((state) => state.items);
-	const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery();
+	const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery(
+		undefined,
+		{
+			staleTime: 10 * 60 * 1000
+		}
+	);
 	const settings = pricingSettings || DEFAULT_PRICING;
 
 	const aggregatedData = useMemo(() => {

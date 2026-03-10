@@ -70,11 +70,15 @@ export const sessionRouter = router({
         }))
         .mutation(async ({ ctx, input }) => {
             const clientIp = ctx.ip || "127.0.0.1";
-            const setting = await ctx.prisma.systemSetting.findUnique({
-                where: { key: 'allowed_ips' }
-            });
 
-            if (!checkIpIsAllowed(clientIp, setting?.value || "")) {
+            // Fetch both settings in a single query instead of two
+            const systemSettings = await ctx.prisma.systemSetting.findMany({
+                where: { key: { in: ['allowed_ips', 'require_email_verification'] } }
+            });
+            const allowedIpsValue = systemSettings.find(s => s.key === 'allowed_ips')?.value || "";
+            const emailVerificationValue = systemSettings.find(s => s.key === 'require_email_verification')?.value;
+
+            if (!checkIpIsAllowed(clientIp, allowedIpsValue)) {
                 throw new TRPCError({ code: "FORBIDDEN", message: "IP address not allowed" });
             }
 
@@ -92,10 +96,7 @@ export const sessionRouter = router({
                 throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Zu viele Anfragen. Bitte versuche es später erneut." });
             }
 
-            const emailVerificationSetting = await ctx.prisma.systemSetting.findUnique({
-                where: { key: 'require_email_verification' }
-            });
-            const isEmailRequiredSystemWide = emailVerificationSetting?.value !== 'false';
+            const isEmailRequiredSystemWide = emailVerificationValue !== 'false';
 
             let bypassEmailCheck = !isEmailRequiredSystemWide;
 

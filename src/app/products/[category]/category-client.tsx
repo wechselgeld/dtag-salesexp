@@ -149,7 +149,7 @@ export default function ProductListPage() {
 		MOBILE: "Mobilfunk",
 		FIBER: "Glasfaser",
 		DSL: "Festnetz",
-		MAGENTA_TV_OTT: "MagentaTV",
+		MAGENTA_TV_OTT: "MagentaTV — OTT",
 		DEVICE: "Endgeräte",
 		ADDON: "Zubuchoptionen"
 	};

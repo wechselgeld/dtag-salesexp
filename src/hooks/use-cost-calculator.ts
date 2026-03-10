@@ -289,7 +289,9 @@ export function useCostCalculator(
         }
     }, [isMagentaTVSelected, product, selectedAddonIds]);
 
-    const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery();
+    const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery(undefined, {
+        staleTime: 10 * 60 * 1000,
+    });
     const settings = pricingSettings || DEFAULT_PRICING;
 
     const businessCaseOptions = [

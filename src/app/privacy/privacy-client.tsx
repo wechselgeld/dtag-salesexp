@@ -118,11 +118,16 @@ export default function PrivacyPage() {
 						<p className="text-[0.95rem] text-[#555] leading-relaxed mt-2 p-4 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl">
 							Es findet{" "}
 							<strong>
-								kein Tracking Ihres spezifischen Nutzungsverhaltens
+								kein Tracking Ihres spezifischen, personenbezogenen
+								Nutzungsverhaltens
 							</strong>{" "}
-							statt. Das System erfasst lediglich, welches Team zu welchem
-							Zeitpunkt das Tool gestartet hat, um den Zugriff eingrenzen und
-							auswerten zu können.
+							statt. Das System erfasst bei der Nutzung lediglich vollständig
+							anonymisiert, welche Tarife und Pfade aufgerufen bzw. in den
+							Warenkorb gelegt wurden und ordnet dies ausschließlich dem
+							gewählten Team zu, ohne Rückschlüsse auf Einzelpersonen (keine
+							User-Agent- oder IP-Aufzeichnung bei Nutzungsklicks). Dieses
+							interne Statistik-Tracking geschieht server-seitig (On-Premise)
+							und vollständig <strong>ohne den Einsatz von Cookies</strong>.
 						</p>
 					</section>
 

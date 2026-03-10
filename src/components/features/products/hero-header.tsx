@@ -42,7 +42,12 @@ export function HeroHeader({
 	const dataReady = productsCount !== undefined && time !== null;
 	const [activeCategoryIdx, setActiveCategoryIdx] = useState(0);
 
-	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery();
+	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery(
+		undefined,
+		{
+			staleTime: 10 * 60 * 1000
+		}
+	);
 	const headerBg = designSettings?.header_background_image;
 	const isDark = useImageBrightness(headerBg);
 

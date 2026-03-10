@@ -271,7 +271,7 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 									<option value="MOBILE">Mobilfunk</option>
 									<option value="FIBER">Glasfaser</option>
 									<option value="DSL">DSL</option>
-									<option value="MAGENTA_TV_OTT">MagentaTV (OTT)</option>
+									<option value="MAGENTA_TV_OTT">MagentaTV — OTT</option>
 									<option value="DEVICE">Hardware</option>
 								</select>
 							</div>

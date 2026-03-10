@@ -45,7 +45,7 @@ const CATEGORIES = [
 	},
 	{
 		id: "MAGENTA_TV_OTT",
-		title: "MagentaTV",
+		title: "MagentaTV — OTT",
 		icon: Tv,
 		href: "/products/MAGENTA_TV_OTT",
 		color: "#ff6b00",
@@ -71,7 +71,12 @@ export default function ProductsPage() {
 	const { data: allProductsData, isLoading: productsLoading } =
 		trpc.product.getAllProducts.useQuery();
 	const allProducts = allProductsData?.items || [];
-	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery();
+	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery(
+		undefined,
+		{
+			staleTime: 10 * 60 * 1000
+		}
+	);
 	const isLoading = sessionLoading || productsLoading;
 	const utils = trpc.useUtils();
 

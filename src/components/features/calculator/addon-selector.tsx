@@ -28,7 +28,12 @@ export function AddonSelector({
 	isMagentaTVSelected,
 	catColor = "#e20074"
 }: Props) {
-	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery();
+	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery(
+		undefined,
+		{
+			staleTime: 10 * 60 * 1000
+		}
+	);
 
 	// Filter out addons that require no MagentaTV when MagentaTV is selected
 	const availableAddons = addons.filter((addon) => {

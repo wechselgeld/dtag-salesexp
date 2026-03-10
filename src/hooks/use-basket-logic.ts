@@ -10,7 +10,9 @@ export function useBasketLogic() {
     const addNotification = useNewsNotificationStore((state) => state.addNotification);
     const lastNudgeRef = useRef<string | null>(null);
 
-    const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery();
+    const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery(undefined, {
+        staleTime: 10 * 60 * 1000,
+    });
     const settings = pricingSettings || DEFAULT_PRICING;
 
     // Cross-Sell Detector (Fixed + Mobile Advantage)

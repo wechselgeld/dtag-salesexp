@@ -13,6 +13,7 @@ interface Props {
 	businessCase: string;
 	accentColor?: string;
 	basePrice?: number;
+	tvBasePrice?: number;
 }
 
 export function SpecialPriceSelector({
@@ -22,7 +23,8 @@ export function SpecialPriceSelector({
 	isMagentaTVSelected,
 	businessCase,
 	accentColor = "#e20074",
-	basePrice
+	basePrice,
+	tvBasePrice
 }: Props) {
 	const availablePrices = specialPrices.filter((sp) => {
 		if (sp.requiresMagentaTV && !isMagentaTVSelected) return false;
@@ -51,15 +53,33 @@ export function SpecialPriceSelector({
 		<div className="space-y-2.5">
 			{availablePrices.map((sp) => {
 				const isSelected = selectedIds.includes(sp.id);
+
+				const getTierSavings = (tier: { price: number }) => {
+					if (sp.discountTarget === "MAGENTA_TV") {
+						return sp.discountType === "RELATIVE"
+							? tier.price
+							: Math.max(0, (tvBasePrice || 0) - tier.price);
+					} else {
+						return sp.discountType === "RELATIVE"
+							? tier.price
+							: Math.max(0, (basePrice || 0) - tier.price);
+					}
+				};
+
+				const getTierDisplayPrice = (tier: { price: number }) => {
+					return Math.max(0, (basePrice || 0) - getTierSavings(tier));
+				};
+
 				const lowestPrice =
-					sp.tiers.length > 0 ? Math.min(...sp.tiers.map((t) => t.price)) : 0;
+					sp.tiers.length > 0
+						? Math.min(...sp.tiers.map((t) => getTierDisplayPrice(t)))
+						: 0;
 
 				const totalSavings = sp.tiers.reduce((acc, tier) => {
-					if (!basePrice) return acc;
 					const from = tier.fromMonth || 1;
 					const to = tier.toMonth || 24;
 					const months = to - from + 1;
-					const tierSaving = (basePrice - tier.price) * months;
+					const tierSaving = getTierSavings(tier) * months;
 					return acc + (tierSaving > 0 ? tierSaving : 0);
 				}, 0);
 
@@ -105,22 +125,26 @@ export function SpecialPriceSelector({
 									</div>
 								)}
 								<div className="flex flex-wrap gap-1.5 mt-1.5">
-									{sp.tiers.map((tier, i) => (
-										<span
-											key={i}
-											className="text-[0.65rem] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors"
-											style={{
-												backgroundColor: isSelected
-													? `${accentColor}15`
-													: "#f0f2f5",
-												color: isSelected ? accentColor : "#666"
-											}}
-										>
-											<ArrowDown className="w-3 h-3" />
-											Monat {tier.fromMonth}–{tier.toMonth}:{" "}
-											{tier.price.toFixed(2).replace(".", ",")} €
-										</span>
-									))}
+									{sp.tiers.map((tier, i) => {
+										const displayPrice = getTierDisplayPrice(tier);
+
+										return (
+											<span
+												key={i}
+												className="text-[0.65rem] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors"
+												style={{
+													backgroundColor: isSelected
+														? `${accentColor}15`
+														: "#f0f2f5",
+													color: isSelected ? accentColor : "#666"
+												}}
+											>
+												<ArrowDown className="w-3 h-3" />
+												Monat {tier.fromMonth}–{tier.toMonth}:{" "}
+												{displayPrice.toFixed(2).replace(".", ",")} €
+											</span>
+										);
+									})}
 								</div>
 							</div>
 

@@ -41,32 +41,33 @@ export const productRouter = router({
     getProductById: publicProcedure
         .input(z.object({ id: z.string() }))
         .query(async ({ input }) => {
-            const product = await prisma.product.findUnique({
-                where: { id: input.id },
-                include: {
-                    specialPrices: {
-                        include: { tiers: { orderBy: { fromMonth: 'asc' } } },
+            // Run both queries in parallel for ~50% less latency
+            const [product, globalAddons] = await Promise.all([
+                prisma.product.findUnique({
+                    where: { id: input.id },
+                    include: {
+                        specialPrices: {
+                            include: { tiers: { orderBy: { fromMonth: 'asc' } } },
+                        },
+                        compatibleAddons: {
+                            where: { isActive: true },
+                            include: { tiers: true }
+                        },
+                        salesArguments: {
+                            where: { isActive: true },
+                            orderBy: { sortOrder: 'asc' },
+                        },
                     },
-                    compatibleAddons: {
-                        where: { isActive: true },
-                        include: { tiers: true }
-                    },
-                    salesArguments: {
-                        where: { isActive: true },
-                        orderBy: { sortOrder: 'asc' },
-                    },
-                },
-            });
+                }),
+                prisma.addon.findMany({
+                    where: { isGlobal: true, isActive: true },
+                    include: { tiers: true },
+                }),
+            ]);
 
             if (!product) return null;
 
-            // Fetch global addons
-            const globalAddons = await prisma.addon.findMany({
-                where: { isGlobal: true, isActive: true },
-                include: { tiers: true },
-            });
-
-            // Merge unique
+            // Merge product-specific + global addons (deduplicated)
             const addonMap = new Map();
             product.compatibleAddons.forEach(a => addonMap.set(a.id, a));
             globalAddons.forEach(a => addonMap.set(a.id, a));
