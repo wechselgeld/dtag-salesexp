@@ -415,7 +415,8 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 													)
 													.map((loc: any) => (
 														<option key={loc.id} value={loc.id}>
-															{loc.name} {loc.isActive ? "" : "(Inaktiv)"}
+															{loc.name} {loc.address ? `(${loc.address})` : ""}{" "}
+															{loc.isActive ? "" : "(Inaktiv)"}
 														</option>
 													))}
 											</select>
@@ -464,7 +465,10 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 													)
 													.map((team: any) => (
 														<option key={team.id} value={team.id}>
-															{team.name}
+															{team.name}{" "}
+															{team.location?.address
+																? `(${team.location.address})`
+																: ""}
 														</option>
 													))}
 											</select>

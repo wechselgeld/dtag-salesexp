@@ -10,6 +10,7 @@ import { trpc } from "@/lib/trpc";
 import clsx from "clsx";
 import { Skeleton } from "@/components/shared/skeleton";
 import { useEffect, useState } from "react";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 /* ──────────────────────────────────────────────
    Constants
@@ -65,23 +66,41 @@ const CATEGORIES = [
    Main Component
    ────────────────────────────────────────────── */
 
-export default function ProductsPage() {
+export default function ProductsPage({
+	initialSession,
+	initialProducts,
+	initialSettings
+}: {
+	initialSession?: any;
+	initialProducts?: any;
+	initialSettings?: any;
+}) {
 	const { data: session, isLoading: sessionLoading } =
-		trpc.session.getCurrent.useQuery();
+		trpc.session.getCurrent.useQuery(undefined, {
+			initialData: initialSession
+		});
 	const { data: allProductsData, isLoading: productsLoading } =
-		trpc.product.getAllProducts.useQuery();
+		trpc.product.getAllProducts.useQuery(undefined, {
+			initialData: initialProducts
+		});
 	const allProducts = allProductsData?.items || [];
 	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery(
 		undefined,
 		{
-			staleTime: 10 * 60 * 1000
+			staleTime: 10 * 60 * 1000,
+			initialData: initialSettings
 		}
 	);
 	const isLoading = sessionLoading || productsLoading;
 	const utils = trpc.useUtils();
+	const { trackPageView } = useAnalytics();
 
 	const [firstName, setFirstName] = useState("");
 	const [isMounted, setIsMounted] = useState(false);
+
+	useEffect(() => {
+		trackPageView("/products");
+	}, [trackPageView]);
 
 	useEffect(() => {
 		setIsMounted(true);
@@ -89,16 +108,8 @@ export default function ProductsPage() {
 		setFirstName(stored);
 	}, []);
 
-	// Prefetch all category products in background for "instant" load
-	useEffect(() => {
-		if (allProducts) {
-			CATEGORIES.forEach((category) => {
-				utils.product.getProductsByCategory.prefetch({
-					category: category.id
-				});
-			});
-		}
-	}, [allProducts, utils]);
+	// Prefetching all category products manually is no longer needed since
+	// allProducts is prefetched and cached locally on first load, so filtering is instant.
 
 	const getStats = (categoryId: string, fallback: string) => {
 		if (!allProducts) return fallback;
@@ -214,6 +225,7 @@ function CategoryCard({
 	backgroundImage?: string | null;
 }) {
 	const utils = trpc.useUtils();
+	const { trackPageView } = useAnalytics(); // Added this line
 
 	const handlePrefetch = () => {
 		utils.product.getProductsByCategory.prefetch({ category: category.id });

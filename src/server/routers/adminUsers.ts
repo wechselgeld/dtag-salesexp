@@ -65,9 +65,9 @@ export const adminUsersRouter = router({
                     odRegionId: true,
                     odRegion: { select: { name: true } },
                     locationId: true,
-                    location: { select: { name: true } },
+                    location: { select: { name: true, address: true } },
                     teamId: true,
-                    team: { select: { name: true } }
+                    team: { select: { name: true, location: { select: { name: true, address: true } } } }
                 },
                 orderBy: { createdAt: 'desc' }
             });

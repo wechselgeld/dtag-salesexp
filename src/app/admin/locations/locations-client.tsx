@@ -8,6 +8,7 @@ import { confirmDelete } from "@/components/shared/delete-confirm-toast";
 import Link from "next/link";
 import { useState } from "react";
 import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
+import { Tooltip } from "@/components/shared/ui/tooltip";
 
 export default function LocationsClient() {
 	const utils = trpc.useUtils();
@@ -103,6 +104,7 @@ export default function LocationsClient() {
 									(loc: {
 										id: string;
 										name: string;
+										address: string | null;
 										isActive: boolean;
 										odRegion: { name: string } | null;
 									}) => (
@@ -112,9 +114,17 @@ export default function LocationsClient() {
 										>
 											<td className="px-6 py-4">
 												<div className="flex flex-col">
-													<span className="text-[0.95rem] font-bold text-[#1a1a2e]">
-														{loc.name}
-													</span>
+													{loc.address ? (
+														<Tooltip content={loc.address}>
+															<span className="text-[0.95rem] font-bold text-[#1a1a2e] border-b border-dashed border-[#eaedf0] cursor-help">
+																{loc.name}
+															</span>
+														</Tooltip>
+													) : (
+														<span className="text-[0.95rem] font-bold text-[#1a1a2e]">
+															{loc.name}
+														</span>
+													)}
 												</div>
 											</td>
 											<td className="px-6 py-4">

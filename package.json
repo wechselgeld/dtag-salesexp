@@ -10,9 +10,13 @@
     "manage-admins": "tsx scripts/manage-admins.ts",
     "postinstall": "prisma generate",
     "db:push:dev": "dotenv -e .env.development -- prisma db push",
+    "db:push:staging": "dotenv -e .env.staging -- prisma db push",
     "db:push:prod": "dotenv -e .env.production -- prisma db push",
     "db:seed:dev": "dotenv -e .env.development -- prisma db seed",
-    "db:seed:prod": "dotenv -e .env.production -- prisma db seed"
+    "db:seed:staging": "dotenv -e .env.staging -- prisma db seed",
+    "db:seed:prod": "dotenv -e .env.production -- prisma db seed",
+    "deploy:staging": "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1 -Target staging",
+    "deploy:prod": "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1 -Target production"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

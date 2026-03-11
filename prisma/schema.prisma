@@ -42,9 +42,10 @@ model OdRegion {
 }
 
 model Location {
-  id        String   @id @default(cuid())
-  name      String
-  isActive  Boolean  @default(true)
+  id         String   @id @default(cuid())
+  name       String
+  address    String?
+  isActive   Boolean  @default(true)
   odRegionId String?
   odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: SetNull)
 
@@ -295,7 +296,7 @@ model AnalyticsEvent {
   teamId    String?  @db.VarChar(50)
   count     Int      @default(1)
 
-  @@unique([date, eventType, path, productId, teamId], name: "analytics_unique_event")
+  @@unique([date, eventType, path, productId, category, teamId], name: "analytics_unique_event")
   @@index([date])
   @@index([eventType])
   @@index([productId])

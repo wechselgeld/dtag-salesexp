@@ -17,11 +17,26 @@ export function useAnalytics() {
         if (trackedRef.current.has(key)) return;
         trackedRef.current.add(key);
 
+        // Always track general page view
         trackMutation.mutate({
             eventType: 'PAGE_VIEW',
             path,
             category,
         });
+
+        // Track "Unique Page View" per browsing session (GDPR anonymized)
+        // using sessionStorage which clears when the tab/window is closed.
+        if (typeof window !== 'undefined') {
+            const uniqueKey = `tracked_unique_page:${path}`;
+            if (!sessionStorage.getItem(uniqueKey)) {
+                sessionStorage.setItem(uniqueKey, '1');
+                trackMutation.mutate({
+                    eventType: 'UNIQUE_PAGE_VIEW',
+                    path,
+                    category,
+                });
+            }
+        }
     }, [trackMutation]);
 
     const trackProductView = useCallback((productId: string, category?: string) => {

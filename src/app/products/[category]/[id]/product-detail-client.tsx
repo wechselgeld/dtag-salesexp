@@ -67,7 +67,7 @@ function ProductPageContent() {
 	const basketItemId = searchParams.get("basketItemId");
 
 	const { items, updateItem, addItem, setIsOpen } = useBasketStore();
-	const { trackProductView, trackBasketAdd } = useAnalytics();
+	const { trackProductView, trackBasketAdd, trackPageView } = useAnalytics();
 
 	const catColor = CATEGORY_COLORS[category] || "#e20074";
 	const catName = CATEGORY_NAMES[category] || category;
@@ -154,8 +154,9 @@ function ProductPageContent() {
 	useEffect(() => {
 		if (product && id) {
 			trackProductView(id, category);
+			trackPageView(`/products/${category}/${id}`, category);
 		}
-	}, [product, id, category, trackProductView]);
+	}, [product, id, category, trackProductView, trackPageView]);
 
 	if (isLoading || !product) {
 		return (

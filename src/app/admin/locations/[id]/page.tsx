@@ -30,6 +30,7 @@ export default async function EditLocationPage({
 				id={location.id}
 				initialData={{
 					name: location.name,
+					address: location.address,
 					isActive: location.isActive,
 					odRegionId: location.odRegionId
 				}}

@@ -36,8 +36,8 @@ export const locationRouter = router({
 
             if (search) {
                 where.OR = [
-                    { name: { contains: search, mode: 'insensitive' } },
-                    { internalNote: { contains: search, mode: 'insensitive' } }
+                    { name: { contains: search } },
+                    { address: { contains: search } }
                 ];
             }
 
@@ -75,6 +75,7 @@ export const locationRouter = router({
         .input(
             z.object({
                 name: z.string().min(1),
+                address: z.string().optional().nullable(),
                 isActive: z.boolean().default(true),
                 odRegionId: z.string().optional().nullable()
             })
@@ -94,6 +95,7 @@ export const locationRouter = router({
             return await ctx.prisma.location.create({
                 data: {
                     name: input.name,
+                    address: input.address,
                     isActive: input.isActive,
                     odRegionId: assignedOdRegion
                 }
@@ -104,6 +106,7 @@ export const locationRouter = router({
         .input(z.object({
             id: z.string(),
             name: z.string().min(1).optional(),
+            address: z.string().optional().nullable(),
             isActive: z.boolean().optional(),
             odRegionId: z.string().optional().nullable()
         }))

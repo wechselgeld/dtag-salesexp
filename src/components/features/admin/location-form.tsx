@@ -24,6 +24,7 @@ import {
 
 const locationSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),
+	address: z.string().min(1, "Adresse ist erforderlich"),
 	isActive: z.boolean().default(true),
 	odRegionId: z
 		.string()
@@ -37,6 +38,7 @@ interface LocationFormProps {
 	id?: string;
 	initialData?: {
 		name: string;
+		address?: string | null;
 		isActive: boolean;
 		odRegionId?: string | null;
 	};
@@ -59,6 +61,7 @@ export function LocationForm({ mode, id, initialData }: LocationFormProps) {
 		mode: "onChange",
 		defaultValues: {
 			name: initialData?.name || "",
+			address: initialData?.address || "",
 			isActive: initialData?.isActive ?? true,
 			odRegionId: initialData?.odRegionId || ""
 		}
@@ -137,6 +140,14 @@ export function LocationForm({ mode, id, initialData }: LocationFormProps) {
 							error={errors.name?.message as string}
 							{...register("name")}
 						/>
+						<div className="mt-4">
+							<Input
+								label="Adresse"
+								placeholder="z.B. Musterstraße 1, 12345 Berlin"
+								error={errors.address?.message as string}
+								{...register("address")}
+							/>
+						</div>
 					</AdminFormSection>
 
 					<AdminFormSection

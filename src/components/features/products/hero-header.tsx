@@ -192,7 +192,7 @@ export function HeroHeader({
 										{currentCategory?.count}{" "}
 										{currentCategory?.name === "Endgeräte"
 											? "Endgeräten"
-											: currentCategory?.name}
+											: currentCategory?.name?.replace(" — OTT", "")}
 									</motion.span>
 								</AnimatePresence>
 							) : (

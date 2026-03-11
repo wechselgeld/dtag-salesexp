@@ -8,7 +8,7 @@ export const analyticsRouter = router({
     // --- Public: Fire-and-forget tracking ---
     track: publicProcedure
         .input(z.object({
-            eventType: z.enum(['PAGE_VIEW', 'PRODUCT_VIEW', 'BASKET_ADD']),
+            eventType: z.enum(['PAGE_VIEW', 'PRODUCT_VIEW', 'BASKET_ADD', 'UNIQUE_PAGE_VIEW']),
             path: z.string().optional(),
             productId: z.string().optional(),
             category: z.string().optional(),
@@ -41,6 +41,10 @@ export const analyticsRouter = router({
                 category: input.category,
                 teamId,
             });
+
+            // For serverless environments, we must flush immediately
+            // or use a background task. Since we want reliability now:
+            await analyticsBuffer.flush();
 
             return { success: true };
         }),
@@ -100,7 +104,7 @@ export const analyticsRouter = router({
                 by: ['category'],
                 where: {
                     date: { gte: since },
-                    eventType: 'PAGE_VIEW',
+                    eventType: { in: ['PAGE_VIEW', 'PRODUCT_VIEW'] },
                     category: { not: null },
                 },
                 _sum: { count: true },
@@ -123,7 +127,7 @@ export const analyticsRouter = router({
             const teamIds = teamUsage.map((t: any) => t.teamId).filter(Boolean) as string[];
             const teams = await prisma.team.findMany({
                 where: { id: { in: teamIds } },
-                select: { id: true, name: true, location: { select: { name: true } } },
+                select: { id: true, name: true, location: { select: { name: true, address: true } } },
             });
             const teamMap = new Map(teams.map(t => [t.id, t]));
 
@@ -136,6 +140,7 @@ export const analyticsRouter = router({
                 period: { days, since: since.toISOString() },
                 kpis: {
                     totalPageViews: eventsByType.find((e: any) => e.eventType === 'PAGE_VIEW')?._sum?.count ?? 0,
+                    totalUniquePageViews: eventsByType.find((e: any) => e.eventType === 'UNIQUE_PAGE_VIEW')?._sum?.count ?? 0,
                     totalProductViews: viewsTotal,
                     totalBasketAdds: basketTotal,
                     conversionRate: Math.round(conversionRate * 10) / 10,
@@ -161,6 +166,7 @@ export const analyticsRouter = router({
                     count: t._sum?.count ?? 0,
                     name: teamMap.get(t.teamId!)?.name ?? 'Unbekannt',
                     location: teamMap.get(t.teamId!)?.location?.name ?? '–',
+                    locationAddress: teamMap.get(t.teamId!)?.location?.address ?? null,
                 })),
             };
         }),

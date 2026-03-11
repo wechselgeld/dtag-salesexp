@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
+import { useAnalytics } from "@/hooks/use-analytics";
 import { motion, AnimatePresence } from "framer-motion";
 import {
 	Check,
@@ -16,7 +17,7 @@ import {
 	ChevronRight,
 	MapPin,
 	ArrowLeft,
-	Globe
+	Search
 } from "lucide-react";
 import clsx from "clsx";
 import { TelekomLogo } from "@/components/shared/telekom-logo";
@@ -38,7 +39,6 @@ const setupFormSchema = z.object({
 		.refine((val) => val.endsWith("@telekom.de"), {
 			message: "Es sind nur interne Adressen erlaubt."
 		}),
-	odRegionId: z.string().min(1, "Bitte wähle einen OD-Bereich aus"),
 	locationId: z.string().min(1, "Bitte wähle einen Standort aus"),
 	teamId: z.string().min(1, "Bitte wähle ein Team aus"),
 	acceptedTerms: z.literal(true),
@@ -87,17 +87,34 @@ function isSetupAlreadyDone(): boolean {
    Component
    ────────────────────────────────────────────── */
 
-export default function SetupPage() {
+export default function SetupPage({
+	initialLocations,
+	initialIsEmailRequired,
+	initialIpError
+}: {
+	initialLocations?: any;
+	initialIsEmailRequired?: boolean;
+	initialIpError?: string | null;
+}) {
 	const router = useRouter();
+	const { trackPageView } = useAnalytics();
 
 	// Form state
 	const [currentStep, setCurrentStep] = useState(1);
 	const [firstName, setFirstName] = useState("");
 	const [lastName, setLastName] = useState("");
 	const [email, setEmail] = useState("");
-	const [selectedOdRegionId, setSelectedOdRegionId] = useState<string | null>(
-		null
-	);
+
+	const [locationSearch, setLocationSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedSearch(locationSearch);
+		}, 300);
+		return () => clearTimeout(timer);
+	}, [locationSearch]);
+
 	const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
 		null
 	);
@@ -111,6 +128,10 @@ export default function SetupPage() {
 	// Dynamic card height to avoid jumping during AnimatePresence mode="wait"
 	const cardRef = useRef<HTMLDivElement>(null);
 	const [cardHeight, setCardHeight] = useState<number | "auto">("auto");
+
+	useEffect(() => {
+		trackPageView("/setup");
+	}, [trackPageView]);
 
 	useEffect(() => {
 		if (!cardRef.current) return;
@@ -128,23 +149,26 @@ export default function SetupPage() {
 	const [hasCompletedBefore, setHasCompletedBefore] = useState(false);
 	const [showReconfigure, setShowReconfigure] = useState(false);
 
-	// Data fetching
-	const { data: odRegions, isLoading: isOdRegionsLoading } =
-		trpc.odRegion.list.useQuery();
 	const { data: locations, isLoading: isLocationsLoading } =
 		trpc.location.list.useQuery(
-			selectedOdRegionId ? { odRegionId: selectedOdRegionId } : undefined,
-			{ enabled: !!selectedOdRegionId }
+			{
+				search: debouncedSearch || undefined,
+				limit: debouncedSearch ? 100 : 6
+			},
+			{
+				initialData: debouncedSearch ? undefined : initialLocations,
+				refetchOnWindowFocus: false
+			}
 		);
 	const { data: teams, isLoading: isTeamsLoading } = trpc.team.list.useQuery(
 		selectedLocationId ? { locationId: selectedLocationId } : undefined,
 		{ enabled: !!selectedLocationId }
 	);
-	const {
-		isLoading: isIpLoading,
-		isError: isIpError,
-		error: ipError
-	} = trpc.session.verifyIp.useQuery(undefined, { retry: false });
+
+	const isIpLoading = false; // Prefetched on server
+	const isIpError = !!initialIpError;
+	const ipError = initialIpError ? { message: initialIpError } : null;
+
 	const { data: existingSession, refetch: refetchCurrentSession } =
 		trpc.session.getCurrent.useQuery();
 
@@ -233,7 +257,9 @@ export default function SetupPage() {
 	const isReturningUser = hasCompletedBefore;
 
 	const { data: isEmailRequiredGlobally } =
-		trpc.session.getIsEmailRequired.useQuery();
+		trpc.session.getIsEmailRequired.useQuery(undefined, {
+			initialData: initialIsEmailRequired
+		});
 
 	// Zod-based validation
 	const validationResult = useMemo(
@@ -262,7 +288,6 @@ export default function SetupPage() {
 		!firstName.trim() ||
 		!lastName.trim() ||
 		(isEmailRequiredGlobally !== false && !email.trim()) ||
-		!selectedOdRegionId ||
 		!selectedLocationId ||
 		!selectedTeamId ||
 		!acceptedTerms ||
@@ -271,12 +296,10 @@ export default function SetupPage() {
 	const canSubmitClick = !anyFieldEmpty && !isSubmitting && !pendingSessionId;
 
 	const handleNextStep = () => {
-		if (currentStep === 1 && selectedOdRegionId) {
+		if (currentStep === 1 && selectedLocationId) {
 			setCurrentStep(2);
-		} else if (currentStep === 2 && selectedLocationId) {
+		} else if (currentStep === 2 && selectedTeamId) {
 			setCurrentStep(3);
-		} else if (currentStep === 3 && selectedTeamId) {
-			setCurrentStep(4);
 		}
 	};
 
@@ -290,7 +313,6 @@ export default function SetupPage() {
 			firstName,
 			lastName,
 			email: isEmailRequiredGlobally === false ? "no-reply@telekom.de" : email,
-			odRegionId: selectedOdRegionId ?? "",
 			locationId: selectedLocationId ?? "",
 			teamId: selectedTeamId ?? "",
 			acceptedTerms,
@@ -316,7 +338,6 @@ export default function SetupPage() {
 			acceptedTerms: true
 		});
 	}, [
-		selectedOdRegionId,
 		selectedLocationId,
 		selectedTeamId,
 		acceptedTerms,
@@ -347,39 +368,61 @@ export default function SetupPage() {
 			className="space-y-6 w-full"
 		>
 			<SectionHeader
-				icon={<Globe className="w-5 h-5 text-[#e20074]" />}
-				title="OD-Bereich wählen"
+				icon={<MapPin className="w-5 h-5 text-[#e20074]" />}
+				title="Standort wählen"
 				step={1}
 			/>
 
-			{isOdRegionsLoading ? (
+			{/* Search Bar */}
+			<div className="relative mt-5">
+				<div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+					<Search className="w-[18px] h-[18px] text-[#ccc]" />
+				</div>
+				<input
+					type="text"
+					value={locationSearch}
+					onChange={(e) => setLocationSearch(e.target.value)}
+					placeholder="Standort suchen (z.B. Berlin, München)..."
+					className="w-full h-[52px] pl-11 pr-4 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.95rem] text-[#1a1a2e] font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 focus:bg-white transition-all shadow-sm"
+				/>
+			</div>
+
+			{isLocationsLoading ? (
 				<div className="grid grid-cols-2 gap-3 mt-5">
 					{Array.from({ length: 4 }).map((_, i) => (
 						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
 					))}
 				</div>
-			) : odRegions?.items?.length === 0 ? (
+			) : locations?.items?.length === 0 ? (
 				<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
-					Bisher wurden keine OD-Bereiche angelegt.
+					Keine Standorte gefunden.
 				</div>
 			) : (
 				<div className="grid grid-cols-2 gap-3 mt-5">
 					<AnimatePresence>
-						{odRegions?.items
-							?.filter((region: any) => region.isActive)
-							.map((region: any, index: number) => (
-								<SelectionTile
-									key={region.id}
-									name={region.name}
-									isSelected={selectedOdRegionId === region.id}
-									onClick={() => {
-										setSelectedOdRegionId(region.id);
-										setSelectedLocationId(null);
-										setSelectedTeamId(null);
-									}}
-									index={index}
-								/>
-							))}
+						{locations?.items
+							?.filter((loc: any) => loc.isActive)
+							.map((loc: any, index: number) => {
+								let subtitle = loc.address || "";
+								if (loc.odRegion?.name) {
+									subtitle = subtitle
+										? `${subtitle} • ${loc.odRegion.name}`
+										: loc.odRegion.name;
+								}
+								return (
+									<SelectionTile
+										key={loc.id}
+										name={loc.name}
+										subtitle={subtitle}
+										isSelected={selectedLocationId === loc.id}
+										onClick={() => {
+											setSelectedLocationId(loc.id);
+											setSelectedTeamId(null);
+										}}
+										index={index}
+									/>
+								);
+							})}
 					</AnimatePresence>
 				</div>
 			)}
@@ -387,10 +430,10 @@ export default function SetupPage() {
 			<div className="flex justify-end pt-4 border-t border-[#eaedf0] mt-8">
 				<button
 					onClick={handleNextStep}
-					disabled={!selectedOdRegionId}
+					disabled={!selectedLocationId}
 					className={clsx(
 						"px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2",
-						selectedOdRegionId
+						selectedLocationId
 							? "bg-[#e20074] text-white hover:bg-[#c70066] cursor-pointer"
 							: "bg-[#eaedf0] text-[#aaa] cursor-not-allowed"
 					)}
@@ -419,87 +462,9 @@ export default function SetupPage() {
 			className="space-y-6 w-full"
 		>
 			<SectionHeader
-				icon={<MapPin className="w-5 h-5 text-[#e20074]" />}
-				title="Standort wählen"
-				step={2}
-			/>
-
-			{isLocationsLoading ? (
-				<div className="grid grid-cols-2 gap-3 mt-5">
-					{Array.from({ length: 4 }).map((_, i) => (
-						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
-					))}
-				</div>
-			) : locations?.items?.length === 0 ? (
-				<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
-					Bisher wurden keine Standorte angelegt.
-				</div>
-			) : (
-				<div className="grid grid-cols-2 gap-3 mt-5">
-					<AnimatePresence>
-						{locations?.items
-							?.filter((loc: any) => loc.isActive)
-							.map((loc: any, index: number) => (
-								<SelectionTile
-									key={loc.id}
-									name={loc.name}
-									isSelected={selectedLocationId === loc.id}
-									onClick={() => {
-										setSelectedLocationId(loc.id);
-										setSelectedTeamId(null);
-									}}
-									index={index}
-								/>
-							))}
-					</AnimatePresence>
-				</div>
-			)}
-
-			<div className="flex justify-between pt-4 border-t border-[#eaedf0] mt-8">
-				<button
-					onClick={handlePrevStep}
-					className="px-5 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2 text-[#666] bg-[#f7f8fa] hover:bg-[#eaedf0] cursor-pointer"
-				>
-					<ArrowLeft className="w-4 h-4" />
-					Zurück
-				</button>
-				<button
-					onClick={handleNextStep}
-					disabled={!selectedLocationId}
-					className={clsx(
-						"px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2",
-						selectedLocationId
-							? "bg-[#e20074] text-white hover:bg-[#c70066] cursor-pointer"
-							: "bg-[#eaedf0] text-[#aaa] cursor-not-allowed"
-					)}
-				>
-					Weiter
-					<ArrowRight className="w-4 h-4" />
-				</button>
-			</div>
-		</motion.div>
-	);
-
-	const renderStep3 = () => (
-		<motion.div
-			key="step3"
-			initial={{ opacity: 0, x: 15 }}
-			animate={{
-				opacity: 1,
-				x: 0,
-				transition: { delay: 0.4, duration: 0.3, ease: "easeOut" }
-			}}
-			exit={{
-				opacity: 0,
-				x: -15,
-				transition: { duration: 0.2, ease: "easeIn" }
-			}}
-			className="space-y-6 w-full"
-		>
-			<SectionHeader
 				icon={<Users className="w-5 h-5 text-[#e20074]" />}
 				title="Vertriebsteam wählen"
-				step={3}
+				step={2}
 			/>
 
 			{isTeamsLoading ? (
@@ -553,9 +518,9 @@ export default function SetupPage() {
 		</motion.div>
 	);
 
-	const renderStep4 = () => (
+	const renderStep3 = () => (
 		<motion.div
-			key="step4"
+			key="step3"
 			initial={{ opacity: 0, x: 15 }}
 			animate={{
 				opacity: 1,
@@ -573,7 +538,7 @@ export default function SetupPage() {
 				<SectionHeader
 					icon={<User className="w-5 h-5 text-[#e20074]" />}
 					title="Persönliche Daten"
-					step={4}
+					step={3}
 				/>
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
 					<InputField
@@ -805,7 +770,6 @@ export default function SetupPage() {
 								{currentStep === 1 && renderStep1()}
 								{currentStep === 2 && renderStep2()}
 								{currentStep === 3 && renderStep3()}
-								{currentStep === 4 && renderStep4()}
 							</AnimatePresence>
 						)}
 					</div>
@@ -884,11 +848,13 @@ function InputField({
 /** Location or Team selection tile */
 function SelectionTile({
 	name,
+	subtitle,
 	isSelected,
 	onClick,
 	index
 }: {
 	name: string;
+	subtitle?: string;
 	isSelected: boolean;
 	onClick: () => void;
 	index: number;
@@ -900,7 +866,7 @@ function SelectionTile({
 			transition={{ delay: 0.03 * index, duration: 0.25 }}
 			onClick={onClick}
 			className={clsx(
-				"relative flex items-center gap-3 px-4 h-[48px] rounded-xl border transition-all duration-300 cursor-pointer outline-none group",
+				"relative flex items-center gap-3 px-4 h-auto min-h-[52px] py-2 rounded-xl border transition-all duration-300 cursor-pointer outline-none group",
 				isSelected
 					? "border-[#e20074]/40 bg-[#e20074]/5 shadow-[0_4px_20px_rgba(226,0,116,0.08)] ring-1 ring-[#e20074]/30"
 					: "border-[#eaedf0] bg-[#f7f8fa] hover:bg-white hover:border-[#d1d5db] hover:shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
@@ -909,7 +875,7 @@ function SelectionTile({
 			{/* Checkmark indicator */}
 			<div
 				className={clsx(
-					"w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all duration-200",
+					"w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all duration-200 mt-0.5",
 					isSelected
 						? "bg-[#e20074] border-[#e20074]"
 						: "border-[#d1d5db] bg-white group-hover:border-[#a3a8b4]"
@@ -924,14 +890,21 @@ function SelectionTile({
 				/>
 			</div>
 
-			<span
-				className={clsx(
-					"text-[0.88rem] font-bold transition-colors text-left leading-tight",
-					isSelected ? "text-[#e20074]" : "text-[#1a1a2e]"
+			<div className="flex flex-col items-start gap-0.5 text-left">
+				<span
+					className={clsx(
+						"text-[0.88rem] font-bold transition-colors leading-tight",
+						isSelected ? "text-[#e20074]" : "text-[#1a1a2e]"
+					)}
+				>
+					{name}
+				</span>
+				{subtitle && (
+					<span className="text-[0.7rem] text-[#888] font-medium leading-[1.2] line-clamp-1">
+						{subtitle}
+					</span>
 				)}
-			>
-				{name}
-			</span>
+			</div>
 		</motion.button>
 	);
 }

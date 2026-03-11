@@ -31,6 +31,7 @@ import { SearchBar } from "@/components/features/search/search-bar";
 import { useSettingsStore } from "@/hooks/use-settings-store";
 import { useBasketStore } from "@/hooks/use-basket-store";
 import { Skeleton } from "@/components/shared/skeleton";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 /* --- Custom UI Icons --- */
 const SpeedTacho = ({
@@ -137,6 +138,7 @@ export default function ProductListPage() {
 	const utils = trpc.useUtils();
 	const { compactView, sortOption, setSortOption } = useSettingsStore();
 	const { addItem } = useBasketStore();
+	const { trackPageView } = useAnalytics();
 
 	const { data: session } = trpc.session.getCurrent.useQuery();
 
@@ -229,6 +231,10 @@ export default function ProductListPage() {
 	];
 
 	const activeSortOption = SORT_OPTIONS.find((s) => s.id === sortOption);
+
+	useEffect(() => {
+		trackPageView(`/products/${category}`, category);
+	}, [category, trackPageView]);
 
 	// Close sort menu on outside click
 	useEffect(() => {

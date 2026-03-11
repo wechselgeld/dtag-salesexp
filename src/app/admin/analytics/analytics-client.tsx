@@ -24,10 +24,13 @@ import {
 	ResponsiveContainer,
 	CartesianGrid,
 	Area,
-	AreaChart
+	AreaChart,
+	Cell,
+	LabelList
 } from "recharts";
 import { Skeleton } from "@/components/shared/skeleton";
 import { motion } from "framer-motion";
+import { Tooltip as CustomTooltip } from "@/components/shared/ui/tooltip";
 
 const CATEGORY_NAMES: Record<string, string> = {
 	MOBILE: "Mobilfunk",
@@ -35,7 +38,8 @@ const CATEGORY_NAMES: Record<string, string> = {
 	DSL: "Festnetz",
 	MAGENTA_TV_OTT: "MagentaTV",
 	DEVICE: "Endgeräte",
-	ADDON: "Zubuchoptionen"
+	ADDON: "Zubuchoptionen",
+	PAGE_VIEW: "Seitenaufrufe"
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -44,7 +48,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 	DSL: "#7b61ff",
 	MAGENTA_TV_OTT: "#ff6b00",
 	DEVICE: "#00a878",
-	ADDON: "#64748b"
+	ADDON: "#64748b",
+	PAGE_VIEW: "#94a3b8"
 };
 
 const PERIOD_OPTIONS = [
@@ -58,7 +63,7 @@ export default function AnalyticsClient() {
 
 	const { data, isLoading } = trpc.analytics.getDashboard.useQuery(
 		{ days: selectedPeriod },
-		{ staleTime: 2 * 60 * 1000, refetchOnWindowFocus: false }
+		{ staleTime: 10 * 1000, refetchOnWindowFocus: true }
 	);
 
 	// Aggregate daily data for chart
@@ -67,17 +72,30 @@ export default function AnalyticsClient() {
 
 		const map = new Map<
 			string,
-			{ date: string; views: number; basket: number; pages: number }
+			{
+				date: string;
+				views: number;
+				basket: number;
+				pages: number;
+				uniquePages: number;
+			}
 		>();
 
 		data.dailyTrend.forEach((d: any) => {
 			if (!map.has(d.date)) {
-				map.set(d.date, { date: d.date, views: 0, basket: 0, pages: 0 });
+				map.set(d.date, {
+					date: d.date,
+					views: 0,
+					basket: 0,
+					pages: 0,
+					uniquePages: 0
+				});
 			}
 			const entry = map.get(d.date)!;
 			if (d.eventType === "PRODUCT_VIEW") entry.views += d.count;
 			else if (d.eventType === "BASKET_ADD") entry.basket += d.count;
 			else if (d.eventType === "PAGE_VIEW") entry.pages += d.count;
+			else if (d.eventType === "UNIQUE_PAGE_VIEW") entry.uniquePages += d.count;
 		});
 
 		return Array.from(map.values()).sort(
@@ -201,7 +219,7 @@ export default function AnalyticsClient() {
 							subtitle={`${selectedPeriod} Tage`}
 						/>
 						<KPICard
-							label="Conversion Rate"
+							label="Add Rate"
 							value={data?.kpis.conversionRate ?? 0}
 							icon={TrendingUp}
 							color="#e20074"
@@ -209,11 +227,11 @@ export default function AnalyticsClient() {
 							subtitle="Aufrufe → Warenkorb"
 						/>
 						<KPICard
-							label="Seitenaufrufe"
-							value={data?.kpis.totalPageViews ?? 0}
+							label="Seitenaufrufe (Tgl. eindeutig)"
+							value={data?.kpis.totalUniquePageViews ?? 0}
 							icon={Layers}
 							color="#7b61ff"
-							subtitle={`${selectedPeriod} Tage`}
+							subtitle={`Von gesamt ${data?.kpis.totalPageViews?.toLocaleString("de-DE") ?? 0} Aufrufen`}
 						/>
 					</div>
 
@@ -448,9 +466,9 @@ export default function AnalyticsClient() {
 													</div>
 
 													{/* Mini bar */}
-													<div className="h-1.5 bg-[#f0f0f0] rounded-full overflow-hidden">
+													<div className="h-2 bg-[#f0f0f0] rounded-full overflow-hidden">
 														<div
-															className="h-full rounded-full transition-all duration-500"
+															className="h-full rounded-full transition-all duration-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
 															style={{
 																width: `${barWidth}%`,
 																backgroundColor: catColor
@@ -518,62 +536,54 @@ export default function AnalyticsClient() {
 									transition={{ delay: 0.25 }}
 									className="bg-white rounded-2xl border border-[#eaedf0] p-6"
 								>
-									<h2 className="text-[0.95rem] font-bold text-[#1a1a2e] tracking-tight mb-4">
-										Kategorien
-									</h2>
-									<div className="h-40">
-										<ResponsiveContainer width="100%" height="100%">
-											<BarChart
-												data={data.topCategories.map((c: any) => ({
-													name: CATEGORY_NAMES[c.category ?? ""] ?? c.category,
-													count: c.count,
-													fill: CATEGORY_COLORS[c.category ?? ""] ?? "#ccc"
-												}))}
-												layout="vertical"
-												margin={{
-													top: 0,
-													right: 0,
-													left: 0,
-													bottom: 0
-												}}
-											>
-												<XAxis type="number" hide />
-												<YAxis
-													type="category"
-													dataKey="name"
-													axisLine={false}
-													tickLine={false}
-													tick={{
-														fontSize: 11,
-														fill: "#555",
-														fontWeight: 600
-													}}
-													width={90}
-												/>
-												<Tooltip
-													cursor={{ fill: "rgba(0,0,0,0.03)" }}
-													content={({ active, payload }) =>
-														active && payload?.length ? (
-															<div className="bg-white rounded-lg shadow-lg border border-[#eaedf0] px-3 py-2 text-[0.75rem] font-semibold text-[#1a1a2e]">
-																{payload[0]?.value} Aufrufe
-															</div>
-														) : null
-													}
-												/>
-												<Bar
-													dataKey="count"
-													radius={[0, 8, 8, 0]}
-													maxBarSize={18}
-												>
-													{data.topCategories.map((c: any, i: number) => (
-														<rect
-															key={i}
-															fill={CATEGORY_COLORS[c.category ?? ""] ?? "#ccc"}
-														/>
-													))}
-												</Bar>
-											</BarChart>
-										</ResponsiveContainer>
+									<div className="flex items-center justify-between mb-5">
+										<h2 className="text-[0.95rem] font-bold text-[#1a1a2e] tracking-tight">
+											Kategorien
+										</h2>
+										<Layers className="w-5 h-5 text-[#ccc]" />
+									</div>
+									<div className="space-y-4">
+										{data.topCategories.map((c: any, i: number) => {
+											const name =
+												CATEGORY_NAMES[c.category?.toUpperCase() ?? ""] ??
+												c.category ??
+												"Unbekannt";
+											const catColor =
+												CATEGORY_COLORS[c.category?.toUpperCase() ?? ""] ??
+												"#ccc";
+											const maxCount = data.topCategories[0]?.count ?? 1;
+											const barWidth = Math.max((c.count / maxCount) * 100, 3);
+
+											return (
+												<div key={i} className="flex items-center gap-3">
+													<div className="w-6 h-6 rounded-lg bg-[#f0f0f0] flex items-center justify-center text-[0.65rem] font-bold text-[#aaa] shrink-0">
+														{i + 1}
+													</div>
+													<div className="flex-1 min-w-0">
+														<div className="flex items-center justify-between mb-1.5">
+															<span className="text-[0.82rem] font-bold text-[#1a1a2e]">
+																{name}
+															</span>
+															<span
+																className="text-[0.78rem] font-extrabold"
+																style={{ color: catColor }}
+															>
+																{c.count.toLocaleString("de-DE")}
+															</span>
+														</div>
+														<div className="h-2.5 bg-[#f0f0f0] rounded-full overflow-hidden">
+															<div
+																className="h-full rounded-full transition-all duration-1000 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
+																style={{
+																	width: `${barWidth}%`,
+																	backgroundColor: catColor
+																}}
+															/>
+														</div>
+													</div>
+												</div>
+											);
+										})}
 									</div>
 								</motion.div>
 							)}
@@ -586,45 +596,55 @@ export default function AnalyticsClient() {
 									transition={{ delay: 0.3 }}
 									className="bg-white rounded-2xl border border-[#eaedf0] p-6"
 								>
-									<div className="flex items-center justify-between mb-4">
+									<div className="flex items-center justify-between mb-5">
 										<h2 className="text-[0.95rem] font-bold text-[#1a1a2e] tracking-tight">
 											Aktivste Teams
 										</h2>
 										<Users className="w-5 h-5 text-[#ccc]" />
 									</div>
-									<div className="space-y-2.5">
-										{data.teamUsage.slice(0, 8).map((team: any, i: number) => {
+									<div className="space-y-4">
+										{data.teamUsage.slice(0, 10).map((team: any, i: number) => {
 											const maxCount = data.teamUsage[0]?.count ?? 1;
 											const barWidth = Math.max(
 												(team.count / maxCount) * 100,
-												5
+												3
 											);
 
 											return (
 												<div key={i} className="flex items-center gap-3">
-													<span className="w-5 h-5 rounded-md bg-[#f0f0f0] flex items-center justify-center text-[0.6rem] font-bold text-[#aaa] shrink-0">
+													<div className="w-6 h-6 rounded-lg bg-[#f0f0f0] flex items-center justify-center text-[0.65rem] font-bold text-[#aaa] shrink-0">
 														{i + 1}
-													</span>
+													</div>
 													<div className="flex-1 min-w-0">
-														<div className="flex items-center justify-between mb-1">
-															<span className="text-[0.78rem] font-semibold text-[#1a1a2e] truncate">
-																{team.name}
-															</span>
-															<span className="text-[0.72rem] font-bold text-[#e20074] shrink-0 ml-2">
-																{team.count}
+														<div className="flex items-center justify-between mb-1.5">
+															<div className="flex flex-col">
+																<span className="text-[0.82rem] font-bold text-[#1a1a2e] truncate">
+																	{team.name}
+																</span>
+																{team.locationAddress ? (
+																	<CustomTooltip content={team.locationAddress}>
+																		<span className="text-[0.6rem] text-[#bbb] font-medium border-b border-dashed border-[#eaedf0] cursor-help w-fit">
+																			{team.location}
+																		</span>
+																	</CustomTooltip>
+																) : (
+																	<span className="text-[0.6rem] text-[#bbb] font-medium">
+																		{team.location}
+																	</span>
+																)}
+															</div>
+															<span className="text-[0.78rem] font-extrabold text-[#e20074] shrink-0 ml-2">
+																{team.count.toLocaleString("de-DE")}
 															</span>
 														</div>
-														<div className="h-1 bg-[#f0f0f0] rounded-full overflow-hidden">
+														<div className="h-2.5 bg-[#f0f0f0] rounded-full overflow-hidden">
 															<div
-																className="h-full rounded-full bg-[#e20074]/60"
+																className="h-full rounded-full bg-[#e20074]/60 transition-all duration-1000 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
 																style={{
 																	width: `${barWidth}%`
 																}}
 															/>
 														</div>
-														<span className="text-[0.6rem] text-[#bbb] font-medium">
-															{team.location}
-														</span>
 													</div>
 												</div>
 											);

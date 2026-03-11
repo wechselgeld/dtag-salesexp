@@ -20,7 +20,7 @@ interface BufferedEvent {
 
 // Create a unique key for deduplication
 function eventKey(e: Omit<BufferedEvent, 'count'>): string {
-    return `${e.date}|${e.eventType}|${e.path ?? ''}|${e.productId ?? ''}|${e.teamId ?? ''}`;
+    return `${e.date}|${e.eventType}|${e.path ?? ''}|${e.productId ?? ''}|${e.category ?? ''}|${e.teamId ?? ''}`;
 }
 
 class AnalyticsBuffer {
@@ -89,6 +89,7 @@ class AnalyticsBuffer {
                                 eventType: e.eventType,
                                 path: e.path ?? '',
                                 productId: e.productId ?? '',
+                                category: e.category ?? '',
                                 teamId: e.teamId ?? '',
                             },
                         },
@@ -98,10 +99,10 @@ class AnalyticsBuffer {
                         create: {
                             date: new Date(e.date),
                             eventType: e.eventType,
-                            path: e.path,
-                            productId: e.productId,
-                            category: e.category,
-                            teamId: e.teamId,
+                            path: e.path ?? '',
+                            productId: e.productId ?? '',
+                            category: e.category ?? '',
+                            teamId: e.teamId ?? '',
                             count: e.count,
                         },
                     })

@@ -161,7 +161,8 @@ export function TeamForm({ mode, teamId, initialData }: TeamFormProps) {
 									<option value="">(Kein Standort zugewiesen)</option>
 									{locations?.map((loc: any) => (
 										<option key={loc.id} value={loc.id}>
-											{loc.name} {loc.isActive ? "" : "(Inaktiv)"}
+											{loc.name} {loc.address ? `(${loc.address})` : ""}{" "}
+											{loc.isActive ? "" : "(Inaktiv)"}
 										</option>
 									))}
 								</select>

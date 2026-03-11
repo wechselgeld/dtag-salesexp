@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/shared/skeleton";
 import { confirmDelete } from "@/components/shared/delete-confirm-toast";
 import Link from "next/link";
 import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
+import { Tooltip } from "@/components/shared/ui/tooltip";
 
 type UserResponse = {
 	id: string;
@@ -23,8 +24,11 @@ type UserResponse = {
 	role: string;
 	createdAt: string | Date;
 	isEditor: boolean;
-	team?: { name: string } | null;
-	location?: { name: string } | null;
+	team?: {
+		name: string;
+		location: { name: string; address: string | null } | null;
+	} | null;
+	location?: { name: string; address: string | null } | null;
 	odRegion?: { name: string } | null;
 };
 
@@ -135,8 +139,11 @@ export default function UsersClient() {
 										email: string;
 										role: string;
 										isEditor: boolean;
-										team: { name: string } | null;
-										location: { name: string } | null;
+										team: {
+											name: string;
+											location: { name: string; address: string | null } | null;
+										} | null;
+										location: { name: string; address: string | null } | null;
 										odRegion: { name: string } | null;
 									}) => (
 										<tr
@@ -169,11 +176,34 @@ export default function UsersClient() {
 												{user.team?.name ? (
 													<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#f0f2f5] border border-[#eaedf0] text-[#1a1a2e] font-medium">
 														Team: {user.team.name}
+														{user.team.location && (
+															<span className="text-[0.65rem] text-[#888] ml-1">
+																(
+																{user.team.location.address ? (
+																	<Tooltip content={user.team.location.address}>
+																		<span className="border-b border-dashed border-[#eaedf0] cursor-help">
+																			{user.team.location.name}
+																		</span>
+																	</Tooltip>
+																) : (
+																	user.team.location.name
+																)}
+																)
+															</span>
+														)}
 													</span>
 												) : user.location?.name ? (
 													<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#f0f2f5] border border-[#eaedf0] text-[#1a1a2e] font-medium">
 														<MapPin className="w-3.5 h-3.5 text-[#888]" />
-														{user.location.name}
+														{user.location.address ? (
+															<Tooltip content={user.location.address}>
+																<span className="border-b border-dashed border-[#eaedf0] cursor-help">
+																	{user.location.name}
+																</span>
+															</Tooltip>
+														) : (
+															user.location.name
+														)}
 													</span>
 												) : user.odRegion?.name ? (
 													<span className="text-[#bbb] italic font-medium">

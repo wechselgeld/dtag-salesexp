@@ -16,6 +16,7 @@ import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { Tooltip } from "@/components/shared/ui/tooltip";
 
 export default function SessionsClient() {
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -101,6 +102,7 @@ export default function SessionsClient() {
 												name: string;
 												location: {
 													name: string;
+													address: string | null;
 													odRegion: { name: string } | null;
 												} | null;
 											};
@@ -142,7 +144,17 @@ export default function SessionsClient() {
 													<div className="flex flex-col gap-0.5 ml-5">
 														<div className="flex items-center gap-1.5 text-[0.75rem] text-[#888] font-medium">
 															<MapPin className="w-3 h-3" />
-															{session.team.location?.name || "Kein Standort"}
+															{session.team.location?.address ? (
+																<Tooltip
+																	content={session.team.location.address}
+																>
+																	<span className="border-b border-dashed border-[#eaedf0] cursor-help">
+																		{session.team.location.name}
+																	</span>
+																</Tooltip>
+															) : (
+																session.team.location?.name || "Kein Standort"
+															)}
 														</div>
 														<div className="flex items-center gap-1.5 text-[0.7rem] text-[#bbb] font-medium">
 															<Globe className="w-3 h-3" />

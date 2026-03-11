@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/shared/skeleton";
 import Link from "next/link";
 import { confirmDelete } from "@/components/shared/delete-confirm-toast";
 import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
+import { Tooltip } from "@/components/shared/ui/tooltip";
 
 const CATEGORIES = [
 	{ id: "MOBILE", label: "Mobilfunk" },
@@ -134,7 +135,11 @@ export default function TeamsPage() {
 					>
 						<option value="all">Alle Standorte</option>
 						{locations?.items?.map((loc: any) => (
-							<option key={loc.id} value={loc.id}>
+							<option
+								key={loc.id}
+								value={loc.id}
+								title={loc.address || undefined}
+							>
 								{loc.name}
 							</option>
 						))}
@@ -194,7 +199,7 @@ export default function TeamsPage() {
 										id: string;
 										name: string;
 										highlights: { productId: string | null }[];
-										location: { name: string } | null;
+										location: { name: string; address: string | null } | null;
 									}) => (
 										<tr
 											key={team.id}
@@ -217,7 +222,15 @@ export default function TeamsPage() {
 												{team.location ? (
 													<div className="flex items-center gap-1.5 text-[0.85rem] text-[#666]">
 														<MapPin className="w-3.5 h-3.5" />
-														{team.location.name}
+														{team.location.address ? (
+															<Tooltip content={team.location.address}>
+																<span className="border-b border-dashed border-[#eaedf0] cursor-help">
+																	{team.location.name}
+																</span>
+															</Tooltip>
+														) : (
+															team.location.name
+														)}
 													</div>
 												) : (
 													<span className="text-[#bbb] italic text-[0.8rem]">
