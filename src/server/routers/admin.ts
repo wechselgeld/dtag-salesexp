@@ -486,7 +486,14 @@ export const adminRouter = router({
                 priority: z.enum(["INFO", "UPDATE", "IMPORTANT", "CRITICAL"]).default("INFO"),
             }))
             .mutation(async ({ input }) => {
-                return prisma.news.create({ data: input });
+                const news = await prisma.news.create({ data: input });
+
+                // Emit the newly created news to SSE subscribers
+                import('@/lib/news-emitter').then(({ newsEmitter }) => {
+                    newsEmitter.emit('add', news);
+                });
+
+                return news;
             }),
 
         delete: editorProcedure

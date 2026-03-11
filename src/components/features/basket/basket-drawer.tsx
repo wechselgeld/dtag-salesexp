@@ -13,16 +13,13 @@ import type { PricingSettings } from "@/types/product";
 import {
 	Trash2,
 	ShoppingBag,
-	ChevronRight,
 	ChevronDown,
 	Percent,
-	Receipt,
 	ArrowRight,
 	Package,
 	Check,
 	UserPlus,
 	Sparkles,
-	Settings2,
 	RotateCcw,
 	Edit2,
 	Tag
@@ -38,6 +35,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNewsNotificationStore } from "@/lib/store/news-notification-store";
 import { useSettingsStore } from "@/hooks/use-settings-store";
+import { Toast } from "@/components/shared/ui/toast";
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: "#e20074",
@@ -428,28 +426,33 @@ export function BasketDrawer() {
 				{/* Undo Toast */}
 				<AnimatePresence>
 					{deletedItem && (
-						<motion.div
-							initial={{ opacity: 0, y: 50, scale: 0.95 }}
-							animate={{ opacity: 1, y: 0, scale: 1 }}
-							exit={{ opacity: 0, y: 20, scale: 0.95 }}
-							className="absolute bottom-20 left-4 right-4 bg-[#1a1a2e] text-white p-3 rounded-xl shadow-xl border border-white/10 flex items-center justify-between z-50"
+						<Toast
+							duration={5000}
+							color="rgba(255,255,255,0.7)"
+							onDismiss={() => {
+								clearTimeout(deletedItem.timeoutId);
+								setDeletedItem(null);
+							}}
+							className="absolute bottom-20 left-4 right-4 bg-[#1a1a2e] text-white p-3 rounded-xl shadow-xl border border-white/10 z-50 flex items-center justify-between"
 						>
-							<div className="flex flex-col">
-								<span className="text-[0.7rem] text-white/60 font-medium">
-									Gelöscht
-								</span>
-								<span className="text-[0.85rem] font-bold line-clamp-1">
-									{deletedItem.item.product.name}
-								</span>
+							<div className="flex items-center justify-between w-full">
+								<div className="flex flex-col">
+									<span className="text-[0.7rem] text-white/60 font-medium">
+										Gelöscht
+									</span>
+									<span className="text-[0.85rem] font-bold line-clamp-1">
+										{deletedItem.item.product.name}
+									</span>
+								</div>
+								<button
+									onClick={handleRestore}
+									className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-[0.8rem] font-semibold active:scale-95 cursor-pointer border-none text-white shrink-0 mr-0"
+								>
+									<RotateCcw className="w-3.5 h-3.5" />
+									Rückgängig
+								</button>
 							</div>
-							<button
-								onClick={handleRestore}
-								className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-[0.8rem] font-semibold active:scale-95 cursor-pointer"
-							>
-								<RotateCcw className="w-3.5 h-3.5" />
-								Rückgängig
-							</button>
-						</motion.div>
+						</Toast>
 					)}
 				</AnimatePresence>
 			</div>

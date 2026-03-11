@@ -167,36 +167,38 @@ export default function ProductsPage({
 				</>
 			) : (
 				<>
-					{/* Row 1 (3 cards) */}
-					<div className="grid grid-cols-3 gap-4 mb-4">
-						{CATEGORIES.slice(0, 3).map((category, index) => (
-							<CategoryCard
-								key={category.id}
-								category={category}
-								index={index}
-								isHighlighted={highlightedCategories.includes(category.id)}
-								dynamicStats={getStats(category.id, category.stats)}
-								backgroundImage={
-									designSettings?.[`category_image_${category.id}`] || null
-								}
-							/>
-						))}
-					</div>
+					<div id="tour-categories">
+						{/* Row 1 (3 cards) */}
+						<div className="grid grid-cols-3 gap-4 mb-4">
+							{CATEGORIES.slice(0, 3).map((category, index) => (
+								<CategoryCard
+									key={category.id}
+									category={category}
+									index={index}
+									isHighlighted={highlightedCategories.includes(category.id)}
+									dynamicStats={getStats(category.id, category.stats)}
+									backgroundImage={
+										designSettings?.[`category_image_${category.id}`] || null
+									}
+								/>
+							))}
+						</div>
 
-					{/* Row 2 (2 cards, wider) */}
-					<div className="grid grid-cols-2 gap-4">
-						{CATEGORIES.slice(3).map((category, index) => (
-							<CategoryCard
-								key={category.id}
-								category={category}
-								index={index + 3}
-								isHighlighted={highlightedCategories.includes(category.id)}
-								dynamicStats={getStats(category.id, category.stats)}
-								backgroundImage={
-									designSettings?.[`category_image_${category.id}`] || null
-								}
-							/>
-						))}
+						{/* Row 2 (2 cards, wider) */}
+						<div className="grid grid-cols-2 gap-4">
+							{CATEGORIES.slice(3).map((category, index) => (
+								<CategoryCard
+									key={category.id}
+									category={category}
+									index={index + 3}
+									isHighlighted={highlightedCategories.includes(category.id)}
+									dynamicStats={getStats(category.id, category.stats)}
+									backgroundImage={
+										designSettings?.[`category_image_${category.id}`] || null
+									}
+								/>
+							))}
+						</div>
 					</div>
 				</>
 			)}
@@ -234,7 +236,7 @@ function CategoryCard({
 	return (
 		<Link
 			href={category.href}
-			className="no-underline block h-full"
+			className="no-underline block h-full tour-category-card"
 			onMouseEnter={handlePrefetch}
 			onFocus={handlePrefetch}
 		>

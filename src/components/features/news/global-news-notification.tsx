@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useNewsNotificationStore } from "@/lib/store/news-notification-store";
 import {
 	Info,
 	AlertCircle,
 	AlertTriangle,
-	X,
 	Sparkles,
 	TrendingUp
 } from "lucide-react";
 import clsx from "clsx";
+import { Toast } from "@/components/shared/ui/toast";
 import { trpc } from "@/lib/trpc";
 
 const PRIORITY_CONFIG: Record<
@@ -37,31 +36,21 @@ export function GlobalNewsNotification() {
 		(state) => state.addNotification
 	);
 
-	// Poll for new news every 10 seconds.
-	// If a news item's createdAt is within the last 15 seconds, trigger a notification.
-	const { data } = trpc.news.listActive.useQuery(undefined, {
-		refetchInterval: 10000
-	});
-
-	useEffect(() => {
-		if (!data) return;
-		const now = new Date().getTime();
-		data.forEach((news: any) => {
-			const createdTime = new Date(news.createdAt).getTime();
-			// Check if the news is new (created within the last 15 seconds)
-			if (now - createdTime < 15000) {
-				// Prevent duplicate notifications in store
-				if (!notifications.some((n) => n.id === news.id)) {
-					addNotification({
-						id: news.id,
-						title: news.title,
-						content: news.content,
-						priority: news.priority as any
-					});
-				}
+	trpc.news.onAdd.useSubscription(undefined, {
+		onData(news: any) {
+			if (!notifications.some((n) => n.id === news.id)) {
+				addNotification({
+					id: news.id,
+					title: news.title,
+					content: news.content,
+					priority: news.priority as any
+				});
 			}
-		});
-	}, [data, notifications, addNotification]);
+		},
+		onError(err) {
+			console.error("News subscription error:", err);
+		}
+	});
 
 	return (
 		<div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-9999 flex flex-col gap-4 w-[500px] pointer-events-none">
@@ -91,53 +80,12 @@ function NotificationItem({
 	const isImportant = notification.priority === "IMPORTANT";
 	const isSales = notification.priority === "SALES";
 
-	const [progress, setProgress] = useState(0);
-	const accumulatedTimeRef = useRef(0);
-	const [isPaused, setIsPaused] = useState(false);
-	const isPausedRef = useRef(isPaused);
-
-	// Sync ref with state
-	useEffect(() => {
-		isPausedRef.current = isPaused;
-	}, [isPaused]);
-
-	useEffect(() => {
-		let animationFrame: number;
-		let lastTime = performance.now();
-		const DURATION = 10000; // 10 seconds visible
-
-		const tick = (currentTime: number) => {
-			const delta = currentTime - lastTime;
-			lastTime = currentTime;
-
-			if (!isPausedRef.current) {
-				accumulatedTimeRef.current += delta;
-				const p = Math.min((accumulatedTimeRef.current / DURATION) * 100, 100);
-				setProgress(p);
-
-				if (accumulatedTimeRef.current >= DURATION) {
-					onDismiss();
-					return;
-				}
-			}
-			animationFrame = requestAnimationFrame(tick);
-		};
-
-		animationFrame = requestAnimationFrame(tick);
-
-		return () => cancelAnimationFrame(animationFrame);
-	}, [onDismiss]);
-
 	return (
-		<motion.div
-			initial={{ opacity: 0, y: 50, scale: 0.9 }}
-			animate={{ opacity: 1, y: 0, scale: 1 }}
-			exit={{ opacity: 0, y: 20, scale: 0.95 }}
-			transition={{ type: "spring", stiffness: 400, damping: 25 }}
-			onMouseEnter={() => setIsPaused(true)}
-			onMouseLeave={() => setIsPaused(false)}
+		<Toast
+			duration={10000}
+			color={config.color}
+			onDismiss={onDismiss}
 			className={clsx(
-				"relative pointer-events-auto rounded-2xl p-4 shadow-2xl overflow-hidden backdrop-blur-sm bg-white/95",
 				isCritical || isSales
 					? "border-[3px]"
 					: isImportant
@@ -169,50 +117,7 @@ function NotificationItem({
 				/>
 			)}
 
-			<div className="absolute top-3 right-3 flex items-center gap-2 z-10">
-				{/* Progress Circle Timer */}
-				<div
-					className="relative w-5 h-5 flex items-center justify-center transition-opacity duration-300"
-					title={isPaused ? "Pausiert" : "Schließt in kürze..."}
-				>
-					<svg
-						className="w-full h-full -rotate-90"
-						style={{ color: config.color }}
-					>
-						<circle
-							cx="10"
-							cy="10"
-							r="8"
-							stroke="currentColor"
-							strokeWidth="2.5"
-							fill="none"
-							className="opacity-20"
-						/>
-						<circle
-							cx="10"
-							cy="10"
-							r="8"
-							stroke="currentColor"
-							strokeWidth="2.5"
-							fill="none"
-							strokeDasharray={2 * Math.PI * 8}
-							strokeDashoffset={
-								2 * Math.PI * 8 - (2 * Math.PI * 8 * progress) / 100
-							}
-							className="transition-none"
-						/>
-					</svg>
-				</div>
-
-				<button
-					onClick={onDismiss}
-					className="p-1 rounded-full bg-black/5 hover:bg-black/10 transition-colors text-[#1a1a2e]/60 hover:text-[#1a1a2e] cursor-pointer"
-				>
-					<X className="w-4 h-4" />
-				</button>
-			</div>
-
-			<div className="flex gap-3 align-start relative z-10 pr-14">
+			<div className="flex gap-3 align-start">
 				<div
 					className={clsx(
 						"shrink-0 flex items-center justify-center text-white mt-0.5",
@@ -250,6 +155,6 @@ function NotificationItem({
 					</p>
 				</div>
 			</div>
-		</motion.div>
+		</Toast>
 	);
 }

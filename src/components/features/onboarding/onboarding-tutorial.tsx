@@ -291,12 +291,65 @@ export function OnboardingTutorial() {
 			return;
 		}
 
-		const el = document.getElementById(step.targetId);
+		let el: HTMLElement | null = null;
+		let multiElements: NodeListOf<Element> | null = null;
 
-		if (el) {
-			const rect = el.getBoundingClientRect();
-			if (rect.width === 0 && retryCount < 5) {
-				setTimeout(() => setRetryCount((prev) => prev + 1), 100);
+		if (step.targetId === "tour-categories") {
+			multiElements = document.querySelectorAll(".tour-category-card");
+		} else {
+			el = document.getElementById(step.targetId);
+		}
+
+		if ((el || (multiElements && multiElements.length > 0)) && isVisible) {
+			let rect: DOMRect;
+
+			if (multiElements && multiElements.length > 0) {
+				// Calculate a bounding box that contains all elements
+				let minX = Infinity,
+					minY = Infinity,
+					maxX = -Infinity,
+					maxY = -Infinity;
+
+				multiElements.forEach((node) => {
+					const r = node.getBoundingClientRect();
+					if (r.width > 0 && r.height > 0) {
+						minX = Math.min(minX, r.left);
+						minY = Math.min(minY, r.top);
+						maxX = Math.max(maxX, r.right);
+						maxY = Math.max(maxY, r.bottom);
+					}
+				});
+
+				if (minX === Infinity) {
+					if (retryCount < 40) {
+						setTimeout(() => setRetryCount((prev) => prev + 1), 150);
+					}
+					return;
+				}
+
+				rect = {
+					left: minX,
+					top: minY,
+					right: maxX,
+					bottom: maxY,
+					width: maxX - minX,
+					height: maxY - minY,
+					x: minX,
+					y: minY,
+					toJSON: () => {}
+				};
+			} else if (el) {
+				rect = el.getBoundingClientRect();
+				if (rect.width === 0 && retryCount < 5) {
+					setTimeout(() => setRetryCount((prev) => prev + 1), 100);
+					return;
+				}
+			} else {
+				// No target found
+				setCoords({ x: 0, y: 0, w: 0, h: 0 });
+				if (retryCount < 40) {
+					setTimeout(() => setRetryCount((prev) => prev + 1), 150);
+				}
 				return;
 			}
 
@@ -314,11 +367,14 @@ export function OnboardingTutorial() {
 				rect.right <= window.innerWidth;
 
 			if (!isInViewport) {
-				el.scrollIntoView({ behavior: "smooth", block: "center" });
-				setTimeout(() => {
-					const r = el.getBoundingClientRect();
-					setCoords({ x: r.left, y: r.top, w: r.width, h: r.height });
-				}, 400);
+				const scrollTarget = el || (multiElements && multiElements[0]);
+				if (scrollTarget) {
+					scrollTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+					setTimeout(() => {
+						// Re-run measurement after scroll
+						updateCoords();
+					}, 500);
+				}
 			}
 		} else {
 			setCoords({ x: 0, y: 0, w: 0, h: 0 });
@@ -326,7 +382,7 @@ export function OnboardingTutorial() {
 				setTimeout(() => setRetryCount((prev) => prev + 1), 150);
 			}
 		}
-	}, [currentStep, retryCount]);
+	}, [currentStep, retryCount, isVisible]);
 
 	useEffect(() => {
 		updateCoords();

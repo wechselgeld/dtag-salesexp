@@ -1,7 +1,11 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
+import {
+	httpBatchLink,
+	splitLink,
+	unstable_httpSubscriptionLink
+} from "@trpc/client";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { MotionConfig } from "framer-motion";
@@ -46,8 +50,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 	const [trpcClient] = useState(() =>
 		trpc.createClient({
 			links: [
-				httpBatchLink({
-					url: "/api/trpc"
+				splitLink({
+					condition(op) {
+						return op.type === "subscription";
+					},
+					true: unstable_httpSubscriptionLink({
+						url: "/api/trpc"
+					}),
+					false: httpBatchLink({
+						url: "/api/trpc"
+					})
 				})
 			]
 		})
