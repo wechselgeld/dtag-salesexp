@@ -133,7 +133,7 @@ const STEPS: Step[] = [
 		content:
 			"Wähle die passende Kategorie für Deinen Kunden. Im Team-Fokus siehst Du die aktuellen Teamziele.",
 		icon: LayoutGrid,
-		position: "top",
+		position: "right",
 		actionLabel: "Kategorie öffnen →"
 	},
 	{

@@ -1,6 +1,6 @@
 # Sales Experience – Dokumentation
 
-Willkommen in der technischen Dokumentation des **Sales Experience** – einem internen Vertriebsberatungstool für Telekom Partner-Shops.
+Willkommen in der technischen Dokumentation der **Sales Experience** – einem internen Vertriebsberatungstool für die Deutsche Telekom Service GmbH.
 
 ---
 
