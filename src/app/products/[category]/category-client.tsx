@@ -602,21 +602,25 @@ export default function ProductListPage() {
 											{(isFocused || topProductSet.has(product.id)) && (
 												<div className="mb-2 flex items-center gap-2">
 													{isFocused && (
-														<div className="inline-flex bg-[rgba(255,213,79,0.15)] text-[#b78900] px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide uppercase items-center gap-1 whitespace-nowrap">
+														<div className="inline-flex bg-[rgba(255,213,79,0.15)] text-[#b78900] px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide leading-none uppercase items-center gap-1 whitespace-nowrap">
 															<Star className="w-3 h-3 fill-current" />
-															TEAM-FOKUS
+															<span className="relative top-[1.5px]">
+																TEAM-FOKUS
+															</span>
 														</div>
 													)}
 													{topProductSet.has(product.id) && (
 														<div
-															className="inline-flex px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide uppercase items-center gap-1 whitespace-nowrap"
+															className="inline-flex px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide leading-none uppercase items-center gap-1 whitespace-nowrap"
 															style={{
 																backgroundColor: `${catColor}15`,
-																color: catColor,
+																color: catColor
 															}}
 														>
 															<TrendingUp className="w-3 h-3" />
-															Beliebt
+															<span className="relative top-[1.5px]">
+																OFT ANGEBOTEN
+															</span>
 														</div>
 													)}
 												</div>
