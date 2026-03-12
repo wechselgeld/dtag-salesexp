@@ -42,9 +42,8 @@ export const analyticsRouter = router({
                 teamId,
             });
 
-            // For serverless environments, we must flush immediately
-            // or use a background task. Since we want reliability now:
-            await analyticsBuffer.flush();
+            // Start flush in background (non-blocking)
+            analyticsBuffer.flush().catch(console.error);
 
             return { success: true };
         }),
@@ -63,75 +62,76 @@ export const analyticsRouter = router({
             // Force flush buffer before querying
             await analyticsBuffer.flush();
 
-            // Total events by type
-            const eventsByType = await (prisma as any).analyticsEvent.groupBy({
-                by: ['eventType'],
-                where: { date: { gte: since } },
-                _sum: { count: true },
-            });
+            // Run all heavy queries in parallel
+            const [eventsByType, dailyTrend, topProductsRaw, topCategories, teamUsage] = await Promise.all([
+                // Total events by type
+                (prisma as any).analyticsEvent.groupBy({
+                    by: ['eventType'],
+                    where: { date: { gte: since } },
+                    _sum: { count: true },
+                }),
+                // Daily trend
+                (prisma as any).analyticsEvent.groupBy({
+                    by: ['date', 'eventType'],
+                    where: { date: { gte: since } },
+                    _sum: { count: true },
+                    orderBy: { date: 'asc' },
+                }),
+                // Top products (PRODUCT_VIEW + BASKET_ADD)
+                (prisma as any).analyticsEvent.groupBy({
+                    by: ['productId', 'eventType'],
+                    where: {
+                        date: { gte: since },
+                        eventType: { in: ['PRODUCT_VIEW', 'BASKET_ADD'] },
+                        productId: { not: null },
+                    },
+                    _sum: { count: true },
+                    orderBy: { _sum: { count: 'desc' } },
+                    take: 30,
+                }),
+                // Top categories
+                (prisma as any).analyticsEvent.groupBy({
+                    by: ['category'],
+                    where: {
+                        date: { gte: since },
+                        eventType: { in: ['PAGE_VIEW', 'PRODUCT_VIEW'] },
+                        category: { not: null },
+                    },
+                    _sum: { count: true },
+                    orderBy: { _sum: { count: 'desc' } },
+                }),
+                // Usage by team
+                (prisma as any).analyticsEvent.groupBy({
+                    by: ['teamId'],
+                    where: {
+                        date: { gte: since },
+                        teamId: { not: null },
+                    },
+                    _sum: { count: true },
+                    orderBy: { _sum: { count: 'desc' } },
+                    take: 20,
+                })
+            ]);
 
-            // Daily trend
-            const dailyTrend = await (prisma as any).analyticsEvent.groupBy({
-                by: ['date', 'eventType'],
-                where: { date: { gte: since } },
-                _sum: { count: true },
-                orderBy: { date: 'asc' },
-            });
-
-            // Top products (PRODUCT_VIEW + BASKET_ADD)
-            const topProducts = await (prisma as any).analyticsEvent.groupBy({
-                by: ['productId', 'eventType'],
-                where: {
-                    date: { gte: since },
-                    eventType: { in: ['PRODUCT_VIEW', 'BASKET_ADD'] },
-                    productId: { not: null },
-                },
-                _sum: { count: true },
-                orderBy: { _sum: { count: 'desc' } },
-                take: 30,
-            });
-
-            // Resolve product names
-            const productIds = [...new Set(topProducts.map((p: any) => p.productId).filter(Boolean))] as string[];
-            const products = await prisma.product.findMany({
-                where: { id: { in: productIds } },
-                select: { id: true, name: true, category: true },
-            });
-            const productMap = new Map(products.map(p => [p.id, p]));
-
-            // Top categories
-            const topCategories = await (prisma as any).analyticsEvent.groupBy({
-                by: ['category'],
-                where: {
-                    date: { gte: since },
-                    eventType: { in: ['PAGE_VIEW', 'PRODUCT_VIEW'] },
-                    category: { not: null },
-                },
-                _sum: { count: true },
-                orderBy: { _sum: { count: 'desc' } },
-            });
-
-            // Usage by team
-            const teamUsage = await (prisma as any).analyticsEvent.groupBy({
-                by: ['teamId'],
-                where: {
-                    date: { gte: since },
-                    teamId: { not: null },
-                },
-                _sum: { count: true },
-                orderBy: { _sum: { count: 'desc' } },
-                take: 20,
-            });
-
-            // Resolve team names
+            // Resolve entities in parallel
+            const productIds = [...new Set(topProductsRaw.map((p: any) => p.productId).filter(Boolean))] as string[];
             const teamIds = teamUsage.map((t: any) => t.teamId).filter(Boolean) as string[];
-            const teams = await prisma.team.findMany({
-                where: { id: { in: teamIds } },
-                select: { id: true, name: true, location: { select: { name: true, address: true } } },
-            });
+
+            const [products, teams] = await Promise.all([
+                prisma.product.findMany({
+                    where: { id: { in: productIds } },
+                    select: { id: true, name: true, category: true },
+                }),
+                prisma.team.findMany({
+                    where: { id: { in: teamIds } },
+                    select: { id: true, name: true, location: { select: { name: true, address: true } } },
+                })
+            ]);
+
+            const productMap = new Map(products.map(p => [p.id, p]));
             const teamMap = new Map(teams.map(t => [t.id, t]));
 
-            // Basket conversion rate
+            // Basket conversion rate kpis
             const viewsTotal = eventsByType.find((e: any) => e.eventType === 'PRODUCT_VIEW')?._sum?.count ?? 0;
             const basketTotal = eventsByType.find((e: any) => e.eventType === 'BASKET_ADD')?._sum?.count ?? 0;
             const conversionRate = viewsTotal > 0 ? (basketTotal / viewsTotal) * 100 : 0;
@@ -150,7 +150,7 @@ export const analyticsRouter = router({
                     eventType: d.eventType,
                     count: d._sum?.count ?? 0,
                 })),
-                topProducts: topProducts.map((p: any) => ({
+                topProducts: topProductsRaw.map((p: any) => ({
                     productId: p.productId,
                     eventType: p.eventType,
                     count: p._sum?.count ?? 0,

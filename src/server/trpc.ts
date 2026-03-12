@@ -12,15 +12,14 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
         throw new TRPCError({ code: 'UNAUTHORIZED' });
     }
 
-    // Lazy load the full user record only for procedures that use this middleware
-    const user = await prisma.user.findUnique({
-        where: { id: ctx.session.sub as string },
-        include: { location: true, odRegion: true, team: true }
-    });
-
+    // ctx.session already contains the JWT payload with id, role, and permission IDs.
+    // We no longer need to fetch the user from DB on every request.
     return next({
         ctx: {
-            session: user ? { ...user, sub: user.id } : ctx.session,
+            session: {
+                ...ctx.session,
+                id: ctx.session.sub as string
+            },
         },
     });
 });

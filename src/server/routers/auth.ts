@@ -7,22 +7,7 @@ import bcrypt from 'bcryptjs';
 
 export const authRouter = router({
     me: protectedProcedure.query(async ({ ctx }) => {
-        const session = ctx.session as any;
-        const user = await prisma.user.findUnique({
-            where: { id: session.sub },
-            select: {
-                id: true,
-                role: true,
-                isEditor: true,
-                odRegionId: true,
-                locationId: true,
-                teamId: true
-            }
-        });
-
-        if (!user) throw new TRPCError({ code: 'UNAUTHORIZED' });
-
-        return user;
+        return ctx.session as any;
     }),
 
     login: publicProcedure
@@ -60,8 +45,15 @@ export const authRouter = router({
                 });
             }
 
-            // Create session
-            await login(user.id, user.role);
+            // Create session with all relevant permission data
+            await login({
+                id: user.id,
+                role: user.role,
+                isEditor: user.isEditor,
+                odRegionId: user.odRegionId,
+                locationId: user.locationId,
+                teamId: user.teamId
+            });
 
             return { success: true };
         }),

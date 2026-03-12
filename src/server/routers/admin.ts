@@ -82,31 +82,18 @@ const editorProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 export const adminRouter = router({
     getDashboardStats: protectedProcedure.query(async () => {
-        return {
-            products: await prisma.product.count(),
-            users: await prisma.user.count(),
-            specialPrices: await prisma.specialPrice.count(),
-            teams: await prisma.team.count(),
-        };
+        const [products, users, specialPrices, teams] = await Promise.all([
+            prisma.product.count(),
+            prisma.user.count(),
+            prisma.specialPrice.count(),
+            prisma.team.count(),
+        ]);
+        return { products, users, specialPrices, teams };
     }),
 
     getCurrentUser: protectedProcedure.query(async ({ ctx }) => {
-        const userId = ctx.session?.sub as string;
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                email: true,
-                role: true,
-                isEditor: true,
-                createdAt: true,
-                odRegion: { select: { name: true } },
-                location: { select: { name: true } },
-                team: { select: { name: true } }
-            }
-        });
-        if (!user) throw new TRPCError({ code: 'NOT_FOUND' });
-        return user;
+        // ctx.session is already populated with the full user record by the isAuthed middleware
+        return ctx.session as any;
     }),
 
     getMaintenanceStatus: publicProcedure.query(async () => {

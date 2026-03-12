@@ -53,7 +53,7 @@ export const odRegionRouter = router({
             isActive: z.boolean().optional()
         }))
         .mutation(async ({ ctx, input }) => {
-            if (!ctx.session || ctx.session.role !== 'ADMIN') {
+            if (!ctx.session || (ctx.session as any).role !== 'ADMIN') {
                 throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung' });
             }
 
@@ -72,7 +72,7 @@ export const odRegionRouter = router({
             isActive: z.boolean().optional()
         }))
         .mutation(async ({ ctx, input }) => {
-            const role = ctx.session?.role;
+            const role = (ctx.session as any)?.role;
             if (!ctx.session || (role !== 'ADMIN' && role !== 'OD_MANAGER')) {
                 throw new TRPCError({ code: 'FORBIDDEN' });
             }
@@ -95,7 +95,7 @@ export const odRegionRouter = router({
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ ctx, input }) => {
-            if (!ctx.session || ctx.session.role !== 'ADMIN') {
+            if (!ctx.session || (ctx.session as any).role !== 'ADMIN') {
                 throw new TRPCError({ code: 'FORBIDDEN' });
             }
 

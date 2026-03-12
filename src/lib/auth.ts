@@ -36,8 +36,15 @@ export async function getSession() {
     return await verifyJWT(token);
 }
 
-export async function login(userId: string, role: string) {
-    const token = await signJWT({ sub: userId, role });
+export async function login(userData: { id: string, role: string, isEditor: boolean, odRegionId?: string | null, locationId?: string | null, teamId?: string | null }) {
+    const token = await signJWT({ 
+        sub: userData.id, 
+        role: userData.role,
+        isEditor: userData.isEditor,
+        odRegionId: userData.odRegionId,
+        locationId: userData.locationId,
+        teamId: userData.teamId
+    });
     const cookieStore = await cookies();
     cookieStore.set('auth-token', token, {
         httpOnly: true,
