@@ -27,6 +27,7 @@ export function SidebarLayout({
 
 	return (
 		<motion.aside
+			id="tour-sidebar"
 			initial={false}
 			animate={{ width: sidebarWidth }}
 			transition={{ duration: 0.25, ease: [0.25, 0.8, 0.25, 1] }}
