@@ -88,8 +88,8 @@ export function SidebarNps({
 					className={clsx(
 						"w-full flex items-center justify-between gap-3 rounded-[20px] transition-all duration-300 cursor-pointer overflow-hidden whitespace-nowrap relative z-10 shrink-0 shadow-sm",
 						collapsed
-							? "w-9 h-9 justify-center mx-auto p-0 border border-transparent hover:border-[#ea580c]/30"
-							: "px-4 py-3 border",
+							? "w-9 h-9 justify-center mx-auto p-0 hover:border-[#ea580c]/30"
+							: "px-4 py-3 w-full",
 						npsResetting && "animate-pulse",
 						npsChecked
 							? "bg-linear-to-r from-[#dcfce7] to-[#bbf7d0] border-[#86efac] text-[#166534]"

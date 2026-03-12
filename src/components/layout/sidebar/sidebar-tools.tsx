@@ -29,7 +29,7 @@ export function SidebarTools({ collapsed, group1, group2 }: SidebarToolsProps) {
 			<div
 				className={clsx(
 					"flex flex-col gap-0.5",
-					!collapsed && "bg-[#f7f8fa] rounded-[20px] p-2",
+					!collapsed && "bg-[#f7f8fa] rounded-[20px] p-2 w-full",
 					collapsed && "items-center gap-1.5"
 				)}
 			>
@@ -42,8 +42,7 @@ export function SidebarTools({ collapsed, group1, group2 }: SidebarToolsProps) {
 						collapsed
 							? "w-9 h-9 justify-center mx-auto p-0 hover:bg-[#f7f8fa]"
 							: "px-3 py-2.5 w-full hover:bg-white hover:shadow-sm",
-						isLinkActive ? "bg-white text-[#1a1a2e] shadow-sm" : "text-[#333]",
-						item.type === "button" && "bg-transparent text-left"
+						isLinkActive ? "bg-white text-[#1a1a2e] shadow-sm" : "text-[#333]"
 					);
 
 					const content = (

@@ -2,9 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import clsx from "clsx";
-
 import {
 	Home,
 	LayoutGrid,
@@ -14,21 +11,17 @@ import {
 	Swords,
 	Settings,
 	HelpCircle,
-	ExternalLink,
-	ChevronLeft,
-	ChevronRight,
-	ChevronRight as ChevronRightIcon // for arrow
+	ExternalLink
 } from "lucide-react";
 
 import { useBasketStore } from "@/hooks/use-basket-store";
 import { useModalStore } from "@/hooks/use-modal-store";
 
-import { Tooltip } from "./sidebar/sidebar-tooltip";
-import { SidebarLogo } from "./sidebar/sidebar-logo";
 import { SidebarWorkflow } from "./sidebar/sidebar-workflow";
 import { SidebarTools, UtilityLink } from "./sidebar/sidebar-tools";
 import { SidebarNps } from "./sidebar/sidebar-nps";
 import { SidebarFooter } from "./sidebar/sidebar-footer";
+import { SidebarLayout } from "./sidebar/sidebar-layout";
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: "#e20074",
@@ -213,47 +206,18 @@ export function SidebarNav() {
 	];
 
 	return (
-		<motion.aside
-			id="tour-sidebar"
-			initial={false}
-			animate={{ width: sidebarWidth }}
-			transition={{ duration: 0.25, ease: [0.25, 0.8, 0.25, 1] }}
-			className="relative bg-white border-r border-[#eaedf0] z-20 h-screen shrink-0"
-		>
-			<div className="absolute top-[37px] -right-[14px] z-50">
-				<button
-					onClick={() => setCollapsed((c) => !c)}
-					className="w-7 h-7 bg-white border border-[#eaedf0] text-[#aaa] hover:text-[#e20074] hover:border-[#e20074]/30 rounded-full flex items-center justify-center transition-all shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer"
-					title={collapsed ? "Aufklappen (Strg+H)" : "Einklappen (Strg+H)"}
-				>
-					{collapsed ? (
-						<ChevronRight className="w-3.5 h-3.5 shrink-0 ml-0.5" />
-					) : (
-						<ChevronLeft className="w-3.5 h-3.5 shrink-0 mr-0.5" />
-					)}
-				</button>
-			</div>
-
-			<div className="w-full h-full flex flex-col overflow-x-hidden overflow-y-auto scrollbar-none relative">
-				<SidebarLogo collapsed={collapsed} catColor={catColor} />
-
-				<SidebarWorkflow
-					steps={steps}
-					currentStepIndex={currentStepIndex}
-					collapsed={collapsed}
-					catColor={catColor}
-					catName={catName}
-					currentCategory={currentCategory}
-				/>
-
-				<div className="flex-1 mt-4 shrink-0 flex flex-col justify-end">
-					<div>
-						<SidebarTools
-							collapsed={collapsed}
-							group1={group1}
-							group2={group2}
-						/>
-					</div>
+		<SidebarLayout
+			collapsed={collapsed}
+			onToggle={() => setCollapsed(!collapsed)}
+			catColor={catColor}
+			footerActions={
+				<div className="flex flex-col gap-1 w-full">
+					<SidebarTools
+						collapsed={collapsed}
+						group1={group1}
+						group2={group2}
+					/>
+					
 					<SidebarNps
 						collapsed={collapsed}
 						npsChecked={npsChecked}
@@ -266,14 +230,23 @@ export function SidebarNav() {
 							setNpsChecked(!npsChecked);
 						}}
 					/>
-				</div>
 
-				<SidebarFooter
-					collapsed={collapsed}
-					resetConfirm={resetConfirm}
-					handleReset={handleReset}
-				/>
-			</div>
-		</motion.aside>
+					<SidebarFooter
+						collapsed={collapsed}
+						resetConfirm={resetConfirm}
+						handleReset={handleReset}
+					/>
+				</div>
+			}
+		>
+			<SidebarWorkflow
+				steps={steps}
+				currentStepIndex={currentStepIndex}
+				collapsed={collapsed}
+				catColor={catColor}
+				catName={catName}
+				currentCategory={currentCategory}
+			/>
+		</SidebarLayout>
 	);
 }

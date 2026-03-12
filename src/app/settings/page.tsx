@@ -37,7 +37,9 @@ export default function SettingsPage() {
 		reduceAnimations,
 		setReduceAnimations,
 		offerTemplateText,
-		setOfferTemplateText
+		setOfferTemplateText,
+		showHeroImage,
+		setShowHeroImage
 	} = useSettingsStore();
 	const router = useRouter();
 	const { data: session } = trpc.session.getCurrent.useQuery();
@@ -206,6 +208,13 @@ export default function SettingsPage() {
 								icon={<MonitorPlay className="w-5 h-5 text-[#7b61ff]" />}
 								checked={reduceAnimations}
 								onChange={setReduceAnimations}
+							/>
+							<ToggleCard
+								label="Hero-Image anzeigen"
+								description="Blendet das große Hintergrundbild im Header der Produktauswahl ein oder aus."
+								icon={<ShoppingBag className="w-5 h-5 text-[#7b61ff]" />}
+								checked={showHeroImage}
+								onChange={setShowHeroImage}
 							/>
 						</div>
 					</section>

@@ -17,14 +17,16 @@ export function SidebarFooter({
 	handleReset
 }: SidebarFooterProps) {
 	return (
-		<div className="relative z-10 pb-4 pt-2 shrink-0 px-3 overflow-hidden flex flex-col items-center">
+		<div className="relative z-10 pb-4 pt-2 shrink-0 px-3 overflow-hidden flex flex-col items-start w-full">
 			{/* Reset button */}
 			<Tooltip label="Sitzung zurücksetzen" show={collapsed}>
 				<button
 					onClick={handleReset}
 					className={clsx(
-						"flex items-center justify-center gap-2.5 rounded-xl transition-all duration-200 cursor-pointer font-bold overflow-hidden whitespace-nowrap",
-						collapsed ? "w-9 h-9 mx-auto p-0" : "w-[180px] px-3 py-2",
+						"flex items-center gap-2.5 rounded-xl transition-all duration-200 cursor-pointer font-bold overflow-hidden whitespace-nowrap",
+						collapsed
+							? "w-9 h-9 justify-center mx-auto p-0 border border-transparent hover:border-[#ea580c]/30"
+							: "px-4 py-3 border w-full text-left",
 						resetConfirm
 							? "bg-[#fee2e2]/80 text-[#dc2626]"
 							: "bg-transparent text-[#999] hover:text-[#dc2626] hover:bg-[#fee2e2]/40",

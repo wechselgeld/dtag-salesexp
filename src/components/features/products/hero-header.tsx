@@ -21,6 +21,7 @@ interface HeroHeaderProps {
 	teamName?: string;
 	productsCount?: number;
 	categories?: { name: string; count: number; color?: string }[];
+	showHeroImage: boolean;
 }
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
@@ -36,11 +37,21 @@ export function HeroHeader({
 	firstName,
 	teamName,
 	productsCount,
-	categories
+	categories,
+	showHeroImage
 }: HeroHeaderProps) {
+	const [hasHydrated, setHasHydrated] = useState(false);
 	const [time, setTime] = useState<Date | null>(null);
-	const dataReady = productsCount !== undefined && time !== null;
 	const [activeCategoryIdx, setActiveCategoryIdx] = useState(0);
+
+	useEffect(() => {
+		setHasHydrated(true);
+		setTime(new Date());
+		const timer = setInterval(() => setTime(new Date()), 60000);
+		return () => clearInterval(timer);
+	}, []);
+
+	const dataReady = productsCount !== undefined && time !== null && hasHydrated;
 
 	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery(
 		undefined,
@@ -48,7 +59,12 @@ export function HeroHeader({
 			staleTime: 10 * 60 * 1000
 		}
 	);
-	const headerBg = designSettings?.header_background_image;
+
+	const headerBg =
+		hasHydrated && showHeroImage
+			? designSettings?.header_background_image
+			: undefined;
+
 	const isDark = useImageBrightness(headerBg);
 
 	const textPrimaryClass = headerBg
@@ -56,18 +72,12 @@ export function HeroHeader({
 			? "text-white"
 			: "text-[#1a1a2e]"
 		: "text-[#1a1a2e]";
+
 	const textSecondaryClass = headerBg
 		? isDark
 			? "text-[#e0e0e0]"
 			: "text-[#555]"
 		: "text-[#666]";
-
-	// Client-side only time to avoid hydration mismatch
-	useEffect(() => {
-		setTime(new Date());
-		const timer = setInterval(() => setTime(new Date()), 60000); // update every minute
-		return () => clearInterval(timer);
-	}, []);
 
 	useEffect(() => {
 		if (!categories || categories.length === 0) return;
@@ -121,8 +131,8 @@ export function HeroHeader({
 	return (
 		<div
 			className={clsx(
-				"relative min-h-[140px] mb-8 flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full rounded-2xl",
-				headerBg ? "p-6 md:p-8" : "p-0"
+				"relative flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full rounded-2xl transition-all duration-500",
+				headerBg ? "min-h-[140px] mb-8 p-6 md:p-8" : "min-h-0 mb-6 p-0"
 			)}
 		>
 			{/* Optional Background Image */}

@@ -669,7 +669,7 @@ export default function SetupPage({
 	);
 
 	return (
-		<div className="min-h-screen py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074]">
+		<div className="h-screen w-full py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074] scrollbar-none overflow-y-auto overflow-x-hidden fixed inset-0">
 			<div className="max-w-3xl mx-auto">
 				{/* ─── Header / Branding ─── */}
 				<motion.div

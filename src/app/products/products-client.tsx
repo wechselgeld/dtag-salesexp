@@ -11,6 +11,7 @@ import clsx from "clsx";
 import { Skeleton } from "@/components/shared/skeleton";
 import { useEffect, useState } from "react";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { useSettingsStore } from "@/hooks/use-settings-store";
 
 /* ──────────────────────────────────────────────
    Constants
@@ -132,6 +133,8 @@ export default function ProductsPage({
 		color: c.color
 	}));
 
+	const { showHeroImage } = useSettingsStore();
+
 	return (
 		<div className="min-h-full">
 			{/* ─── Hero Header ─── */}
@@ -140,6 +143,7 @@ export default function ProductsPage({
 				teamName={session?.team?.name}
 				productsCount={allProducts?.length}
 				categories={categoryStats}
+				showHeroImage={showHeroImage}
 			/>
 
 			{/* ─── Search Bar ─── */}
