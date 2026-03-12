@@ -3,7 +3,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 export const teamRouter = router({
-    list: publicProcedure
+    list: protectedProcedure
         .input(z.object({
             locationId: z.string().optional(),
             odRegionId: z.string().optional(),

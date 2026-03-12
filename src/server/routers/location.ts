@@ -3,8 +3,9 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 
 export const locationRouter = router({
-    list: publicProcedure
+    list: protectedProcedure
         .input(z.object({
+            locationId: z.string().optional(),
             odRegionId: z.string().optional(),
             limit: z.number().min(1).max(100).default(50),
             cursor: z.string().nullish(),
@@ -31,6 +32,7 @@ export const locationRouter = router({
 
             let where: any = {
                 ...securityFilter,
+                ...(input?.locationId ? { id: input.locationId } : {}),
                 ...(input?.odRegionId ? { odRegionId: input.odRegionId } : {})
             };
 

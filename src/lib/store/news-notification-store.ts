@@ -5,6 +5,9 @@ interface NewsNotification {
     title: string;
     content: string;
     priority: "INFO" | "UPDATE" | "IMPORTANT" | "CRITICAL" | "SALES";
+    team?: { name: string };
+    location?: { name: string };
+    odRegion?: { name: string };
 }
 
 interface NewsNotificationStore {

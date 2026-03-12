@@ -210,7 +210,13 @@ export const adminUsersRouter = router({
                 }
             }
 
-            if (input.isEditor !== undefined) updateProps.isEditor = input.isEditor;
+            if (input.isEditor !== undefined) {
+                if (session.id === input.id && session.role !== 'ADMIN') {
+                    // Prevent user from changing their own editor status
+                } else {
+                    updateProps.isEditor = input.isEditor;
+                }
+            }
 
             // Only update hierarchy fields if provided AND they aren't cleared by the role-switch logic above
             if (input.odRegionId !== undefined && updateProps.odRegionId !== null) updateProps.odRegionId = input.odRegionId;

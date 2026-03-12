@@ -88,7 +88,7 @@ export default function AdminLayout({
 		},
 		{
 			title: "Inhalte",
-			show: isEditor,
+			show: true,
 			items: [{ href: "/admin/news", label: "Neuigkeiten", icon: Megaphone }]
 		},
 		{

@@ -86,7 +86,7 @@ export function NewsCarousel() {
 		return null;
 	}
 
-	const currentItem = newsItems[currentIndex];
+	const currentItem = newsItems[currentIndex] as any;
 	const config = PRIORITY_CONFIG[currentItem.priority] || PRIORITY_CONFIG.INFO;
 	const Icon = config.icon;
 
@@ -105,6 +105,15 @@ export function NewsCarousel() {
 	const isCritical = currentItem.priority === "CRITICAL";
 	const isImportant = currentItem.priority === "IMPORTANT";
 	const circumference = 2 * Math.PI * 10; // r=10
+
+	let targetLabel = "Global";
+	if (currentItem.team) {
+		targetLabel = `Für Dein Team (${currentItem.team.name})`;
+	} else if (currentItem.location) {
+		targetLabel = `Für Deinen Standort (${currentItem.location.name})`;
+	} else if (currentItem.odRegion) {
+		targetLabel = `Für Deinen OD-Bereich (${currentItem.odRegion.name})`;
+	}
 
 	return (
 		<div
@@ -236,6 +245,9 @@ export function NewsCarousel() {
 										Wichtig
 									</span>
 								)}
+								<span className="px-2 py-0.5 rounded-lg text-[0.65rem] font-bold uppercase tracking-wider bg-black/5 text-[#1a1a2e]/60">
+									{targetLabel}
+								</span>
 							</div>
 							<p
 								className={clsx(

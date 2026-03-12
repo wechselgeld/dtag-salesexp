@@ -100,7 +100,7 @@ export default function SettingsPage() {
 						Einstellungen
 					</h1>
 					<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">
-						Personalisiere Deine Sales Experience. 👋🏻
+						Personalisiere Deine Sales Experience.
 					</p>
 				</motion.div>
 

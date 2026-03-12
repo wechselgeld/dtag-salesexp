@@ -780,6 +780,17 @@ export default function SetupPage({
 					</div>
 				</motion.div>
 
+				<motion.div
+					initial={{ opacity: 0, y: 12 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+					className="flex flex-col items-center mt-5 text-center"
+				>
+					<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">
+						Mit Liebe gemacht. Aus Chemnitz, für Euch alle. ❤️
+					</p>
+				</motion.div>
+
 				<GlobalFooter
 					className="pt-8 pb-0 mt-4 text-[#bbb]"
 					linkColor="text-[#bbb]"

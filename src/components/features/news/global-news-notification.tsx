@@ -43,7 +43,10 @@ export function GlobalNewsNotification() {
 					id: news.id,
 					title: news.title,
 					content: news.content,
-					priority: news.priority as any
+					priority: news.priority as any,
+					team: news.team,
+					location: news.location,
+					odRegion: news.odRegion
 				});
 			}
 		},
@@ -71,7 +74,14 @@ function NotificationItem({
 	notification,
 	onDismiss
 }: {
-	notification: { priority: string; title: string; content: string };
+	notification: {
+		priority: string;
+		title: string;
+		content: string;
+		team?: { name: string };
+		location?: { name: string };
+		odRegion?: { name: string };
+	};
 	onDismiss: () => void;
 }) {
 	const config = PRIORITY_CONFIG[notification.priority] || PRIORITY_CONFIG.INFO;
@@ -79,6 +89,15 @@ function NotificationItem({
 	const isCritical = notification.priority === "CRITICAL";
 	const isImportant = notification.priority === "IMPORTANT";
 	const isSales = notification.priority === "SALES";
+
+	let targetLabel = "Global";
+	if (notification.team) {
+		targetLabel = `Für Dein Team`;
+	} else if (notification.location) {
+		targetLabel = `Für Deinen Standort`;
+	} else if (notification.odRegion) {
+		targetLabel = `Für Deinen OD-Bereich`;
+	}
 
 	return (
 		<Toast
@@ -129,7 +148,7 @@ function NotificationItem({
 				</div>
 
 				<div>
-					<div className="flex items-center gap-2 mb-1">
+					<div className="flex items-center gap-2 mb-1 flex-wrap">
 						<h4
 							className="font-bold text-[0.95rem] m-0"
 							style={{
@@ -149,6 +168,9 @@ function NotificationItem({
 								Umsatz-Boost
 							</span>
 						)}
+						<span className="px-2 py-0.5 rounded-md text-[0.6rem] font-bold uppercase tracking-wider bg-black/5 text-[#1a1a2e]/60">
+							{targetLabel}
+						</span>
 					</div>
 					<p className="text-[0.8rem] text-[#1a1a2e]/70 m-0 line-clamp-2 leading-relaxed">
 						{notification.content}

@@ -299,7 +299,8 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 									type="checkbox"
 									id="isEditor"
 									{...register("isEditor")}
-									className="peer w-6 h-6 rounded-lg border-[#fbcfe8] text-[#e20074] focus:ring-[#e20074] cursor-pointer appearance-none bg-white transition-all checked:bg-[#e20074] checked:border-[#e20074]"
+									disabled={mode === "edit" && userId === currentUser?.id && currentUser?.role !== "ADMIN"}
+									className="peer w-6 h-6 rounded-lg border-[#fbcfe8] text-[#e20074] focus:ring-[#e20074] cursor-pointer appearance-none bg-white transition-all checked:bg-[#e20074] checked:border-[#e20074] disabled:opacity-50 disabled:cursor-not-allowed"
 								/>
 								<div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white opacity-0 peer-checked:opacity-100 transition-opacity">
 									<svg
@@ -322,13 +323,16 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 							<div className="flex flex-col">
 								<label
 									htmlFor="isEditor"
-									className="text-[0.85rem] font-bold text-[#1a1a2e] cursor-pointer"
+									className={clsx("text-[0.85rem] font-bold text-[#1a1a2e]", mode === "edit" && userId === currentUser?.id && currentUser?.role !== "ADMIN" ? "cursor-not-allowed opacity-50" : "cursor-pointer")}
 								>
 									Zusätzliche Editor-Rechte aktivieren
 								</label>
 								<p className="text-[0.75rem] text-[#be185d] m-0 leading-relaxed font-medium mt-0.5">
 									Erlaubt das Bearbeiten von Produkten, Aktionen, Gutschriften
 									und News – unabhängig von der Funktionsrolle.
+									{mode === "edit" && userId === currentUser?.id && currentUser?.role !== "ADMIN" && (
+										<span className="block mt-1 font-bold">Du kannst deine eigenen Editor-Rechte nicht bearbeiten.</span>
+									)}
 								</p>
 							</div>
 						</div>
