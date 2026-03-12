@@ -37,10 +37,10 @@ export function GlobalNewsNotification() {
 		(state) => state.addNotification
 	);
 
-	// Poll for new news every 10 seconds.
-	// If a news item's createdAt is within the last 15 seconds, trigger a notification.
+	// Poll for new news every 5 minutes (300000ms) to avoid DB connection exhaustion.
+	// We also adjust the "newness" window from 15s to 5m15s (315000ms) so we don't miss notifications between polls.
 	const { data } = trpc.news.listActive.useQuery(undefined, {
-		refetchInterval: 10000
+		refetchInterval: 300000
 	});
 
 	useEffect(() => {
@@ -48,8 +48,8 @@ export function GlobalNewsNotification() {
 		const now = new Date().getTime();
 		data.forEach((news: any) => {
 			const createdTime = new Date(news.createdAt).getTime();
-			// Check if the news is new (created within the last 15 seconds)
-			if (now - createdTime < 15000) {
+			// Check if the news is new (created within the last 5m15s)
+			if (now - createdTime < 315000) {
 				// Prevent duplicate notifications in store
 				if (!notifications.some((n) => n.id === news.id)) {
 					addNotification({
