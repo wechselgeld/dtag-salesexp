@@ -12,15 +12,17 @@ import { useModalStore } from "@/hooks/use-modal-store";
 import { AvailabilityCheckModal } from "@/components/features/availability/availability-check-modal";
 import { StreamingCalculatorModal } from "@/components/features/calculator/streaming-calculator-modal";
 import { BattlecardModal } from "@/components/features/battlecards/battlecard-panel";
+import { GlobalNewsNotification } from "@/components/features/news/global-news-notification";
 
 // Routes that SHOULD render WITH the sales shell (sidebar + basket)
-const SHELL_ROUTES = ["/products", "/settings"];
+const SHELL_ROUTES = ["/products"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname();
 	const { data: isMaintenance } = trpc.admin.getMaintenanceStatus.useQuery();
 	const { data: user } = trpc.admin.getCurrentUser.useQuery(undefined, {
-		retry: false
+		retry: false,
+		enabled: typeof document !== "undefined" && document.cookie.includes("auth-token")
 	});
 
 	const isMaintenanceActive = isMaintenance && user?.role !== "ADMIN";
@@ -86,6 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 						isOpen={battlecardOpen}
 						onClose={() => setBattlecardOpen(false)}
 					/>
+					<GlobalNewsNotification />
 				</>
 			)}
 		</IntroSplash>

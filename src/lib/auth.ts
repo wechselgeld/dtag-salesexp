@@ -61,6 +61,11 @@ export async function logout() {
     cookieStore.delete('auth-token');
 }
 
+export async function logoutSalesSession() {
+    const cookieStore = await cookies();
+    cookieStore.delete('sales-session-id');
+}
+
 // Session signing for non-auth cookies (e.g. sales-session-id)
 export async function signSessionId(id: string) {
     return await signJWT({ id }, '30d');

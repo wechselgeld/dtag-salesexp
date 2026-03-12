@@ -17,10 +17,11 @@ export default async function Page() {
 	);
 
 	// Prefetch the data the client components immediately need
-	const [locations, isEmailRequired, ipCheck] = await Promise.all([
-		caller.location.list({ limit: 6 }).catch(() => null),
+	const [locations, isEmailRequired, ipCheck, currentSession] = await Promise.all([
+		caller.location.list({ search: undefined, limit: 6 }).catch(() => null),
 		caller.session.getIsEmailRequired().catch(() => true),
-		caller.session.verifyIp().catch((err) => ({ error: err.message }))
+		caller.session.verifyIp().catch((err) => ({ error: err.message })),
+		caller.session.getCurrent().catch(() => null)
 	]);
 
 	const ipError = ipCheck && "error" in ipCheck ? String(ipCheck.error) : null;
@@ -30,6 +31,7 @@ export default async function Page() {
 			initialLocations={locations}
 			initialIsEmailRequired={isEmailRequired}
 			initialIpError={ipError}
+			initialSession={currentSession}
 		/>
 	);
 }

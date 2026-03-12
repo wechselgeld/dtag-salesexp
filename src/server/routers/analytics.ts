@@ -42,9 +42,6 @@ export const analyticsRouter = router({
                 teamId,
             });
 
-            // Start flush in background (non-blocking)
-            analyticsBuffer.flush().catch(console.error);
-
             return { success: true };
         }),
 

@@ -90,11 +90,13 @@ function isSetupAlreadyDone(): boolean {
 export default function SetupPage({
 	initialLocations,
 	initialIsEmailRequired,
-	initialIpError
+	initialIpError,
+	initialSession
 }: {
 	initialLocations?: any;
 	initialIsEmailRequired?: boolean;
 	initialIpError?: string | null;
+	initialSession?: any;
 }) {
 	const router = useRouter();
 	const { trackPageView } = useAnalytics();
@@ -170,7 +172,10 @@ export default function SetupPage({
 	const ipError = initialIpError ? { message: initialIpError } : null;
 
 	const { data: existingSession, refetch: refetchCurrentSession } =
-		trpc.session.getCurrent.useQuery();
+		trpc.session.getCurrent.useQuery(undefined, {
+			initialData: initialSession,
+			refetchOnWindowFocus: false
+		});
 
 	const requestVerification = trpc.session.requestVerification.useMutation({
 		onSuccess: (data) => {
@@ -388,9 +393,9 @@ export default function SetupPage({
 			</div>
 
 			{isLocationsLoading ? (
-				<div className="grid grid-cols-2 gap-3 mt-5">
-					{Array.from({ length: 4 }).map((_, i) => (
-						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<Skeleton key={i} className="h-[52px] w-full rounded-xl" />
 					))}
 				</div>
 			) : locations?.items?.length === 0 ? (
@@ -468,9 +473,9 @@ export default function SetupPage({
 			/>
 
 			{isTeamsLoading ? (
-				<div className="grid grid-cols-2 gap-3 mt-5">
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
 					{Array.from({ length: 4 }).map((_, i) => (
-						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
+						<Skeleton key={i} className="h-[52px] w-full rounded-xl" />
 					))}
 				</div>
 			) : teams?.items?.length === 0 ? (

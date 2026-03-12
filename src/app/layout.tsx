@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Providers from "@/app/providers";
 import { AppShell } from "@/components/layout/app-shell";
-import { GlobalNewsNotification } from "@/components/features/news/global-news-notification";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const teleNeo = localFont({
@@ -93,7 +92,6 @@ export default function RootLayout({
 			<body className="antialiased text-[#262626] bg-transparent overflow-hidden h-screen">
 				<Providers>
 					<AppShell>{children}</AppShell>
-					<GlobalNewsNotification />
 				</Providers>
 				<SpeedInsights />
 			</body>
