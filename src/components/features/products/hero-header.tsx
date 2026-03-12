@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
 	Clock,
@@ -138,9 +139,13 @@ export function HeroHeader({
 			{/* Optional Background Image */}
 			{headerBg && (
 				<div className="absolute inset-0 z-0 rounded-2xl overflow-hidden pointer-events-none transition-opacity duration-500 shadow-sm border border-[#e8e8e8]/50">
-					<div
-						className="absolute inset-0 bg-cover bg-center blur-xs scale-[1.05]"
-						style={{ backgroundImage: `url(${headerBg})` }}
+					<Image
+						src={headerBg}
+						alt="Header Hintergrund"
+						fill
+						priority
+						sizes="100vw"
+						className="object-cover blur-xs scale-[1.05]"
 					/>
 					<div
 						className={clsx(

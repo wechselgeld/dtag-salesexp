@@ -1,13 +1,14 @@
 "use client";
 
 import { trpc } from "@/lib/trpc";
-import { Plus, Edit, Trash2, Search, CheckCircle, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Search, CheckCircle, Loader2, Calculator } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import clsx from "clsx";
 import { Skeleton } from "@/components/shared/skeleton";
 import { confirmDelete } from "@/components/shared/delete-confirm-toast";
 import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
+import { BulkUpdateDialog } from "@/components/features/admin/bulk-update-dialog";
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: "#e20074",
@@ -30,6 +31,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 export default function AdminProductsPage() {
 	const [search, setSearch] = useState("");
 	const [filterCat, setFilterCat] = useState<string | "ALL">("ALL");
+	const [bulkOpen, setBulkOpen] = useState(false);
 	const utils = trpc.useUtils();
 
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -65,13 +67,22 @@ export default function AdminProductsPage() {
 					backHref="/admin"
 				/>
 
-				<Link
-					href="/admin/products/new"
-					className="flex items-center gap-2 bg-[#e20074] hover:bg-[#c70066] text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-[0_4px_14px_rgba(226,0,116,0.25)] hover:shadow-[0_6px_20px_rgba(226,0,116,0.3)] hover:-translate-y-0.5 active:scale-95 text-[0.82rem] no-underline"
-				>
-					<Plus className="w-4 h-4" />
-					Neues Produkt
-				</Link>
+				<div className="flex items-center gap-3">
+					<button
+						onClick={() => setBulkOpen(true)}
+						className="flex items-center gap-2 bg-white hover:bg-[#f7f8fa] text-[#1a1a2e] px-5 py-2.5 rounded-xl font-semibold transition-all border border-[#eaedf0] shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 text-[0.82rem] cursor-pointer"
+					>
+						<Calculator className="w-4 h-4" />
+						Massenänderung
+					</button>
+					<Link
+						href="/admin/products/new"
+						className="flex items-center gap-2 bg-[#e20074] hover:bg-[#c70066] text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-[0_4px_14px_rgba(226,0,116,0.25)] hover:shadow-[0_6px_20px_rgba(226,0,116,0.3)] hover:-translate-y-0.5 active:scale-95 text-[0.82rem] no-underline"
+					>
+						<Plus className="w-4 h-4" />
+						Neues Produkt
+					</Link>
+				</div>
 			</div>
 
 			{/* Search & Filters */}
@@ -153,7 +164,7 @@ export default function AdminProductsPage() {
 									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
 										Grundpreis
 									</th>
-									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider text-right font-bold">
+									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider text-right">
 										Aktionen
 									</th>
 								</tr>
@@ -253,6 +264,13 @@ export default function AdminProductsPage() {
 					</div>
 				)}
 			</div>
+
+			{/* Bulk Update Dialog */}
+			<BulkUpdateDialog
+				open={bulkOpen}
+				onClose={() => setBulkOpen(false)}
+				onSuccess={() => utils.product.getAllProducts.invalidate()}
+			/>
 		</div>
 	);
 }

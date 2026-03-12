@@ -22,7 +22,8 @@ import {
 	Check,
 	Plus,
 	Sparkles,
-	ArrowDown
+	ArrowDown,
+	TrendingUp
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -146,6 +147,16 @@ export default function ProductListPage() {
 		trpc.product.getProductsByCategory.useQuery({
 			category
 		});
+
+	// Fetch top product IDs for popularity badges
+	const { data: topProductIds } = trpc.product.getTopProductIds.useQuery(
+		{ limit: 5, days: 30 },
+		{ staleTime: 5 * 60 * 1000 }
+	);
+	const topProductSet = useMemo(
+		() => new Set(topProductIds ?? []),
+		[topProductIds]
+	);
 
 	const categoryNames: Record<string, string> = {
 		MOBILE: "Mobilfunk",
@@ -587,13 +598,27 @@ export default function ProductListPage() {
 
 										{/* Top section */}
 										<div className="relative z-10">
-											{/* Empfehlung badge */}
-											{isFocused && (
-												<div className="mb-2">
-													<div className="inline-flex bg-[rgba(255,213,79,0.15)] text-[#b78900] px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide uppercase items-center gap-1 whitespace-nowrap">
-														<Star className="w-3 h-3 fill-current" />
-														TEAM-FOKUS
-													</div>
+											{/* Badges row */}
+											{(isFocused || topProductSet.has(product.id)) && (
+												<div className="mb-2 flex items-center gap-2">
+													{isFocused && (
+														<div className="inline-flex bg-[rgba(255,213,79,0.15)] text-[#b78900] px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide uppercase items-center gap-1 whitespace-nowrap">
+															<Star className="w-3 h-3 fill-current" />
+															TEAM-FOKUS
+														</div>
+													)}
+													{topProductSet.has(product.id) && (
+														<div
+															className="inline-flex px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide uppercase items-center gap-1 whitespace-nowrap"
+															style={{
+																backgroundColor: `${catColor}15`,
+																color: catColor,
+															}}
+														>
+															<TrendingUp className="w-3 h-3" />
+															Beliebt
+														</div>
+													)}
 												</div>
 											)}
 

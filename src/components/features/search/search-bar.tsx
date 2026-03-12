@@ -6,6 +6,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
+import { fuzzySearch } from "@/lib/fuzzy-search";
 
 interface SearchBarProps {
 	compact?: boolean;
@@ -50,24 +51,30 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 	// Filter results
 	const filteredCategories = useMemo(() => {
 		if (!query.trim()) return CATEGORY_LIST;
-		const q = query.toLowerCase();
-		return CATEGORY_LIST.filter(
-			(c) =>
-				CATEGORY_NAMES[c.id]?.toLowerCase().includes(q) ||
-				c.id.toLowerCase().includes(q)
+		const results = fuzzySearch(
+			CATEGORY_LIST,
+			query,
+			(c) => [CATEGORY_NAMES[c.id] || '', c.id],
+			0.3
 		);
+		return results.map(r => r.item);
 	}, [query]);
 
 	const filteredProducts = useMemo(() => {
 		if (!products) return [];
 		if (!query.trim()) return products.slice(0, 6);
-		const q = query.toLowerCase();
-		return products.filter(
-			(p) =>
-				p.name.toLowerCase().includes(q) ||
-				p.category.toLowerCase().includes(q) ||
-				CATEGORY_NAMES[p.category]?.toLowerCase().includes(q)
+		const results = fuzzySearch(
+			products,
+			query,
+			(p) => [
+				p.name,
+				p.category,
+				CATEGORY_NAMES[p.category] || '',
+				p.dataVolume || '',
+			],
+			0.3
 		);
+		return results.map(r => r.item);
 	}, [products, query]);
 
 	// Close on click outside

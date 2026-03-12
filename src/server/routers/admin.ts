@@ -663,4 +663,53 @@ export const adminRouter = router({
                 return { success: true };
             }),
     }),
+
+    // --- Bulk Price Updates ---
+    bulkUpdatePrices: adminProcedure
+        .input(z.object({
+            category: z.string().min(1),
+            mode: z.enum(['FIXED', 'PERCENTAGE']),
+            value: z.number(), // positive = increase, negative = decrease
+        }))
+        .mutation(async ({ input }) => {
+            const products = await prisma.product.findMany({
+                where: { category: input.category, isActive: true },
+                select: { id: true, basePrice: true },
+            });
+
+            if (products.length === 0) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: `Keine aktiven Produkte in der Kategorie "${input.category}" gefunden.`,
+                });
+            }
+
+            // Calculate new prices
+            const updates = products.map((p) => {
+                let newPrice: number;
+                if (input.mode === 'FIXED') {
+                    newPrice = p.basePrice + input.value;
+                } else {
+                    newPrice = p.basePrice * (1 + input.value / 100);
+                }
+                // Ensure price is not negative and round to 2 decimals
+                newPrice = Math.max(0, Math.round(newPrice * 100) / 100);
+                return { id: p.id, basePrice: newPrice };
+            });
+
+            // Execute all updates in a transaction
+            await prisma.$transaction(
+                updates.map((u) =>
+                    prisma.product.update({
+                        where: { id: u.id },
+                        data: { basePrice: u.basePrice },
+                    })
+                )
+            );
+
+            return {
+                updated: updates.length,
+                category: input.category,
+            };
+        }),
 });

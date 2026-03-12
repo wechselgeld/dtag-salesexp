@@ -981,7 +981,7 @@ function IpBlockedCard({ error }: { error: { message: string } | null }) {
 				</h3>
 				<p className="text-[0.9rem] text-[#888] leading-relaxed max-w-md mx-auto">
 					{error?.message ||
-						"Dein aktueller Standort (IP-Adresse) ist für den Zugriff auf dieses System nicht autorisiert."}
+						"Dein aktueller Standort (IP-Adresse) ist für den Zugriff auf dieses System nicht autorisiert. Der Zugriff ist nur über das Konzernnetz möglich."}
 				</p>
 			</div>
 		</div>

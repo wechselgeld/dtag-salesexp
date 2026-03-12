@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Smartphone, Wifi, Zap, Tv, Router, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { SearchBar } from "@/components/features/search/search-bar";
@@ -284,9 +285,12 @@ function CategoryCard({
 				{/* Hover Background Image Overlay */}
 				{backgroundImage && (
 					<div className="absolute -inset-0.5 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[20px] overflow-hidden">
-						<div
-							className="absolute inset-0 bg-cover bg-center blur-[1.5px] scale-110"
-							style={{ backgroundImage: `url(${backgroundImage})` }}
+						<Image
+							src={backgroundImage}
+							alt={category.title}
+							fill
+							sizes="(max-width: 768px) 100vw, 33vw"
+							className="object-cover blur-[1.5px] scale-110"
 						/>
 						<div className="absolute inset-0 bg-[#1a1a2e]/30" />
 					</div>

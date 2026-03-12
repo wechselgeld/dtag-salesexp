@@ -173,4 +173,39 @@ export const productRouter = router({
 
         return result;
     }),
+
+    // Returns the IDs of "Top Seller" products based on analytics (PRODUCT_VIEW + BASKET_ADD)
+    getTopProductIds: publicProcedure
+        .input(z.object({
+            limit: z.number().min(1).max(20).default(5),
+            days: z.number().min(1).max(90).default(30),
+        }).optional())
+        .query(async ({ input }) => {
+            const limit = input?.limit ?? 5;
+            const days = input?.days ?? 30;
+            const since = new Date();
+            since.setDate(since.getDate() - days);
+            since.setHours(0, 0, 0, 0);
+
+            try {
+                const topProducts = await (prisma as any).analyticsEvent.groupBy({
+                    by: ['productId'],
+                    where: {
+                        date: { gte: since },
+                        eventType: { in: ['PRODUCT_VIEW', 'BASKET_ADD'] },
+                        productId: { not: null },
+                    },
+                    _sum: { count: true },
+                    orderBy: { _sum: { count: 'desc' } },
+                    take: limit,
+                });
+
+                return topProducts
+                    .filter((p: any) => p.productId && (p._sum?.count ?? 0) > 0)
+                    .map((p: any) => p.productId as string);
+            } catch {
+                // If analyticsEvent table doesn't exist yet, return empty
+                return [];
+            }
+        }),
 });
