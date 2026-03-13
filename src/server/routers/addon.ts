@@ -1,4 +1,4 @@
-import { router, protectedProcedure, publicProcedure } from '@/server/trpc';
+import { router, protectedProcedure } from '@/server/trpc';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { TRPCError } from '@trpc/server';
@@ -20,7 +20,7 @@ const tierSchema = z.object({
 });
 
 const editorProcedure = protectedProcedure.use(({ ctx, next }) => {
-    const session = ctx.session as any;
+    const session = ctx.session as { role?: string; isEditor?: boolean };
     if (session?.role !== 'ADMIN' && !session?.isEditor) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Du benötigst Editor-Rechte für diese Aktion.' });
     }
@@ -39,12 +39,11 @@ export const addonRouter = router({
             const cursor = input?.cursor;
             const search = input?.search;
 
-            let where: any = {};
+            const where: import('@prisma/client').Prisma.AddonWhereInput = {};
             if (search) {
                 where.OR = [
-                    { name: { contains: search, mode: 'insensitive' } },
-                    { description: { contains: search, mode: 'insensitive' } },
-                    { internalNote: { contains: search, mode: 'insensitive' } }
+                    { name: { contains: search } },
+                    { description: { contains: search } }
                 ];
             }
 
