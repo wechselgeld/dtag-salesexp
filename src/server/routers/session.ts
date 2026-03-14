@@ -3,6 +3,7 @@ import { z } from "zod";
 import { cookies } from "next/headers";
 import { TRPCError } from "@trpc/server";
 import ipaddr from "ipaddr.js";
+import crypto from "crypto";
 
 function checkIpIsAllowed(ipString: string, allowedIpsString: string) {
     if (!allowedIpsString || allowedIpsString.trim() === "") return true; // Empty string means all IPs allowed
@@ -112,8 +113,8 @@ export const sessionRouter = router({
                 }
             }
 
-            const crypto = require('crypto');
             const token = crypto.randomBytes(32).toString('hex');
+
 
             const session = await ctx.prisma.salesSession.create({
                 data: {

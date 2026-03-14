@@ -8,6 +8,7 @@ import {
 	Search,
 	X,
 	ChevronRight,
+	ChevronDown,
 	Shield,
 	Trophy,
 	Zap,
@@ -33,7 +34,11 @@ import {
 	Unplug,
 	Lock,
 	Building2,
-	Ban
+	Ban,
+	Check,
+	SignalLow,
+	SignalLowIcon,
+	SignalIcon
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -149,7 +154,7 @@ const COMPETITORS: Competitor[] = [
 					"Netzabdeckung ländlich deutlich schwächer als Telekom. Große Versorgungslücken außerhalb von Städten."
 			},
 			{
-				icon: SignalZero,
+				icon: SignalIcon,
 				title: "5G weit hinterher",
 				detail:
 					"Telekom hat 3× so viele 5G-Standorte. o2 bietet in vielen Regionen noch gar kein 5G."
@@ -823,29 +828,62 @@ export function BattlecardModal({ isOpen, onClose }: BattlecardModalProps) {
 		"battlecards"
 	);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedCompetitor, setSelectedCompetitor] =
-		useState<Competitor | null>(null);
+	const [selectedCompetitorId, setSelectedCompetitorId] = useState<
+		string | null
+	>(COMPETITORS[0].id);
+	const [selectedObjectionId, setSelectedObjectionId] = useState<string | null>(
+		OBJECTIONS[0].id
+	);
 	const [mounted, setMounted] = useState(false);
 	const searchRef = useRef<HTMLInputElement>(null);
+	const sidebarRef = useRef<HTMLDivElement>(null);
+	const [showScrollHint, setShowScrollHint] = useState(true);
 
-	useEffect(() => setMounted(true), []);
+	const handleSidebarScroll = () => {
+		if (!sidebarRef.current) return;
+		const { scrollTop, scrollHeight, clientHeight } = sidebarRef.current;
+		// Hide hint when user has scrolled near the bottom (within 20px)
+		if (scrollTop + clientHeight >= scrollHeight - 20) {
+			setShowScrollHint(false);
+		} else {
+			setShowScrollHint(true);
+		}
+	};
+
+	useEffect(() => {
+		const checkScroll = () => {
+			if (sidebarRef.current) {
+				const { scrollTop, scrollHeight, clientHeight } = sidebarRef.current;
+				setShowScrollHint(
+					scrollHeight > clientHeight &&
+						scrollTop + clientHeight < scrollHeight - 20
+				);
+			}
+		};
+
+		// Check on mount and when tab changes or search query changes
+		setMounted(true);
+		checkScroll();
+		window.addEventListener("resize", checkScroll);
+		return () => window.removeEventListener("resize", checkScroll);
+	}, [activeTab, searchQuery, isOpen]);
 
 	// Focus search on open
 	useEffect(() => {
 		if (isOpen) {
 			setActiveTab("battlecards");
-			setSelectedCompetitor(null);
+			setSelectedCompetitorId(COMPETITORS[0].id);
+			setSelectedObjectionId(OBJECTIONS[0].id);
 			setSearchQuery("");
-			setTimeout(() => searchRef.current?.focus(), 100);
 		}
 	}, [isOpen]);
 
 	// Focus search on tab change to battlecards
 	useEffect(() => {
-		if (isOpen && activeTab === "battlecards" && !selectedCompetitor) {
+		if (isOpen && activeTab === "battlecards" && !selectedCompetitorId) {
 			setTimeout(() => searchRef.current?.focus(), 100);
 		}
-	}, [isOpen, activeTab, selectedCompetitor]);
+	}, [isOpen, activeTab, selectedCompetitorId]);
 
 	const filteredCompetitors = useMemo(() => {
 		if (!searchQuery.trim()) return COMPETITORS;
@@ -899,124 +937,244 @@ export function BattlecardModal({ isOpen, onClose }: BattlecardModalProps) {
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.95, y: 20 }}
 						transition={{ type: "spring", damping: 25, stiffness: 300 }}
-						className="relative w-full max-w-3xl bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-[#eaedf0] overflow-hidden flex flex-col max-h-[85vh]"
+						className="relative w-full max-w-6xl bg-white rounded-[2.5rem] shadow-[0_30px_90px_-15px_rgba(0,0,0,0.2)] border border-[#eaedf0] overflow-hidden flex flex-col h-[85vh]"
 					>
 						{/* Header */}
-						<div className="flex items-center justify-between px-8 py-6 border-b border-[#f0f0f0]">
-							<div className="flex items-center gap-4">
-								{selectedCompetitor && (
-									<button
-										onClick={() => setSelectedCompetitor(null)}
-										className="w-10 h-10 rounded-full bg-[#f7f8fa] border border-[#eaedf0] flex items-center justify-center text-[#888] hover:text-[#1a1a2e] hover:bg-[#f0f0f0] transition-colors cursor-pointer"
-									>
-										<ArrowLeft className="w-5 h-5" />
-									</button>
-								)}
-								<div className="w-12 h-12 rounded-2xl bg-[#e20074]/10 text-[#e20074] flex items-center justify-center">
-									{activeTab === "objections" ? (
-										<Shield className="w-6 h-6" />
-									) : (
-										<Swords className="w-6 h-6" />
-									)}
+						<div className="flex items-center justify-between px-8 md:px-10 py-5 border-b border-[#f0f0f0]">
+							<div className="flex items-center gap-5">
+								<div className="w-11 h-11 rounded-2xl bg-[#e20074]/10 text-[#e20074] flex items-center justify-center shadow-sm">
+									<Swords className="w-5.5 h-5.5" />
 								</div>
 								<div>
-									<h2 className="text-[1.2rem] font-extrabold text-[#1a1a2e] mb-0.5 tracking-tight">
-										{activeTab === "objections"
-											? "Einwandbehandlung"
-											: selectedCompetitor
-												? `vs. ${selectedCompetitor.name}`
-												: "Battlecards"}
+									<h2 className="text-[1.25rem] font-extrabold text-[#1a1a2e] mb-0 tracking-tight leading-none">
+										Battlecards
 									</h2>
-									<p className="text-[0.85rem] text-[#888] font-medium m-0">
-										{activeTab === "objections"
-											? "Reaktionen auf häufige Kundeneinwände"
-											: selectedCompetitor
-												? "Warum Telekom die bessere Wahl ist"
-												: "Argumente gegen den Wettbewerb"}
+									<p className="text-[0.8rem] text-[#888] font-medium leading-none mt-2">
+										Argumentationshilfen & Strategien
 									</p>
 								</div>
 							</div>
-							<button
-								onClick={onClose}
-								className="w-10 h-10 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center text-[#888] hover:text-[#1a1a2e] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
-							>
-								<X className="w-5 h-5" />
-							</button>
+
+							<div className="flex items-center gap-6">
+								<div className="flex p-1 bg-[#f0f2f5] rounded-xl">
+									<button
+										onClick={() => setActiveTab("battlecards")}
+										className={clsx(
+											"px-6 py-2 rounded-lg text-sm font-extrabold transition-all",
+											activeTab === "battlecards"
+												? "bg-white text-[#e20074] shadow-sm"
+												: "text-[#666] hover:text-[#1a1a2e]"
+										)}
+									>
+										Anbieter
+									</button>
+									<button
+										onClick={() => setActiveTab("objections")}
+										className={clsx(
+											"px-6 py-2 rounded-lg text-sm font-extrabold transition-all",
+											activeTab === "objections"
+												? "bg-white text-[#e20074] shadow-sm"
+												: "text-[#666] hover:text-[#1a1a2e]"
+										)}
+									>
+										Einwände
+									</button>
+								</div>
+
+								<button
+									onClick={onClose}
+									className="w-10 h-10 rounded-full bg-telekom-gray-50 border border-[#eaedf0] flex items-center justify-center text-[#888] hover:text-[#e20074] hover:bg-white hover:border-[#e20074]/20 transition-all cursor-pointer shadow-sm active:scale-95 group"
+								>
+									<X className="w-5 h-5 group-hover:scale-110 transition-transform" />
+								</button>
+							</div>
 						</div>
 
-						{/* Tabs */}
-						{!selectedCompetitor && (
-							<div className="px-8 pt-4 pb-0 flex items-center gap-6 border-b border-[#f0f0f0] bg-white shrink-0">
-								<button
-									onClick={() => setActiveTab("battlecards")}
-									className={clsx(
-										"pb-3 text-[0.9rem] font-bold transition-colors border-b-2 cursor-pointer",
-										activeTab === "battlecards"
-											? "border-[#e20074] text-[#1a1a2e]"
-											: "border-transparent text-[#999] hover:text-[#555]"
-									)}
-								>
-									Wettbewerb
-								</button>
-								<button
-									onClick={() => setActiveTab("objections")}
-									className={clsx(
-										"pb-3 text-[0.9rem] font-bold transition-colors border-b-2 cursor-pointer",
-										activeTab === "objections"
-											? "border-[#e20074] text-[#1a1a2e]"
-											: "border-transparent text-[#999] hover:text-[#555]"
-									)}
-								>
-									Einwände
-								</button>
-							</div>
-						)}
+						{/* Main Layout Body */}
+						<div className="flex-1 flex overflow-hidden">
+							{/* Sidebar (Left) */}
+							<div className="w-[380px] border-r border-[#f0f0f0] flex flex-col bg-[#fcfdfe] relative">
+								<div className="p-6 pb-2 shrink-0">
+									<div className="relative">
+										<Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#bbb] pointer-events-none" />
+										<input
+											type="text"
+											value={searchQuery}
+											onChange={(e) => setSearchQuery(e.target.value)}
+											placeholder={
+												activeTab === "objections"
+													? "Suche Einwand..."
+													: "Suche Anbieter..."
+											}
+											className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#eaedf0] bg-white text-[0.9rem] text-[#1a1a2e] placeholder:text-[#bbb] focus:outline-none focus:ring-4 focus:ring-[#e20074]/5 transition-all"
+										/>
+									</div>
+								</div>
 
-						{/* Search (only on list view, both tabs) */}
-						{!selectedCompetitor && (
-							<div className="px-8 pt-5 pb-2 shrink-0">
-								<div className="relative">
-									<Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#bbb] pointer-events-none" />
-									<input
-										ref={searchRef}
-										type="text"
-										value={searchQuery}
-										onChange={(e) => setSearchQuery(e.target.value)}
-										placeholder={
-											activeTab === "objections"
-												? "Suche nach Einwänden..."
-												: "Suche nach einem Anbieter..."
-										}
-										className="w-full pl-11 pr-10 py-3.5 rounded-2xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] text-[#1a1a2e] placeholder:text-[#bbb] focus:outline-none focus:ring-2 focus:ring-[#e20074]/15 focus:border-[#e20074]/25 transition-all"
-									/>
-									{searchQuery && (
-										<button
-											onClick={() => setSearchQuery("")}
-											className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[#eee] border-none flex items-center justify-center cursor:pointer hover:bg-[#ddd] transition-colors"
-										>
-											<X className="w-3 h-3 text-[#999]" />
-										</button>
+								<div
+									ref={sidebarRef}
+									onScroll={handleSidebarScroll}
+									className="flex-1 overflow-y-auto p-6 space-y-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+								>
+									{activeTab === "battlecards" ? (
+										filteredCompetitors.length > 0 ? (
+											filteredCompetitors.map((c) => (
+												<button
+													key={c.id}
+													onClick={() => setSelectedCompetitorId(c.id)}
+													className={clsx(
+														"w-full flex items-center gap-4 px-5 py-4 rounded-2xl border transition-all duration-300 text-left group relative",
+														selectedCompetitorId === c.id
+															? "border-[#e20074] bg-[#e20074]/2 ring-1 ring-[#e20074] shadow-md shadow-[#e20074]/5"
+															: "border-[#eaedf0] bg-white hover:border-[#d0d0d0] shadow-sm"
+													)}
+												>
+													<div
+														className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-xs font-extrabold shrink-0 shadow-sm"
+														style={{ backgroundColor: c.color }}
+													>
+														{c.logoText}
+													</div>
+													<div className="flex-1 min-w-0">
+														<p
+															className={clsx(
+																"text-[1.05rem] font-extrabold tracking-tight leading-none mb-1",
+																selectedCompetitorId === c.id
+																	? "text-[#e20074]"
+																	: "text-[#1a1a2e]"
+															)}
+														>
+															{c.name}
+														</p>
+														<p className="text-[0.75rem] font-bold text-[#888] tracking-wider">
+															{c.weaknesses.length} Kritikpunkte
+														</p>
+													</div>
+													{selectedCompetitorId === c.id && (
+														<div className="w-6 h-6 rounded-full bg-[#e20074] flex items-center justify-center shadow-lg shadow-[#e20074]/20">
+															<Check
+																className="w-3.5 h-3.5 text-white"
+																strokeWidth={4}
+															/>
+														</div>
+													)}
+												</button>
+											))
+										) : (
+											<div className="text-center py-10 opacity-40">
+												Kein Anbieter gefunden
+											</div>
+										)
+									) : filteredObjections.length > 0 ? (
+										filteredObjections.map((o) => (
+											<button
+												key={o.id}
+												onClick={() => setSelectedObjectionId(o.id)}
+												className={clsx(
+													"w-full flex items-center gap-4 px-5 py-4 rounded-2xl border transition-all duration-300 text-left group relative",
+													selectedObjectionId === o.id
+														? "border-[#e20074] bg-[#e20074]/2 ring-1 ring-[#e20074] shadow-md shadow-[#e20074]/5"
+														: "border-[#eaedf0] bg-white hover:border-[#d0d0d0] shadow-sm"
+												)}
+											>
+												<div
+													className={clsx(
+														"w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border transition-colors shadow-sm",
+														selectedObjectionId === o.id
+															? "bg-[#e20074]/10 border-[#e20074]/20 text-[#e20074]"
+															: "bg-gray-50 border-[#eaedf0] text-[#888] group-hover:border-[#e20074]/30"
+													)}
+												>
+													<o.icon className="w-6 h-6" />
+												</div>
+												<div className="flex-1 min-w-0">
+													<p
+														className={clsx(
+															"text-[1.05rem] font-extrabold tracking-tight leading-none mb-1",
+															selectedObjectionId === o.id
+																? "text-[#e20074]"
+																: "text-[#1a1a2e]"
+														)}
+													>
+														{o.title}
+													</p>
+													<p className="text-[0.75rem] font-bold text-[#888] tracking-wider truncate">
+														{o.coreArgument.split(",")[0]}
+													</p>
+												</div>
+												{selectedObjectionId === o.id && (
+													<div className="w-6 h-6 rounded-full bg-[#e20074] flex items-center justify-center shadow-lg shadow-[#e20074]/20">
+														<Check
+															className="w-3.5 h-3.5 text-white"
+															strokeWidth={4}
+														/>
+													</div>
+												)}
+											</button>
+										))
+									) : (
+										<div className="text-center py-10 opacity-40">
+											Kein Einwand gefunden
+										</div>
 									)}
 								</div>
-							</div>
-						)}
 
-						{/* Content */}
-						<div className="flex-1 overflow-y-auto px-8 py-5">
-							{activeTab === "objections" ? (
-								<ObjectionList
-									objections={filteredObjections}
-									query={searchQuery}
-								/>
-							) : selectedCompetitor ? (
-								<CompetitorDetail competitor={selectedCompetitor} />
-							) : (
-								<CompetitorList
-									competitors={filteredCompetitors}
-									onSelect={setSelectedCompetitor}
-									query={searchQuery}
-								/>
-							)}
+								{/* Scroll Hint Animation */}
+								<AnimatePresence>
+									{showScrollHint && (
+										<motion.div
+											initial={{ opacity: 0, y: 10 }}
+											animate={{ opacity: 1, y: 0 }}
+											exit={{ opacity: 0, y: 10 }}
+											className="absolute bottom-0 left-0 right-0 h-24 bg-linear-to-t from-[#fcfdfe] via-[#fcfdfe]/80 to-transparent pointer-events-none flex items-end justify-center pb-4"
+										>
+											<motion.div
+												animate={{ y: [0, 8, 0] }}
+												transition={{
+													repeat: Infinity,
+													duration: 2,
+													ease: "easeInOut"
+												}}
+												className="flex flex-col items-center gap-1"
+											>
+												<ChevronDown
+													className="w-5 h-5 text-[#e20074]/50"
+													strokeWidth={3}
+												/>
+											</motion.div>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</div>
+
+							{/* Content Area (Right) */}
+							<div className="flex-1 overflow-y-auto bg-white p-10 custom-scrollbar">
+								{activeTab === "battlecards" ? (
+									selectedCompetitorId ? (
+										<CompetitorDetail
+											competitor={
+												COMPETITORS.find((c) => c.id === selectedCompetitorId)!
+											}
+										/>
+									) : (
+										<div className="h-full flex items-center justify-center text-[#bbb]">
+											Wähle einen Anbieter aus
+										</div>
+									)
+								) : selectedObjectionId ? (
+									<div className="max-w-3xl mx-auto">
+										<ObjectionDetail
+											objection={
+												OBJECTIONS.find((o) => o.id === selectedObjectionId)!
+											}
+										/>
+									</div>
+								) : (
+									<div className="h-full flex items-center justify-center text-[#bbb]">
+										Wähle einen Einwand aus
+									</div>
+								)}
+							</div>
 						</div>
 
 						{/* Footer */}
@@ -1036,109 +1194,18 @@ export function BattlecardModal({ isOpen, onClose }: BattlecardModalProps) {
 
 // ─── Competitor List ─────────────────────────────────────────────
 
-function CompetitorList({
-	competitors,
-	onSelect,
-	query
-}: {
-	competitors: Competitor[];
-	onSelect: (c: Competitor) => void;
-	query: string;
-}) {
-	if (competitors.length === 0) {
-		return (
-			<div className="flex flex-col items-center justify-center py-16 text-center">
-				<div className="w-14 h-14 rounded-full bg-[#f7f8fa] flex items-center justify-center mb-4">
-					<Search className="w-6 h-6 text-[#ddd]" />
-				</div>
-				<p className="text-[0.95rem] text-[#999] font-semibold m-0">
-					Kein Wettbewerber gefunden
-				</p>
-				<p className="text-[0.8rem] text-[#ccc] mt-1 m-0">
-					Suche nach Vodafone, o2, 1&1 oder congstar
-				</p>
-			</div>
-		);
-	}
-
-	return (
-		<div className="flex flex-col gap-3">
-			{query && (
-				<p className="text-[0.75rem] text-[#bbb] m-0 mb-1 px-1">
-					{competitors.length} Ergebnis
-					{competitors.length !== 1 ? "se" : ""} für &ldquo;{query}&rdquo;
-				</p>
-			)}
-			{competitors.map((competitor, i) => (
-				<motion.button
-					key={competitor.id}
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: i * 0.05 }}
-					onClick={() => onSelect(competitor)}
-					className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border border-[#eaedf0] bg-white hover:border-[#e20074]/25 hover:shadow-[0_4px_20px_-8px_rgba(226,0,116,0.15)] transition-all duration-200 cursor-pointer group text-left"
-				>
-					{/* Competitor badge */}
-					<div
-						className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-sm font-extrabold shrink-0 transition-transform group-hover:scale-105"
-						style={{ backgroundColor: competitor.color }}
-					>
-						{competitor.logoText}
-					</div>
-
-					<div className="flex-1 min-w-0">
-						<div className="text-[0.95rem] font-bold text-[#1a1a2e] group-hover:text-[#e20074] transition-colors">
-							{competitor.name}
-						</div>
-						<div className="text-[0.75rem] text-[#bbb] mt-0.5">
-							{competitor.telekomArguments.length} Telekom&#x2011;Argumente ·{" "}
-							{competitor.weaknesses.length} Schwachstellen
-						</div>
-					</div>
-
-					<ChevronRight className="w-5 h-5 text-[#ddd] group-hover:text-[#e20074] group-hover:translate-x-0.5 transition-all shrink-0" />
-				</motion.button>
-			))}
-		</div>
-	);
-}
-
 // ─── Competitor Detail ───────────────────────────────────────────
 
 function CompetitorDetail({ competitor }: { competitor: Competitor }) {
 	return (
-		<div className="flex flex-col gap-6">
-			{/* Hero banner */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				className="flex items-center gap-4 px-5 py-4 rounded-2xl"
-				style={{ backgroundColor: `${competitor.color}08` }}
-			>
-				<div
-					className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-sm font-extrabold shrink-0"
-					style={{ backgroundColor: competitor.color }}
-				>
-					{competitor.logoText}
-				</div>
-				<div>
-					<div className="text-[1rem] font-extrabold text-[#1a1a2e]">
-						{competitor.name}
-					</div>
-					<div className="text-[0.75rem] text-[#999] font-medium">
-						{competitor.telekomArguments.length} Telekom-Vorteile ·{" "}
-						{competitor.weaknesses.length} Schwachstellen
-					</div>
-				</div>
-			</motion.div>
-
+		<div className="flex flex-col gap-10">
 			{/* Two column layout on wider screens */}
-			<div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-6">
+			<div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
 				{/* Left: Schwachstellen */}
 				<div>
 					<div className="flex items-center gap-2 mb-3">
 						<AlertTriangle className="w-4 h-4 text-red-500" />
-						<span className="text-[0.75rem] font-bold text-[#1a1a2e] uppercase tracking-wider">
+						<span className="text-[1rem] font-extrabold text-[#1a1a2e] tracking-wider">
 							Schwachstellen
 						</span>
 					</div>
@@ -1174,8 +1241,8 @@ function CompetitorDetail({ competitor }: { competitor: Competitor }) {
 				<div>
 					<div className="flex items-center gap-2 mb-3">
 						<CheckCircle2 className="w-4 h-4 text-[#e20074]" />
-						<span className="text-[0.75rem] font-bold text-[#1a1a2e] uppercase tracking-wider">
-							Telekom&#x2011;Vorteile
+						<span className="text-[1rem] font-extrabold text-[#1a1a2e] tracking-wider">
+							Telekom-Vorteile
 						</span>
 					</div>
 					<div className="flex flex-col gap-2.5">
@@ -1217,79 +1284,67 @@ function CompetitorDetail({ competitor }: { competitor: Competitor }) {
 	);
 }
 
-// ─── Objection List ──────────────────────────────────────────────
+// ─── Objection Detail ───────────────────────────────────────────
 
-function ObjectionList({
-	objections,
-	query
-}: {
-	objections: Objection[];
-	query: string;
-}) {
-	if (objections.length === 0) {
-		return (
-			<div className="flex flex-col items-center justify-center py-16 text-center">
-				<div className="w-14 h-14 rounded-full bg-[#f7f8fa] flex items-center justify-center mb-4">
-					<Search className="w-6 h-6 text-[#ddd]" />
-				</div>
-				<p className="text-[0.95rem] text-[#999] font-semibold m-0">
-					Kein Einwand gefunden
-				</p>
-				<p className="text-[0.8rem] text-[#ccc] mt-1 m-0">
-					Suche nach bestimmten Stichworten
-				</p>
-			</div>
-		);
-	}
-
+function ObjectionDetail({ objection }: { objection: Objection }) {
 	return (
-		<div className="flex flex-col gap-4">
-			{query && (
-				<p className="text-[0.75rem] text-[#bbb] m-0 mb-1 px-1 -mt-2">
-					{objections.length} Ergebnis
-					{objections.length !== 1 ? "se" : ""} für &ldquo;{query}&rdquo;
-				</p>
-			)}
-			{objections.map((objection, i) => (
-				<motion.div
-					key={objection.id}
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: i * 0.05 }}
-					className="w-full flex flex-col gap-3 px-6 py-5 rounded-2xl border border-[#eaedf0] bg-white hover:border-[#e20074]/25 hover:shadow-[0_4px_20px_-8px_rgba(226,0,116,0.15)] transition-all duration-200 group"
-				>
-					{/* Header */}
-					<div className="flex items-center gap-3">
-						<div className="w-10 h-10 rounded-xl bg-[#f7f8fa] flex items-center justify-center shrink-0 group-hover:bg-[#e20074]/10 transition-colors duration-300">
-							<objection.icon className="w-5 h-5 text-[#888] group-hover:text-[#e20074] transition-colors duration-300" />
-						</div>
-						<div>
-							<h3 className="text-[1rem] font-bold text-[#1a1a2e] m-0 leading-tight">
-								{objection.title}
-							</h3>
-							<p className="text-[0.75rem] font-semibold text-[#e20074] uppercase tracking-wider m-0 mt-0.5">
-								{objection.coreArgument}
-							</p>
-						</div>
-					</div>
+		<motion.div
+			key={objection.id}
+			initial={{ opacity: 0, y: 10 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.4 }}
+			className="max-w-3xl mx-auto"
+		>
+			{/* Header Section */}
+			<div className="text-center mb-10">
+				<h3 className="text-[2.5rem] font-extrabold text-[#1a1a2e] m-0 tracking-tight leading-none mb-4">
+					{objection.title}
+				</h3>
+				<div className="flex justify-center gap-2">
+					{objection.coreArgument.split(",").map((arg, i) => (
+						<span
+							key={i}
+							className="px-4 py-1.5 bg-white border border-[#eaedf0] text-[0.75rem] font-bold text-[#666] uppercase tracking-wider rounded-xl shadow-sm"
+						>
+							{arg.trim()}
+						</span>
+					))}
+				</div>
+			</div>
 
-					{/* Body / Example text */}
-					<div className="pl-[52px]">
-						<div className="relative bg-[#fcfcfc] border border-[#f0f0f0] rounded-xl p-4 text-[0.88rem] text-[#444] leading-relaxed mb-3">
-							<div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1.5 w-3 h-3 bg-[#fcfcfc] border-l border-b border-[#f0f0f0] rotate-45" />
+			{/* Strategy & Dialogue Body */}
+			<div className="bg-white rounded-[2.5rem] border border-[#eaedf0] overflow-hidden shadow-2xl shadow-gray-200/50">
+				{/* The Hint/Strategy */}
+				<div className="bg-telekom-gray-50 p-8 md:p-10 border-b border-[#eaedf0]">
+					<div className="flex items-center gap-3 mb-4">
+						<div className="w-8 h-8 rounded-full bg-[#1a1a2e] flex items-center justify-center text-white text-sm shadow-md shadow-black/10">
+							<Zap className="w-4 h-4" />
+						</div>
+						<span className="text-[0.85rem] font-extrabold text-[#1a1a2e] uppercase tracking-widest">
+							Die Strategie
+						</span>
+					</div>
+					<p className="text-[1.15rem] font-medium text-[#444] leading-relaxed m-0 italic">
+						&bdquo;{objection.tip}&ldquo;
+					</p>
+				</div>
+
+				{/* The Script/Dialogue */}
+				<div className="p-8 md:p-10 mt-5">
+					<div className="relative">
+						<div className="absolute -left-1 opacity-10 text-[6rem] -top-10 font-serif text-[#e20074] pointer-events-none select-none leading-none">
+							&ldquo;
+						</div>
+						<div className="text-[1.5rem] font-bold text-[#1a1a2e] leading-[1.4] tracking-tight relative z-10">
 							{objection.exampleText}
 						</div>
-
-						{/* Tip */}
-						<div className="flex gap-2.5 items-start">
-							<div className="min-w-fit mt-0.5 text-[0.85rem]">💡</div>
-							<p className="text-[0.8rem] text-[#888] m-0 leading-snug">
-								<strong className="text-[#555]">Tipp:</strong> {objection.tip}
-							</p>
-						</div>
 					</div>
-				</motion.div>
-			))}
-		</div>
+				</div>
+			</div>
+
+			<p className="text-center mt-8 text-[0.8rem] text-[#bbb] font-medium italic">
+				Tipp: Bleibe authentisch und passe den Leitfaden deinem eigenen Stil an.
+			</p>
+		</motion.div>
 	);
 }

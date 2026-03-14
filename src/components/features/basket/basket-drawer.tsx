@@ -57,15 +57,22 @@ const CATEGORY_LABELS: Record<string, string> = {
 	DEVICE: "Gerät"
 };
 
+const EMPTY_NOTICES = [
+	"Hier drin herrscht gähnende Leere. Lass uns das ändern!",
+	"Dein Warenkorb wartet auf Gesellschaft – er ist einsam.",
+	"Stille... zu viel Stille hier im Warenkorb.",
+	"Der Warenkorb hat Hunger. Füttere ihn mit Tarifen!",
+	"Bist Du nur zum Gucken hier? Pack was rein!",
+	"Noch ist hier viel Platz für tolle Angebote.",
+	"Einsamer Warenkorb bietet liebevolles Zuhause für kleine Tarife.",
+	"Suchst Du noch oder klickst Du schon?",
+	"Hier drin ist es so weiß, man braucht fast eine Sonnenbrille. Füg ein paar Produkte hinzu!",
+	"Hier ist noch ganz viel Luft nach oben (und nach unten)."
+];
+
 export function BasketDrawer() {
-	const {
-		items,
-		removeItem,
-		clearBasket,
-		basketCredits,
-		setBasketCredits
-	} = useBasketStore();
-	const router = useRouter();
+	const { items, removeItem, clearBasket, basketCredits, setBasketCredits } =
+		useBasketStore();
 	const [creditsOpen, setCreditsOpen] = useState(false);
 	const [isGenerating, setIsGenerating] = useState<
 		"idle" | "generating" | "success"
@@ -75,11 +82,15 @@ export function BasketDrawer() {
 	const { data: session } = trpc.session.getCurrent.useQuery();
 	const { clearAfterExport, offerTemplateText } = useSettingsStore();
 	const [isMounted, setIsMounted] = useState(false);
+	const [randomNotice, setRandomNotice] = useState("");
 
 	const teamEmail = session?.team?.email || "team06@telekom.de";
 
 	useEffect(() => {
 		setIsMounted(true);
+		setRandomNotice(
+			EMPTY_NOTICES[Math.floor(Math.random() * EMPTY_NOTICES.length)]
+		);
 	}, []);
 
 	const {
@@ -100,18 +111,18 @@ export function BasketDrawer() {
 			className="bg-white border-l border-[#eaedf0] flex flex-col z-10 overflow-hidden h-full relative"
 		>
 			{/* Header */}
-			<div className="px-5 py-4 border-b border-[#eaedf0]">
-				<div className="flex items-center justify-between">
-					<h2 className="m-0 text-[0.88rem] text-[#1a1a2e] font-bold tracking-tight">
-						Zusammenfassung
-					</h2>
-					{items.length > 0 && (
+			{items.length > 0 && (
+				<div className="px-5 py-4 border-b border-[#eaedf0]">
+					<div className="flex items-center justify-between">
+						<h2 className="m-0 text-[0.88rem] text-[#1a1a2e] font-bold tracking-tight">
+							Zusammenfassung
+						</h2>
 						<span className="text-[0.65rem] font-semibold text-[#e20074] bg-[#e20074]/6 px-2 py-0.5 rounded-full">
 							{items.length} {items.length === 1 ? "Produkt" : "Produkte"}
 						</span>
-					)}
+					</div>
 				</div>
-			</div>
+			)}
 
 			{/* Content */}
 			<div className="flex-1 px-4 py-4 overflow-y-auto scrollbar-none">
@@ -134,37 +145,39 @@ export function BasketDrawer() {
 							</div>
 						)}
 
-						{/* Credits */}
-						<div className="mb-4">
-							<button
-								className="w-full flex items-center gap-2 px-3.5 py-2.5 bg-white border border-[#eaedf0] rounded-xl text-left transition-all duration-200 hover:border-[#ddd] cursor-pointer"
-								onClick={() => setCreditsOpen(!creditsOpen)}
-							>
-								<Percent className="w-3.5 h-3.5 text-[#00a878]" />
-								<span className="flex-1 text-[0.78rem] font-semibold text-[#1a1a2e]">
-									Gutschriften
-								</span>
-								{totalCredits > 0 && (
-									<span className="text-[0.72rem] text-[#00a878] font-semibold mr-1">
-										−{totalCredits.toFixed(2)} €
+						{/* Credits - Only show if items exist */}
+						{items.length > 0 && (
+							<div className="mb-4">
+								<button
+									className="w-full flex items-center gap-2 px-3.5 py-2.5 bg-white border border-[#eaedf0] rounded-xl text-left transition-all duration-200 hover:border-[#ddd] cursor-pointer"
+									onClick={() => setCreditsOpen(!creditsOpen)}
+								>
+									<Percent className="w-3.5 h-3.5 text-[#00a878]" />
+									<span className="flex-1 text-[0.78rem] font-semibold text-[#1a1a2e]">
+										Gutschriften
 									</span>
-								)}
-								<ChevronDown
-									className={clsx(
-										"w-3.5 h-3.5 text-[#bbb] transition-transform duration-200",
-										creditsOpen && "rotate-180"
+									{totalCredits > 0 && (
+										<span className="text-[0.72rem] text-[#00a878] font-semibold mr-1">
+											−{totalCredits.toFixed(2)} €
+										</span>
 									)}
-								/>
-							</button>
-							{creditsOpen && (
-								<div className="mt-2 pl-1">
-									<CreditSelector
-										basketCredits={basketCredits}
-										setBasketCredits={setBasketCredits}
+									<ChevronDown
+										className={clsx(
+											"w-3.5 h-3.5 text-[#bbb] transition-transform duration-200",
+											creditsOpen && "rotate-180"
+										)}
 									/>
-								</div>
-							)}
-						</div>
+								</button>
+								{creditsOpen && (
+									<div className="mt-2 pl-1">
+										<CreditSelector
+											basketCredits={basketCredits}
+											setBasketCredits={setBasketCredits}
+										/>
+									</div>
+								)}
+							</div>
+						)}
 
 						{/* Items */}
 						<div className="flex flex-col gap-3">
@@ -172,23 +185,24 @@ export function BasketDrawer() {
 								{items.length === 0 ? (
 									<motion.div
 										key="empty"
-										initial={{ opacity: 0, scale: 0.95 }}
-										animate={{ opacity: 1, scale: 1 }}
-										exit={{ opacity: 0, scale: 0.95 }}
-										transition={{ duration: 0.2 }}
-										className="text-center py-14 flex flex-col items-center gap-2.5"
+										initial={{ opacity: 0, y: 10 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: -10 }}
+										transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+										className="bg-white min-h-[300px] flex flex-col items-center justify-center p-8 text-center"
 									>
-										<div className="w-12 h-12 rounded-2xl bg-[#f7f8fa] flex items-center justify-center">
-											<ShoppingBag className="w-5 h-5 text-[#ddd]" />
+										<div className="w-20 h-20 rounded-[1.5rem] bg-[#fcf2f7] flex items-center justify-center mb-6 shadow-sm border border-[#e20074]/5">
+											<ShoppingBag
+												className="w-9 h-9 text-[#e20074]"
+												strokeWidth={1.5}
+											/>
 										</div>
-										<div>
-											<p className="text-[0.82rem] font-medium text-[#bbb] m-0">
-												Noch keine Produkte
-											</p>
-											<p className="text-[0.72rem] text-[#ddd] m-0 mt-0.5">
-												Tarife aus den Kategorien wählen
-											</p>
-										</div>
+										<h3 className="text-[1.2rem] font-extrabold text-[#1a1a2e] m-0 mb-3 leading-tight tracking-tight">
+											Warenkorb leer
+										</h3>
+										<p className="text-[0.95rem] text-[#888] font-medium leading-relaxed max-w-[240px] m-0">
+											{randomNotice}
+										</p>
 									</motion.div>
 								) : (
 									items.map((item) => (
@@ -386,11 +400,7 @@ export function BasketDrawer() {
 						</div>
 					</div>
 				) : (
-					<div className="p-4 text-center">
-						<p className="text-[0.75rem] text-[#ccc] m-0">
-							Produkte hinzufügen, um ein Angebot zu erstellen.
-						</p>
-					</div>
+					<div className="h-0 overflow-hidden" />
 				)}
 			</div>
 		</aside>
