@@ -97,10 +97,12 @@ export default function ProductsPage({
 	initialSession,
 	initialProducts,
 	initialSettings,
+	initialNews,
 }: {
 	initialSession?: any;
 	initialProducts?: any;
 	initialSettings?: any;
+	initialNews?: any;
 }) {
 	const {
 		data: session, isLoading: sessionLoading,
@@ -272,7 +274,7 @@ export default function ProductsPage({
 			)}
 
 			{/* ─── News ─── */}
-			<NewsCarousel />
+			<NewsCarousel initialNews={initialNews} />
 		</div>
 	);
 }

@@ -31,6 +31,7 @@ export default async function Page() {
 		session,
 		allProducts,
 		designSettings,
+		news,
 	] = await Promise.all([
 		caller.session.getCurrent().catch(() => null),
 		caller.product.getAllProducts().catch(() => ({
@@ -39,6 +40,8 @@ export default async function Page() {
 		})),
 		caller.settings.getDesignSettings().catch(() => ({
 		})),
+		caller.news.listActive().catch(() => [
+		]),
 	]);
 
 	const Client = ProductsClient as any;
@@ -48,6 +51,7 @@ export default async function Page() {
 			initialSession={session}
 			initialProducts={allProducts}
 			initialSettings={designSettings}
+			initialNews={news}
 		/>
 	);
 }

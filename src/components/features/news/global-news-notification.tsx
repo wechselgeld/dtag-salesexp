@@ -64,7 +64,22 @@ export function GlobalNewsNotification() {
 	);
 	const systemAlerts = useSystemAlertStore((state) => state.alerts);
 
+	const [
+		subscriptionEnabled,
+		setSubscriptionEnabled,
+	] = React.useState(false);
+
+	// Defer subscription to reduce critical request chain length and improve TBT/LCP
+	React.useEffect(() => {
+		const timer = setTimeout(() => {
+			setSubscriptionEnabled(true);
+		}, 3000);
+		return () => clearTimeout(timer);
+	}, [
+	]);
+
 	trpc.news.onAdd.useSubscription(undefined, {
+		enabled: subscriptionEnabled,
 		onData(news: any) {
 			if (!notifications.some((n) => n.id === news.id)) {
 				addNotification({

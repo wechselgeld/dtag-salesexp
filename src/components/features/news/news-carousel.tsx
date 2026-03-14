@@ -43,10 +43,17 @@ const PRIORITY_CONFIG: Record<
 	}, // Red
 };
 
-export function NewsCarousel() {
+export function NewsCarousel({
+	initialNews,
+}: {
+	initialNews?: any;
+}) {
 	const {
-		data: newsItems, isLoading,
-	} = trpc.news.listActive.useQuery();
+		data: newsItems,
+		isLoading,
+	} = trpc.news.listActive.useQuery(undefined, {
+		initialData: initialNews,
+	});
 	const [
 		currentIndex,
 		setCurrentIndex,
