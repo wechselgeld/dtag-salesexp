@@ -1,10 +1,17 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { AnimatePresence } from "framer-motion";
-import { Trash2 } from "lucide-react";
-import { Toast } from "./ui/toast";
-import clsx from "clsx";
+import {
+ useState, useEffect,
+} from 'react';
+import {
+ AnimatePresence,
+} from 'framer-motion';
+import {
+ Trash2,
+} from 'lucide-react';
+import {
+ Toast,
+} from './ui/toast';
 
 interface DeleteConfirmState {
 	id: string;
@@ -27,7 +34,10 @@ export function confirmDelete(state: DeleteConfirmState) {
  * Render this once in your admin layout.
  */
 export function DeleteConfirmToast() {
-	const [pending, setPending] = useState<DeleteConfirmState | null>(null);
+	const [
+ pending,
+setPending,
+] = useState<DeleteConfirmState | null>(null);
 
 	useEffect(() => {
 		showDeleteConfirmGlobal = (state) => {
@@ -36,7 +46,8 @@ export function DeleteConfirmToast() {
 		return () => {
 			showDeleteConfirmGlobal = null;
 		};
-	}, []);
+	}, [
+]);
 
 	return (
 		<div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-overlay flex flex-col gap-4 w-[500px] pointer-events-none">
@@ -54,7 +65,7 @@ export function DeleteConfirmToast() {
 
 function DeleteConfirmToastItem({
 	pending,
-	onDismiss
+	onDismiss,
 }: {
 	pending: DeleteConfirmState;
 	onDismiss: () => void;
@@ -70,14 +81,18 @@ function DeleteConfirmToastItem({
 			color="#dc2626"
 			onDismiss={onDismiss}
 			className="border-[3px] bg-white/95 text-[#1a1a2e]"
-			style={{ borderColor: "#dc2626" }}
+			style={{
+				borderColor: '#dc2626',
+			}}
 		>
 			<div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-red-500/10 to-transparent blur-xl pointer-events-none rounded-full" />
 
 			<div className="flex gap-3 align-start">
 				<div
 					className="shrink-0 flex items-center justify-center text-white mt-0.5 p-2 rounded-xl"
-					style={{ backgroundColor: "#dc2626" }}
+					style={{
+						backgroundColor: '#dc2626',
+					}}
 				>
 					<Trash2 className="w-5 h-5" />
 				</div>
@@ -89,7 +104,7 @@ function DeleteConfirmToastItem({
 						</h4>
 					</div>
 					<p className="text-[0.8rem] text-[#1a1a2e]/70 m-0 leading-relaxed">
-						<span className="font-semibold text-[#1a1a2e]">{pending.name}</span>{" "}
+						<span className="font-semibold text-[#1a1a2e]">{pending.name}</span>{' '}
 						wirklich löschen?
 					</p>
 				</div>

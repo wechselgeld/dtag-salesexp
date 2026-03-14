@@ -1,22 +1,32 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { AlertCircle, RefreshCcw, Home } from "lucide-react";
-import Link from "next/link";
-import { TelekomLogo } from "@/components/shared/telekom-logo";
-import { GlobalFooter } from "@/components/shared/global-footer";
+import {
+	useEffect,
+} from 'react';
+import {
+	AlertCircle, RefreshCcw, Home,
+} from 'lucide-react';
+import Link from 'next/link';
+import {
+	TelekomLogo,
+} from '@/components/shared/telekom-logo';
+import {
+	GlobalFooter,
+} from '@/components/shared/global-footer';
 
 export default function GlobalError({
 	error,
-	reset
+	reset,
 }: {
 	error: Error & { digest?: string };
 	reset: () => void;
 }) {
 	useEffect(() => {
 		// Log the error to an error reporting service
-		console.error("Global App Error:", error);
-	}, [error]);
+		console.error('Global App Error:', error);
+	}, [
+		error,
+	]);
 
 	return (
 		<div className="min-h-screen py-16 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074]">
@@ -52,7 +62,7 @@ export default function GlobalError({
 							Technische Details
 						</p>
 						<code className="text-[0.85rem] text-red-600 bg-red-50 p-4 rounded-xl block border border-red-100 wrap-break-word font-mono shadow-inner leading-relaxed">
-							{error.message || "No error message provided (unknown error)."}
+							{error.message || 'No error message provided (unknown error).'}
 						</code>
 						{error.digest && (
 							<p className="text-[0.75rem] text-[#aaa] mt-3 pl-1">

@@ -1,37 +1,57 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc";
-import { MapPin, Trash2, Plus, Loader2, Pencil, Search } from "lucide-react";
-import clsx from "clsx";
-import { Skeleton } from "@/components/shared/skeleton";
-import { confirmDelete } from "@/components/shared/delete-confirm-toast";
-import Link from "next/link";
-import { useState } from "react";
-import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
-import { Tooltip } from "@/components/shared/ui/tooltip";
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	MapPin, Trash2, Plus, Loader2, Pencil, Search,
+} from 'lucide-react';
+import clsx from 'clsx';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import {
+	confirmDelete,
+} from '@/components/shared/delete-confirm-toast';
+import Link from 'next/link';
+import {
+	useState,
+} from 'react';
+import {
+	AdminPageHeader,
+} from '@/components/shared/ui/admin-ui';
+import {
+	Tooltip,
+} from '@/components/shared/ui/tooltip';
 
 export default function LocationsClient() {
 	const utils = trpc.useUtils();
-	const [searchQuery, setSearchQuery] = useState("");
+	const [
+		searchQuery,
+		setSearchQuery,
+	] = useState('');
 
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+	const {
+		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
+	} =
 		trpc.location.list.useInfiniteQuery(
 			{
 				limit: 20,
-				search: searchQuery || undefined
+				search: searchQuery || undefined,
 			},
 			{
-				getNextPageParam: (lastPage) => lastPage.nextCursor
-			}
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+			},
 		);
 
 	const deleteMutation = trpc.location.delete.useMutation({
 		onSuccess: () => {
 			utils.location.list.invalidate();
-		}
+		},
 	});
 
-	const locations = data?.pages.flatMap((page) => page.items) || [];
+	const locations = data?.pages.flatMap((page) => page.items) || [
+	];
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -64,7 +84,11 @@ export default function LocationsClient() {
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
 				{isLoading && locations.length === 0 ? (
 					<div className="flex flex-col gap-3 p-5">
-						{[1, 2, 3].map((i) => (
+						{[
+							1,
+							2,
+							3,
+						].map((i) => (
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
@@ -129,19 +153,19 @@ export default function LocationsClient() {
 											</td>
 											<td className="px-6 py-4">
 												<span className="text-[0.85rem] text-[#666]">
-													{loc.odRegion?.name || "Kein Bereich"}
+													{loc.odRegion?.name || 'Kein Bereich'}
 												</span>
 											</td>
 											<td className="px-6 py-4 text-center">
 												<span
 													className={clsx(
-														"inline-flex items-center px-2.5 py-1 rounded-lg text-[0.68rem] font-bold border",
+														'inline-flex items-center px-2.5 py-1 rounded-lg text-[0.68rem] font-bold border',
 														loc.isActive
-															? "bg-[#e20074]/5 text-[#e20074] border-[#e20074]/10"
-															: "bg-[#f7f8fa] text-[#bbb] border-[#eaedf0]"
+															? 'bg-[#e20074]/5 text-[#e20074] border-[#e20074]/10'
+															: 'bg-[#f7f8fa] text-[#bbb] border-[#eaedf0]',
 													)}
 												>
-													{loc.isActive ? "Aktiv" : "Inaktiv"}
+													{loc.isActive ? 'Aktiv' : 'Inaktiv'}
 												</span>
 											</td>
 											<td className="px-6 py-4 text-right">
@@ -158,7 +182,9 @@ export default function LocationsClient() {
 																id: loc.id,
 																name: loc.name,
 																onConfirm: () =>
-																	deleteMutation.mutate({ id: loc.id })
+																	deleteMutation.mutate({
+																		id: loc.id,
+																	}),
 															})
 														}
 														className="p-2 text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all cursor-pointer border-none bg-transparent"
@@ -168,7 +194,7 @@ export default function LocationsClient() {
 												</div>
 											</td>
 										</tr>
-									)
+									),
 								)}
 							</tbody>
 						</table>
@@ -187,7 +213,7 @@ export default function LocationsClient() {
 							) : (
 								<Plus className="w-5 h-5" />
 							)}
-							{isFetchingNextPage ? "Wird geladen..." : "Mehr laden"}
+							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr laden'}
 						</button>
 					</div>
 				)}

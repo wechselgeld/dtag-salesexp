@@ -1,10 +1,21 @@
-import { router, protectedProcedure } from '@/server/trpc';
-import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
-import { TRPCError } from '@trpc/server';
+import {
+    router, protectedProcedure,
+} from '@/server/trpc';
+import {
+    z,
+} from 'zod';
+import {
+    prisma,
+} from '@/lib/prisma';
+import {
+    TRPCError,
+} from '@trpc/server';
+import type {
+    Prisma,
+} from '@prisma/client';
 
 const addonFormSchema = z.object({
-    name: z.string().min(1, "Name is required"),
+    name: z.string().min(1, 'Name is required'),
     description: z.string().optional(),
     category: z.string().optional(),
     imageUrl: z.string().optional(),
@@ -19,12 +30,19 @@ const tierSchema = z.object({
     price: z.number().min(0),
 });
 
-const editorProcedure = protectedProcedure.use(({ ctx, next }) => {
+const editorProcedure = protectedProcedure.use(({
+    ctx, next,
+}) => {
     const session = ctx.session as { role?: string; isEditor?: boolean };
     if (session?.role !== 'ADMIN' && !session?.isEditor) {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Du benötigst Editor-Rechte für diese Aktion.' });
+        throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'Du benötigst Editor-Rechte für diese Aktion.',
+        });
     }
-    return next({ ctx });
+    return next({
+        ctx,
+    });
 });
 
 export const addonRouter = router({
@@ -34,28 +52,49 @@ export const addonRouter = router({
             cursor: z.string().nullish(),
             search: z.string().optional(),
         }).optional())
-        .query(async ({ input }) => {
+        .query(async ({
+            input,
+        }) => {
             const limit = input?.limit ?? 50;
             const cursor = input?.cursor;
             const search = input?.search;
 
-            const where: import('@prisma/client').Prisma.AddonWhereInput = {};
+            const where: Prisma.AddonWhereInput = {
+            };
             if (search) {
                 where.OR = [
-                    { name: { contains: search } },
-                    { description: { contains: search } }
+                    {
+                        name: {
+                            contains: search,
+                        },
+                    },
+                    {
+                        description: {
+                            contains: search,
+                        },
+                    },
                 ];
             }
 
             const items = await prisma.addon.findMany({
                 take: limit + 1,
-                cursor: cursor ? { id: cursor } : undefined,
+                cursor: cursor ? {
+                    id: cursor,
+                } : undefined,
                 where,
                 include: {
-                    compatibleProducts: { select: { id: true, name: true, category: true } },
-                    tiers: true
+                    compatibleProducts: {
+                        select: {
+                            id: true,
+                            name: true,
+                            category: true,
+                        },
+                    },
+                    tiers: true,
                 },
-                orderBy: { name: 'asc' },
+                orderBy: {
+                    name: 'asc',
+                },
             });
 
             let nextCursor: typeof cursor | undefined = undefined;
@@ -64,20 +103,37 @@ export const addonRouter = router({
                 nextCursor = nextItem!.id;
             }
 
-            return { items, nextCursor };
+            return {
+                items,
+                nextCursor,
+            };
         }),
 
     getById: protectedProcedure
-        .input(z.object({ id: z.string() }))
-        .query(async ({ input }) => {
+        .input(z.object({
+            id: z.string(),
+        }))
+        .query(async ({
+            input,
+        }) => {
             const addon = await prisma.addon.findUnique({
-                where: { id: input.id },
+                where: {
+                    id: input.id,
+                },
                 include: {
-                    compatibleProducts: { select: { id: true } },
-                    tiers: true
+                    compatibleProducts: {
+                        select: {
+                            id: true,
+                        },
+                    },
+                    tiers: true,
                 },
             });
-            if (!addon) throw new TRPCError({ code: 'NOT_FOUND' });
+            if (!addon) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                });
+            }
             return {
                 ...addon,
                 productIds: addon.compatibleProducts.map(p => p.id),
@@ -87,19 +143,30 @@ export const addonRouter = router({
     create: editorProcedure
         .input(addonFormSchema.extend({
             productIds: z.array(z.string()),
-            tiers: z.array(tierSchema)
+            tiers: z.array(tierSchema),
         }))
-        .mutation(async ({ input }) => {
-            const { productIds, tiers, ...data } = input;
+        .mutation(({
+            input,
+        }) => {
+            const {
+                productIds, tiers, ...data
+            } = input;
 
             return prisma.addon.create({
                 data: {
                     ...data,
-                    compatibleProducts: { connect: productIds.map(id => ({ id })) },
+                    compatibleProducts: {
+                        connect: productIds.map(id => ({
+                            id,
+                        })),
+                    },
                     tiers: {
-                        create: tiers.map(t => ({ name: t.name, price: t.price }))
-                    }
-                }
+                        create: tiers.map(t => ({
+                            name: t.name,
+                            price: t.price,
+                        })),
+                    },
+                },
             });
         }),
 
@@ -107,31 +174,54 @@ export const addonRouter = router({
         .input(addonFormSchema.extend({
             id: z.string(),
             productIds: z.array(z.string()),
-            tiers: z.array(tierSchema)
+            tiers: z.array(tierSchema),
         }))
-        .mutation(async ({ input }) => {
-            const { id, productIds, tiers, ...data } = input;
+        .mutation(async ({
+            input,
+        }) => {
+            const {
+                id, productIds, tiers, ...data
+            } = input;
 
             // Delete old tiers and recreate (simplest array update strategy for this usecase)
             await prisma.addonTier.deleteMany({
-                where: { addonId: id }
+                where: {
+                    addonId: id,
+                },
             });
 
             return prisma.addon.update({
-                where: { id },
+                where: {
+                    id,
+                },
                 data: {
                     ...data,
-                    compatibleProducts: { set: productIds.map(pid => ({ id: pid })) },
+                    compatibleProducts: {
+                        set: productIds.map(pid => ({
+                            id: pid,
+                        })),
+                    },
                     tiers: {
-                        create: tiers.map(t => ({ name: t.name, price: t.price }))
-                    }
-                }
+                        create: tiers.map(t => ({
+                            name: t.name,
+                            price: t.price,
+                        })),
+                    },
+                },
             });
         }),
 
     delete: editorProcedure
-        .input(z.object({ id: z.string() }))
-        .mutation(async ({ input }) => {
-            return prisma.addon.delete({ where: { id: input.id } });
+        .input(z.object({
+            id: z.string(),
+        }))
+        .mutation(({
+            input,
+        }) => {
+            return prisma.addon.delete({
+                where: {
+                    id: input.id,
+                },
+            });
         }),
 });

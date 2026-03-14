@@ -1,20 +1,30 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useAnalytics } from "@/hooks/use-analytics";
+import {
+	useEffect,
+} from 'react';
+import {
+	useAnalytics,
+} from '@/hooks/use-analytics';
 
 export function PageTracker({
 	path,
-	category
+	category,
 }: {
 	path: string;
 	category?: string;
 }) {
-	const { trackPageView } = useAnalytics();
+	const {
+		trackPageView,
+	} = useAnalytics();
 
 	useEffect(() => {
 		trackPageView(path, category);
-	}, [path, category, trackPageView]);
+	}, [
+		path,
+		category,
+		trackPageView,
+	]);
 
 	return null;
 }

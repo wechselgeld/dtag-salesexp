@@ -1,8 +1,10 @@
-import { Metadata } from "next";
-import NewsClient from "./news-client";
+import type {
+	Metadata,
+} from 'next';
+import NewsClient from './news-client';
 
 export const metadata: Metadata = {
-	title: "Neuigkeiten"
+	title: 'Neuigkeiten',
 };
 
 export default function Page() {

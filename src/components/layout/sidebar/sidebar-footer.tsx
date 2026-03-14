@@ -1,9 +1,13 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { RotateCcw } from "lucide-react";
-import clsx from "clsx";
-import { Tooltip } from "./sidebar-tooltip";
+import Link from 'next/link';
+import {
+	RotateCcw,
+} from 'lucide-react';
+import clsx from 'clsx';
+import {
+	Tooltip,
+} from './sidebar-tooltip';
 
 interface SidebarFooterProps {
 	collapsed: boolean;
@@ -14,7 +18,7 @@ interface SidebarFooterProps {
 export function SidebarFooter({
 	collapsed,
 	resetConfirm,
-	handleReset
+	handleReset,
 }: SidebarFooterProps) {
 	return (
 		<div className="relative z-10 pb-4 pt-2 shrink-0 px-3 overflow-hidden flex flex-col items-start w-full">
@@ -23,34 +27,37 @@ export function SidebarFooter({
 				<button
 					onClick={handleReset}
 					className={clsx(
-						"flex items-center gap-2.5 rounded-xl transition-all duration-200 cursor-pointer font-bold overflow-hidden whitespace-nowrap",
+						'flex items-center gap-2.5 rounded-xl transition-all duration-200 cursor-pointer font-bold overflow-hidden whitespace-nowrap',
 						collapsed
-							? "w-9 h-9 justify-center mx-auto p-0 border border-transparent hover:border-[#ea580c]/30"
-							: "px-4 py-3 border w-full text-left",
+							? 'w-9 h-9 justify-center mx-auto p-0 border border-transparent hover:border-[#ea580c]/30'
+							: 'px-4 py-3 border w-full text-left',
 						resetConfirm
-							? "bg-[#fee2e2]/80 text-[#dc2626]"
-							: "bg-transparent text-[#999] hover:text-[#dc2626] hover:bg-[#fee2e2]/40",
-						collapsed ? "text-[0.7rem]" : "text-[0.8rem]"
+							? 'bg-[#fee2e2]/80 text-[#dc2626]'
+							: 'bg-transparent text-[#999] hover:text-[#dc2626] hover:bg-[#fee2e2]/40',
+						collapsed ? 'text-[0.7rem]' : 'text-[0.8rem]',
 					)}
 				>
 					<RotateCcw
 						className={clsx(
-							"shrink-0",
-							collapsed ? "w-4 h-4" : "w-4 h-4",
-							resetConfirm && "animate-spin"
+							'shrink-0',
+							collapsed ? 'w-4 h-4' : 'w-4 h-4',
+							resetConfirm && 'animate-spin',
 						)}
-						style={resetConfirm ? { animationDuration: "1s" } : {}}
+						style={resetConfirm ? {
+							animationDuration: '1s',
+						} : {
+						}}
 						strokeWidth={2}
 					/>
 					<span
 						className="transition-opacity duration-200 truncate"
 						style={{
 							opacity: collapsed ? 0 : 1,
-							width: collapsed ? 0 : "auto",
-							overflow: "hidden"
+							width: collapsed ? 0 : 'auto',
+							overflow: 'hidden',
 						}}
 					>
-						{resetConfirm ? "Wirklich zurücksetzen?" : "Sitzung zurücksetzen"}
+						{resetConfirm ? 'Wirklich zurücksetzen?' : 'Sitzung zurücksetzen'}
 					</span>
 				</button>
 			</Tooltip>
@@ -63,7 +70,7 @@ export function SidebarFooter({
 					maxHeight: collapsed ? 0 : 120,
 					marginTop: collapsed ? 0 : 12,
 					paddingTop: collapsed ? 0 : 12,
-					transitionProperty: "opacity, max-height, margin-top, padding-top"
+					transitionProperty: 'opacity, max-height, margin-top, padding-top',
 				}}
 			>
 				<div className="flex justify-center items-center flex-wrap gap-x-2 gap-y-1 text-[0.65rem] font-medium text-[#aaa]">

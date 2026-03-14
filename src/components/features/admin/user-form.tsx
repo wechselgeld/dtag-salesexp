@@ -1,10 +1,18 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc";
+import {
+	useForm,
+} from 'react-hook-form';
+import {
+	zodResolver,
+} from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+	useRouter,
+} from 'next/navigation';
+import {
+	trpc,
+} from '@/lib/trpc';
 import {
 	Save,
 	Loader2,
@@ -12,36 +20,45 @@ import {
 	AlertCircle,
 	Shield,
 	Key,
-	Share2
-} from "lucide-react";
-import Link from "next/link";
-import clsx from "clsx";
-import { Input } from "@/components/shared/ui/input";
-import { useState, useEffect } from "react";
+	Share2,
+} from 'lucide-react';
+import Link from 'next/link';
+import clsx from 'clsx';
+import {
+	Input,
+} from '@/components/shared/ui/input';
+import {
+	useState, useEffect,
+} from 'react';
 import {
 	AdminPageHeader,
 	AdminFormSection,
-	AdminFormContainer
-} from "@/components/shared/ui/admin-ui";
+	AdminFormContainer,
+} from '@/components/shared/ui/admin-ui';
 
 const userSchema = z.object({
-	email: z.string().email("Gültige E-Mail erforderlich"),
+	email: z.string().email('Gültige E-Mail erforderlich'),
 	password: z.string(),
-	role: z.enum(["ADMIN", "OD_MANAGER", "LOCATION_MANAGER", "TEAM_LEADER"]),
+	role: z.enum([
+		'ADMIN',
+		'OD_MANAGER',
+		'LOCATION_MANAGER',
+		'TEAM_LEADER',
+	]),
 	isEditor: z.boolean().default(false).optional(),
 	odRegionId: z.string().optional().nullable(),
 	locationId: z.string().optional().nullable(),
-	teamId: z.string().optional().nullable()
+	teamId: z.string().optional().nullable(),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
 
 interface UserFormProps {
-	mode: "create" | "edit";
+	mode: 'create' | 'edit';
 	userId?: string;
 	initialData?: {
 		email: string;
-		role: "ADMIN" | "OD_MANAGER" | "LOCATION_MANAGER" | "TEAM_LEADER";
+		role: 'ADMIN' | 'OD_MANAGER' | 'LOCATION_MANAGER' | 'TEAM_LEADER';
 		isEditor?: boolean;
 		odRegionId?: string | null;
 		locationId?: string | null;
@@ -49,22 +66,35 @@ interface UserFormProps {
 	};
 }
 
-export function UserForm({ mode, userId, initialData }: UserFormProps) {
+export function UserForm({
+	mode, userId, initialData,
+}: UserFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
-	const [errorMsg, setErrorMsg] = useState("");
+	const [
+		errorMsg,
+		setErrorMsg,
+	] = useState('');
 
-	const { data: currentUser } = trpc.auth.me.useQuery();
+	const {
+		data: currentUser,
+	} = trpc.auth.me.useQuery();
 
-	const { data: odRegionsData, isLoading: isLoadingOdRegions } =
+	const {
+		data: odRegionsData, isLoading: isLoadingOdRegions,
+	} =
 		trpc.odRegion.list.useQuery();
 	const odRegions = odRegionsData?.items;
 
-	const { data: locationsData, isLoading: isLoadingLocations } =
+	const {
+		data: locationsData, isLoading: isLoadingLocations,
+	} =
 		trpc.location.list.useQuery();
 	const locations = locationsData?.items;
 
-	const { data: teamsData, isLoading: isLoadingTeams } =
+	const {
+		data: teamsData, isLoading: isLoadingTeams,
+	} =
 		trpc.team.list.useQuery();
 	const teams = teamsData?.items;
 
@@ -73,73 +103,82 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 		watch,
 		setValue,
 		handleSubmit,
-		formState: { errors }
+		formState: {
+			errors,
+		},
 	} = useForm({
 		resolver: zodResolver(userSchema),
-		mode: "onChange",
+		mode: 'onChange',
 		defaultValues: {
-			email: initialData?.email || "",
-			password: "",
-			role: initialData?.role || "TEAM_LEADER",
+			email: initialData?.email || '',
+			password: '',
+			role: initialData?.role || 'TEAM_LEADER',
 			isEditor: initialData?.isEditor || false,
-			odRegionId: initialData?.odRegionId || "",
-			locationId: initialData?.locationId || "",
-			teamId: initialData?.teamId || ""
-		}
+			odRegionId: initialData?.odRegionId || '',
+			locationId: initialData?.locationId || '',
+			teamId: initialData?.teamId || '',
+		},
 	});
 
-	const selectedRole = watch("role");
-	const selectedOdRegionId = watch("odRegionId");
-	const selectedLocationId = watch("locationId");
+	const selectedRole = watch('role');
+	const selectedOdRegionId = watch('odRegionId');
+	const selectedLocationId = watch('locationId');
 
 	useEffect(() => {
-		if (mode === "create" && currentUser) {
-			if (currentUser.role === "OD_MANAGER" && currentUser.odRegionId) {
-				setValue("odRegionId", currentUser.odRegionId);
-			} else if (
-				currentUser.role === "LOCATION_MANAGER" &&
+		if (mode === 'create' && currentUser) {
+			if (currentUser.role === 'OD_MANAGER' && currentUser.odRegionId) {
+				setValue('odRegionId', currentUser.odRegionId);
+			}
+			else if (
+				currentUser.role === 'LOCATION_MANAGER' &&
 				currentUser.locationId
 			) {
-				setValue("locationId", currentUser.locationId);
-			} else if (currentUser.role === "TEAM_LEADER" && currentUser.teamId) {
-				setValue("teamId", currentUser.teamId);
+				setValue('locationId', currentUser.locationId);
+			}
+			else if (currentUser.role === 'TEAM_LEADER' && currentUser.teamId) {
+				setValue('teamId', currentUser.teamId);
 			}
 		}
-	}, [currentUser, mode, setValue]);
+	}, [
+		currentUser,
+		mode,
+		setValue,
+	]);
 
 	const createMutation = trpc.adminUsers.create.useMutation({
 		onSuccess: () => {
 			utils.adminUsers.list.invalidate();
-			router.push("/admin/users");
+			router.push('/admin/users');
 			router.refresh();
 		},
 		onError: (err) => {
 			setErrorMsg(err.message);
-		}
+		},
 	});
 
 	const updateMutation = trpc.adminUsers.update.useMutation({
 		onSuccess: () => {
 			utils.adminUsers.list.invalidate();
-			router.push("/admin/users");
+			router.push('/admin/users');
 			router.refresh();
 		},
 		onError: (err) => {
 			setErrorMsg(err.message);
-		}
+		},
 	});
 
 	const onSubmit = (data: any) => {
-		setErrorMsg("");
-		if (mode === "create") {
+		setErrorMsg('');
+		if (mode === 'create') {
 			if (data.password.length < 6) {
-				setErrorMsg("Passwort muss mindestens 6 Zeichen lang sein");
+				setErrorMsg('Passwort muss mindestens 6 Zeichen lang sein');
 				return;
 			}
 			createMutation.mutate(data);
-		} else if (mode === "edit" && userId) {
+		}
+		else if (mode === 'edit' && userId) {
 			if (data.password && data.password.length < 6) {
-				setErrorMsg("Passwort muss mindestens 6 Zeichen lang sein");
+				setErrorMsg('Passwort muss mindestens 6 Zeichen lang sein');
 				return;
 			}
 			updateMutation.mutate({
@@ -150,7 +189,7 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 				isEditor: data.isEditor,
 				odRegionId: data.odRegionId || null,
 				locationId: data.locationId || null,
-				teamId: data.teamId || null
+				teamId: data.teamId || null,
 			});
 		}
 	};
@@ -163,10 +202,10 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 			form="user-form"
 			disabled={isPending}
 			className={clsx(
-				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
+				'px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5',
 				isPending
-					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-					: "bg-[#e20074] hover:bg-[#c70066]"
+					? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+					: 'bg-[#e20074] hover:bg-[#c70066]',
 			)}
 		>
 			{isPending ? (
@@ -181,10 +220,10 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 	return (
 		<div className="space-y-8 pb-12">
 			<AdminPageHeader
-				title={mode === "create" ? "Neuer Benutzer" : "Benutzer bearbeiten"}
+				title={mode === 'create' ? 'Neuer Benutzer' : 'Benutzer bearbeiten'}
 				subtitle={
-					mode === "create"
-						? "Erstelle einen neuen Zugangscode für das Admin-Dashboard."
+					mode === 'create'
+						? 'Erstelle einen neuen Zugangscode für das Admin-Dashboard.'
 						: `Verwalte die Berechtigungen für ${initialData?.email}`
 				}
 				backHref="/admin/users"
@@ -212,13 +251,13 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 							type="email"
 							placeholder="z.B. user@telekom.de"
 							error={errors.email?.message as string}
-							{...register("email")}
+							{...register('email')}
 						/>
 
 						<div className="flex flex-col gap-1.5">
 							<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-								Passwort{" "}
-								{mode === "edit" && (
+								Passwort{' '}
+								{mode === 'edit' && (
 									<span className="text-[#888] font-normal">
 										(leer lassen, um nicht zu ändern)
 									</span>
@@ -228,11 +267,11 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 								type="password"
 								className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all"
 								placeholder={
-									mode === "edit"
-										? "Neues Passwort"
-										: "Passwort (min. 6 Zeichen)"
+									mode === 'edit'
+										? 'Neues Passwort'
+										: 'Passwort (min. 6 Zeichen)'
 								}
-								{...register("password")}
+								{...register('password')}
 							/>
 						</div>
 					</AdminFormSection>
@@ -248,23 +287,23 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 							</label>
 							<div className="relative">
 								<select
-									{...register("role")}
+									{...register('role')}
 									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all text-[#1a1a2e] appearance-none cursor-pointer"
 								>
-									{(currentUser?.role === "ADMIN" || !currentUser?.role) && (
+									{(currentUser?.role === 'ADMIN' || !currentUser?.role) && (
 										<option value="ADMIN">
 											Zentraler Administrator (Full Access)
 										</option>
 									)}
-									{(currentUser?.role === "ADMIN" ||
-										currentUser?.role === "OD_MANAGER") && (
+									{(currentUser?.role === 'ADMIN' ||
+										currentUser?.role === 'OD_MANAGER') && (
 										<option value="OD_MANAGER">
 											OD-Leiter (Bereichszugriff)
 										</option>
 									)}
-									{(currentUser?.role === "ADMIN" ||
-										currentUser?.role === "OD_MANAGER" ||
-										currentUser?.role === "LOCATION_MANAGER") && (
+									{(currentUser?.role === 'ADMIN' ||
+										currentUser?.role === 'OD_MANAGER' ||
+										currentUser?.role === 'LOCATION_MANAGER') && (
 										<option value="LOCATION_MANAGER">
 											Standortleiter (Regional-Fokus)
 										</option>
@@ -298,8 +337,8 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 								<input
 									type="checkbox"
 									id="isEditor"
-									{...register("isEditor")}
-									disabled={mode === "edit" && userId === currentUser?.id && currentUser?.role !== "ADMIN"}
+									{...register('isEditor')}
+									disabled={mode === 'edit' && userId === currentUser?.id && currentUser?.role !== 'ADMIN'}
 									className="peer w-6 h-6 rounded-lg border-[#fbcfe8] text-[#e20074] focus:ring-[#e20074] cursor-pointer appearance-none bg-white transition-all checked:bg-[#e20074] checked:border-[#e20074] disabled:opacity-50 disabled:cursor-not-allowed"
 								/>
 								<div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white opacity-0 peer-checked:opacity-100 transition-opacity">
@@ -323,14 +362,14 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 							<div className="flex flex-col">
 								<label
 									htmlFor="isEditor"
-									className={clsx("text-[0.85rem] font-bold text-[#1a1a2e]", mode === "edit" && userId === currentUser?.id && currentUser?.role !== "ADMIN" ? "cursor-not-allowed opacity-50" : "cursor-pointer")}
+									className={clsx('text-[0.85rem] font-bold text-[#1a1a2e]', mode === 'edit' && userId === currentUser?.id && currentUser?.role !== 'ADMIN' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer')}
 								>
 									Zusätzliche Editor-Rechte aktivieren
 								</label>
 								<p className="text-[0.75rem] text-[#be185d] m-0 leading-relaxed font-medium mt-0.5">
 									Erlaubt das Bearbeiten von Produkten, Aktionen, Gutschriften
 									und News – unabhängig von der Funktionsrolle.
-									{mode === "edit" && userId === currentUser?.id && currentUser?.role !== "ADMIN" && (
+									{mode === 'edit' && userId === currentUser?.id && currentUser?.role !== 'ADMIN' && (
 										<span className="block mt-1 font-bold">Du kannst deine eigenen Editor-Rechte nicht bearbeiten.</span>
 									)}
 								</p>
@@ -338,9 +377,9 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 						</div>
 					</AdminFormSection>
 
-					{(selectedRole === "OD_MANAGER" ||
-						selectedRole === "LOCATION_MANAGER" ||
-						selectedRole === "TEAM_LEADER") && (
+					{(selectedRole === 'OD_MANAGER' ||
+						selectedRole === 'LOCATION_MANAGER' ||
+						selectedRole === 'TEAM_LEADER') && (
 						<AdminFormSection
 							title="Hierarchie-Zuordnung"
 							description="Definiere den Zuständigkeitsbereich des Benutzers."
@@ -353,9 +392,9 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 									</label>
 									<div className="relative">
 										<select
-											{...register("odRegionId")}
+											{...register('odRegionId')}
 											disabled={
-												isLoadingOdRegions || currentUser?.role === "OD_MANAGER"
+												isLoadingOdRegions || currentUser?.role === 'OD_MANAGER'
 											}
 											className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all disabled:opacity-50 appearance-none cursor-pointer"
 										>
@@ -363,8 +402,8 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 											{odRegions
 												?.filter(
 													(r: any) =>
-														currentUser?.role === "ADMIN" ||
-														r.id === currentUser?.odRegionId
+														currentUser?.role === 'ADMIN' ||
+														r.id === currentUser?.odRegionId,
 												)
 												.map((r: any) => (
 													<option key={r.id} value={r.id}>
@@ -392,18 +431,18 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 									</div>
 								</div>
 
-								{(selectedRole === "LOCATION_MANAGER" ||
-									selectedRole === "TEAM_LEADER") && (
+								{(selectedRole === 'LOCATION_MANAGER' ||
+									selectedRole === 'TEAM_LEADER') && (
 									<div className="flex flex-col gap-1.5">
 										<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
 											Standort
 										</label>
 										<div className="relative">
 											<select
-												{...register("locationId")}
+												{...register('locationId')}
 												disabled={
 													isLoadingLocations ||
-													currentUser?.role === "LOCATION_MANAGER"
+													currentUser?.role === 'LOCATION_MANAGER'
 												}
 												className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all disabled:opacity-50 appearance-none cursor-pointer"
 											>
@@ -411,16 +450,16 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 												{locations
 													?.filter(
 														(l: any) =>
-															(currentUser?.role === "ADMIN" ||
-																currentUser?.role === "OD_MANAGER" ||
+															(currentUser?.role === 'ADMIN' ||
+																currentUser?.role === 'OD_MANAGER' ||
 																l.id === currentUser?.locationId) &&
 															(!selectedOdRegionId ||
-																l.odRegionId === selectedOdRegionId)
+																l.odRegionId === selectedOdRegionId),
 													)
 													.map((loc: any) => (
 														<option key={loc.id} value={loc.id}>
-															{loc.name} {loc.address ? `(${loc.address})` : ""}{" "}
-															{loc.isActive ? "" : "(Inaktiv)"}
+															{loc.name} {loc.address ? `(${loc.address})` : ''}{' '}
+															{loc.isActive ? '' : '(Inaktiv)'}
 														</option>
 													))}
 											</select>
@@ -445,16 +484,16 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 									</div>
 								)}
 
-								{selectedRole === "TEAM_LEADER" && (
+								{selectedRole === 'TEAM_LEADER' && (
 									<div className="flex flex-col gap-1.5">
 										<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
 											Vertriebsteam
 										</label>
 										<div className="relative">
 											<select
-												{...register("teamId")}
+												{...register('teamId')}
 												disabled={
-													isLoadingTeams || currentUser?.role === "TEAM_LEADER"
+													isLoadingTeams || currentUser?.role === 'TEAM_LEADER'
 												}
 												className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all disabled:opacity-50 appearance-none cursor-pointer"
 											>
@@ -462,17 +501,17 @@ export function UserForm({ mode, userId, initialData }: UserFormProps) {
 												{teams
 													?.filter(
 														(t: any) =>
-															(currentUser?.role !== "TEAM_LEADER" ||
+															(currentUser?.role !== 'TEAM_LEADER' ||
 																t.id === currentUser?.teamId) &&
 															(!selectedLocationId ||
-																t.locationId === selectedLocationId)
+																t.locationId === selectedLocationId),
 													)
 													.map((team: any) => (
 														<option key={team.id} value={team.id}>
-															{team.name}{" "}
+															{team.name}{' '}
 															{team.location?.address
 																? `(${team.location.address})`
-																: ""}
+																: ''}
 														</option>
 													))}
 											</select>

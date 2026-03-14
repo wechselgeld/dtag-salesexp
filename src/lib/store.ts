@@ -1,4 +1,6 @@
-import { create } from 'zustand'
+import {
+	create,
+} from 'zustand';
 
 interface AppState {
     hasHydrated: boolean
@@ -6,6 +8,8 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-    hasHydrated: false,
-    setHasHydrated: (state) => set({ hasHydrated: state }),
-}))
+	hasHydrated: false,
+	setHasHydrated: (state) => set({
+		hasHydrated: state,
+	}),
+}));

@@ -1,7 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import {
+	useState, useEffect, useCallback, useRef,
+} from 'react';
+import {
+	usePathname, useRouter,
+} from 'next/navigation';
 import {
 	Home,
 	LayoutGrid,
@@ -11,46 +15,82 @@ import {
 	Swords,
 	Settings,
 	HelpCircle,
-	ExternalLink
-} from "lucide-react";
+	ExternalLink,
+} from 'lucide-react';
 
-import { useBasketStore } from "@/hooks/use-basket-store";
-import { useModalStore } from "@/hooks/use-modal-store";
+import {
+	useBasketStore,
+} from '@/hooks/use-basket-store';
+import {
+	useModalStore,
+} from '@/hooks/use-modal-store';
 
-import { SidebarWorkflow } from "./sidebar/sidebar-workflow";
-import { SidebarTools, UtilityLink } from "./sidebar/sidebar-tools";
-import { SidebarNps } from "./sidebar/sidebar-nps";
-import { SidebarFooter } from "./sidebar/sidebar-footer";
-import { SidebarLayout } from "./sidebar/sidebar-layout";
+import {
+	SidebarWorkflow,
+} from './sidebar/sidebar-workflow';
+import type {
+	UtilityLink,
+} from './sidebar/sidebar-tools';
+import {
+	SidebarTools,
+} from './sidebar/sidebar-tools';
+import {
+	SidebarNps,
+} from './sidebar/sidebar-nps';
+import {
+	SidebarFooter,
+} from './sidebar/sidebar-footer';
+import {
+	SidebarLayout,
+} from './sidebar/sidebar-layout';
 
 const CATEGORY_COLORS: Record<string, string> = {
-	MOBILE: "#e20074",
-	FIBER: "#0090d0",
-	DSL: "#7b61ff",
-	MAGENTA_TV_OTT: "#ff6b00",
-	DEVICE: "#00a878"
+	MOBILE: '#e20074',
+	FIBER: '#0090d0',
+	DSL: '#7b61ff',
+	MAGENTA_TV_OTT: '#ff6b00',
+	DEVICE: '#00a878',
 };
 
 const CATEGORY_NAMES: Record<string, string> = {
-	MOBILE: "Mobilfunk",
-	FIBER: "Glasfaser",
-	DSL: "Festnetz",
-	MAGENTA_TV_OTT: "MagentaTV",
-	DEVICE: "Endgeräte"
+	MOBILE: 'Mobilfunk',
+	FIBER: 'Glasfaser',
+	DSL: 'Festnetz',
+	MAGENTA_TV_OTT: 'MagentaTV',
+	DEVICE: 'Endgeräte',
 };
 
 export function SidebarNav() {
 	const pathname = usePathname();
 	const router = useRouter();
-	const { items, clearBasket } = useBasketStore();
-	const { setAvailabilityOpen, setCalculatorOpen, setBattlecardOpen } =
+	const {
+		items, clearBasket,
+	} = useBasketStore();
+	const {
+		setAvailabilityOpen, setCalculatorOpen, setBattlecardOpen,
+	} =
 		useModalStore();
 
-	const [collapsed, setCollapsed] = useState(false);
-	const [resetConfirm, setResetConfirm] = useState(false);
-	const [npsChecked, setNpsChecked] = useState(false);
-	const [npsResetting, setNpsResetting] = useState(false);
-	const [npsHovered, setNpsHovered] = useState(false);
+	const [
+		collapsed,
+		setCollapsed,
+	] = useState(false);
+	const [
+		resetConfirm,
+		setResetConfirm,
+	] = useState(false);
+	const [
+		npsChecked,
+		setNpsChecked,
+	] = useState(false);
+	const [
+		npsResetting,
+		setNpsResetting,
+	] = useState(false);
+	const [
+		npsHovered,
+		setNpsHovered,
+	] = useState(false);
 	const npsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	// Auto-reset NPS after 2 minutes with animation
@@ -65,12 +105,14 @@ export function SidebarNav() {
 			}, 120000);
 		}
 		return () => {
-			if (npsTimerRef.current) clearTimeout(npsTimerRef.current);
+			if (npsTimerRef.current) { clearTimeout(npsTimerRef.current); }
 		};
-	}, [npsChecked]);
+	}, [
+		npsChecked,
+	]);
 
 	// Determine current step from route
-	const isHome = pathname === "/" || pathname === "/products";
+	const isHome = pathname === '/' || pathname === '/products';
 	const isCategory = pathname.match(/^\/products\/[A-Z_]+$/);
 	const isProduct = pathname.match(/^\/products\/[A-Z_]+\/.+$/);
 
@@ -78,68 +120,71 @@ export function SidebarNav() {
 	const categoryMatch = pathname.match(/^\/products\/([A-Z_]+)/);
 	const currentCategory = categoryMatch ? categoryMatch[1] : null;
 	const catColor = currentCategory
-		? CATEGORY_COLORS[currentCategory] || "#e20074"
-		: "#e20074";
+		? CATEGORY_COLORS[currentCategory] || '#e20074'
+		: '#e20074';
 	const catName = currentCategory
 		? CATEGORY_NAMES[currentCategory] || currentCategory
 		: null;
 
 	const steps = [
 		{
-			id: "home",
-			label: "Startseite",
-			sublabel: isHome ? "Katalog durchstöbern" : "Startseite",
+			id: 'home',
+			label: 'Startseite',
+			sublabel: isHome ? 'Katalog durchstöbern' : 'Startseite',
 			icon: Home,
-			href: "/",
+			href: '/',
 			active: isHome,
-			completed: !!isCategory || !!isProduct
+			completed: !!isCategory || !!isProduct,
 		},
 		{
-			id: "category",
-			label: "Kategorie",
+			id: 'category',
+			label: 'Kategorie',
 			sublabel: isCategory
 				? `${catName}-Angebote`
 				: isProduct
-					? catName || "Kategorie"
-					: "Kategorie wählen",
+					? catName || 'Kategorie'
+					: 'Kategorie wählen',
 			icon: LayoutGrid,
-			href: currentCategory ? `/products/${currentCategory}` : "/products",
+			href: currentCategory ? `/products/${currentCategory}` : '/products',
 			active: !!isCategory,
-			completed: !!isProduct
+			completed: !!isProduct,
 		},
 		{
-			id: "configure",
-			label: "Konfiguration",
+			id: 'configure',
+			label: 'Konfiguration',
 			sublabel: isProduct
-				? "Details anpassen"
+				? 'Details anpassen'
 				: items.length > 0
-					? "Im Warenkorb"
-					: "Tarif konfigurieren",
+					? 'Im Warenkorb'
+					: 'Tarif konfigurieren',
 			icon: Settings2,
 			href: isProduct
 				? pathname
 				: currentCategory
 					? `/products/${currentCategory}`
-					: "/products",
+					: '/products',
 			active: !!isProduct,
-			completed: items.length > 0
-		}
+			completed: items.length > 0,
+		},
 	];
 
 	const currentStepIndex = steps.findIndex((s) => s.active);
 
 	// Keyboard shortcut: Ctrl+H to toggle sidebar
 	const handleKeyDown = useCallback((e: KeyboardEvent) => {
-		if (e.key === "h" && e.ctrlKey && !e.shiftKey && !e.altKey) {
+		if (e.key === 'h' && e.ctrlKey && !e.shiftKey && !e.altKey) {
 			e.preventDefault();
 			setCollapsed((c) => !c);
 		}
-	}, []);
+	}, [
+	]);
 
 	useEffect(() => {
-		document.addEventListener("keydown", handleKeyDown);
-		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, [handleKeyDown]);
+		document.addEventListener('keydown', handleKeyDown);
+		return () => document.removeEventListener('keydown', handleKeyDown);
+	}, [
+		handleKeyDown,
+	]);
 
 	const handleReset = () => {
 		if (!resetConfirm) {
@@ -148,61 +193,59 @@ export function SidebarNav() {
 			return;
 		}
 		clearBasket();
-		router.push("/");
+		router.push('/');
 		setResetConfirm(false);
 		setNpsChecked(false);
-		if (npsTimerRef.current) clearTimeout(npsTimerRef.current);
+		if (npsTimerRef.current) { clearTimeout(npsTimerRef.current); }
 	};
-
-	const sidebarWidth = collapsed ? 72 : 280; // slightly wider than before (260->280) due to padding + style changes
 
 	// Grouped utilities
 	const group1: UtilityLink[] = [
 		{
-			id: "tour-calculator",
+			id: 'tour-calculator',
 			icon: Calculator,
-			label: "Sparvorteil-Rechner",
+			label: 'Sparvorteil-Rechner',
 			onClick: () => setCalculatorOpen(true),
-			type: "button"
+			type: 'button',
 		},
 		{
-			id: "tour-availability",
+			id: 'tour-availability',
 			icon: MapPin,
-			label: "Verfügbarkeits-Check",
+			label: 'Verfügbarkeits-Check',
 			onClick: () => setAvailabilityOpen(true),
-			type: "button"
+			type: 'button',
 		},
 		{
-			id: "tour-battlecards",
+			id: 'tour-battlecards',
 			icon: Swords,
-			label: "Battlecards",
+			label: 'Battlecards',
 			onClick: () => setBattlecardOpen(true),
-			type: "button"
-		}
+			type: 'button',
+		},
 	];
 
 	const group2: UtilityLink[] = [
 		{
-			id: "settings-link",
+			id: 'settings-link',
 			icon: Settings,
-			label: "Einstellungen",
-			href: "/settings",
-			type: "link"
+			label: 'Einstellungen',
+			href: '/settings',
+			type: 'link',
 		},
 		{
-			id: "faq-link",
+			id: 'faq-link',
 			icon: HelpCircle,
-			label: "Hilfe & FAQ",
-			href: "/faq",
-			type: "link"
+			label: 'Hilfe & FAQ',
+			href: '/faq',
+			type: 'link',
 		},
 		{
-			id: "tour-admin",
+			id: 'tour-admin',
 			icon: ExternalLink,
-			label: "Admin",
-			href: "/login",
-			type: "link"
-		}
+			label: 'Admin',
+			href: '/login',
+			type: 'link',
+		},
 	];
 
 	return (
@@ -217,7 +260,7 @@ export function SidebarNav() {
 						group1={group1}
 						group2={group2}
 					/>
-					
+
 					<SidebarNps
 						collapsed={collapsed}
 						npsChecked={npsChecked}
@@ -225,7 +268,7 @@ export function SidebarNav() {
 						npsHovered={npsHovered}
 						setNpsHovered={setNpsHovered}
 						onToggle={() => {
-							if (npsTimerRef.current) clearTimeout(npsTimerRef.current);
+							if (npsTimerRef.current) { clearTimeout(npsTimerRef.current); }
 							setNpsResetting(false);
 							setNpsChecked(!npsChecked);
 						}}

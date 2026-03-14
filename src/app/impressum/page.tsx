@@ -1,13 +1,25 @@
-import { Metadata } from "next";
-import { Building2, Info, FileText } from "lucide-react";
-import Link from "next/link";
-import { TelekomLogo } from "@/components/shared/telekom-logo";
-import { GlobalFooter } from "@/components/shared/global-footer";
-import { BackButton } from "@/components/shared/back-button";
-import { PageTracker } from "@/components/shared/page-tracker";
+import type {
+	Metadata,
+} from 'next';
+import {
+	Building2, Info, FileText,
+} from 'lucide-react';
+import Link from 'next/link';
+import {
+	TelekomLogo,
+} from '@/components/shared/telekom-logo';
+import {
+	GlobalFooter,
+} from '@/components/shared/global-footer';
+import {
+	BackButton,
+} from '@/components/shared/back-button';
+import {
+	PageTracker,
+} from '@/components/shared/page-tracker';
 
 export const metadata: Metadata = {
-	title: "Impressum"
+	title: 'Impressum',
 };
 
 export default function ImpressumPage() {
@@ -62,7 +74,7 @@ export default function ImpressumPage() {
 							<br />
 							Telefon: Auf Anfrage
 							<br />
-							E-Mail:{" "}
+							E-Mail:{' '}
 							<a
 								href="mailto:karsten.gerlach@telekom.de"
 								className="text-[#e20074] hover:underline"
@@ -79,7 +91,7 @@ export default function ImpressumPage() {
 							<br />
 							Telefon: Auf Anfrage
 							<br />
-							E-Mail:{" "}
+							E-Mail:{' '}
 							<a
 								href="mailto:felix.kinze@telekom.de"
 								className="text-[#e20074] hover:underline"
@@ -108,7 +120,7 @@ export default function ImpressumPage() {
 							Personenbezogene Daten werden nur im absolut minimal nötigen
 							Rahmen zur technischen Bereitstellung der Anwendungsfunktionalität
 							verarbeitet. Weitere Informationen hierzu entnehmen Sie bitte der
-							dedizierten{" "}
+							dedizierten{' '}
 							<Link
 								href="/privacy"
 								className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2"

@@ -1,12 +1,24 @@
-import { router, publicProcedure, protectedProcedure } from '@/server/trpc';
-import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
-import { login, logout } from '@/lib/auth';
-import { TRPCError } from '@trpc/server';
+import {
+    router, publicProcedure, protectedProcedure,
+} from '@/server/trpc';
+import {
+    z,
+} from 'zod';
+import {
+    prisma,
+} from '@/lib/prisma';
+import {
+    login, logout,
+} from '@/lib/auth';
+import {
+    TRPCError,
+} from '@trpc/server';
 import bcrypt from 'bcryptjs';
 
 export const authRouter = router({
-    me: protectedProcedure.query(async ({ ctx }) => {
+    me: protectedProcedure.query(({
+        ctx,
+    }) => {
         return ctx.session as any;
     }),
 
@@ -15,9 +27,13 @@ export const authRouter = router({
             email: z.string().email(),
             password: z.string(),
         }))
-        .mutation(async ({ input }) => {
+        .mutation(async ({
+            input,
+        }) => {
             const user = await prisma.user.findUnique({
-                where: { email: input.email },
+                where: {
+                    email: input.email,
+                },
             });
 
             if (!user) {
@@ -52,15 +68,19 @@ export const authRouter = router({
                 isEditor: user.isEditor,
                 odRegionId: user.odRegionId,
                 locationId: user.locationId,
-                teamId: user.teamId
+                teamId: user.teamId,
             });
 
-            return { success: true };
+            return {
+                success: true,
+            };
         }),
 
     logout: publicProcedure
         .mutation(async () => {
             await logout();
-            return { success: true };
+            return {
+                success: true,
+            };
         }),
 });

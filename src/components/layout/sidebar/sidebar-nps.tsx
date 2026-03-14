@@ -1,9 +1,15 @@
-"use client";
+'use client';
 
-import { motion, AnimatePresence } from "framer-motion";
-import { Check, MessageSquare } from "lucide-react";
-import clsx from "clsx";
-import { Tooltip } from "./sidebar-tooltip";
+import {
+	motion, AnimatePresence,
+} from 'framer-motion';
+import {
+	Check, MessageSquare,
+} from 'lucide-react';
+import clsx from 'clsx';
+import {
+	Tooltip,
+} from './sidebar-tooltip';
 
 interface SidebarNpsProps {
 	collapsed: boolean;
@@ -20,11 +26,11 @@ export function SidebarNps({
 	npsResetting,
 	npsHovered,
 	setNpsHovered,
-	onToggle
+	onToggle,
 }: SidebarNpsProps) {
 	return (
 		<Tooltip
-			label={npsChecked ? "NPS ✓" : "NPS-Hinweis geben"}
+			label={npsChecked ? 'NPS ✓' : 'NPS-Hinweis geben'}
 			show={collapsed}
 		>
 			<div
@@ -37,10 +43,24 @@ export function SidebarNps({
 					<AnimatePresence>
 						{npsHovered && !npsChecked && (
 							<motion.div
-								initial={{ opacity: 0, scale: 0.95, y: 5 }}
-								animate={{ opacity: 1, scale: 1, y: 0 }}
-								exit={{ opacity: 0, scale: 0.95, y: 5 }}
-								transition={{ duration: 0.2 }}
+								initial={{
+									opacity: 0,
+									scale: 0.95,
+									y: 5,
+								}}
+								animate={{
+									opacity: 1,
+									scale: 1,
+									y: 0,
+								}}
+								exit={{
+									opacity: 0,
+									scale: 0.95,
+									y: 5,
+								}}
+								transition={{
+									duration: 0.2,
+								}}
 								className="absolute bottom-[calc(100%+12px)] left-2 right-2 z-50 origin-bottom"
 							>
 								<div className="bg-[#fff7ed] border border-[#fed7aa] p-3 rounded-[16px] text-[0.7rem] text-[#ea580c] leading-relaxed shadow-lg relative">
@@ -51,11 +71,11 @@ export function SidebarNps({
 											Beispielformulierung:
 										</div>
 										„Sie erhalten morgen eine SMS von uns. Sie werden gefragt...
-										<br />- ...ob wir Ihr <strong>Anliegen lösen</strong>{" "}
+										<br />- ...ob wir Ihr <strong>Anliegen lösen</strong>{' '}
 										konnten
 										<br />- ...ob ich Ihnen <strong>
 											ein Angebot gemacht
-										</strong>{" "}
+										</strong>{' '}
 										habe
 										<br />- ...und wie Sie das Gespräch mit mir fanden.
 										<br />
@@ -79,31 +99,48 @@ export function SidebarNps({
 					animate={
 						npsResetting
 							? {
-									scale: [1, 1.05, 0.95, 1.05, 1],
-									rotate: [0, -2, 2, -1, 0]
-								}
-							: { scale: 1, rotate: 0 }
+								scale: [
+									1,
+									1.05,
+									0.95,
+									1.05,
+									1,
+								],
+								rotate: [
+									0,
+									-2,
+									2,
+									-1,
+									0,
+								],
+							}
+							: {
+								scale: 1,
+								rotate: 0,
+							}
 					}
-					transition={{ duration: 0.5 }}
+					transition={{
+						duration: 0.5,
+					}}
 					className={clsx(
-						"w-full flex items-center justify-between gap-3 rounded-[20px] transition-all duration-300 cursor-pointer overflow-hidden whitespace-nowrap relative z-10 shrink-0 shadow-sm",
+						'w-full flex items-center justify-between gap-3 rounded-[20px] transition-all duration-300 cursor-pointer overflow-hidden whitespace-nowrap relative z-10 shrink-0 shadow-sm',
 						collapsed
-							? "w-9 h-9 justify-center mx-auto p-0 hover:border-[#ea580c]/30"
-							: "px-4 py-3 w-full",
-						npsResetting && "animate-pulse",
+							? 'w-9 h-9 justify-center mx-auto p-0 hover:border-[#ea580c]/30'
+							: 'px-4 py-3 w-full',
+						npsResetting && 'animate-pulse',
 						npsChecked
-							? "bg-linear-to-r from-[#dcfce7] to-[#bbf7d0] border-[#86efac] text-[#166534]"
-							: "bg-linear-to-r from-white to-[#fffaf7] border-[#e8e8e8] text-[#ea580c] hover:shadow-md hover:border-[#ea580c]/30"
+							? 'bg-linear-to-r from-[#dcfce7] to-[#bbf7d0] border-[#86efac] text-[#166534]'
+							: 'bg-linear-to-r from-white to-[#fffaf7] border-[#e8e8e8] text-[#ea580c] hover:shadow-md hover:border-[#ea580c]/30',
 					)}
 				>
 					<div className="flex items-center gap-3">
 						<div
 							className={clsx(
-								"shrink-0 rounded-[12px] flex items-center justify-center transition-all",
-								collapsed ? "w-full h-full bg-transparent" : "w-8 h-8",
+								'shrink-0 rounded-[12px] flex items-center justify-center transition-all',
+								collapsed ? 'w-full h-full bg-transparent' : 'w-8 h-8',
 								npsChecked
-									? "bg-white/50 text-[#16a34a]"
-									: "bg-[#ea580c]/10 text-[#ea580c]"
+									? 'bg-white/50 text-[#16a34a]'
+									: 'bg-[#ea580c]/10 text-[#ea580c]',
 							)}
 						>
 							{npsChecked ? (
@@ -117,11 +154,11 @@ export function SidebarNps({
 							className="text-[0.8rem] font-bold transition-opacity duration-200 truncate tracking-tight"
 							style={{
 								opacity: collapsed ? 0 : 1,
-								width: collapsed ? 0 : "auto",
-								overflow: "hidden"
+								width: collapsed ? 0 : 'auto',
+								overflow: 'hidden',
 							}}
 						>
-							{npsChecked ? "NPS erledigt. Top!" : "Auf NPS hingewiesen?"}
+							{npsChecked ? 'NPS erledigt. Top!' : 'Auf NPS hingewiesen?'}
 						</span>
 					</div>
 
@@ -130,7 +167,9 @@ export function SidebarNps({
 						<div className="w-5 h-5 relative shrink-0 opacity-80">
 							<svg
 								className="w-full h-full -rotate-90"
-								style={{ color: "#166534" }}
+								style={{
+									color: '#166534',
+								}}
 								viewBox="0 0 20 20"
 							>
 								<circle
@@ -150,9 +189,16 @@ export function SidebarNps({
 									strokeWidth="2.5"
 									fill="none"
 									strokeDasharray={2 * Math.PI * 8}
-									initial={{ strokeDashoffset: 0 }}
-									animate={{ strokeDashoffset: 2 * Math.PI * 8 }}
-									transition={{ duration: 120, ease: "linear" }}
+									initial={{
+										strokeDashoffset: 0,
+									}}
+									animate={{
+										strokeDashoffset: 2 * Math.PI * 8,
+									}}
+									transition={{
+										duration: 120,
+										ease: 'linear',
+									}}
 								/>
 							</svg>
 						</div>

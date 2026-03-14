@@ -1,9 +1,14 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { SidebarLogo } from "./sidebar-logo";
-import { SidebarFooter } from "./sidebar-footer";
+import {
+	motion,
+} from 'framer-motion';
+import {
+	ChevronLeft, ChevronRight,
+} from 'lucide-react';
+import {
+	SidebarLogo,
+} from './sidebar-logo';
 
 interface SidebarLayoutProps {
 	collapsed: boolean;
@@ -18,10 +23,10 @@ interface SidebarLayoutProps {
 export function SidebarLayout({
 	collapsed,
 	onToggle,
-	catColor = "#e20074",
+	catColor = '#e20074',
 	children,
 	footerActions,
-	copyright
+	copyright,
 }: SidebarLayoutProps) {
 	const sidebarWidth = collapsed ? 72 : 280;
 
@@ -29,15 +34,25 @@ export function SidebarLayout({
 		<motion.aside
 			id="tour-sidebar"
 			initial={false}
-			animate={{ width: sidebarWidth }}
-			transition={{ duration: 0.25, ease: [0.25, 0.8, 0.25, 1] }}
+			animate={{
+				width: sidebarWidth,
+			}}
+			transition={{
+				duration: 0.25,
+				ease: [
+					0.25,
+					0.8,
+					0.25,
+					1,
+				],
+			}}
 			className="relative bg-white border-r border-[#eaedf0] z-20 h-screen shrink-0 flex flex-col"
 		>
 			{/* ───── Subtle gradient overlay at top ───── */}
 			<div
 				className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-0"
 				style={{
-					background: `linear-gradient(180deg, ${catColor}04 0%, transparent 100%)`
+					background: `linear-gradient(180deg, ${catColor}04 0%, transparent 100%)`,
 				}}
 			/>
 
@@ -46,7 +61,7 @@ export function SidebarLayout({
 				<button
 					onClick={onToggle}
 					className="w-7 h-7 bg-white border border-[#eaedf0] text-[#aaa] hover:text-[#e20074] hover:border-[#e20074]/30 rounded-full flex items-center justify-center transition-all shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer focus:outline-none"
-					title={collapsed ? "Aufklappen (Strg+H)" : "Einklappen (Strg+H)"}
+					title={collapsed ? 'Aufklappen (Strg+H)' : 'Einklappen (Strg+H)'}
 				>
 					{collapsed ? (
 						<ChevronRight className="w-3.5 h-3.5 shrink-0 ml-0.5" />

@@ -1,7 +1,15 @@
-import { router, protectedProcedure, publicProcedure } from '@/server/trpc';
-import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
-import { TRPCError } from '@trpc/server';
+import {
+    router, protectedProcedure, publicProcedure,
+} from '@/server/trpc';
+import {
+    z,
+} from 'zod';
+import {
+    prisma,
+} from '@/lib/prisma';
+import {
+    TRPCError,
+} from '@trpc/server';
 
 // Schema for product creation/update
 const priceHistorySchema = z.object({
@@ -42,20 +50,30 @@ const productSchema = z.object({
     purchasePrice: z.number().optional().nullable(),
     rentalPrice: z.number().optional().nullable(),
 
-    features: z.array(z.string()).default([]),
-    targetGroups: z.array(z.string()).default([]),
-    salesArguments: z.array(z.string()).default([]),
+    features: z.array(z.string()).default([
+    ]),
+    targetGroups: z.array(z.string()).default([
+    ]),
+    salesArguments: z.array(z.string()).default([
+    ]),
     salesScript: z.string().optional().nullable(),
     magentaInfosUrl: z.string().optional().nullable(),
-    priceHistory: z.array(priceHistorySchema).default([]),
+    priceHistory: z.array(priceHistorySchema).default([
+    ]),
 });
 
 const tierSchema = z.object({
     price: z.number().min(0),
     fromMonth: z.number().min(1),
     toMonth: z.number().min(1),
-    discountTarget: z.enum(["BASE_PRICE", "MAGENTA_TV"]).default("BASE_PRICE"),
-    discountType: z.enum(["ABSOLUTE", "RELATIVE"]).default("ABSOLUTE"),
+    discountTarget: z.enum([
+        'BASE_PRICE',
+        'MAGENTA_TV',
+    ]).default('BASE_PRICE'),
+    discountType: z.enum([
+        'ABSOLUTE',
+        'RELATIVE',
+    ]).default('ABSOLUTE'),
 });
 
 const specialPriceSchema = z.object({
@@ -70,87 +88,157 @@ const specialPriceSchema = z.object({
     requiresNewActivation: z.boolean().default(false),
     priority: z.number().default(0),
     isActive: z.boolean().default(true),
-    discountTarget: z.enum(["BASE_PRICE", "MAGENTA_TV"]).default("BASE_PRICE"),
-    discountType: z.enum(["ABSOLUTE", "RELATIVE"]).default("ABSOLUTE"),
+    discountTarget: z.enum([
+        'BASE_PRICE',
+        'MAGENTA_TV',
+    ]).default('BASE_PRICE'),
+    discountType: z.enum([
+        'ABSOLUTE',
+        'RELATIVE',
+    ]).default('ABSOLUTE'),
 });
 
-const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+const adminProcedure = protectedProcedure.use(({
+    ctx, next,
+}) => {
     if ((ctx.session as any)?.role !== 'ADMIN') {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Nur Administratoren erlaubt.' });
+        throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'Nur Administratoren erlaubt.',
+        });
     }
-    return next({ ctx });
+    return next({
+        ctx,
+    });
 });
 
-const editorProcedure = protectedProcedure.use(({ ctx, next }) => {
+const editorProcedure = protectedProcedure.use(({
+    ctx, next,
+}) => {
     const session = ctx.session as any;
     if (session?.role !== 'ADMIN' && !session?.isEditor) {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Du benötigst Editor-Rechte für diese Aktion.' });
+        throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'Du benötigst Editor-Rechte für diese Aktion.',
+        });
     }
-    return next({ ctx });
+    return next({
+        ctx,
+    });
 });
 
 export const adminRouter = router({
     getDashboardStats: protectedProcedure.query(async () => {
-        const [products, users, specialPrices, teams] = await Promise.all([
+        const [
+            products,
+            users,
+            specialPrices,
+            teams,
+        ] = await Promise.all([
             prisma.product.count(),
             prisma.user.count(),
             prisma.specialPrice.count(),
             prisma.team.count(),
         ]);
-        return { products, users, specialPrices, teams };
+        return {
+            products,
+            users,
+            specialPrices,
+            teams,
+        };
     }),
 
-    getCurrentUser: protectedProcedure.query(async ({ ctx }) => {
+    getCurrentUser: protectedProcedure.query(({
+        ctx,
+    }) => {
         // ctx.session is already populated with the full user record by the isAuthed middleware
         return ctx.session as any;
     }),
 
     getMaintenanceStatus: publicProcedure.query(async () => {
         const setting = await prisma.systemSetting.findUnique({
-            where: { key: 'maintenance_mode' }
+            where: {
+                key: 'maintenance_mode',
+            },
         });
         return setting?.value === 'true';
     }),
 
     toggleMaintenanceMode: adminProcedure
-        .input(z.object({ enabled: z.boolean() }))
-        .mutation(async ({ input }) => {
-            return await prisma.systemSetting.upsert({
-                where: { key: 'maintenance_mode' },
-                update: { value: input.enabled ? 'true' : 'false' },
-                create: { key: 'maintenance_mode', value: input.enabled ? 'true' : 'false' }
+        .input(z.object({
+            enabled: z.boolean(),
+        }))
+        .mutation(({
+            input,
+        }) => {
+            return prisma.systemSetting.upsert({
+                where: {
+                    key: 'maintenance_mode',
+                },
+                update: {
+                    value: input.enabled ? 'true' : 'false',
+                },
+                create: {
+                    key: 'maintenance_mode',
+                    value: input.enabled ? 'true' : 'false',
+                },
             });
         }),
 
     getSecuritySettings: protectedProcedure.query(async () => {
         const setting = await prisma.systemSetting.findUnique({
-            where: { key: 'allowed_ips' }
+            where: {
+                key: 'allowed_ips',
+            },
         });
         const requireEmail = await prisma.systemSetting.findUnique({
-            where: { key: 'require_email_verification' }
+            where: {
+                key: 'require_email_verification',
+            },
         });
         return {
-            allowedIps: setting?.value || "",
-            requireEmailVerification: requireEmail?.value !== 'false'
+            allowedIps: setting?.value || '',
+            requireEmailVerification: requireEmail?.value !== 'false',
         };
     }),
 
     updateSecuritySettings: adminProcedure
-        .input(z.object({ allowedIps: z.string(), requireEmailVerification: z.boolean().optional() }))
-        .mutation(async ({ input }) => {
+        .input(z.object({
+            allowedIps: z.string(),
+            requireEmailVerification: z.boolean().optional(),
+        }))
+        .mutation(async ({
+            input,
+        }) => {
             await prisma.systemSetting.upsert({
-                where: { key: 'allowed_ips' },
-                update: { value: input.allowedIps },
-                create: { key: 'allowed_ips', value: input.allowedIps }
+                where: {
+                    key: 'allowed_ips',
+                },
+                update: {
+                    value: input.allowedIps,
+                },
+                create: {
+                    key: 'allowed_ips',
+                    value: input.allowedIps,
+                },
             });
             if (input.requireEmailVerification !== undefined) {
                 await prisma.systemSetting.upsert({
-                    where: { key: 'require_email_verification' },
-                    update: { value: input.requireEmailVerification.toString() },
-                    create: { key: 'require_email_verification', value: input.requireEmailVerification.toString() }
+                    where: {
+                        key: 'require_email_verification',
+                    },
+                    update: {
+                        value: input.requireEmailVerification.toString(),
+                    },
+                    create: {
+                        key: 'require_email_verification',
+                        value: input.requireEmailVerification.toString(),
+                    },
                 });
             }
-            return { success: true };
+            return {
+                success: true,
+            };
         }),
 
     // --- Product CRUD ---
@@ -161,15 +249,29 @@ export const adminRouter = router({
             search: z.string().optional(),
             category: z.string().optional(),
         }))
-        .query(async ({ input }) => {
+        .query(async ({
+            input,
+        }) => {
             const limit = input.limit ?? 50;
-            const { cursor, search, category } = input;
+            const {
+                cursor, search, category,
+            } = input;
 
-            let where: any = { isActive: true };
+            const where: any = {
+                isActive: true,
+            };
             if (search) {
                 where.OR = [
-                    { name: { contains: search } },
-                    { description: { contains: search } }
+                    {
+                        name: {
+                            contains: search,
+                        },
+                    },
+                    {
+                        description: {
+                            contains: search,
+                        },
+                    },
                 ];
             }
             if (category && category !== 'ALL') {
@@ -178,9 +280,13 @@ export const adminRouter = router({
 
             const items = await prisma.product.findMany({
                 take: limit + 1,
-                cursor: cursor ? { id: cursor } : undefined,
+                cursor: cursor ? {
+                    id: cursor,
+                } : undefined,
                 where,
-                orderBy: { priority: 'desc' },
+                orderBy: {
+                    priority: 'desc',
+                },
             });
 
             let nextCursor: typeof cursor | undefined = undefined;
@@ -192,97 +298,141 @@ export const adminRouter = router({
             return {
                 items: items.map(product => ({
                     ...product,
-                    features: product.features ? JSON.parse(product.features) : [],
-                    // @ts-ignore
-                    targetGroups: (product as any).targetGroups ? JSON.parse((product as any).targetGroups) : []
+                    features: product.features ? JSON.parse(product.features) : [
+                    ],
+                    targetGroups: (product as any).targetGroups ? JSON.parse((product as any).targetGroups) : [
+                    ],
                 })),
-                nextCursor
+                nextCursor,
             };
         }),
     createProduct: editorProcedure
         .input(productSchema)
-        .mutation(async ({ input }) => {
-            const { features, targetGroups, salesArguments, priceHistory, ...data } = input;
-            return await prisma.product.create({
+        .mutation(({
+            input,
+        }) => {
+            const {
+                features, targetGroups, salesArguments, priceHistory, ...data
+            } = input;
+            return prisma.product.create({
                 data: {
                     ...data,
                     features: JSON.stringify(features),
-                    // @ts-ignore
                     targetGroups: JSON.stringify(targetGroups),
                     salesArguments: {
                         create: salesArguments.map((text, i) => ({
                             text,
                             sortOrder: i,
                             isActive: true,
-                        }))
+                        })),
                     },
                     priceHistory: {
                         create: priceHistory.map(ph => ({
                             price: ph.price,
-                            label: ph.label
-                        }))
-                    }
-                }
+                            label: ph.label,
+                        })),
+                    },
+                },
             });
         }),
 
     updateProduct: editorProcedure
-        .input(productSchema.extend({ id: z.string() }))
-        .mutation(async ({ input }) => {
-            const { id, features, targetGroups, salesArguments, priceHistory, ...data } = input;
+        .input(productSchema.extend({
+            id: z.string(),
+        }))
+        .mutation(async ({
+            input,
+        }) => {
+            const {
+                id, features, targetGroups, salesArguments, priceHistory, ...data
+            } = input;
 
             // Recreate relations to preserve order easily and cleanly update
-            await prisma.salesArgument.deleteMany({ where: { productId: id } });
-            await prisma.priceHistory.deleteMany({ where: { productId: id } });
+            await prisma.salesArgument.deleteMany({
+                where: {
+                    productId: id,
+                },
+            });
+            await prisma.priceHistory.deleteMany({
+                where: {
+                    productId: id,
+                },
+            });
 
-            return await prisma.product.update({
-                where: { id },
+            return prisma.product.update({
+                where: {
+                    id,
+                },
                 data: {
                     ...data,
                     features: JSON.stringify(features),
-                    // @ts-ignore
                     targetGroups: JSON.stringify(targetGroups),
                     salesArguments: {
                         create: salesArguments.map((text, i) => ({
                             text,
                             sortOrder: i,
                             isActive: true,
-                        }))
+                        })),
                     },
                     priceHistory: {
                         create: priceHistory.map(ph => ({
                             price: ph.price,
-                            label: ph.label
-                        }))
-                    }
-                }
+                            label: ph.label,
+                        })),
+                    },
+                },
             });
         }),
 
     deleteProduct: editorProcedure
-        .input(z.object({ id: z.string() }))
-        .mutation(async ({ input }) => {
-            return await prisma.product.delete({
-                where: { id: input.id }
+        .input(z.object({
+            id: z.string(),
+        }))
+        .mutation(({
+            input,
+        }) => {
+            return prisma.product.delete({
+                where: {
+                    id: input.id,
+                },
             });
         }),
 
     getProductById: protectedProcedure
-        .input(z.object({ id: z.string() }))
-        .query(async ({ input }) => {
+        .input(z.object({
+            id: z.string(),
+        }))
+        .query(async ({
+            input,
+        }) => {
             const product = await prisma.product.findUnique({
-                where: { id: input.id },
-                include: { 
-                    salesArguments: { orderBy: { sortOrder: 'asc' } },
-                    priceHistory: { orderBy: { createdAt: 'desc' } }
-                }
+                where: {
+                    id: input.id,
+                },
+                include: {
+                    salesArguments: {
+                        orderBy: {
+                            sortOrder: 'asc',
+                        },
+                    },
+                    priceHistory: {
+                        orderBy: {
+                            createdAt: 'desc',
+                        },
+                    },
+                },
             });
-            if (!product) throw new TRPCError({ code: 'NOT_FOUND' });
+            if (!product) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                });
+            }
             return {
                 ...product,
-                features: product.features ? JSON.parse(product.features) : [],
-                // @ts-ignore
-                targetGroups: (product as any).targetGroups ? JSON.parse((product as any).targetGroups) : []
+                features: product.features ? JSON.parse(product.features) : [
+                ],
+                targetGroups: (product as any).targetGroups ? JSON.parse((product as any).targetGroups) : [
+                ],
             };
         }),
 
@@ -293,24 +443,50 @@ export const adminRouter = router({
             cursor: z.string().nullish(),
             search: z.string().optional(),
         }))
-        .query(async ({ input }) => {
+        .query(async ({
+            input,
+        }) => {
             const limit = input.limit ?? 50;
-            const { cursor, search } = input;
+            const {
+                cursor, search,
+            } = input;
 
-            let where: any = {};
+            const where: any = {
+            };
             if (search) {
                 where.OR = [
-                    { name: { contains: search, mode: 'insensitive' } },
-                    { description: { contains: search, mode: 'insensitive' } }
+                    {
+                        name: {
+                            contains: search,
+                            mode: 'insensitive',
+                        },
+                    },
+                    {
+                        description: {
+                            contains: search,
+                            mode: 'insensitive',
+                        },
+                    },
                 ];
             }
 
             const items = await prisma.specialPrice.findMany({
                 take: limit + 1,
-                cursor: cursor ? { id: cursor } : undefined,
+                cursor: cursor ? {
+                    id: cursor,
+                } : undefined,
                 where,
-                include: { products: true, tiers: { orderBy: { fromMonth: 'asc' } } },
-                orderBy: { createdAt: 'desc' }
+                include: {
+                    products: true,
+                    tiers: {
+                        orderBy: {
+                            fromMonth: 'asc',
+                        },
+                    },
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
             });
 
             let nextCursor: typeof cursor | undefined = undefined;
@@ -319,55 +495,115 @@ export const adminRouter = router({
                 nextCursor = nextItem!.id;
             }
 
-            return { items, nextCursor };
+            return {
+                items,
+                nextCursor,
+            };
         }),
 
     getSpecialPriceById: protectedProcedure
-        .input(z.object({ id: z.string() }))
-        .query(async ({ input }) => {
+        .input(z.object({
+            id: z.string(),
+        }))
+        .query(async ({
+            input,
+        }) => {
             const sp = await prisma.specialPrice.findUnique({
-                where: { id: input.id },
-                include: { products: true, tiers: { orderBy: { fromMonth: 'asc' } } },
+                where: {
+                    id: input.id,
+                },
+                include: {
+                    products: true,
+                    tiers: {
+                        orderBy: {
+                            fromMonth: 'asc',
+                        },
+                    },
+                },
             });
-            if (!sp) throw new TRPCError({ code: 'NOT_FOUND' });
+            if (!sp) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                });
+            }
             return sp;
         }),
 
     createSpecialPrice: editorProcedure
         .input(specialPriceSchema)
-        .mutation(async ({ input }) => {
-            const { tiers, productIds, ...data } = input;
-            return await prisma.specialPrice.create({
+        .mutation(({
+            input,
+        }) => {
+            const {
+                tiers, productIds, ...data
+            } = input;
+            return prisma.specialPrice.create({
                 data: {
                     ...data,
-                    products: { connect: productIds.map(id => ({ id })) },
-                    tiers: { create: tiers },
+                    products: {
+                        connect: productIds.map(id => ({
+                            id,
+                        })),
+                    },
+                    tiers: {
+                        create: tiers,
+                    },
                 },
-                include: { tiers: true, products: true },
+                include: {
+                    tiers: true,
+                    products: true,
+                },
             });
         }),
 
     updateSpecialPrice: editorProcedure
-        .input(specialPriceSchema.extend({ id: z.string() }))
-        .mutation(async ({ input }) => {
-            const { id, tiers, productIds, ...data } = input;
-            await prisma.specialPriceTier.deleteMany({ where: { specialPriceId: id } });
-            return await prisma.specialPrice.update({
-                where: { id },
+        .input(specialPriceSchema.extend({
+            id: z.string(),
+        }))
+        .mutation(async ({
+            input,
+        }) => {
+            const {
+                id, tiers, productIds, ...data
+            } = input;
+            await prisma.specialPriceTier.deleteMany({
+                where: {
+                    specialPriceId: id,
+                },
+            });
+            return prisma.specialPrice.update({
+                where: {
+                    id,
+                },
                 data: {
                     ...data,
-                    products: { set: productIds.map(pid => ({ id: pid })) },
-                    tiers: { create: tiers },
+                    products: {
+                        set: productIds.map(pid => ({
+                            id: pid,
+                        })),
+                    },
+                    tiers: {
+                        create: tiers,
+                    },
                 },
-                include: { tiers: true, products: true },
+                include: {
+                    tiers: true,
+                    products: true,
+                },
             });
         }),
 
     deleteSpecialPrice: editorProcedure
-        .input(z.object({ id: z.string() }))
-        .mutation(async ({ input }) => {
-            return await prisma.specialPrice.delete({
-                where: { id: input.id }
+        .input(z.object({
+            id: z.string(),
+        }))
+        .mutation(async ({
+            input,
+        }) => {
+            await prisma.specialPrice.delete({
+                where: {
+                    id: input.id,
+                },
             });
         }),
 
@@ -379,14 +615,24 @@ export const adminRouter = router({
                 cursor: z.string().nullish(),
                 search: z.string().optional(),
             }))
-            .query(async ({ input }) => {
+            .query(async ({
+                input,
+            }) => {
                 const limit = input.limit ?? 50;
-                const { cursor, search } = input;
+                const {
+                    cursor, search,
+                } = input;
 
-                let where: any = {};
+                const where: any = {
+                };
                 if (search) {
                     where.OR = [
-                        { name: { contains: search, mode: 'insensitive' } },
+                        {
+                            name: {
+                                contains: search,
+                                mode: 'insensitive',
+                            },
+                        },
                         // Value is a float, so we can't search it directly with contains.
                         // We could cast it but for credits usually name search is sufficient.
                         // { value: { equals: parseFloat(search) || undefined } }
@@ -395,9 +641,13 @@ export const adminRouter = router({
 
                 const items = await prisma.oneTimeCredit.findMany({
                     take: limit + 1,
-                    cursor: cursor ? { id: cursor } : undefined,
+                    cursor: cursor ? {
+                        id: cursor,
+                    } : undefined,
                     where,
-                    orderBy: { createdAt: 'desc' },
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
                 });
 
                 let nextCursor: typeof cursor | undefined = undefined;
@@ -406,26 +656,37 @@ export const adminRouter = router({
                     nextCursor = nextItem!.id;
                 }
 
-                return { items, nextCursor };
+                return {
+                    items,
+                    nextCursor,
+                };
             }),
 
         getById: protectedProcedure
-            .input(z.object({ id: z.string() }))
-            .query(async ({ input }) => {
+            .input(z.object({
+                id: z.string(),
+            }))
+            .query(async ({
+                input,
+            }) => {
                 const credit = await prisma.oneTimeCredit.findUnique({
-                    where: { id: input.id },
+                    where: {
+                        id: input.id,
+                    },
                 });
-                if (!credit) throw new Error("Credit not found");
+                if (!credit) { throw new Error('Credit not found'); }
                 return credit;
             }),
 
         create: editorProcedure
             .input(z.object({
-                name: z.string().min(1, "Name is required"),
-                value: z.number().min(0, "Value must be positive"),
+                name: z.string().min(1, 'Name is required'),
+                value: z.number().min(0, 'Value must be positive'),
                 isActive: z.boolean().default(true),
             }))
-            .mutation(async ({ input }) => {
+            .mutation(({
+                input,
+            }) => {
                 return prisma.oneTimeCredit.create({
                     data: input,
                 });
@@ -434,23 +695,35 @@ export const adminRouter = router({
         update: editorProcedure
             .input(z.object({
                 id: z.string(),
-                name: z.string().min(1, "Name is required"),
-                value: z.number().min(0, "Value must be positive"),
+                name: z.string().min(1, 'Name is required'),
+                value: z.number().min(0, 'Value must be positive'),
                 isActive: z.boolean(),
             }))
-            .mutation(async ({ input }) => {
-                const { id, ...data } = input;
+            .mutation(({
+                input,
+            }) => {
+                const {
+                    id, ...data
+                } = input;
                 return prisma.oneTimeCredit.update({
-                    where: { id },
+                    where: {
+                        id,
+                    },
                     data,
                 });
             }),
 
         delete: editorProcedure
-            .input(z.object({ id: z.string() }))
-            .mutation(async ({ input }) => {
+            .input(z.object({
+                id: z.string(),
+            }))
+            .mutation(({
+                input,
+            }) => {
                 return prisma.oneTimeCredit.delete({
-                    where: { id: input.id },
+                    where: {
+                        id: input.id,
+                    },
                 });
             }),
     }),
@@ -463,28 +736,59 @@ export const adminRouter = router({
                 cursor: z.string().nullish(),
                 search: z.string().optional(),
             }))
-            .query(async ({ input }) => {
+            .query(async ({
+                input,
+            }) => {
                 const limit = input.limit ?? 50;
-                const { cursor, search } = input;
+                const {
+                    cursor, search,
+                } = input;
 
-                let where: any = {};
+                const where: any = {
+                };
                 if (search) {
                     where.OR = [
-                        { title: { contains: search, mode: 'insensitive' } },
-                        { content: { contains: search, mode: 'insensitive' } }
+                        {
+                            title: {
+                                contains: search,
+                                mode: 'insensitive',
+                            },
+                        },
+                        {
+                            content: {
+                                contains: search,
+                                mode: 'insensitive',
+                            },
+                        },
                     ];
                 }
 
                 const items = await (prisma.news as any).findMany({
                     take: limit + 1,
-                    cursor: cursor ? { id: cursor } : undefined,
+                    cursor: cursor ? {
+                        id: cursor,
+                    } : undefined,
                     where,
                     include: {
-                        odRegion: { select: { name: true } },
-                        location: { select: { name: true } },
-                        team: { select: { name: true } }
+                        odRegion: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                        location: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                        team: {
+                            select: {
+                                name: true,
+                            },
+                        },
                     },
-                    orderBy: { createdAt: 'desc' },
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
                 });
 
                 let nextCursor: typeof cursor | undefined = undefined;
@@ -493,60 +797,142 @@ export const adminRouter = router({
                     nextCursor = nextItem!.id;
                 }
 
-                return { items, nextCursor };
+                return {
+                    items,
+                    nextCursor,
+                };
             }),
 
         create: protectedProcedure
             .input(z.object({
                 title: z.string().min(1),
                 content: z.string().min(1),
-                priority: z.enum(["INFO", "UPDATE", "IMPORTANT", "CRITICAL"]).default("INFO"),
+                priority: z.enum([
+                    'INFO',
+                    'UPDATE',
+                    'IMPORTANT',
+                    'CRITICAL',
+                ]).default('INFO'),
                 odRegionId: z.string().optional().nullable(),
                 locationId: z.string().optional().nullable(),
                 teamId: z.string().optional().nullable(),
             }))
-            .mutation(async ({ input, ctx }) => {
+            .mutation(async ({
+                input, ctx,
+            }) => {
                 const session = ctx.session as any;
-                
+
                 // Ensure user has an admin-like role
-                if (!['ADMIN', 'OD_MANAGER', 'LOCATION_MANAGER', 'TEAM_LEADER'].includes(session.role)) {
-                    throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung.' });
+                if (![
+                    'ADMIN',
+                    'OD_MANAGER',
+                    'LOCATION_MANAGER',
+                    'TEAM_LEADER',
+                ].includes(session.role)) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Keine Berechtigung.',
+                    });
                 }
 
-                let { odRegionId, locationId, teamId, ...data } = input;
+
+                let {
+                    // eslint-disable-next-line prefer-const
+                    odRegionId, locationId, teamId, ...data
+                } = input;
 
                 if (session.role !== 'ADMIN') {
-                     if (!odRegionId && !locationId && !teamId) {
-                         throw new TRPCError({ code: 'FORBIDDEN', message: 'Du kannst keine globalen Neuigkeiten erstellen.' });
-                     }
-                     
-                     if (session.role === 'OD_MANAGER') {
-                         if (odRegionId && odRegionId !== session.odRegionId) throw new TRPCError({ code: 'FORBIDDEN', message: 'Falscher OD-Bereich.' });
-                         if (locationId) {
-                             const loc = await prisma.location.findUnique({ where: { id: locationId }});
-                             if (loc?.odRegionId !== session.odRegionId) throw new TRPCError({ code: 'FORBIDDEN', message: 'Falscher OD-Bereich.' });
-                         }
-                         if (teamId) {
-                             const team = await prisma.team.findUnique({ where: { id: teamId }, include: { location: true }});
-                             if (team?.location?.odRegionId !== session.odRegionId) throw new TRPCError({ code: 'FORBIDDEN', message: 'Falscher OD-Bereich.' });
-                         }
-                         if (odRegionId) odRegionId = session.odRegionId;
-                     } else if (session.role === 'LOCATION_MANAGER') {
-                         if (odRegionId) throw new TRPCError({ code: 'FORBIDDEN', message: 'Du kannst keine News für den ganzen OD-Bereich erstellen.' });
-                         if (locationId && locationId !== session.locationId) throw new TRPCError({ code: 'FORBIDDEN', message: 'Falscher Standort.' });
-                         if (teamId) {
-                             const team = await prisma.team.findUnique({ where: { id: teamId }});
-                             if (team?.locationId !== session.locationId) throw new TRPCError({ code: 'FORBIDDEN', message: 'Falscher Standort.' });
-                         }
-                         if (locationId) locationId = session.locationId;
-                     } else if (session.role === 'TEAM_LEADER') {
-                         if (odRegionId || locationId) throw new TRPCError({ code: 'FORBIDDEN', message: 'Du kannst nur News für dein Team erstellen.' });
-                         if (teamId && teamId !== session.teamId) throw new TRPCError({ code: 'FORBIDDEN', message: 'Falsches Team.' });
-                         if (teamId) teamId = session.teamId;
-                     }
+                    if (!odRegionId && !locationId && !teamId) {
+                        throw new TRPCError({
+                            code: 'FORBIDDEN',
+                            message: 'Du kannst keine globalen Neuigkeiten erstellen.',
+                        });
+                    }
+
+                    if (session.role === 'OD_MANAGER') {
+                        if (odRegionId && odRegionId !== session.odRegionId) {
+                            throw new TRPCError({
+                                code: 'FORBIDDEN',
+                                message: 'Falscher OD-Bereich.',
+                            });
+                        }
+                        if (locationId) {
+                            const loc = await prisma.location.findUnique({
+                                where: {
+                                    id: locationId,
+                                },
+                            });
+                            if (loc?.odRegionId !== session.odRegionId) {
+                                throw new TRPCError({
+                                    code: 'FORBIDDEN',
+                                    message: 'Falscher OD-Bereich.',
+                                });
+                            }
+                        }
+                        if (teamId) {
+                            const team = await prisma.team.findUnique({
+                                where: {
+                                    id: teamId,
+                                },
+                                include: {
+                                    location: true,
+                                },
+                            });
+                            if (team?.location?.odRegionId !== session.odRegionId) {
+                                throw new TRPCError({
+                                    code: 'FORBIDDEN',
+                                    message: 'Falscher OD-Bereich.',
+                                });
+                            }
+                        }
+                        if (odRegionId) { odRegionId = session.odRegionId; }
+                    }
+                    else if (session.role === 'LOCATION_MANAGER') {
+                        if (odRegionId) {
+                            throw new TRPCError({
+                                code: 'FORBIDDEN',
+                                message: 'Du kannst keine News für den ganzen OD-Bereich erstellen.',
+                            });
+                        }
+                        if (locationId && locationId !== session.locationId) {
+                            throw new TRPCError({
+                                code: 'FORBIDDEN',
+                                message: 'Falscher Standort.',
+                            });
+                        }
+                        if (teamId) {
+                            const team = await prisma.team.findUnique({
+                                where: {
+                                    id: teamId,
+                                },
+                            });
+                            if (team?.locationId !== session.locationId) {
+                                throw new TRPCError({
+                                    code: 'FORBIDDEN',
+                                    message: 'Falscher Standort.',
+                                });
+                            }
+                        }
+                        if (locationId) { locationId = session.locationId; }
+                    }
+                    else if (session.role === 'TEAM_LEADER') {
+                        if (odRegionId || locationId) {
+                            throw new TRPCError({
+                                code: 'FORBIDDEN',
+                                message: 'Du kannst nur News für dein Team erstellen.',
+                            });
+                        }
+                        if (teamId && teamId !== session.teamId) {
+                            throw new TRPCError({
+                                code: 'FORBIDDEN',
+                                message: 'Falsches Team.',
+                            });
+                        }
+                        if (teamId) { teamId = session.teamId; }
+                    }
                 }
 
-                const news = await (prisma.news as any).create({ 
+                const news = await (prisma.news as any).create({
                     data: {
                         ...data,
                         odRegionId: odRegionId || null,
@@ -554,14 +940,28 @@ export const adminRouter = router({
                         teamId: teamId || null,
                     },
                     include: {
-                        odRegion: { select: { name: true } },
-                        location: { select: { name: true } },
-                        team: { select: { name: true } }
-                    }
+                        odRegion: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                        location: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                        team: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                    },
                 });
 
                 // Emit the newly created news to SSE subscribers
-                import('@/lib/news-emitter').then(({ newsEmitter }) => {
+                import('@/lib/news-emitter').then(({
+                    newsEmitter,
+                }) => {
                     newsEmitter.emit('add', news);
                 });
 
@@ -569,61 +969,145 @@ export const adminRouter = router({
             }),
 
         delete: protectedProcedure
-            .input(z.object({ id: z.string() }))
-            .mutation(async ({ input, ctx }) => {
+            .input(z.object({
+                id: z.string(),
+            }))
+            .mutation(async ({
+                input, ctx,
+            }) => {
                 const session = ctx.session as any;
-                const news = await (prisma.news as any).findUnique({ where: { id: input.id } });
-                if (!news) throw new TRPCError({ code: 'NOT_FOUND' });
+                const news = await (prisma.news as any).findUnique({
+                    where: {
+                        id: input.id,
+                    },
+                });
+                if (!news) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                    });
+                }
 
                 if (session.role !== 'ADMIN') {
                     if (session.role === 'OD_MANAGER') {
                         if (news.odRegionId !== session.odRegionId) {
                             // Also check if news is for a location/team within this OD
                             if (news.locationId) {
-                                const loc = await (prisma.location as any).findUnique({ where: { id: news.locationId } });
-                                if (loc?.odRegionId !== session.odRegionId) throw new TRPCError({ code: 'FORBIDDEN' });
-                            } else if (news.teamId) {
-                                const team = await (prisma.team as any).findUnique({ where: { id: news.teamId }, include: { location: true } });
-                                if (team?.location?.odRegionId !== session.odRegionId) throw new TRPCError({ code: 'FORBIDDEN' });
-                            } else if (!news.odRegionId) {
-                                throw new TRPCError({ code: 'FORBIDDEN', message: 'Du kannst keine globalen News löschen.' });
+                                const loc = await (prisma.location as any).findUnique({
+                                    where: {
+                                        id: news.locationId,
+                                    },
+                                });
+                                if (loc?.odRegionId !== session.odRegionId) {
+                                    throw new TRPCError({
+                                        code: 'FORBIDDEN',
+                                    });
+                                }
+                            }
+                            else if (news.teamId) {
+                                const team = await (prisma.team as any).findUnique({
+                                    where: {
+                                        id: news.teamId,
+                                    },
+                                    include: {
+                                        location: true,
+                                    },
+                                });
+                                if (team?.location?.odRegionId !== session.odRegionId) {
+                                    throw new TRPCError({
+                                        code: 'FORBIDDEN',
+                                    });
+                                }
+                            }
+                            else if (!news.odRegionId) {
+                                throw new TRPCError({
+                                    code: 'FORBIDDEN',
+                                    message: 'Du kannst keine globalen News löschen.',
+                                });
                             }
                         }
-                    } else if (session.role === 'LOCATION_MANAGER') {
+                    }
+                    else if (session.role === 'LOCATION_MANAGER') {
                         if (news.locationId !== session.locationId) {
-                             if (news.teamId) {
-                                 const team = await (prisma.team as any).findUnique({ where: { id: news.teamId } });
-                                 if (team?.locationId !== session.locationId) throw new TRPCError({ code: 'FORBIDDEN' });
-                             } else {
-                                 throw new TRPCError({ code: 'FORBIDDEN' });
-                             }
+                            if (news.teamId) {
+                                const team = await (prisma.team as any).findUnique({
+                                    where: {
+                                        id: news.teamId,
+                                    },
+                                });
+                                if (team?.locationId !== session.locationId) {
+                                    throw new TRPCError({
+                                        code: 'FORBIDDEN',
+                                    });
+                                }
+                            }
+                            else {
+                                throw new TRPCError({
+                                    code: 'FORBIDDEN',
+                                });
+                            }
                         }
-                    } else if (session.role === 'TEAM_LEADER') {
-                        if (news.teamId !== session.teamId) throw new TRPCError({ code: 'FORBIDDEN' });
-                    } else {
-                        throw new TRPCError({ code: 'FORBIDDEN' });
+                    }
+                    else if (session.role === 'TEAM_LEADER') {
+                        if (news.teamId !== session.teamId) {
+                            throw new TRPCError({
+                                code: 'FORBIDDEN',
+                            });
+                        }
+                    }
+                    else {
+                        throw new TRPCError({
+                            code: 'FORBIDDEN',
+                        });
                     }
                 }
 
-                return await (prisma.news as any).delete({ where: { id: input.id } });
+                return (prisma.news as any).delete({
+                    where: {
+                        id: input.id,
+                    },
+                });
             }),
     }),
 
     // --- Sales Arguments CRUD ---
     salesArguments: router({
-        list: protectedProcedure.query(async () => {
+        list: protectedProcedure.query(() => {
             return prisma.salesArgument.findMany({
-                include: { product: { select: { id: true, name: true, category: true } } },
-                orderBy: [{ productId: 'asc' }, { sortOrder: 'asc' }],
+                include: {
+                    product: {
+                        select: {
+                            id: true,
+                            name: true,
+                            category: true,
+                        },
+                    },
+                },
+                orderBy: [
+                    {
+                        productId: 'asc',
+                    },
+                    {
+                        sortOrder: 'asc',
+                    },
+                ],
             });
         }),
 
         listByProduct: protectedProcedure
-            .input(z.object({ productId: z.string() }))
-            .query(async ({ input }) => {
+            .input(z.object({
+                productId: z.string(),
+            }))
+            .query(({
+                input,
+            }) => {
                 return prisma.salesArgument.findMany({
-                    where: { productId: input.productId, isActive: true },
-                    orderBy: { sortOrder: 'asc' },
+                    where: {
+                        productId: input.productId,
+                        isActive: true,
+                    },
+                    orderBy: {
+                        sortOrder: 'asc',
+                    },
                 });
             }),
 
@@ -633,8 +1117,12 @@ export const adminRouter = router({
                 productId: z.string(),
                 sortOrder: z.number().default(0),
             }))
-            .mutation(async ({ input }) => {
-                return prisma.salesArgument.create({ data: input });
+            .mutation(({
+                input,
+            }) => {
+                return prisma.salesArgument.create({
+                    data: input,
+                });
             }),
 
         update: editorProcedure
@@ -644,15 +1132,32 @@ export const adminRouter = router({
                 sortOrder: z.number().default(0),
                 isActive: z.boolean(),
             }))
-            .mutation(async ({ input }) => {
-                const { id, ...data } = input;
-                return prisma.salesArgument.update({ where: { id }, data });
+            .mutation(({
+                input,
+            }) => {
+                const {
+                    id, ...data
+                } = input;
+                return prisma.salesArgument.update({
+                    where: {
+                        id,
+                    },
+                    data,
+                });
             }),
 
         delete: editorProcedure
-            .input(z.object({ id: z.string() }))
-            .mutation(async ({ input }) => {
-                return prisma.salesArgument.delete({ where: { id: input.id } });
+            .input(z.object({
+                id: z.string(),
+            }))
+            .mutation(({
+                input,
+            }) => {
+                return prisma.salesArgument.delete({
+                    where: {
+                        id: input.id,
+                    },
+                });
             }),
     }),
 
@@ -663,11 +1168,21 @@ export const adminRouter = router({
                 oldPassword: z.string(),
                 newPassword: z.string().min(6),
             }))
-            .mutation(async ({ input, ctx }) => {
+            .mutation(async ({
+                input, ctx,
+            }) => {
                 const userId = ctx.session.sub as string;
-                const user = await prisma.user.findUnique({ where: { id: userId } });
+                const user = await prisma.user.findUnique({
+                    where: {
+                        id: userId,
+                    },
+                });
 
-                if (!user) throw new TRPCError({ code: 'NOT_FOUND' });
+                if (!user) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                    });
+                }
 
                 const bcrypt = await import('bcryptjs');
                 const isValid = await bcrypt.compare(input.oldPassword, user.password);
@@ -675,17 +1190,23 @@ export const adminRouter = router({
                 if (!isValid) {
                     throw new TRPCError({
                         code: 'UNAUTHORIZED',
-                        message: 'Das alte Passwort ist nicht korrekt.'
+                        message: 'Das alte Passwort ist nicht korrekt.',
                     });
                 }
 
                 const hashedPassword = await bcrypt.hash(input.newPassword, 10);
                 await prisma.user.update({
-                    where: { id: userId },
-                    data: { password: hashedPassword }
+                    where: {
+                        id: userId,
+                    },
+                    data: {
+                        password: hashedPassword,
+                    },
                 });
 
-                return { success: true };
+                return {
+                    success: true,
+                };
             }),
     }),
 
@@ -693,13 +1214,24 @@ export const adminRouter = router({
     bulkUpdatePrices: adminProcedure
         .input(z.object({
             category: z.string().min(1),
-            mode: z.enum(['FIXED', 'PERCENTAGE']),
+            mode: z.enum([
+                'FIXED',
+                'PERCENTAGE',
+            ]),
             value: z.number(), // positive = increase, negative = decrease
         }))
-        .mutation(async ({ input }) => {
+        .mutation(async ({
+            input,
+        }) => {
             const products = await prisma.product.findMany({
-                where: { category: input.category, isActive: true },
-                select: { id: true, basePrice: true },
+                where: {
+                    category: input.category,
+                    isActive: true,
+                },
+                select: {
+                    id: true,
+                    basePrice: true,
+                },
             });
 
             if (products.length === 0) {
@@ -714,22 +1246,30 @@ export const adminRouter = router({
                 let newPrice: number;
                 if (input.mode === 'FIXED') {
                     newPrice = p.basePrice + input.value;
-                } else {
+                }
+                else {
                     newPrice = p.basePrice * (1 + input.value / 100);
                 }
                 // Ensure price is not negative and round to 2 decimals
                 newPrice = Math.max(0, Math.round(newPrice * 100) / 100);
-                return { id: p.id, basePrice: newPrice };
+                return {
+                    id: p.id,
+                    basePrice: newPrice,
+                };
             });
 
             // Execute all updates in a transaction
             await prisma.$transaction(
                 updates.map((u) =>
                     prisma.product.update({
-                        where: { id: u.id },
-                        data: { basePrice: u.basePrice },
-                    })
-                )
+                        where: {
+                            id: u.id,
+                        },
+                        data: {
+                            basePrice: u.basePrice,
+                        },
+                    }),
+                ),
             );
 
             return {

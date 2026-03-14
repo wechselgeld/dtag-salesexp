@@ -1,9 +1,15 @@
-"use client";
+'use client';
 
-import { SpecialPrice } from "@/types/product";
-import clsx from "clsx";
-import { motion } from "framer-motion";
-import { ArrowDown, TrendingDown } from "lucide-react";
+import type {
+	SpecialPrice,
+} from '@/types/product';
+import clsx from 'clsx';
+import {
+	motion,
+} from 'framer-motion';
+import {
+	ArrowDown, TrendingDown,
+} from 'lucide-react';
 
 interface Props {
 	specialPrices: SpecialPrice[];
@@ -22,23 +28,27 @@ export function SpecialPriceSelector({
 	onChange,
 	isMagentaTVSelected,
 	businessCase,
-	accentColor = "#e20074",
+	accentColor = '#e20074',
 	basePrice,
-	tvBasePrice
+	tvBasePrice,
 }: Props) {
 	const availablePrices = specialPrices.filter((sp) => {
-		if (sp.requiresMagentaTV && !isMagentaTVSelected) return false;
-		if (sp.requiresMove && businessCase !== "MOVE") return false;
-		if (sp.requiresNewActivation && businessCase !== "NEW_ACTIVATION") return false;
-		if (sp.requiresSpeedUp && businessCase !== "SPEED_UP") return false;
+		if (sp.requiresMagentaTV && !isMagentaTVSelected) { return false; }
+		if (sp.requiresMove && businessCase !== 'MOVE') { return false; }
+		if (sp.requiresNewActivation && businessCase !== 'NEW_ACTIVATION') { return false; }
+		if (sp.requiresSpeedUp && businessCase !== 'SPEED_UP') { return false; }
 		return true;
 	});
 
 	const handleSelect = (id: string) => {
 		if (selectedIds.includes(id)) {
-			onChange([]);
-		} else {
-			onChange([id]);
+			onChange([
+			]);
+		}
+		else {
+			onChange([
+				id,
+			]);
 		}
 	};
 
@@ -59,12 +69,13 @@ export function SpecialPriceSelector({
 					const target = tier.discountTarget || sp.discountTarget;
 					const type = tier.discountType || sp.discountType;
 
-					if (target === "MAGENTA_TV") {
-						return type === "RELATIVE"
+					if (target === 'MAGENTA_TV') {
+						return type === 'RELATIVE'
 							? tier.price
 							: Math.max(0, (tvBasePrice || 0) - tier.price);
-					} else {
-						return type === "RELATIVE"
+					}
+					else {
+						return type === 'RELATIVE'
 							? tier.price
 							: Math.max(0, (basePrice || 0) - tier.price);
 					}
@@ -73,14 +84,15 @@ export function SpecialPriceSelector({
 				const getTierDisplayPrice = (tier: { price: number, discountTarget?: string, discountType?: string }) => {
 					const target = tier.discountTarget || sp.discountTarget;
 					const type = tier.discountType || sp.discountType;
-					
+
 					// Return the exact discounted value, based on relation.
-					if (target === "MAGENTA_TV") {
-						return type === "RELATIVE" 
+					if (target === 'MAGENTA_TV') {
+						return type === 'RELATIVE'
 							? Math.max(0, (tvBasePrice || 0) + (basePrice || 0) - tier.price)
 							: (basePrice || 0) + tier.price;
-					} else {
-						return type === "RELATIVE"
+					}
+					else {
+						return type === 'RELATIVE'
 							? Math.max(0, (basePrice || 0) - tier.price)
 							: tier.price;
 					}
@@ -102,15 +114,17 @@ export function SpecialPriceSelector({
 				return (
 					<motion.div
 						key={sp.id}
-						whileTap={{ scale: 0.98 }}
+						whileTap={{
+							scale: 0.98,
+						}}
 						onClick={() => handleSelect(sp.id)}
 						className={clsx(
-							"rounded-xl border-2 cursor-pointer transition-all duration-200 group",
-							isSelected ? "shadow-sm" : "hover:border-[#ccc]"
+							'rounded-xl border-2 cursor-pointer transition-all duration-200 group',
+							isSelected ? 'shadow-sm' : 'hover:border-[#ccc]',
 						)}
 						style={{
-							borderColor: isSelected ? accentColor : "#eaedf0",
-							backgroundColor: isSelected ? `${accentColor}08` : "white"
+							borderColor: isSelected ? accentColor : '#eaedf0',
+							backgroundColor: isSelected ? `${accentColor}08` : 'white',
 						}}
 					>
 						{/* Main row */}
@@ -119,13 +133,15 @@ export function SpecialPriceSelector({
 							<div
 								className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center mr-3 shrink-0 transition-all duration-200"
 								style={{
-									borderColor: isSelected ? accentColor : "#ddd"
+									borderColor: isSelected ? accentColor : '#ddd',
 								}}
 							>
 								{isSelected && (
 									<div
 										className="w-[8px] h-[8px] rounded-full"
-										style={{ backgroundColor: accentColor }}
+										style={{
+											backgroundColor: accentColor,
+										}}
 									/>
 								)}
 							</div>
@@ -151,13 +167,13 @@ export function SpecialPriceSelector({
 												style={{
 													backgroundColor: isSelected
 														? `${accentColor}15`
-														: "#f0f2f5",
-													color: isSelected ? accentColor : "#666"
+														: '#f0f2f5',
+													color: isSelected ? accentColor : '#666',
 												}}
 											>
 												<ArrowDown className="w-3 h-3" />
-												Monat {tier.fromMonth}–{tier.toMonth}:{" "}
-												{displayPrice.toFixed(2).replace(".", ",")} €
+												Monat {tier.fromMonth}–{tier.toMonth}:{' '}
+												{displayPrice.toFixed(2).replace('.', ',')} €
 											</span>
 										);
 									})}
@@ -169,7 +185,7 @@ export function SpecialPriceSelector({
 								<div className="flex items-center gap-1.5 mt-0.5">
 									{basePrice !== undefined && lowestPrice < basePrice && (
 										<span className="text-[0.75rem] font-semibold text-[#a0a0a0] line-through decoration-[#a0a0a0] opacity-80">
-											{basePrice.toFixed(2).replace(".", ",")} €
+											{basePrice.toFixed(2).replace('.', ',')} €
 										</span>
 									)}
 									<div className="flex items-baseline gap-1">
@@ -178,9 +194,11 @@ export function SpecialPriceSelector({
 										</span>
 										<span
 											className="text-[1.2rem] font-extrabold tracking-tight leading-none"
-											style={{ color: isSelected ? accentColor : "#1a1a2e" }}
+											style={{
+												color: isSelected ? accentColor : '#1a1a2e',
+											}}
 										>
-											{lowestPrice.toFixed(2).replace(".", ",")} €
+											{lowestPrice.toFixed(2).replace('.', ',')} €
 										</span>
 									</div>
 								</div>
@@ -192,17 +210,21 @@ export function SpecialPriceSelector({
 							<div
 								className="flex items-center gap-2 px-4 py-2 rounded-b-xl rounded-t-lg border-t transition-colors"
 								style={{
-									backgroundColor: isSelected ? `${accentColor}0c` : "#f7f8fa",
-									borderColor: isSelected ? `${accentColor}20` : "#eaedf0"
+									backgroundColor: isSelected ? `${accentColor}0c` : '#f7f8fa',
+									borderColor: isSelected ? `${accentColor}20` : '#eaedf0',
 								}}
 							>
 								<TrendingDown
 									className="w-3.5 h-3.5 shrink-0 mb-1"
-									style={{ color: isSelected ? accentColor : "#16a34a" }}
+									style={{
+										color: isSelected ? accentColor : '#16a34a',
+									}}
 								/>
 								<span
 									className="text-[0.9rem] font-bold"
-									style={{ color: isSelected ? accentColor : "#16a34a" }}
+									style={{
+										color: isSelected ? accentColor : '#16a34a',
+									}}
 								>
 									{totalSavings.toFixed(0)} € Gesamtvorteil
 								</span>

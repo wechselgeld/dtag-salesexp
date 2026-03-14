@@ -1,15 +1,15 @@
-import React from "react";
+import React from 'react';
 
 export function Tooltip({
 	children,
 	label,
-	show
+	show,
 }: {
 	children: React.ReactNode;
 	label: string;
 	show: boolean;
 }) {
-	if (!show) return <>{children}</>;
+	if (!show) { return <>{children}</>; }
 	return (
 		<div className="relative group/tooltip">
 			{children}

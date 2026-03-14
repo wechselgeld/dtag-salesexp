@@ -1,8 +1,8 @@
-import SessionsClient from "./sessions-client";
+import SessionsClient from './sessions-client';
 
 export const metadata = {
-	title: "Sessions | Admin Dashboard",
-	description: "Verwalte die aktiven Sales-Sessions."
+	title: 'Sessions | Admin Dashboard',
+	description: 'Verwalte die aktiven Sales-Sessions.',
 };
 
 export default function SessionsPage() {

@@ -1,34 +1,54 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc";
-import Link from "next/link";
-import { Plus, Pencil, Trash2, Layers, Search } from "lucide-react";
-import { Skeleton } from "@/components/shared/skeleton";
-import { confirmDelete } from "@/components/shared/delete-confirm-toast";
-import { useState } from "react";
-import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
-import { Loader2, MessageSquare } from "lucide-react";
+import {
+	trpc,
+} from '@/lib/trpc';
+import Link from 'next/link';
+import {
+	Plus, Pencil, Trash2, Layers, Search,
+} from 'lucide-react';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import {
+	confirmDelete,
+} from '@/components/shared/delete-confirm-toast';
+import {
+	useState,
+} from 'react';
+import {
+	AdminPageHeader,
+} from '@/components/shared/ui/admin-ui';
+import {
+	Loader2, MessageSquare,
+} from 'lucide-react';
 
 export default function AddonsPage() {
 	const utils = trpc.useUtils();
-	const [searchQuery, setSearchQuery] = useState("");
+	const [
+		searchQuery,
+		setSearchQuery,
+	] = useState('');
 
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+	const {
+		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
+	} =
 		trpc.addon.list.useInfiniteQuery(
 			{
 				limit: 20,
-				search: searchQuery || undefined
+				search: searchQuery || undefined,
 			},
 			{
-				getNextPageParam: (lastPage) => lastPage.nextCursor
-			}
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+			},
 		);
 
 	const deleteMutation = trpc.addon.delete.useMutation({
-		onSuccess: () => utils.addon.list.invalidate()
+		onSuccess: () => utils.addon.list.invalidate(),
 	});
 
-	const addons = data?.pages.flatMap((page) => page.items) || [];
+	const addons = data?.pages.flatMap((page) => page.items) || [
+	];
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -61,7 +81,13 @@ export default function AddonsPage() {
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
 				{isLoading && addons.length === 0 ? (
 					<div className="flex flex-col gap-3 p-5">
-						{[1, 2, 3, 4, 5].map((i) => (
+						{[
+							1,
+							2,
+							3,
+							4,
+							5,
+						].map((i) => (
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
@@ -141,7 +167,7 @@ export default function AddonsPage() {
 														? addon.tiers.length === 1
 															? `${addon.tiers[0].price.toFixed(2)} €`
 															: `${Math.min(...addon.tiers.map((t: { price: number }) => t.price)).toFixed(2)} € - ${Math.max(...addon.tiers.map((t: { price: number }) => t.price)).toFixed(2)} €`
-														: "0.00 €"}
+														: '0.00 €'}
 													<span className="text-[0.7rem] text-[#999] ml-1 font-normal">
 														mtl.
 													</span>
@@ -177,7 +203,9 @@ export default function AddonsPage() {
 																id: addon.id,
 																name: addon.name,
 																onConfirm: () =>
-																	deleteMutation.mutate({ id: addon.id })
+																	deleteMutation.mutate({
+																		id: addon.id,
+																	}),
 															})
 														}
 														className="p-2 text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all cursor-pointer border-none bg-transparent"
@@ -187,7 +215,7 @@ export default function AddonsPage() {
 												</div>
 											</td>
 										</tr>
-									)
+									),
 								)}
 							</tbody>
 						</table>
@@ -206,7 +234,7 @@ export default function AddonsPage() {
 							) : (
 								<Plus className="w-5 h-5" />
 							)}
-							{isFetchingNextPage ? "Wird geladen..." : "Mehr laden"}
+							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr laden'}
 						</button>
 					</div>
 				)}

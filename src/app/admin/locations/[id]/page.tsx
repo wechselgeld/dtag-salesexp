@@ -1,19 +1,27 @@
-import { LocationForm } from "@/components/features/admin/location-form";
-import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import {
+	LocationForm,
+} from '@/components/features/admin/location-form';
+import {
+	prisma,
+} from '@/lib/prisma';
+import {
+	notFound,
+} from 'next/navigation';
 
 export const metadata = {
-	title: "Standort bearbeiten | Admin"
+	title: 'Standort bearbeiten | Admin',
 };
 
 export default async function EditLocationPage({
-	params
+	params,
 }: {
 	params: Promise<{ id: string }>;
 }) {
 	const resolvedParams = await params;
 	const location = await prisma.location.findUnique({
-		where: { id: resolvedParams.id }
+		where: {
+			id: resolvedParams.id,
+		},
 	});
 
 	if (!location) {
@@ -32,7 +40,7 @@ export default async function EditLocationPage({
 					name: location.name,
 					address: location.address,
 					isActive: location.isActive,
-					odRegionId: location.odRegionId
+					odRegionId: location.odRegionId,
 				}}
 			/>
 		</main>

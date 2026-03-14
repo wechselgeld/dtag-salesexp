@@ -1,9 +1,11 @@
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import Link from 'next/link';
+import {
+	motion, AnimatePresence,
+} from 'framer-motion';
 
 export function SidebarLogo({
 	collapsed,
-	catColor
+	catColor,
 }: {
 	collapsed: boolean;
 	catColor: string;
@@ -14,7 +16,7 @@ export function SidebarLogo({
 			<div
 				className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-0"
 				style={{
-					background: `linear-gradient(180deg, ${catColor}04 0%, transparent 100%)`
+					background: `linear-gradient(180deg, ${catColor}04 0%, transparent 100%)`,
 				}}
 			/>
 
@@ -28,10 +30,21 @@ export function SidebarLogo({
 									key="collapsed-logo"
 									src="/Deutsche_Telekom.svg"
 									alt="Telekom"
-									initial={{ opacity: 0, scale: 0.8 }}
-									animate={{ opacity: 1, scale: 1 }}
-									exit={{ opacity: 0, scale: 0.8 }}
-									transition={{ duration: 0.2 }}
+									initial={{
+										opacity: 0,
+										scale: 0.8,
+									}}
+									animate={{
+										opacity: 1,
+										scale: 1,
+									}}
+									exit={{
+										opacity: 0,
+										scale: 0.8,
+									}}
+									transition={{
+										duration: 0.2,
+									}}
 									className="w-8 h-8 select-none pointer-events-none group-hover:brightness-110 transition-all mx-auto"
 								/>
 							) : (
@@ -39,10 +52,21 @@ export function SidebarLogo({
 									key="expanded-logo"
 									src="/se-logo.svg"
 									alt="Sales Experience"
-									initial={{ opacity: 0, x: 0 }}
-									animate={{ opacity: 1, x: 0 }}
-									exit={{ opacity: 0, x: -10 }}
-									transition={{ duration: 0.2 }}
+									initial={{
+										opacity: 0,
+										x: 0,
+									}}
+									animate={{
+										opacity: 1,
+										x: 0,
+									}}
+									exit={{
+										opacity: 0,
+										x: -10,
+									}}
+									transition={{
+										duration: 0.2,
+									}}
 									className="h-full w-auto max-w-none select-none pointer-events-none group-hover:brightness-110 transition-all"
 								/>
 							)}

@@ -1,7 +1,9 @@
-import { NewsForm } from "@/components/features/admin/news-form";
+import {
+	NewsForm,
+} from '@/components/features/admin/news-form';
 
 export const metadata = {
-	title: "Neuigkeit erstellen | Admin"
+	title: 'Neuigkeit erstellen | Admin',
 };
 
 export default function NewNewsPage() {

@@ -1,8 +1,10 @@
-import { Metadata } from "next";
-import UsersClient from "./users-client";
+import type {
+	Metadata,
+} from 'next';
+import UsersClient from './users-client';
 
 export const metadata: Metadata = {
-	title: "Admins verwalten"
+	title: 'Admins verwalten',
 };
 
 export default function Page() {

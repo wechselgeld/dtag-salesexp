@@ -1,35 +1,57 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc";
-import Link from "next/link";
-import { Plus, Pencil, Trash2, Gift, Search, Loader2 } from "lucide-react";
-import { format } from "date-fns";
-import { useState } from "react";
-import { de } from "date-fns/locale";
-import { Skeleton } from "@/components/shared/skeleton";
-import { confirmDelete } from "@/components/shared/delete-confirm-toast";
-import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
+import {
+	trpc,
+} from '@/lib/trpc';
+import Link from 'next/link';
+import {
+	Plus, Pencil, Trash2, Gift, Search, Loader2,
+} from 'lucide-react';
+import {
+	format,
+} from 'date-fns';
+import {
+	useState,
+} from 'react';
+import {
+	de,
+} from 'date-fns/locale';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import {
+	confirmDelete,
+} from '@/components/shared/delete-confirm-toast';
+import {
+	AdminPageHeader,
+} from '@/components/shared/ui/admin-ui';
 
 export default function CreditsPage() {
 	const utils = trpc.useUtils();
-	const [searchQuery, setSearchQuery] = useState("");
+	const [
+		searchQuery,
+		setSearchQuery,
+	] = useState('');
 
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+	const {
+		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
+	} =
 		trpc.admin.oneTimeCredit.list.useInfiniteQuery(
 			{
 				limit: 20,
-				search: searchQuery || undefined
+				search: searchQuery || undefined,
 			},
 			{
-				getNextPageParam: (lastPage) => lastPage.nextCursor
-			}
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+			},
 		);
 
 	const deleteMutation = trpc.admin.oneTimeCredit.delete.useMutation({
-		onSuccess: () => utils.admin.oneTimeCredit.list.invalidate()
+		onSuccess: () => utils.admin.oneTimeCredit.list.invalidate(),
 	});
 
-	const credits = data?.pages.flatMap((page) => page.items) || [];
+	const credits = data?.pages.flatMap((page) => page.items) || [
+	];
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -62,7 +84,13 @@ export default function CreditsPage() {
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
 				{isLoading && credits.length === 0 ? (
 					<div className="flex flex-col gap-3 p-5">
-						{[1, 2, 3, 4, 5].map((i) => (
+						{[
+							1,
+							2,
+							3,
+							4,
+							5,
+						].map((i) => (
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
@@ -131,8 +159,8 @@ export default function CreditsPage() {
 												)}
 											</td>
 											<td className="py-4 px-6 text-[0.8rem] text-[#888] font-bold">
-												{format(new Date(credit.createdAt), "dd. MMM yyyy", {
-													locale: de
+												{format(new Date(credit.createdAt), 'dd. MMM yyyy', {
+													locale: de,
 												})}
 											</td>
 											<td className="py-4 px-6 text-right w-[150px]">
@@ -150,7 +178,9 @@ export default function CreditsPage() {
 																id: credit.id,
 																name: credit.name,
 																onConfirm: () =>
-																	deleteMutation.mutate({ id: credit.id })
+																	deleteMutation.mutate({
+																		id: credit.id,
+																	}),
 															});
 														}}
 														disabled={deleteMutation.isPending}
@@ -166,7 +196,7 @@ export default function CreditsPage() {
 												</div>
 											</td>
 										</tr>
-									)
+									),
 								)}
 							</tbody>
 						</table>
@@ -185,7 +215,7 @@ export default function CreditsPage() {
 							) : (
 								<Plus className="w-5 h-5" />
 							)}
-							{isFetchingNextPage ? "Wird geladen..." : "Mehr laden"}
+							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr laden'}
 						</button>
 					</div>
 				)}

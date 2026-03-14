@@ -1,7 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
-import { trpc } from "@/lib/trpc";
+import {
+	useState, useEffect, useMemo,
+} from 'react';
+import {
+	trpc,
+} from '@/lib/trpc';
 import {
 	MapPin,
 	Search,
@@ -12,12 +16,18 @@ import {
 	Wifi,
 	X,
 	ExternalLink,
-	AlertCircle
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { createPortal } from "react-dom";
-import Link from "next/link";
-import { Skeleton } from "@/components/shared/skeleton";
+	AlertCircle,
+} from 'lucide-react';
+import {
+	motion, AnimatePresence,
+} from 'framer-motion';
+import {
+	createPortal,
+} from 'react-dom';
+import Link from 'next/link';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
 
 interface AvailabilityCheckModalProps {
 	isOpen: boolean;
@@ -26,18 +36,26 @@ interface AvailabilityCheckModalProps {
 }
 
 const CATEGORY_ROUTE_MAP: Record<string, string> = {
-	MOBILE: "MOBILE",
-	FIBER: "FIBER",
-	DSL: "DSL",
-	MAGENTA_TV_OTT: "MAGENTA_TV_OTT",
-	DEVICE: "DEVICE",
-	DATA: "DATA"
+	MOBILE: 'MOBILE',
+	FIBER: 'FIBER',
+	DSL: 'DSL',
+	MAGENTA_TV_OTT: 'MAGENTA_TV_OTT',
+	DEVICE: 'DEVICE',
+	DATA: 'DATA',
 };
 
-function TariffMatchList({ tariffNames }: { tariffNames: string[] }) {
-	const { data: matches, isLoading } = trpc.product.matchTariffNames.useQuery(
-		{ tariffNames },
-		{ enabled: tariffNames.length > 0 }
+function TariffMatchList({
+	tariffNames,
+}: { tariffNames: string[] }) {
+	const {
+		data: matches, isLoading,
+	} = trpc.product.matchTariffNames.useQuery(
+		{
+			tariffNames,
+		},
+		{
+			enabled: tariffNames.length > 0,
+		},
 	);
 
 	return (
@@ -48,58 +66,31 @@ function TariffMatchList({ tariffNames }: { tariffNames: string[] }) {
 			<div className="grid grid-cols-1 gap-2">
 				{isLoading
 					? tariffNames.map((name, i) => (
-							<div
-								key={i}
-								className="flex items-center justify-between p-3.5 bg-white border border-[#eaedf0] rounded-xl"
-							>
-								<div className="flex items-center gap-3 w-full">
-									<Skeleton className="w-8 h-8 rounded-lg shrink-0" />
-									<Skeleton className="h-4 w-1/2" />
-								</div>
+						<div
+							key={i}
+							className="flex items-center justify-between p-3.5 bg-white border border-[#eaedf0] rounded-xl"
+						>
+							<div className="flex items-center gap-3 w-full">
+								<Skeleton className="w-8 h-8 rounded-lg shrink-0" />
+								<Skeleton className="h-4 w-1/2" />
 							</div>
-						))
-					: (matches ?? []).map((entry, i) => {
-							const isGlaserfaser = entry.tariffName
-								.toLowerCase()
-								.includes("glasfaser");
+						</div>
+					))
+					: (matches ?? [
+					]).map((entry, i) => {
+						const isGlaserfaser = entry.tariffName
+							.toLowerCase()
+							.includes('glasfaser');
 
-							if (entry.matched && entry.product) {
-								const category =
+						if (entry.matched && entry.product) {
+							const category =
 									CATEGORY_ROUTE_MAP[entry.product.category] ??
 									entry.product.category;
-								return (
-									<Link
-										key={i}
-										href={`/products/${category}`}
-										className="flex items-center justify-between p-3.5 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl group hover:border-[#e20074]/40 hover:bg-[#fdf2f8] transition-all no-underline cursor-pointer"
-									>
-										<div className="flex items-center gap-3">
-											<div className="p-1.5 bg-white rounded-lg shadow-sm">
-												{isGlaserfaser ? (
-													<Zap className="w-3.5 h-3.5 text-[#0090d0]" />
-												) : (
-													<Wifi className="w-3.5 h-3.5 text-[#e20074]" />
-												)}
-											</div>
-											<div className="flex flex-col">
-												<span className="text-[0.85rem] font-bold text-[#1a1a2e] group-hover:text-[#e20074] transition-colors">
-													{entry.tariffName}
-												</span>
-												<span className="text-[0.7rem] text-[#00a878] font-semibold flex items-center gap-1">
-													<CheckCircle2 className="w-3 h-3" />
-													Im System: {entry.product.name}
-												</span>
-											</div>
-										</div>
-										<ExternalLink className="w-4 h-4 text-[#bbb] group-hover:text-[#e20074] transition-colors shrink-0" />
-									</Link>
-								);
-							}
-
 							return (
-								<div
+								<Link
 									key={i}
-									className="flex items-center justify-between p-3.5 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl opacity-70"
+									href={`/products/${category}`}
+									className="flex items-center justify-between p-3.5 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl group hover:border-[#e20074]/40 hover:bg-[#fdf2f8] transition-all no-underline cursor-pointer"
 								>
 									<div className="flex items-center gap-3">
 										<div className="p-1.5 bg-white rounded-lg shadow-sm">
@@ -109,17 +100,45 @@ function TariffMatchList({ tariffNames }: { tariffNames: string[] }) {
 												<Wifi className="w-3.5 h-3.5 text-[#e20074]" />
 											)}
 										</div>
-										<span className="text-[0.85rem] font-bold text-[#1a1a2e]">
-											{entry.tariffName}
-										</span>
+										<div className="flex flex-col">
+											<span className="text-[0.85rem] font-bold text-[#1a1a2e] group-hover:text-[#e20074] transition-colors">
+												{entry.tariffName}
+											</span>
+											<span className="text-[0.7rem] text-[#00a878] font-semibold flex items-center gap-1">
+												<CheckCircle2 className="w-3 h-3" />
+													Im System: {entry.product.name}
+											</span>
+										</div>
 									</div>
-									<span className="text-[0.65rem] font-bold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 flex items-center gap-1 shrink-0">
-										<AlertCircle className="w-3 h-3" />
-										Nicht im System
+									<ExternalLink className="w-4 h-4 text-[#bbb] group-hover:text-[#e20074] transition-colors shrink-0" />
+								</Link>
+							);
+						}
+
+						return (
+							<div
+								key={i}
+								className="flex items-center justify-between p-3.5 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl opacity-70"
+							>
+								<div className="flex items-center gap-3">
+									<div className="p-1.5 bg-white rounded-lg shadow-sm">
+										{isGlaserfaser ? (
+											<Zap className="w-3.5 h-3.5 text-[#0090d0]" />
+										) : (
+											<Wifi className="w-3.5 h-3.5 text-[#e20074]" />
+										)}
+									</div>
+									<span className="text-[0.85rem] font-bold text-[#1a1a2e]">
+										{entry.tariffName}
 									</span>
 								</div>
-							);
-						})}
+								<span className="text-[0.65rem] font-bold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 flex items-center gap-1 shrink-0">
+									<AlertCircle className="w-3 h-3" />
+										Nicht im System
+								</span>
+							</div>
+						);
+					})}
 			</div>
 		</div>
 	);
@@ -128,92 +147,166 @@ function TariffMatchList({ tariffNames }: { tariffNames: string[] }) {
 export function AvailabilityCheckModal({
 	isOpen,
 	onClose,
-	onResult
+	onResult,
 }: AvailabilityCheckModalProps) {
-	const [step, setStep] = useState<"address" | "checking" | "result">(
-		"address"
+	const [
+		step,
+		setStep,
+	] = useState<'address' | 'checking' | 'result'>(
+		'address',
 	);
-	const [zip, setZip] = useState("");
-	const [city, setCity] = useState("");
-	const [street, setStreet] = useState("");
-	const [houseNumber, setHouseNumber] = useState("");
-	const [mounted, setMounted] = useState(false);
+	const [
+		zip,
+		setZip,
+	] = useState('');
+	const [
+		city,
+		setCity,
+	] = useState('');
+	const [
+		street,
+		setStreet,
+	] = useState('');
+	const [
+		houseNumber,
+		setHouseNumber,
+	] = useState('');
+	const [
+		mounted,
+		setMounted,
+	] = useState(false);
 
-	const [activeField, setActiveField] = useState<
-		"zip" | "street" | "houseNumber" | null
+	const [
+		activeField,
+		setActiveField,
+	] = useState<
+		'zip' | 'street' | 'houseNumber' | null
 	>(null);
 
-	const [checkResult, setCheckResult] = useState<{
+	const [
+		checkResult,
+		setCheckResult,
+	] = useState<{
 		status: string;
 		availableTariffNames: string[];
 		fiberStatus?: string | null;
 	} | null>(null);
 
-	useEffect(() => setMounted(true), []);
+	useEffect(() => setMounted(true), [
+	]);
 
 	const checkMutation = trpc.availability.check.useMutation({
 		onSuccess: (data: any) => {
 			setCheckResult({
-				status: data.status || "UNKNOWN",
-				availableTariffNames: data.availableTariffNames || [],
-				fiberStatus: data.fiberStatus || null
+				status: data.status || 'UNKNOWN',
+				availableTariffNames: data.availableTariffNames || [
+				],
+				fiberStatus: data.fiberStatus || null,
 			});
-			setStep("result");
-			if (onResult) onResult(data.availableTariffNames || []);
+			setStep('result');
+			if (onResult) {
+				onResult(data.availableTariffNames || [
+				]);
+			}
 		},
 		onError: () => {
-			setStep("address");
-			alert("Fehler bei der Prüfung. Bitte Eingaben kontrollieren.");
-		}
+			setStep('address');
+			alert('Fehler bei der Prüfung. Bitte Eingaben kontrollieren.');
+		},
 	});
 
-	const { data: zipSuggestions } = trpc.availability.suggestAddress.useQuery(
-		{ searchTerm: zip, searchTarget: "placeAndZip" },
-		{ enabled: activeField === "zip" && zip.length >= 3 }
+	const {
+		data: zipSuggestions,
+	} = trpc.availability.suggestAddress.useQuery(
+		{
+			searchTerm: zip,
+			searchTarget: 'placeAndZip',
+		},
+		{
+			enabled: activeField === 'zip' && zip.length >= 3,
+		},
 	);
 
-	const { data: streetSuggestions } = trpc.availability.suggestAddress.useQuery(
+	const {
+		data: streetSuggestions,
+	} = trpc.availability.suggestAddress.useQuery(
 		{
 			searchTerm: street,
-			searchTarget: "streetName",
-			selectedAddress: { city, postCode: zip }
+			searchTarget: 'streetName',
+			selectedAddress: {
+				city,
+				postCode: zip,
+			},
 		},
-		{ enabled: activeField === "street" && street.length >= 2 && city !== "" }
+		{
+			enabled: activeField === 'street' && street.length >= 2 && city !== '',
+		},
 	);
 
-	const { data: hnSuggestions } = trpc.availability.suggestAddress.useQuery(
+	const {
+		data: hnSuggestions,
+	} = trpc.availability.suggestAddress.useQuery(
 		{
 			searchTerm: houseNumber,
-			searchTarget: "houseNumber",
-			selectedAddress: { city, postCode: zip, streetName: street }
+			searchTarget: 'houseNumber',
+			selectedAddress: {
+				city,
+				postCode: zip,
+				streetName: street,
+			},
 		},
-		{ enabled: activeField === "houseNumber" && street !== "" }
+		{
+			enabled: activeField === 'houseNumber' && street !== '',
+		},
 	);
 
 	const handleCheck = () => {
-		if (!zip || !street || !houseNumber) return;
-		setStep("checking");
-		checkMutation.mutate({ zip, city, street, houseNumber });
+		if (!zip || !street || !houseNumber) { return; }
+		setStep('checking');
+		checkMutation.mutate({
+			zip,
+			city,
+			street,
+			houseNumber,
+		});
 	};
 
-	if (!mounted) return null;
+	if (!mounted) { return null; }
 
 	return createPortal(
 		<AnimatePresence>
 			{isOpen && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
 					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
+						initial={{
+							opacity: 0,
+						}}
+						animate={{
+							opacity: 1,
+						}}
+						exit={{
+							opacity: 0,
+						}}
 						onClick={onClose}
 						className="absolute inset-0 bg-black/40 backdrop-blur-sm"
 					/>
 
 					<motion.div
-						initial={{ opacity: 0, scale: 0.95, y: 20 }}
-						animate={{ opacity: 1, scale: 1, y: 0 }}
-						exit={{ opacity: 0, scale: 0.95, y: 20 }}
+						initial={{
+							opacity: 0,
+							scale: 0.95,
+							y: 20,
+						}}
+						animate={{
+							opacity: 1,
+							scale: 1,
+							y: 0,
+						}}
+						exit={{
+							opacity: 0,
+							scale: 0.95,
+							y: 20,
+						}}
 						className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col"
 					>
 						{/* Header */}
@@ -241,12 +334,21 @@ export function AvailabilityCheckModal({
 
 						<div className="px-8 pb-8 flex-1 overflow-y-auto max-h-[70vh] scrollbar-none">
 							<AnimatePresence mode="wait">
-								{step === "address" && (
+								{step === 'address' && (
 									<motion.div
 										key="address"
-										initial={{ opacity: 0, x: -20 }}
-										animate={{ opacity: 1, x: 0 }}
-										exit={{ opacity: 0, x: 20 }}
+										initial={{
+											opacity: 0,
+											x: -20,
+										}}
+										animate={{
+											opacity: 1,
+											x: 0,
+										}}
+										exit={{
+											opacity: 0,
+											x: 20,
+										}}
 										className="space-y-4 pt-4"
 									>
 										{/* PLZ / Ort */}
@@ -259,31 +361,31 @@ export function AvailabilityCheckModal({
 													value={zip}
 													onChange={(e) => {
 														setZip(e.target.value);
-														setActiveField("zip");
+														setActiveField('zip');
 													}}
 													placeholder="z.B. 09112"
 													className="flex-1 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl px-4 py-3 text-[0.9rem] outline-none focus:border-[#e20074]/30 focus:bg-white transition-all"
 												/>
 											</div>
-											{activeField === "zip" &&
+											{activeField === 'zip' &&
 												zipSuggestions &&
 												(zipSuggestions as any[]).length > 0 && (
-													<div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-[#eaedf0] rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-1">
-														{(zipSuggestions as any[]).map((s, idx) => (
-															<button
-																key={idx}
-																onClick={() => {
-																	setZip(s.postCode ?? "");
-																	setCity(s.city ?? "");
-																	setActiveField(null);
-																}}
-																className="w-full text-left px-4 py-2.5 text-[0.85rem] hover:bg-[#f7f8fa] transition-colors border-none bg-transparent cursor-pointer"
-															>
-																{s.postCode} {s.city}
-															</button>
-														))}
-													</div>
-												)}
+												<div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-[#eaedf0] rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-1">
+													{(zipSuggestions as any[]).map((s, idx) => (
+														<button
+															key={idx}
+															onClick={() => {
+																setZip(s.postCode ?? '');
+																setCity(s.city ?? '');
+																setActiveField(null);
+															}}
+															className="w-full text-left px-4 py-2.5 text-[0.85rem] hover:bg-[#f7f8fa] transition-colors border-none bg-transparent cursor-pointer"
+														>
+															{s.postCode} {s.city}
+														</button>
+													))}
+												</div>
+											)}
 										</div>
 
 										{/* Straße */}
@@ -296,29 +398,29 @@ export function AvailabilityCheckModal({
 												value={street}
 												onChange={(e) => {
 													setStreet(e.target.value);
-													setActiveField("street");
+													setActiveField('street');
 												}}
 												placeholder="z.B. Walter-Oertel-Str."
 												className="w-full bg-[#f7f8fa] border border-[#eaedf0] rounded-xl px-4 py-3 text-[0.9rem] outline-none focus:border-[#e20074]/30 focus:bg-white transition-all disabled:opacity-50"
 											/>
-											{activeField === "street" &&
+											{activeField === 'street' &&
 												streetSuggestions &&
 												(streetSuggestions as any[]).length > 0 && (
-													<div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-[#eaedf0] rounded-xl shadow-lg overflow-hidden">
-														{(streetSuggestions as any[]).map((s, idx) => (
-															<button
-																key={idx}
-																onClick={() => {
-																	setStreet(s.streetName ?? "");
-																	setActiveField(null);
-																}}
-																className="w-full text-left px-4 py-2.5 text-[0.85rem] hover:bg-[#f7f8fa] transition-colors border-none bg-transparent cursor-pointer"
-															>
-																{s.streetName}
-															</button>
-														))}
-													</div>
-												)}
+												<div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-[#eaedf0] rounded-xl shadow-lg overflow-hidden">
+													{(streetSuggestions as any[]).map((s, idx) => (
+														<button
+															key={idx}
+															onClick={() => {
+																setStreet(s.streetName ?? '');
+																setActiveField(null);
+															}}
+															className="w-full text-left px-4 py-2.5 text-[0.85rem] hover:bg-[#f7f8fa] transition-colors border-none bg-transparent cursor-pointer"
+														>
+															{s.streetName}
+														</button>
+													))}
+												</div>
+											)}
 										</div>
 
 										{/* Hausnummer */}
@@ -331,29 +433,29 @@ export function AvailabilityCheckModal({
 												value={houseNumber}
 												onChange={(e) => {
 													setHouseNumber(e.target.value);
-													setActiveField("houseNumber");
+													setActiveField('houseNumber');
 												}}
 												placeholder="z.B. 3"
 												className="w-32 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl px-4 py-3 text-[0.9rem] outline-none focus:border-[#e20074]/30 focus:bg-white transition-all disabled:opacity-50"
 											/>
-											{activeField === "houseNumber" &&
+											{activeField === 'houseNumber' &&
 												hnSuggestions &&
 												(hnSuggestions as any[]).length > 0 && (
-													<div className="absolute z-10 top-full left-0 mt-1 bg-white border border-[#eaedf0] rounded-xl shadow-lg overflow-hidden min-w-[120px]">
-														{(hnSuggestions as any[]).map((s, idx) => (
-															<button
-																key={idx}
-																onClick={() => {
-																	setHouseNumber(s.houseNumber ?? "");
-																	setActiveField(null);
-																}}
-																className="w-full text-left px-4 py-2.5 text-[0.85rem] hover:bg-[#f7f8fa] transition-colors border-none bg-transparent cursor-pointer"
-															>
-																{s.houseNumber}
-															</button>
-														))}
-													</div>
-												)}
+												<div className="absolute z-10 top-full left-0 mt-1 bg-white border border-[#eaedf0] rounded-xl shadow-lg overflow-hidden min-w-[120px]">
+													{(hnSuggestions as any[]).map((s, idx) => (
+														<button
+															key={idx}
+															onClick={() => {
+																setHouseNumber(s.houseNumber ?? '');
+																setActiveField(null);
+															}}
+															className="w-full text-left px-4 py-2.5 text-[0.85rem] hover:bg-[#f7f8fa] transition-colors border-none bg-transparent cursor-pointer"
+														>
+															{s.houseNumber}
+														</button>
+													))}
+												</div>
+											)}
 										</div>
 
 										<button
@@ -367,11 +469,17 @@ export function AvailabilityCheckModal({
 									</motion.div>
 								)}
 
-								{step === "checking" && (
+								{step === 'checking' && (
 									<motion.div
 										key="checking"
-										initial={{ opacity: 0, scale: 0.9 }}
-										animate={{ opacity: 1, scale: 1 }}
+										initial={{
+											opacity: 0,
+											scale: 0.9,
+										}}
+										animate={{
+											opacity: 1,
+											scale: 1,
+										}}
 										className="py-20 flex flex-col items-center gap-6"
 									>
 										<div className="relative">
@@ -380,9 +488,20 @@ export function AvailabilityCheckModal({
 												strokeWidth={1.5}
 											/>
 											<motion.div
-												initial={{ opacity: 0 }}
-												animate={{ opacity: [0, 1, 0] }}
-												transition={{ repeat: Infinity, duration: 1.5 }}
+												initial={{
+													opacity: 0,
+												}}
+												animate={{
+													opacity: [
+														0,
+														1,
+														0,
+													],
+												}}
+												transition={{
+													repeat: Infinity,
+													duration: 1.5,
+												}}
 												className="absolute inset-0 bg-[#e20074]/20 blur-2xl rounded-full"
 											/>
 										</div>
@@ -398,14 +517,20 @@ export function AvailabilityCheckModal({
 									</motion.div>
 								)}
 
-								{step === "result" && checkResult && (
+								{step === 'result' && checkResult && (
 									<motion.div
 										key="result"
-										initial={{ opacity: 0, y: 20 }}
-										animate={{ opacity: 1, y: 0 }}
+										initial={{
+											opacity: 0,
+											y: 20,
+										}}
+										animate={{
+											opacity: 1,
+											y: 0,
+										}}
 										className="space-y-6 pt-4"
 									>
-										{checkResult.status === "SUCCESS" ? (
+										{checkResult.status === 'SUCCESS' ? (
 											<div className="bg-[#00a878]/10 rounded-2xl p-5 border border-[#00a878]/20 flex items-start gap-4">
 												<CheckCircle2 className="w-8 h-8 text-[#00a878] shrink-0 mt-0.5" />
 												<div>
@@ -462,8 +587,8 @@ export function AvailabilityCheckModal({
 																Glasfaser-Status
 															</h3>
 															<p className="text-[0.8rem] text-[#0090d0] leading-relaxed">
-																{checkResult.fiberStatus === "CONNECTED"
-																	? "Angeschlossen"
+																{checkResult.fiberStatus === 'CONNECTED'
+																	? 'Angeschlossen'
 																	: checkResult.fiberStatus}
 															</p>
 														</div>
@@ -486,6 +611,6 @@ export function AvailabilityCheckModal({
 				</div>
 			)}
 		</AnimatePresence>,
-		document.body
+		document.body,
 	);
 }

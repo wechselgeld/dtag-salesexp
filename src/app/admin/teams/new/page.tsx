@@ -1,7 +1,9 @@
-import { TeamForm } from "@/components/features/admin/team-form";
+import {
+	TeamForm,
+} from '@/components/features/admin/team-form';
 
 export const metadata = {
-	title: "Team erstellen | Admin"
+	title: 'Team erstellen | Admin',
 };
 
 export default function NewTeamPage() {

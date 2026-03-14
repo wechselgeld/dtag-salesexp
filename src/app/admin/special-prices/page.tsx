@@ -1,8 +1,10 @@
-import { Metadata } from "next";
-import PricesClient from "./prices-client";
+import type {
+	Metadata,
+} from 'next';
+import PricesClient from './prices-client';
 
 export const metadata: Metadata = {
-	title: "Aktionspreise"
+	title: 'Aktionspreise',
 };
 
 export default function Page() {

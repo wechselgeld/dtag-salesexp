@@ -1,52 +1,74 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { trpc } from "@/lib/trpc";
-import { Plus, Trash2, Megaphone, Loader2, Search, Layers } from "lucide-react";
-import clsx from "clsx";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
-import { Skeleton } from "@/components/shared/skeleton";
-import Link from "next/link";
-import { confirmDelete } from "@/components/shared/delete-confirm-toast";
-import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
+import {
+	useState,
+} from 'react';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	Plus, Trash2, Megaphone, Loader2, Search, Layers,
+} from 'lucide-react';
+import clsx from 'clsx';
+import {
+	format,
+} from 'date-fns';
+import {
+	de,
+} from 'date-fns/locale';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import Link from 'next/link';
+import {
+	confirmDelete,
+} from '@/components/shared/delete-confirm-toast';
+import {
+	AdminPageHeader,
+} from '@/components/shared/ui/admin-ui';
 
 const PRIORITY_COLORS: Record<string, string> = {
-	INFO: "#00a878", // Green
-	UPDATE: "#0090d0", // Blue
-	IMPORTANT: "#ff6b00", // Orange
-	CRITICAL: "#dc2626" // Red
+	INFO: '#00a878', // Green
+	UPDATE: '#0090d0', // Blue
+	IMPORTANT: '#ff6b00', // Orange
+	CRITICAL: '#dc2626', // Red
 };
 
 const PRIORITY_LABELS: Record<string, string> = {
-	INFO: "Info",
-	UPDATE: "Update",
-	IMPORTANT: "Wichtig",
-	CRITICAL: "Kritisch"
+	INFO: 'Info',
+	UPDATE: 'Update',
+	IMPORTANT: 'Wichtig',
+	CRITICAL: 'Kritisch',
 };
 
 export default function AdminNewsPage() {
 	const utils = trpc.useUtils();
-	const [searchQuery, setSearchQuery] = useState("");
+	const [
+		searchQuery,
+		setSearchQuery,
+	] = useState('');
 
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+	const {
+		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
+	} =
 		trpc.admin.news.list.useInfiniteQuery(
 			{
 				limit: 20,
-				search: searchQuery || undefined
+				search: searchQuery || undefined,
 			},
 			{
-				getNextPageParam: (lastPage) => lastPage.nextCursor
-			}
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+			},
 		);
 
 	const deleteNews = trpc.admin.news.delete.useMutation({
 		onSuccess: () => {
 			utils.admin.news.list.invalidate();
-		}
+		},
 	});
 
-	const newsItems = data?.pages.flatMap((page) => page.items) || [];
+	const newsItems = data?.pages.flatMap((page) => page.items) || [
+	];
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -79,7 +101,13 @@ export default function AdminNewsPage() {
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
 				{isLoading && newsItems.length === 0 ? (
 					<div className="flex flex-col gap-3 p-5">
-						{[1, 2, 3, 4, 5].map((i) => (
+						{[
+							1,
+							2,
+							3,
+							4,
+							5,
+						].map((i) => (
 							<Skeleton key={i} className="h-20 w-full rounded-xl" />
 						))}
 					</div>
@@ -106,7 +134,7 @@ export default function AdminNewsPage() {
 									priority: string;
 									createdAt: Date | string;
 								},
-								i: number
+								i: number,
 							) => {
 								const color =
 									PRIORITY_COLORS[item.priority] || PRIORITY_COLORS.INFO;
@@ -114,8 +142,8 @@ export default function AdminNewsPage() {
 									<div
 										key={item.id}
 										className={clsx(
-											"px-6 py-5 flex items-start justify-between group hover:bg-[#fcfcfd] transition-colors gap-4",
-											i < newsItems.length - 1 && "border-b border-[#f0f0f0]"
+											'px-6 py-5 flex items-start justify-between group hover:bg-[#fcfcfd] transition-colors gap-4',
+											i < newsItems.length - 1 && 'border-b border-[#f0f0f0]',
 										)}
 									>
 										<div className="flex-1">
@@ -123,9 +151,9 @@ export default function AdminNewsPage() {
 												<span
 													className="px-2.5 py-1 rounded-lg text-[0.65rem] font-bold uppercase tracking-wider"
 													style={{
-														color: color,
+														color,
 														backgroundColor: `${color}15`,
-														border: `1px solid ${color}30`
+														border: `1px solid ${color}30`,
 													}}
 												>
 													{PRIORITY_LABELS[item.priority]}
@@ -133,10 +161,10 @@ export default function AdminNewsPage() {
 												<span className="text-[0.7rem] text-[#888] font-bold">
 													{format(
 														new Date(item.createdAt),
-														"dd. MMM yyyy - HH:mm",
+														'dd. MMM yyyy - HH:mm',
 														{
-															locale: de
-														}
+															locale: de,
+														},
 													)}
 												</span>
 											</div>
@@ -155,7 +183,9 @@ export default function AdminNewsPage() {
 													confirmDelete({
 														id: item.id,
 														name: item.title,
-														onConfirm: () => deleteNews.mutate({ id: item.id })
+														onConfirm: () => deleteNews.mutate({
+															id: item.id,
+														}),
 													});
 												}}
 												disabled={deleteNews.isPending}
@@ -167,7 +197,7 @@ export default function AdminNewsPage() {
 										</div>
 									</div>
 								);
-							}
+							},
 						)}
 					</div>
 				)}
@@ -184,7 +214,7 @@ export default function AdminNewsPage() {
 							) : (
 								<Plus className="w-5 h-5" />
 							)}
-							{isFetchingNextPage ? "Wird geladen..." : "Mehr laden"}
+							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr laden'}
 						</button>
 					</div>
 				)}

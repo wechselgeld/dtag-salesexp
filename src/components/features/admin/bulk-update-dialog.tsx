@@ -1,25 +1,33 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { trpc } from "@/lib/trpc";
-import { X, TrendingUp, TrendingDown, Loader2, Calculator } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import clsx from "clsx";
+import {
+	useState,
+} from 'react';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	X, TrendingUp, TrendingDown, Loader2, Calculator,
+} from 'lucide-react';
+import {
+	motion, AnimatePresence,
+} from 'framer-motion';
+import clsx from 'clsx';
 
 const CATEGORY_LABELS: Record<string, string> = {
-	MOBILE: "Mobilfunk",
-	FIBER: "Glasfaser",
-	DSL: "Festnetz",
-	MAGENTA_TV_OTT: "MagentaTV — OTT",
-	DEVICE: "Endgeräte",
+	MOBILE: 'Mobilfunk',
+	FIBER: 'Glasfaser',
+	DSL: 'Festnetz',
+	MAGENTA_TV_OTT: 'MagentaTV — OTT',
+	DEVICE: 'Endgeräte',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-	MOBILE: "#e20074",
-	FIBER: "#0090d0",
-	DSL: "#7b61ff",
-	MAGENTA_TV_OTT: "#ff6b00",
-	DEVICE: "#00a878",
+	MOBILE: '#e20074',
+	FIBER: '#0090d0',
+	DSL: '#7b61ff',
+	MAGENTA_TV_OTT: '#ff6b00',
+	DEVICE: '#00a878',
 };
 
 interface BulkUpdateDialogProps {
@@ -33,17 +41,29 @@ export function BulkUpdateDialog({
 	onClose,
 	onSuccess,
 }: BulkUpdateDialogProps) {
-	const [category, setCategory] = useState("MOBILE");
-	const [mode, setMode] = useState<"FIXED" | "PERCENTAGE">("FIXED");
-	const [value, setValue] = useState("");
-	const [error, setError] = useState("");
+	const [
+		category,
+		setCategory,
+	] = useState('MOBILE');
+	const [
+		mode,
+		setMode,
+	] = useState<'FIXED' | 'PERCENTAGE'>('FIXED');
+	const [
+		value,
+		setValue,
+	] = useState('');
+	const [
+		error,
+		setError,
+	] = useState('');
 
 	const mutation = trpc.admin.bulkUpdatePrices.useMutation({
 		onSuccess: (data) => {
 			onSuccess();
 			onClose();
-			setValue("");
-			setError("");
+			setValue('');
+			setError('');
 		},
 		onError: (err) => {
 			setError(err.message);
@@ -54,16 +74,20 @@ export function BulkUpdateDialog({
 		e.preventDefault();
 		const numValue = parseFloat(value);
 		if (isNaN(numValue) || numValue === 0) {
-			setError("Bitte gib einen gültigen Wert ein (nicht 0).");
+			setError('Bitte gib einen gültigen Wert ein (nicht 0).');
 			return;
 		}
-		setError("");
-		mutation.mutate({ category, mode, value: numValue });
+		setError('');
+		mutation.mutate({
+			category,
+			mode,
+			value: numValue,
+		});
 	};
 
 	const numValue = parseFloat(value) || 0;
 	const isIncrease = numValue > 0;
-	const catColor = CATEGORY_COLORS[category] || "#e20074";
+	const catColor = CATEGORY_COLORS[category] || '#e20074';
 
 	return (
 		<AnimatePresence>
@@ -71,19 +95,45 @@ export function BulkUpdateDialog({
 				<>
 					{/* Backdrop */}
 					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
+						initial={{
+							opacity: 0,
+						}}
+						animate={{
+							opacity: 1,
+						}}
+						exit={{
+							opacity: 0,
+						}}
 						className="fixed inset-0 bg-black/30 z-50"
 						onClick={onClose}
 					/>
 
 					{/* Dialog */}
 					<motion.div
-						initial={{ opacity: 0, scale: 0.95, y: 10 }}
-						animate={{ opacity: 1, scale: 1, y: 0 }}
-						exit={{ opacity: 0, scale: 0.95, y: 10 }}
-						transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+						initial={{
+							opacity: 0,
+							scale: 0.95,
+							y: 10,
+						}}
+						animate={{
+							opacity: 1,
+							scale: 1,
+							y: 0,
+						}}
+						exit={{
+							opacity: 0,
+							scale: 0.95,
+							y: 10,
+						}}
+						transition={{
+							duration: 0.2,
+							ease: [
+								0.23,
+								1,
+								0.32,
+								1,
+							],
+						}}
 						className="fixed inset-0 z-50 flex items-center justify-center p-4"
 						onClick={(e) => e.stopPropagation()}
 					>
@@ -99,7 +149,9 @@ export function BulkUpdateDialog({
 									>
 										<Calculator
 											className="w-5 h-5"
-											style={{ color: catColor }}
+											style={{
+												color: catColor,
+											}}
 										/>
 									</div>
 									<div>
@@ -128,12 +180,15 @@ export function BulkUpdateDialog({
 									</label>
 									<div className="flex flex-wrap gap-2">
 										{Object.entries(CATEGORY_LABELS).map(
-											([key, label]) => {
+											([
+												key,
+												label,
+											]) => {
 												const isSelected =
 													category === key;
 												const color =
 													CATEGORY_COLORS[key] ||
-													"#e20074";
+													'#e20074';
 												return (
 													<button
 														key={key}
@@ -142,23 +197,24 @@ export function BulkUpdateDialog({
 															setCategory(key)
 														}
 														className={clsx(
-															"px-4 py-2 rounded-xl text-[0.78rem] font-semibold transition-all cursor-pointer border",
+															'px-4 py-2 rounded-xl text-[0.78rem] font-semibold transition-all cursor-pointer border',
 															isSelected
-																? "text-white border-transparent"
-																: "bg-white border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa]"
+																? 'text-white border-transparent'
+																: 'bg-white border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa]',
 														)}
 														style={
 															isSelected
 																? {
-																		backgroundColor: color,
-																	}
-																: {}
+																	backgroundColor: color,
+																}
+																: {
+																}
 														}
 													>
 														{label}
 													</button>
 												);
-											}
+											},
 										)}
 									</div>
 								</div>
@@ -171,12 +227,12 @@ export function BulkUpdateDialog({
 									<div className="grid grid-cols-2 gap-2">
 										<button
 											type="button"
-											onClick={() => setMode("FIXED")}
+											onClick={() => setMode('FIXED')}
 											className={clsx(
-												"px-4 py-3 rounded-xl text-[0.82rem] font-semibold transition-all cursor-pointer border",
-												mode === "FIXED"
-													? "bg-[#1a1a2e] text-white border-transparent"
-													: "bg-white text-[#666] border-[#eaedf0] hover:bg-[#f7f8fa]"
+												'px-4 py-3 rounded-xl text-[0.82rem] font-semibold transition-all cursor-pointer border',
+												mode === 'FIXED'
+													? 'bg-[#1a1a2e] text-white border-transparent'
+													: 'bg-white text-[#666] border-[#eaedf0] hover:bg-[#f7f8fa]',
 											)}
 										>
 											Fester Betrag (€)
@@ -184,13 +240,13 @@ export function BulkUpdateDialog({
 										<button
 											type="button"
 											onClick={() =>
-												setMode("PERCENTAGE")
+												setMode('PERCENTAGE')
 											}
 											className={clsx(
-												"px-4 py-3 rounded-xl text-[0.82rem] font-semibold transition-all cursor-pointer border",
-												mode === "PERCENTAGE"
-													? "bg-[#1a1a2e] text-white border-transparent"
-													: "bg-white text-[#666] border-[#eaedf0] hover:bg-[#f7f8fa]"
+												'px-4 py-3 rounded-xl text-[0.82rem] font-semibold transition-all cursor-pointer border',
+												mode === 'PERCENTAGE'
+													? 'bg-[#1a1a2e] text-white border-transparent'
+													: 'bg-white text-[#666] border-[#eaedf0] hover:bg-[#f7f8fa]',
 											)}
 										>
 											Prozentual (%)
@@ -201,7 +257,7 @@ export function BulkUpdateDialog({
 								{/* Value Input */}
 								<div>
 									<label className="text-[0.72rem] uppercase tracking-wider text-[#aaa] font-bold mb-2 block">
-										Wert{" "}
+										Wert{' '}
 										<span className="normal-case tracking-normal text-[#ccc] font-medium">
 											(positiv = Erhöhung, negativ =
 											Senkung)
@@ -216,14 +272,14 @@ export function BulkUpdateDialog({
 												setValue(e.target.value)
 											}
 											placeholder={
-												mode === "FIXED"
-													? "z.B. 5.00 oder -2.50"
-													: "z.B. 10 oder -5"
+												mode === 'FIXED'
+													? 'z.B. 5.00 oder -2.50'
+													: 'z.B. 10 oder -5'
 											}
 											className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.9rem] pr-12"
 										/>
 										<span className="absolute right-4 top-1/2 -translate-y-1/2 text-[0.85rem] font-bold text-[#ccc]">
-											{mode === "FIXED" ? "€" : "%"}
+											{mode === 'FIXED' ? '€' : '%'}
 										</span>
 									</div>
 								</div>
@@ -232,10 +288,10 @@ export function BulkUpdateDialog({
 								{numValue !== 0 && (
 									<div
 										className={clsx(
-											"flex items-center gap-2 px-4 py-3 rounded-xl text-[0.82rem] font-medium",
+											'flex items-center gap-2 px-4 py-3 rounded-xl text-[0.82rem] font-medium',
 											isIncrease
-												? "bg-[#dcfce7] text-[#15803d]"
-												: "bg-[#fee2e2] text-[#dc2626]"
+												? 'bg-[#dcfce7] text-[#15803d]'
+												: 'bg-[#fee2e2] text-[#dc2626]',
 										)}
 									>
 										{isIncrease ? (
@@ -243,17 +299,17 @@ export function BulkUpdateDialog({
 										) : (
 											<TrendingDown className="w-4 h-4" />
 										)}
-										Alle{" "}
+										Alle{' '}
 										<strong>
 											{CATEGORY_LABELS[category]}
 										</strong>
-										-Produkte werden um{" "}
+										-Produkte werden um{' '}
 										<strong>
-											{mode === "FIXED"
+											{mode === 'FIXED'
 												? `${Math.abs(numValue).toFixed(2)} €`
 												: `${Math.abs(numValue)}%`}
-										</strong>{" "}
-										{isIncrease ? "erhöht" : "gesenkt"}.
+										</strong>{' '}
+										{isIncrease ? 'erhöht' : 'gesenkt'}.
 									</div>
 								)}
 

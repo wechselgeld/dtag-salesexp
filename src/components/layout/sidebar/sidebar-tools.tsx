@@ -1,10 +1,16 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import clsx from "clsx";
-import { Tooltip } from "./sidebar-tooltip";
-import { ChevronRight } from "lucide-react";
-import { usePathname } from "next/navigation";
+import Link from 'next/link';
+import clsx from 'clsx';
+import {
+	Tooltip,
+} from './sidebar-tooltip';
+import {
+	ChevronRight,
+} from 'lucide-react';
+import {
+	usePathname,
+} from 'next/navigation';
 
 export interface UtilityLink {
 	id: string;
@@ -12,7 +18,7 @@ export interface UtilityLink {
 	label: string;
 	onClick?: () => void;
 	href?: string;
-	type: "button" | "link" | "external";
+	type: 'button' | 'link' | 'external';
 }
 
 interface SidebarToolsProps {
@@ -21,28 +27,30 @@ interface SidebarToolsProps {
 	group2: UtilityLink[];
 }
 
-export function SidebarTools({ collapsed, group1, group2 }: SidebarToolsProps) {
+export function SidebarTools({
+	collapsed, group1, group2,
+}: SidebarToolsProps) {
 	const pathname = usePathname();
 
 	const renderGroup = (links: UtilityLink[]) => {
 		return (
 			<div
 				className={clsx(
-					"flex flex-col gap-0.5",
-					!collapsed && "bg-[#f7f8fa] rounded-[20px] p-2 w-full",
-					collapsed && "items-center gap-1.5"
+					'flex flex-col gap-0.5',
+					!collapsed && 'bg-[#f7f8fa] rounded-[20px] p-2 w-full',
+					collapsed && 'items-center gap-1.5',
 				)}
 			>
 				{links.map((item) => {
 					const Icon = item.icon;
-					const isLinkActive = item.type === "link" && pathname === item.href;
+					const isLinkActive = item.type === 'link' && pathname === item.href;
 
 					const btnClass = clsx(
-						"flex items-center gap-3 rounded-[14px] no-underline text-[0.8rem] font-bold transition-all duration-200 cursor-pointer border-none overflow-hidden whitespace-nowrap",
+						'flex items-center gap-3 rounded-[14px] no-underline text-[0.8rem] font-bold transition-all duration-200 cursor-pointer border-none overflow-hidden whitespace-nowrap',
 						collapsed
-							? "w-9 h-9 justify-center mx-auto p-0 hover:bg-[#f7f8fa]"
-							: "px-3 py-2.5 w-full hover:bg-white hover:shadow-sm",
-						isLinkActive ? "bg-white text-[#1a1a2e] shadow-sm" : "text-[#333]"
+							? 'w-9 h-9 justify-center mx-auto p-0 hover:bg-[#f7f8fa]'
+							: 'px-3 py-2.5 w-full hover:bg-white hover:shadow-sm',
+						isLinkActive ? 'bg-white text-[#1a1a2e] shadow-sm' : 'text-[#333]',
 					);
 
 					const content = (
@@ -50,8 +58,8 @@ export function SidebarTools({ collapsed, group1, group2 }: SidebarToolsProps) {
 							<div className="flex items-center gap-3 min-w-0">
 								<Icon
 									className={clsx(
-										"shrink-0 transition-all duration-200 text-[#444]",
-										collapsed ? "w-4 h-4" : "w-4 h-4"
+										'shrink-0 transition-all duration-200 text-[#444]',
+										collapsed ? 'w-4 h-4' : 'w-4 h-4',
 									)}
 									strokeWidth={2}
 								/>
@@ -59,8 +67,8 @@ export function SidebarTools({ collapsed, group1, group2 }: SidebarToolsProps) {
 									className="truncate transition-opacity duration-200"
 									style={{
 										opacity: collapsed ? 0 : 1,
-										width: collapsed ? 0 : "auto",
-										overflow: "hidden"
+										width: collapsed ? 0 : 'auto',
+										overflow: 'hidden',
 									}}
 								>
 									{item.label}
@@ -74,21 +82,21 @@ export function SidebarTools({ collapsed, group1, group2 }: SidebarToolsProps) {
 
 					return (
 						<Tooltip key={item.id} label={item.label} show={collapsed}>
-							{item.type === "button" ? (
+							{item.type === 'button' ? (
 								<button
 									id={item.id}
 									onClick={item.onClick}
-									className={clsx(btnClass, "group")}
+									className={clsx(btnClass, 'group')}
 								>
 									{content}
 								</button>
-							) : item.type === "external" ? (
+							) : item.type === 'external' ? (
 								<a
 									id={item.id}
 									href={item.href}
 									target="_blank"
 									rel="noopener noreferrer"
-									className={clsx(btnClass, "group")}
+									className={clsx(btnClass, 'group')}
 								>
 									{content}
 								</a>
@@ -96,7 +104,7 @@ export function SidebarTools({ collapsed, group1, group2 }: SidebarToolsProps) {
 								<Link
 									id={item.id}
 									href={item.href!}
-									className={clsx(btnClass, "group")}
+									className={clsx(btnClass, 'group')}
 								>
 									{content}
 								</Link>

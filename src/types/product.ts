@@ -1,22 +1,21 @@
 export type BusinessCase = 'NEW_ACTIVATION' | 'MOVE' | 'PLAN_CHANGE' | 'SPEED_UP';
 
-export type PriceHistory = {
+export interface PriceHistory {
     id: string;
     price: number;
     label?: string | null;
     createdAt: Date | string;
-};
+}
 
-
-export type SpecialPriceTier = {
+export interface SpecialPriceTier {
     price: number;
     fromMonth: number;
     toMonth: number;
     discountTarget: string;
     discountType: string;
-};
+}
 
-export type SpecialPrice = {
+export interface SpecialPrice {
     id: string;
     name: string;
     description?: string | null;
@@ -30,16 +29,16 @@ export type SpecialPrice = {
     discountTarget: string;
     discountType: string;
     tiers: SpecialPriceTier[];
-};
+}
 
-export type AddonTier = {
+export interface AddonTier {
     id: string;
     name: string;
     price: number;
     addonId: string;
-};
+}
 
-export type Addon = {
+export interface Addon {
     id: string;
     name: string;
     description: string | null;
@@ -48,9 +47,9 @@ export type Addon = {
     imageUrl?: string | null;
     isGlobal?: boolean;
     isActive?: boolean;
-};
+}
 
-export type Product = {
+export interface Product {
     id: string;
     name: string;
     category: string;
@@ -63,7 +62,7 @@ export type Product = {
     magentaTVBundlePrice: number | null;
     specialPrices: SpecialPrice[];
     compatibleAddons?: Addon[];
-    
+
     allowNewActivation: boolean;
     allowMove: boolean;
     allowPlanChange: boolean;
@@ -83,13 +82,13 @@ export type Product = {
 
     salesScript?: string | null;
     priceHistory?: PriceHistory[];
-};
+}
 
-export type Credit = {
+export interface Credit {
     id: string;
     name: string;
     value: number;
-};
+}
 
 export interface CalculationResult {
     monthlyCosts: {
@@ -111,11 +110,11 @@ export interface CalculationResult {
     plusKartenCost: number;
 }
 
-export type PricingSettings = {
+export interface PricingSettings {
     magentatv_smart_price: number;
     magentatv_smartstream_price: number;
     magentatv_megastream_price: number;
     shipping_hardware_fee: number;
     plus_karte_first_price: number;
     plus_karte_following_price: number;
-};
+}

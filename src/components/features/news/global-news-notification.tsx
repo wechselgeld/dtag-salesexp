@@ -1,41 +1,66 @@
-"use client";
+'use client';
 
-import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useNewsNotificationStore } from "@/lib/store/news-notification-store";
+import React from 'react';
+import {
+	AnimatePresence,
+} from 'framer-motion';
+import {
+	useNewsNotificationStore,
+} from '@/lib/store/news-notification-store';
 import {
 	Info,
 	AlertCircle,
 	AlertTriangle,
 	Sparkles,
-	TrendingUp
-} from "lucide-react";
-import clsx from "clsx";
-import { Toast } from "@/components/shared/ui/toast";
-import { trpc } from "@/lib/trpc";
-import { useSystemAlertStore } from "@/lib/store/system-alert-store";
+	TrendingUp,
+} from 'lucide-react';
+import clsx from 'clsx';
+import {
+	Toast,
+} from '@/components/shared/ui/toast';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	useSystemAlertStore,
+} from '@/lib/store/system-alert-store';
 
 const PRIORITY_CONFIG: Record<
 	string,
 	{ color: string; icon: React.ElementType }
 > = {
-	INFO: { color: "#00a878", icon: Info }, // Green
-	UPDATE: { color: "#0090d0", icon: Info }, // Blue
-	IMPORTANT: { color: "#ff6b00", icon: AlertCircle }, // Orange
-	CRITICAL: { color: "#dc2626", icon: AlertTriangle }, // Red
-	SALES: { color: "#e20074", icon: Sparkles } // Magenta
+	INFO: {
+		color: '#00a878',
+		icon: Info,
+	}, // Green
+	UPDATE: {
+		color: '#0090d0',
+		icon: Info,
+	}, // Blue
+	IMPORTANT: {
+		color: '#ff6b00',
+		icon: AlertCircle,
+	}, // Orange
+	CRITICAL: {
+		color: '#dc2626',
+		icon: AlertTriangle,
+	}, // Red
+	SALES: {
+		color: '#e20074',
+		icon: Sparkles,
+	}, // Magenta
 };
 
 export function GlobalNewsNotification() {
 	const notifications = useNewsNotificationStore(
-		(state) => state.notifications
+		(state) => state.notifications,
 	);
 	const removeNotification = useNewsNotificationStore(
-		(state) => state.removeNotification
+		(state) => state.removeNotification,
 	);
 
 	const addNotification = useNewsNotificationStore(
-		(state) => state.addNotification
+		(state) => state.addNotification,
 	);
 	const systemAlerts = useSystemAlertStore((state) => state.alerts);
 
@@ -49,13 +74,13 @@ export function GlobalNewsNotification() {
 					priority: news.priority as any,
 					team: news.team,
 					location: news.location,
-					odRegion: news.odRegion
+					odRegion: news.odRegion,
 				});
 			}
 		},
 		onError(err) {
-			console.error("News subscription error:", err);
-		}
+			console.error('News subscription error:', err);
+		},
 	});
 
 	return (
@@ -83,7 +108,7 @@ export function GlobalNewsNotification() {
 
 function NotificationItem({
 	notification,
-	onDismiss
+	onDismiss,
 }: {
 	notification: {
 		priority: string;
@@ -97,17 +122,19 @@ function NotificationItem({
 }) {
 	const config = PRIORITY_CONFIG[notification.priority] || PRIORITY_CONFIG.INFO;
 	const Icon = config.icon;
-	const isCritical = notification.priority === "CRITICAL";
-	const isImportant = notification.priority === "IMPORTANT";
-	const isSales = notification.priority === "SALES";
+	const isCritical = notification.priority === 'CRITICAL';
+	const isImportant = notification.priority === 'IMPORTANT';
+	const isSales = notification.priority === 'SALES';
 
-	let targetLabel = "Global";
+	let targetLabel = 'Global';
 	if (notification.team) {
-		targetLabel = `Für Dein Team`;
-	} else if (notification.location) {
-		targetLabel = `Für Deinen Standort`;
-	} else if (notification.odRegion) {
-		targetLabel = `Für Deinen OD-Bereich`;
+		targetLabel = 'Für Dein Team';
+	}
+	else if (notification.location) {
+		targetLabel = 'Für Deinen Standort';
+	}
+	else if (notification.odRegion) {
+		targetLabel = 'Für Deinen OD-Bereich';
 	}
 
 	return (
@@ -117,10 +144,10 @@ function NotificationItem({
 			onDismiss={onDismiss}
 			className={clsx(
 				isCritical || isSales
-					? "border-[3px]"
+					? 'border-[3px]'
 					: isImportant
-						? "border-2"
-						: "border border-black/5"
+						? 'border-2'
+						: 'border border-black/5',
 			)}
 			style={{
 				borderColor:
@@ -128,7 +155,7 @@ function NotificationItem({
 						? config.color
 						: isImportant
 							? config.color
-							: undefined
+							: undefined,
 			}}
 		>
 			{/* Background Glows */}
@@ -142,7 +169,7 @@ function NotificationItem({
 				<div
 					className="absolute top-0 right-0 w-32 h-32 blur-2xl pointer-events-none rounded-full animate-pulse"
 					style={{
-						background: `radial-gradient(circle, ${config.color}33 0%, transparent 70%)`
+						background: `radial-gradient(circle, ${config.color}33 0%, transparent 70%)`,
 					}}
 				/>
 			)}
@@ -150,12 +177,14 @@ function NotificationItem({
 			<div className="flex gap-3 align-start">
 				<div
 					className={clsx(
-						"shrink-0 flex items-center justify-center text-white mt-0.5",
-						isCritical ? "p-2 rounded-xl" : "p-2 rounded-lg"
+						'shrink-0 flex items-center justify-center text-white mt-0.5',
+						isCritical ? 'p-2 rounded-xl' : 'p-2 rounded-lg',
 					)}
-					style={{ backgroundColor: config.color }}
+					style={{
+						backgroundColor: config.color,
+					}}
 				>
-					<Icon className={isCritical || isSales ? "w-5 h-5" : "w-4 h-4"} />
+					<Icon className={isCritical || isSales ? 'w-5 h-5' : 'w-4 h-4'} />
 				</div>
 
 				<div>
@@ -163,7 +192,7 @@ function NotificationItem({
 						<h4
 							className="font-bold text-[0.95rem] m-0"
 							style={{
-								color: isCritical || isSales ? "#1a1a2e" : config.color
+								color: isCritical || isSales ? '#1a1a2e' : config.color,
 							}}
 						>
 							{notification.title}

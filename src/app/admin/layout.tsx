@@ -1,8 +1,12 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import {
+	useState, useEffect,
+} from 'react';
+import Link from 'next/link';
+import {
+	usePathname, useRouter,
+} from 'next/navigation';
 import {
 	Box,
 	Tag,
@@ -17,17 +21,25 @@ import {
 	MapPin,
 	Globe,
 	Activity,
-	BarChart3
-} from "lucide-react";
-import clsx from "clsx";
-import { DeleteConfirmToast } from "@/components/shared/delete-confirm-toast";
-import { trpc } from "@/lib/trpc";
-import { LucideIcon } from "lucide-react";
-import { SidebarLayout } from "@/components/layout/sidebar/sidebar-layout";
+	BarChart3,
+} from 'lucide-react';
+import clsx from 'clsx';
+import {
+	DeleteConfirmToast,
+} from '@/components/shared/delete-confirm-toast';
+import {
+	trpc,
+} from '@/lib/trpc';
+import type {
+	LucideIcon,
+} from 'lucide-react';
+import {
+	SidebarLayout,
+} from '@/components/layout/sidebar/sidebar-layout';
 import {
 	SidebarItem,
-	SidebarGroup
-} from "@/components/layout/sidebar/sidebar-item";
+	SidebarGroup,
+} from '@/components/layout/sidebar/sidebar-item';
 
 interface MenuItem {
 	href: string;
@@ -42,7 +54,7 @@ interface MenuGroup {
 }
 
 export default function AdminLayout({
-	children
+	children,
 }: {
 	children: React.ReactNode;
 }) {
@@ -51,88 +63,149 @@ export default function AdminLayout({
 
 	const logoutMutation = trpc.auth.logout.useMutation({
 		onSuccess: () => {
-			router.push("/login");
+			router.push('/login');
 			router.refresh();
-		}
+		},
 	});
 
-	const { data: currentUser } = trpc.auth.me.useQuery();
+	const {
+		data: currentUser,
+	} = trpc.auth.me.useQuery();
 
 	const handleLogout = async () => {
 		logoutMutation.mutate();
 	};
 
-	const [collapsed, setCollapsed] = useState(false);
+	const [
+		collapsed,
+		setCollapsed,
+	] = useState(false);
 
 	// Keyboard shortcut: Ctrl+H to toggle sidebar
 	const handleKeyDown = (e: KeyboardEvent) => {
-		if (e.key === "h" && e.ctrlKey && !e.shiftKey && !e.altKey) {
+		if (e.key === 'h' && e.ctrlKey && !e.shiftKey && !e.altKey) {
 			e.preventDefault();
 			setCollapsed((c) => !c);
 		}
 	};
 
 	useEffect(() => {
-		if (typeof document !== "undefined") {
-			document.addEventListener("keydown", handleKeyDown);
+		if (typeof document !== 'undefined') {
+			document.addEventListener('keydown', handleKeyDown);
 		}
 		return () => {
-			if (typeof document !== "undefined") {
-				document.removeEventListener("keydown", handleKeyDown);
+			if (typeof document !== 'undefined') {
+				document.removeEventListener('keydown', handleKeyDown);
 			}
 		};
-	}, []);
+	}, [
+	]);
 
 	const role = currentUser?.role;
-	const isEditor = currentUser?.isEditor || role === "ADMIN";
+	const isEditor = currentUser?.isEditor || role === 'ADMIN';
 
 	const menuGroups: MenuGroup[] = [
 		{
-			title: "Katalog & Konditionen",
+			title: 'Katalog & Konditionen',
 			show: isEditor,
 			items: [
-				{ href: "/admin/products", label: "Produkte", icon: Box },
-				{ href: "/admin/special-prices", label: "Aktionen", icon: Tag },
-				{ href: "/admin/addons", label: "Optionen", icon: Layers },
-				{ href: "/admin/credits", label: "Gutschriften", icon: Wallet }
-			]
-		},
-		{
-			title: "Organisation",
-			show: true,
-			items: [
-				...(role === "ADMIN"
-					? [{ href: "/admin/od-regions", label: "OD-Bereiche", icon: Globe }]
-					: []),
-				...(role === "ADMIN" || role === "OD_MANAGER"
-					? [{ href: "/admin/locations", label: "Standorte", icon: MapPin }]
-					: []),
-				{ href: "/admin/teams", label: "Teams", icon: Users },
-				{ href: "/admin/sessions", label: "Sessions", icon: Activity },
-				{ href: "/admin/analytics", label: "Statistiken", icon: BarChart3 }
-			]
-		},
-		{
-			title: "Inhalte",
-			show: true,
-			items: [{ href: "/admin/news", label: "Neuigkeiten", icon: Megaphone }]
-		},
-		{
-			title: "System",
-			show: true,
-			items: [
-				...(role === "ADMIN" ||
-				role === "OD_MANAGER" ||
-				role === "LOCATION_MANAGER"
-					? [{ href: "/admin/users", label: "Benutzer", icon: Shield }]
-					: []),
 				{
-					href: "/admin/settings",
-					label: "Einstellungen",
-					icon: Settings
-				}
-			]
-		}
+					href: '/admin/products',
+					label: 'Produkte',
+					icon: Box,
+				},
+				{
+					href: '/admin/special-prices',
+					label: 'Aktionen',
+					icon: Tag,
+				},
+				{
+					href: '/admin/addons',
+					label: 'Optionen',
+					icon: Layers,
+				},
+				{
+					href: '/admin/credits',
+					label: 'Gutschriften',
+					icon: Wallet,
+				},
+			],
+		},
+		{
+			title: 'Organisation',
+			show: true,
+			items: [
+				...(role === 'ADMIN'
+					? [
+						{
+							href: '/admin/od-regions',
+							label: 'OD-Bereiche',
+							icon: Globe,
+						},
+					]
+					: [
+					]),
+				...(role === 'ADMIN' || role === 'OD_MANAGER'
+					? [
+						{
+							href: '/admin/locations',
+							label: 'Standorte',
+							icon: MapPin,
+						},
+					]
+					: [
+					]),
+				{
+					href: '/admin/teams',
+					label: 'Teams',
+					icon: Users,
+				},
+				{
+					href: '/admin/sessions',
+					label: 'Sessions',
+					icon: Activity,
+				},
+				{
+					href: '/admin/analytics',
+					label: 'Statistiken',
+					icon: BarChart3,
+				},
+			],
+		},
+		{
+			title: 'Inhalte',
+			show: true,
+			items: [
+				{
+					href: '/admin/news',
+					label: 'Neuigkeiten',
+					icon: Megaphone,
+				},
+			],
+		},
+		{
+			title: 'System',
+			show: true,
+			items: [
+				...(role === 'ADMIN' ||
+				role === 'OD_MANAGER' ||
+				role === 'LOCATION_MANAGER'
+					? [
+						{
+							href: '/admin/users',
+							label: 'Benutzer',
+							icon: Shield,
+						},
+					]
+					: [
+					]),
+				{
+					href: '/admin/settings',
+					label: 'Einstellungen',
+					icon: Settings,
+				},
+			],
+		},
 	];
 
 	return (
@@ -146,9 +219,9 @@ export default function AdminLayout({
 					<div className="px-3 w-full mb-6">
 						<div
 							className={clsx(
-								"flex flex-col gap-0.5",
-								!collapsed && "bg-[#f7f8fa] rounded-[20px] p-2",
-								collapsed && "items-center gap-1.5"
+								'flex flex-col gap-0.5',
+								!collapsed && 'bg-[#f7f8fa] rounded-[20px] p-2',
+								collapsed && 'items-center gap-1.5',
 							)}
 						>
 							<SidebarItem
@@ -198,8 +271,8 @@ export default function AdminLayout({
 			{/* Main content */}
 			<main
 				className={clsx(
-					"flex-1 p-8 overflow-y-auto h-screen transition-all duration-300",
-					collapsed ? "ml-0" : "ml-0" // We are using flex, but the aside is shrink-0. If it was fixed, we'd need margin.
+					'flex-1 p-8 overflow-y-auto h-screen transition-all duration-300',
+					collapsed ? 'ml-0' : 'ml-0', // We are using flex, but the aside is shrink-0. If it was fixed, we'd need margin.
 				)}
 			>
 				<div className="max-w-[1000px] mx-auto">{children}</div>

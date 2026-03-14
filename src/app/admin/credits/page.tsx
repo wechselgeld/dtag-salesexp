@@ -1,8 +1,10 @@
-import { Metadata } from "next";
-import CreditsClient from "./credits-client";
+import type {
+	Metadata,
+} from 'next';
+import CreditsClient from './credits-client';
 
 export const metadata: Metadata = {
-	title: "Gutschriften"
+	title: 'Gutschriften',
 };
 
 export default function Page() {

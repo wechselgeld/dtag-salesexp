@@ -1,7 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { useMotionValue, useSpring, useMotionValueEvent } from "framer-motion";
+import {
+	useEffect, useRef,
+} from 'react';
+import {
+	useMotionValue, useSpring, useMotionValueEvent,
+} from 'framer-motion';
 
 interface AnimatedNumberProps {
 	value: number;
@@ -12,19 +16,19 @@ interface AnimatedNumberProps {
 export function AnimatedNumber({
 	value,
 	precision = 2,
-	className
+	className,
 }: AnimatedNumberProps) {
 	const motionValue = useMotionValue(value);
 	const springValue = useSpring(motionValue, {
 		stiffness: 200,
 		damping: 30,
-		restDelta: 0.001
+		restDelta: 0.001,
 	});
 	const ref = useRef<HTMLSpanElement>(null);
 
-	const formatter = new Intl.NumberFormat("de-DE", {
+	const formatter = new Intl.NumberFormat('de-DE', {
 		minimumFractionDigits: precision,
-		maximumFractionDigits: precision
+		maximumFractionDigits: precision,
 	});
 
 	// Initial set
@@ -32,13 +36,17 @@ export function AnimatedNumber({
 		if (ref.current) {
 			ref.current.textContent = formatter.format(value);
 		}
-	}, []);
+	}, [
+	]);
 
 	useEffect(() => {
 		motionValue.set(value);
-	}, [value, motionValue]);
+	}, [
+		value,
+		motionValue,
+	]);
 
-	useMotionValueEvent(springValue, "change", (latest) => {
+	useMotionValueEvent(springValue, 'change', (latest) => {
 		if (ref.current) {
 			ref.current.textContent = formatter.format(latest);
 		}

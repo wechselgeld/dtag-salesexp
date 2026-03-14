@@ -1,68 +1,113 @@
-"use client";
+'use client';
 
-import { Search, Wifi, Zap, ChevronRight, X, LayoutGrid } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef, useEffect, useMemo } from "react";
-import { trpc } from "@/lib/trpc";
-import { useRouter } from "next/navigation";
-import clsx from "clsx";
-import { fuzzySearch } from "@/lib/fuzzy-search";
+import {
+	Search, Wifi, Zap, ChevronRight, X,
+} from 'lucide-react';
+import {
+	motion, AnimatePresence,
+} from 'framer-motion';
+import {
+	useState, useRef, useEffect, useMemo,
+} from 'react';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	useRouter,
+} from 'next/navigation';
+import clsx from 'clsx';
+import {
+	fuzzySearch,
+} from '@/lib/fuzzy-search';
 
 interface SearchBarProps {
 	compact?: boolean;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-	MOBILE: "#e20074",
-	FIBER: "#0090d0",
-	DSL: "#7b61ff",
-	MAGENTA_TV_OTT: "#ff6b00",
-	DEVICE: "#00a878",
-	ADDON: "#e67e22"
+	MOBILE: '#e20074',
+	FIBER: '#0090d0',
+	DSL: '#7b61ff',
+	MAGENTA_TV_OTT: '#ff6b00',
+	DEVICE: '#00a878',
+	ADDON: '#e67e22',
 };
 
 const CATEGORY_NAMES: Record<string, string> = {
-	MOBILE: "Mobilfunk",
-	FIBER: "Glasfaser",
-	DSL: "Festnetz",
-	MAGENTA_TV_OTT: "MagentaTV",
-	DEVICE: "Endgeräte",
-	ADDON: "Zubuchoptionen"
+	MOBILE: 'Mobilfunk',
+	FIBER: 'Glasfaser',
+	DSL: 'Festnetz',
+	MAGENTA_TV_OTT: 'MagentaTV',
+	DEVICE: 'Endgeräte',
+	ADDON: 'Zubuchoptionen',
 };
 
 const CATEGORY_LIST = [
-	{ id: "MOBILE", icon: "📱" },
-	{ id: "FIBER", icon: "🌐" },
-	{ id: "DSL", icon: "🏠" },
-	{ id: "MAGENTA_TV_OTT", icon: "📺" },
-	{ id: "DEVICE", icon: "💻" }
+	{
+		id: 'MOBILE',
+		icon: '📱',
+	},
+	{
+		id: 'FIBER',
+		icon: '🌐',
+	},
+	{
+		id: 'DSL',
+		icon: '🏠',
+	},
+	{
+		id: 'MAGENTA_TV_OTT',
+		icon: '📺',
+	},
+	{
+		id: 'DEVICE',
+		icon: '💻',
+	},
 ];
 
-export function SearchBar({ compact = false }: SearchBarProps) {
-	const [open, setOpen] = useState(false);
-	const [query, setQuery] = useState("");
+export function SearchBar({
+	compact = false,
+}: SearchBarProps) {
+	const [
+		open,
+		setOpen,
+	] = useState(false);
+	const [
+		query,
+		setQuery,
+	] = useState('');
 	const inputRef = useRef<HTMLInputElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 
-	const { data: productsData } = trpc.product.getAllProducts.useQuery();
+	const {
+		data: productsData,
+	} = trpc.product.getAllProducts.useQuery();
 	const products = productsData?.items;
 
 	// Filter results
 	const filteredCategories = useMemo(() => {
-		if (!query.trim()) return CATEGORY_LIST;
+		if (!query.trim()) { return CATEGORY_LIST; }
 		const results = fuzzySearch(
 			CATEGORY_LIST,
 			query,
-			(c) => [CATEGORY_NAMES[c.id] || '', c.id],
-			0.3
+			(c) => [
+				CATEGORY_NAMES[c.id] || '',
+				c.id,
+			],
+			0.3,
 		);
 		return results.map(r => r.item);
-	}, [query]);
+	}, [
+		query,
+	]);
 
 	const filteredProducts = useMemo(() => {
-		if (!products) return [];
-		if (!query.trim()) return products.slice(0, 6);
+		if (!products) {
+			return [
+			];
+		}
+		if (!query.trim()) { return products.slice(0, 6); }
 		const results = fuzzySearch(
 			products,
 			query,
@@ -72,10 +117,13 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 				CATEGORY_NAMES[p.category] || '',
 				p.dataVolume || '',
 			],
-			0.3
+			0.3,
 		);
 		return results.map(r => r.item);
-	}, [products, query]);
+	}, [
+		products,
+		query,
+	]);
 
 	// Close on click outside
 	useEffect(() => {
@@ -87,35 +135,40 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 				setOpen(false);
 			}
 		};
-		if (open) document.addEventListener("mousedown", handler);
-		return () => document.removeEventListener("mousedown", handler);
-	}, [open]);
+		if (open) { document.addEventListener('mousedown', handler); }
+		return () => document.removeEventListener('mousedown', handler);
+	}, [
+		open,
+	]);
 
 	// Close on Escape
 	useEffect(() => {
 		const handler = (e: KeyboardEvent) => {
-			if (e.key === "Escape") setOpen(false);
+			if (e.key === 'Escape') { setOpen(false); }
 		};
-		if (open) document.addEventListener("keydown", handler);
-		return () => document.removeEventListener("keydown", handler);
-	}, [open]);
+		if (open) { document.addEventListener('keydown', handler); }
+		return () => document.removeEventListener('keydown', handler);
+	}, [
+		open,
+	]);
 
 	// Open via Ctrl+K
 	useEffect(() => {
 		const handler = (e: KeyboardEvent) => {
-			if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+			if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
 				e.preventDefault();
 				setOpen(true);
 				setTimeout(() => inputRef.current?.focus(), 50);
 			}
 		};
-		document.addEventListener("keydown", handler);
-		return () => document.removeEventListener("keydown", handler);
-	}, []);
+		document.addEventListener('keydown', handler);
+		return () => document.removeEventListener('keydown', handler);
+	}, [
+	]);
 
 	const navigate = (path: string) => {
 		setOpen(false);
-		setQuery("");
+		setQuery('');
 		router.push(path);
 	};
 
@@ -126,24 +179,32 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 		<div
 			ref={containerRef as any}
 			id="tour-search"
-			className={`relative z-30 ${compact ? "mb-6" : "mb-14"}`}
+			className={`relative z-30 ${compact ? 'mb-6' : 'mb-14'}`}
 		>
 			{/* Search input container */}
 			<motion.div
 				initial={false}
 				animate={{
-					backgroundColor: open ? "#ffffff" : "#f7f8fa",
-					borderColor: open ? "rgba(226, 0, 116, 0.3)" : "#e5e7eb",
+					backgroundColor: open ? '#ffffff' : '#f7f8fa',
+					borderColor: open ? 'rgba(226, 0, 116, 0.3)' : '#e5e7eb',
 					boxShadow: open
-						? "0 0 0 3px rgba(226, 0, 116, 0.06), 0 8px 32px rgba(0, 0, 0, 0.12)"
-						: "0 1px 3px rgba(0, 0, 0, 0.04)"
+						? '0 0 0 3px rgba(226, 0, 116, 0.06), 0 8px 32px rgba(0, 0, 0, 0.12)'
+						: '0 1px 3px rgba(0, 0, 0, 0.04)',
 				}}
-				transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+				transition={{
+					duration: 0.3,
+					ease: [
+						0.23,
+						1,
+						0.32,
+						1,
+					],
+				}}
 				className={clsx(
-					"relative flex items-center border px-5 z-50 transition-all duration-300",
-					compact ? "rounded-xl" : "rounded-2xl",
-					open && "rounded-b-none",
-					compact ? "py-2.5" : "py-3.5"
+					'relative flex items-center border px-5 z-50 transition-all duration-300',
+					compact ? 'rounded-xl' : 'rounded-2xl',
+					open && 'rounded-b-none',
+					compact ? 'py-2.5' : 'py-3.5',
 				)}
 				onClick={() => {
 					setOpen(true);
@@ -152,8 +213,8 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 			>
 				<Search
 					className={`mr-3 shrink-0 transition-colors duration-400 ${
-						open ? "text-[#e20074]" : "text-[#b0b0b0]"
-					} ${compact ? "w-4 h-4" : "w-5 h-5"}`}
+						open ? 'text-[#e20074]' : 'text-[#b0b0b0]'
+					} ${compact ? 'w-4 h-4' : 'w-5 h-5'}`}
 				/>
 				<input
 					ref={inputRef}
@@ -163,14 +224,14 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 					onFocus={() => setOpen(true)}
 					placeholder="Tarif, Produkt oder Kategorie suchen..."
 					className={`border-none outline-none w-full font-sans text-[#1a1a2e] bg-transparent placeholder:text-[#b0b0b0] placeholder:font-normal ${
-						compact ? "text-[0.9rem]" : "text-[1rem]"
+						compact ? 'text-[0.9rem]' : 'text-[1rem]'
 					}`}
 				/>
 				{open && query && (
 					<button
 						onClick={(e) => {
 							e.stopPropagation();
-							setQuery("");
+							setQuery('');
 							inputRef.current?.focus();
 						}}
 						className="p-1 rounded-lg hover:bg-[#f0f0f0] text-[#ccc] hover:text-[#999] transition-colors cursor-pointer border-none bg-transparent"
@@ -191,24 +252,49 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 					<>
 						{/* Backdrop */}
 						<motion.div
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							exit={{ opacity: 0 }}
-							transition={{ duration: 0.2 }}
+							initial={{
+								opacity: 0,
+							}}
+							animate={{
+								opacity: 1,
+							}}
+							exit={{
+								opacity: 0,
+							}}
+							transition={{
+								duration: 0.2,
+							}}
 							className="fixed inset-0 z-40 bg-black/10"
 							onClick={() => setOpen(false)}
 						/>
 
 						{/* Dropdown Content */}
 						<motion.div
-							initial={{ opacity: 0, y: -6 }}
-							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: -6 }}
-							transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+							initial={{
+								opacity: 0,
+								y: -6,
+							}}
+							animate={{
+								opacity: 1,
+								y: 0,
+							}}
+							exit={{
+								opacity: 0,
+								y: -6,
+							}}
+							transition={{
+								duration: 0.3,
+								ease: [
+									0.23,
+									1,
+									0.32,
+									1,
+								],
+							}}
 							className={`
 								absolute left-0 right-0 top-full z-50 bg-white border border-t-0 border-[#e20074]/30
 								shadow-[0_12px_40px_rgba(0,0,0,0.08)] overflow-hidden max-h-[420px] overflow-y-auto scrollbar-none
-								${compact ? "rounded-b-xl" : "rounded-b-2xl"}
+								${compact ? 'rounded-b-xl' : 'rounded-b-2xl'}
 							`}
 						>
 							{!hasResults && (
@@ -244,24 +330,24 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 							{filteredProducts.length > 0 && (
 								<div className="p-3 pt-2">
 									<div className="text-[0.6rem] uppercase tracking-[0.15em] text-[#ccc] font-semibold px-2 mb-2">
-										Tarife{" "}
+										Tarife{' '}
 										{query && (
 											<span className="normal-case tracking-normal text-[#ddd]">
 												· {filteredProducts.length} Ergebnis
-												{filteredProducts.length !== 1 ? "se" : ""}
+												{filteredProducts.length !== 1 ? 'se' : ''}
 											</span>
 										)}
 									</div>
 									<div className="space-y-0.5">
 										{filteredProducts.map((product) => {
 											const catColor =
-												CATEGORY_COLORS[product.category] || "#e20074";
+												CATEGORY_COLORS[product.category] || '#e20074';
 											return (
 												<button
 													key={product.id}
 													onClick={() =>
 														navigate(
-															`/products/${product.category}/${product.id}`
+															`/products/${product.category}/${product.id}`,
 														)
 													}
 													className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#f7f8fa] transition-all duration-150 cursor-pointer text-left border-none bg-transparent group"
@@ -269,7 +355,9 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 													{/* Category dot */}
 													<div
 														className="w-2 h-2 rounded-full shrink-0"
-														style={{ backgroundColor: catColor }}
+														style={{
+															backgroundColor: catColor,
+														}}
 													/>
 
 													{/* Product info */}
@@ -278,7 +366,7 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 															className="text-[0.82rem] font-semibold text-[#1a1a2e] truncate group-hover:text-(--cat-color) transition-colors"
 															style={
 																{
-																	"--cat-color": catColor
+																	'--cat-color': catColor,
 																} as React.CSSProperties
 															}
 														>
@@ -287,7 +375,9 @@ export function SearchBar({ compact = false }: SearchBarProps) {
 														<div className="flex items-center gap-3 mt-0.5">
 															<span
 																className="text-[0.65rem] font-semibold uppercase tracking-wider"
-																style={{ color: catColor }}
+																style={{
+																	color: catColor,
+																}}
 															>
 																{CATEGORY_NAMES[product.category]}
 															</span>

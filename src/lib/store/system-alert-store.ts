@@ -1,4 +1,6 @@
-import { create } from 'zustand';
+import {
+	create,
+} from 'zustand';
 
 interface SystemAlert {
     id: string;
@@ -13,11 +15,17 @@ interface SystemAlertStore {
 }
 
 export const useSystemAlertStore = create<SystemAlertStore>((set) => ({
-    alerts: [],
-    addAlert: (alert) => set((state) => ({ 
-        alerts: state.alerts.some(a => a.id === alert.id) 
-            ? state.alerts.map(a => a.id === alert.id ? alert : a)
-            : [...state.alerts, alert] 
-    })),
-    removeAlert: (id) => set((state) => ({ alerts: state.alerts.filter((a) => a.id !== id) })),
+	alerts: [
+	],
+	addAlert: (alert) => set((state) => ({
+		alerts: state.alerts.some(a => a.id === alert.id)
+			? state.alerts.map(a => a.id === alert.id ? alert : a)
+			: [
+				...state.alerts,
+				alert,
+			],
+	})),
+	removeAlert: (id) => set((state) => ({
+		alerts: state.alerts.filter((a) => a.id !== id),
+	})),
 }));

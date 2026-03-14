@@ -1,8 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc";
+import {
+	useState,
+} from 'react';
+import {
+	useRouter,
+} from 'next/navigation';
+import {
+	trpc,
+} from '@/lib/trpc';
 import {
 	Loader2,
 	Save,
@@ -18,26 +24,36 @@ import {
 	ListChecks,
 	MessageSquareQuote,
 	Euro,
-	CheckCircle2
-} from "lucide-react";
-import Link from "next/link";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import clsx from "clsx";
-import { Input } from "@/components/shared/ui/input";
-import { Textarea } from "@/components/shared/ui/textarea";
+	CheckCircle2,
+} from 'lucide-react';
+import Link from 'next/link';
+import {
+	useForm, useFieldArray,
+} from 'react-hook-form';
+import {
+	zodResolver,
+} from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import clsx from 'clsx';
+import {
+	Input,
+} from '@/components/shared/ui/input';
+import {
+	Textarea,
+} from '@/components/shared/ui/textarea';
 import {
 	AdminPageHeader,
 	AdminFormSection,
-	AdminFormContainer
-} from "@/components/shared/ui/admin-ui";
-import { History } from "lucide-react";
+	AdminFormContainer,
+} from '@/components/shared/ui/admin-ui';
+import {
+	History,
+} from 'lucide-react';
 
 const productSchema = z.object({
-	name: z.string().min(1, "Name ist erforderlich"),
-	category: z.string().min(1, "Kategorie ist erforderlich"),
-	basePrice: z.number().min(0, "Preis muss positiv sein").default(0),
+	name: z.string().min(1, 'Name ist erforderlich'),
+	category: z.string().min(1, 'Kategorie ist erforderlich'),
+	basePrice: z.number().min(0, 'Preis muss positiv sein').default(0),
 	description: z.string().optional(),
 	dataVolume: z.string().optional(),
 	downloadSpeed: z.number().optional().default(0),
@@ -58,27 +74,33 @@ const productSchema = z.object({
 	deviceManufacturer: z.string().optional(),
 	purchasePrice: z.number().optional().default(0),
 	rentalPrice: z.number().optional().default(0),
-	features: z.array(z.string()).default([]),
-	targetGroups: z.array(z.string()).default([]),
-	salesArguments: z.array(z.string()).default([]),
+	features: z.array(z.string()).default([
+	]),
+	targetGroups: z.array(z.string()).default([
+	]),
+	salesArguments: z.array(z.string()).default([
+	]),
 	salesScript: z.string().optional(),
 	magentaInfosUrl: z.string().optional(),
 	priceHistory: z.array(
 		z.object({
-			price: z.number().min(0, "Preis muss positiv sein"),
-			label: z.string().optional()
-		})
-	).default([])
+			price: z.number().min(0, 'Preis muss positiv sein'),
+			label: z.string().optional(),
+		}),
+	).default([
+	]),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
 
 interface ProductFormProps {
 	initialData?: any;
-	mode: "create" | "edit";
+	mode: 'create' | 'edit';
 }
 
-export function ProductForm({ initialData, mode }: ProductFormProps) {
+export function ProductForm({
+	initialData, mode,
+}: ProductFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
@@ -89,16 +111,18 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 		setValue,
 		getValues,
 		control,
-		formState: { errors }
+		formState: {
+			errors,
+		},
 	} = useForm({
 		resolver: zodResolver(productSchema),
-		mode: "onChange",
+		mode: 'onChange',
 		defaultValues: {
-			name: initialData?.name || "",
-			category: initialData?.category || "MOBILE",
+			name: initialData?.name || '',
+			category: initialData?.category || 'MOBILE',
 			basePrice: initialData?.basePrice || 0,
-			description: initialData?.description || "",
-			dataVolume: initialData?.dataVolume || "",
+			description: initialData?.description || '',
+			dataVolume: initialData?.dataVolume || '',
 			downloadSpeed: initialData?.downloadSpeed || 0,
 			uploadSpeed: initialData?.uploadSpeed || 0,
 			contractDuration: initialData?.contractDuration || 24,
@@ -112,120 +136,163 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 			activationFeeSpeedUp: initialData?.activationFeeSpeedUp || 0,
 			allowMagentaTV: initialData?.allowMagentaTV || false,
 			hasMagentaTVBundle: initialData?.hasMagentaTVBundle || false,
-			magentaTVBundleName: initialData?.magentaTVBundleName || "",
+			magentaTVBundleName: initialData?.magentaTVBundleName || '',
 			magentaTVBundlePrice: initialData?.magentaTVBundlePrice || 0,
-			deviceManufacturer: initialData?.deviceManufacturer || "",
+			deviceManufacturer: initialData?.deviceManufacturer || '',
 			purchasePrice: initialData?.purchasePrice || 0,
 			rentalPrice: initialData?.rentalPrice || 0,
-			features: initialData?.features || [],
-			targetGroups: initialData?.targetGroups || [],
+			features: initialData?.features || [
+			],
+			targetGroups: initialData?.targetGroups || [
+			],
 			salesArguments:
-				initialData?.salesArguments?.map((a: any) => a.text) || [],
-			salesScript: initialData?.salesScript || "",
-			magentaInfosUrl: initialData?.magentaInfosUrl || "",
+				initialData?.salesArguments?.map((a: any) => a.text) || [
+				],
+			salesScript: initialData?.salesScript || '',
+			magentaInfosUrl: initialData?.magentaInfosUrl || '',
 			priceHistory: initialData?.priceHistory?.map((ph: any) => ({
 				price: ph.price,
-				label: ph.label || ""
-			})) || []
-		}
+				label: ph.label || '',
+			})) || [
+			],
+		},
 	});
 
-	const { fields: priceHistoryFields, append: appendPriceHistory, remove: removePriceHistory } = useFieldArray({
+	const {
+		fields: priceHistoryFields, append: appendPriceHistory, remove: removePriceHistory,
+	} = useFieldArray({
 		control,
-		name: "priceHistory"
+		name: 'priceHistory',
 	});
 
-	const [newFeature, setNewFeature] = useState("");
-	const [newSalesArgument, setNewSalesArgument] = useState("");
+	const [
+		newFeature,
+		setNewFeature,
+	] = useState('');
+	const [
+		newSalesArgument,
+		setNewSalesArgument,
+	] = useState('');
 
 	const createMutation = trpc.admin.createProduct.useMutation({
 		onSuccess: () => {
 			utils.product.getAllProducts.invalidate();
 			utils.admin.getProductById.invalidate();
-			router.push("/admin/products");
+			router.push('/admin/products');
 			router.refresh();
-		}
+		},
 	});
 
 	const updateMutation = trpc.admin.updateProduct.useMutation({
 		onSuccess: () => {
 			utils.product.getAllProducts.invalidate();
 			utils.admin.getProductById.invalidate();
-			router.push("/admin/products");
+			router.push('/admin/products');
 			router.refresh();
-		}
+		},
 	});
 
 	const onSubmit = (data: ProductFormData) => {
-		if (mode === "create") {
+		if (mode === 'create') {
 			createMutation.mutate(data);
-		} else {
+		}
+		else {
 			updateMutation.mutate({
 				id: initialData.id,
-				...data
+				...data,
 			});
 		}
 	};
 
 	const addFeature = () => {
 		if (newFeature.trim()) {
-			const currentFeatures = watch("features") || [];
-			setValue("features", [...currentFeatures, newFeature.trim()]);
-			setNewFeature("");
+			const currentFeatures = watch('features') || [
+			];
+			setValue('features', [
+				...currentFeatures,
+				newFeature.trim(),
+			]);
+			setNewFeature('');
 		}
 	};
 
 	const removeFeature = (idx: number) => {
-		const currentFeatures = getValues("features") || [];
-		const featuresArray = Array.isArray(currentFeatures) ? currentFeatures : [];
+		const currentFeatures = getValues('features') || [
+		];
+		const featuresArray = Array.isArray(currentFeatures) ? currentFeatures : [
+		];
 		setValue(
-			"features",
+			'features',
 			featuresArray.filter((_, i) => i !== idx),
-			{ shouldDirty: true }
+			{
+				shouldDirty: true,
+			},
 		);
 	};
 
 	const addSalesArgument = () => {
 		if (newSalesArgument.trim()) {
-			const currentArgs = watch("salesArguments") || [];
-			setValue("salesArguments", [...currentArgs, newSalesArgument.trim()]);
-			setNewSalesArgument("");
+			const currentArgs = watch('salesArguments') || [
+			];
+			setValue('salesArguments', [
+				...currentArgs,
+				newSalesArgument.trim(),
+			]);
+			setNewSalesArgument('');
 		}
 	};
 
 	const removeSalesArgument = (idx: number) => {
-		const currentArgs = getValues("salesArguments") || [];
-		const argsArray = Array.isArray(currentArgs) ? currentArgs : [];
+		const currentArgs = getValues('salesArguments') || [
+		];
+		const argsArray = Array.isArray(currentArgs) ? currentArgs : [
+		];
 		setValue(
-			"salesArguments",
+			'salesArguments',
 			argsArray.filter((_, i) => i !== idx),
-			{ shouldDirty: true }
+			{
+				shouldDirty: true,
+			},
 		);
 	};
 
 	const toggleTargetGroup = (id: string) => {
-		const currentGroups = getValues("targetGroups") || [];
-		const groupsArray = Array.isArray(currentGroups) ? currentGroups : [];
+		const currentGroups = getValues('targetGroups') || [
+		];
+		const groupsArray = Array.isArray(currentGroups) ? currentGroups : [
+		];
 
 		if (groupsArray.includes(id)) {
 			setValue(
-				"targetGroups",
+				'targetGroups',
 				groupsArray.filter((tg) => tg !== id),
-				{ shouldDirty: true }
+				{
+					shouldDirty: true,
+				},
 			);
-		} else {
-			setValue("targetGroups", [...groupsArray, id], { shouldDirty: true });
+		}
+		else {
+			setValue('targetGroups', [
+				...groupsArray,
+				id,
+			], {
+				shouldDirty: true,
+			});
 		}
 	};
 
 	const isPending = createMutation.isPending || updateMutation.isPending;
 
-	const category = watch("category");
-	const cFeatures = watch("features") || [];
-	const cTargetGroups = watch("targetGroups") || [];
-	const cSalesArguments = watch("salesArguments") || [];
+	const category = watch('category');
+	const cFeatures = watch('features') || [
+	];
+	const cTargetGroups = watch('targetGroups') || [
+	];
+	const cSalesArguments = watch('salesArguments') || [
+	];
 
-	const targetGroupsArray = Array.isArray(cTargetGroups) ? cTargetGroups : [];
+	const targetGroupsArray = Array.isArray(cTargetGroups) ? cTargetGroups : [
+	];
 
 	const SaveButton = (
 		<button
@@ -233,10 +300,10 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 			form="product-form"
 			disabled={isPending}
 			className={clsx(
-				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
+				'px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5',
 				isPending
-					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-					: "bg-[#e20074] hover:bg-[#c70066]"
+					? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+					: 'bg-[#e20074] hover:bg-[#c70066]',
 			)}
 		>
 			{isPending ? (
@@ -252,11 +319,11 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 		<div className="space-y-8 pb-12">
 			<AdminPageHeader
 				title={
-					mode === "create" ? "Neues Produkt anlegen" : "Produkt bearbeiten"
+					mode === 'create' ? 'Neues Produkt anlegen' : 'Produkt bearbeiten'
 				}
 				subtitle={
-					mode === "create"
-						? "Erstelle einen neuen Tarif oder Hardware für das Portfolio."
+					mode === 'create'
+						? 'Erstelle einen neuen Tarif oder Hardware für das Portfolio.'
 						: `Konfiguration für ${initialData?.name}`
 				}
 				backHref="/admin/products"
@@ -275,14 +342,14 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 								label="Name"
 								placeholder="z.B. MagentaMobil M"
 								error={errors.name?.message}
-								{...register("name")}
+								{...register('name')}
 							/>
 							<div className="flex flex-col gap-1.5">
 								<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
 									Kategorie
 								</label>
 								<select
-									{...register("category")}
+									{...register('category')}
 									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:outline-none focus:border-[#e20074] transition-all text-[0.9rem]"
 								>
 									<option value="MOBILE">Mobilfunk</option>
@@ -298,12 +365,12 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 							label="Beschreibung"
 							placeholder="Kurze Beschreibung des Tarifs..."
 							error={errors.description?.message}
-							{...register("description")}
+							{...register('description')}
 							rows={3}
 						/>
 
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-							{category !== "DEVICE" && (
+							{category !== 'DEVICE' && (
 								<div className="relative">
 									<Input
 										label="Basispreis (€ / Monat)"
@@ -311,7 +378,9 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 										step="0.01"
 										placeholder="0.00"
 										error={errors.basePrice?.message}
-										{...register("basePrice", { valueAsNumber: true })}
+										{...register('basePrice', {
+											valueAsNumber: true,
+										})}
 										className="pl-10"
 									/>
 									<div className="absolute left-4 top-[38px] text-[#bbb]">
@@ -324,7 +393,9 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 								type="number"
 								placeholder="24"
 								error={errors.contractDuration?.message}
-								{...register("contractDuration", { valueAsNumber: true })}
+								{...register('contractDuration', {
+									valueAsNumber: true,
+								})}
 							/>
 						</div>
 					</AdminFormSection>
@@ -339,14 +410,17 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 								<label className="flex items-center gap-3 cursor-pointer group">
 									<input
 										type="checkbox"
-										checked={(watch("dataVolume") || "")
+										checked={(watch('dataVolume') || '')
 											.toLowerCase()
-											.includes("unlimited")}
+											.includes('unlimited')}
 										onChange={(e) => {
 											setValue(
-												"dataVolume",
-												e.target.checked ? "Unlimited" : "",
-												{ shouldValidate: true, shouldDirty: true }
+												'dataVolume',
+												e.target.checked ? 'Unlimited' : '',
+												{
+													shouldValidate: true,
+													shouldDirty: true,
+												},
 											);
 										}}
 										className="w-5 h-5 rounded border-[#eaedf0] text-[#e20074] focus:ring-[#e20074]"
@@ -360,10 +434,10 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 									label="Datenvolumen (z.B. 20 GB)"
 									placeholder="20 GB"
 									error={errors.dataVolume?.message}
-									disabled={(watch("dataVolume") || "")
+									disabled={(watch('dataVolume') || '')
 										.toLowerCase()
-										.includes("unlimited")}
-									{...register("dataVolume")}
+										.includes('unlimited')}
+									{...register('dataVolume')}
 								/>
 							</div>
 
@@ -373,20 +447,24 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 									type="number"
 									placeholder="0"
 									error={errors.downloadSpeed?.message}
-									{...register("downloadSpeed", { valueAsNumber: true })}
+									{...register('downloadSpeed', {
+										valueAsNumber: true,
+									})}
 								/>
 								<Input
 									label="Upload-Speed (Mbit/s)"
 									type="number"
 									placeholder="0"
 									error={errors.uploadSpeed?.message}
-									{...register("uploadSpeed", { valueAsNumber: true })}
+									{...register('uploadSpeed', {
+										valueAsNumber: true,
+									})}
 								/>
 							</div>
 						</div>
 					</AdminFormSection>
 
-					{category === "DEVICE" && (
+					{category === 'DEVICE' && (
 						<AdminFormSection
 							title="Hardware"
 							description="Hersteller und Hardware-Preise."
@@ -396,7 +474,7 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 								label="Hersteller"
 								placeholder="z.B. Apple, AVM, Samsung"
 								error={errors.deviceManufacturer?.message}
-								{...register("deviceManufacturer")}
+								{...register('deviceManufacturer')}
 							/>
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 								<div className="relative">
@@ -406,7 +484,9 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 										step="0.01"
 										placeholder="0.00"
 										error={errors.purchasePrice?.message}
-										{...register("purchasePrice", { valueAsNumber: true })}
+										{...register('purchasePrice', {
+											valueAsNumber: true,
+										})}
 										className="pl-10"
 									/>
 									<div className="absolute left-4 top-[38px] text-[#bbb]">
@@ -420,7 +500,9 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 										step="0.01"
 										placeholder="0.00"
 										error={errors.rentalPrice?.message}
-										{...register("rentalPrice", { valueAsNumber: true })}
+										{...register('rentalPrice', {
+											valueAsNumber: true,
+										})}
 										className="pl-10"
 									/>
 									<div className="absolute left-4 top-[38px] text-[#bbb]">
@@ -439,21 +521,25 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							{[
 								{
-									id: "allowNewActivation",
-									label: "Neubereitstellung",
-									fee: "activationFeeNew"
-								},
-								{ id: "allowMove", label: "Umzug", fee: "activationFeeMove" },
-								{
-									id: "allowPlanChange",
-									label: "Tarifwechsel",
-									fee: "activationFeePlanChange"
+									id: 'allowNewActivation',
+									label: 'Neubereitstellung',
+									fee: 'activationFeeNew',
 								},
 								{
-									id: "allowSpeedUp",
-									label: "Speed Up",
-									fee: "activationFeeSpeedUp"
-								}
+									id: 'allowMove',
+									label: 'Umzug',
+									fee: 'activationFeeMove',
+								},
+								{
+									id: 'allowPlanChange',
+									label: 'Tarifwechsel',
+									fee: 'activationFeePlanChange',
+								},
+								{
+									id: 'allowSpeedUp',
+									label: 'Speed Up',
+									fee: 'activationFeeSpeedUp',
+								},
 							].map((item) => (
 								<div
 									key={item.id}
@@ -471,11 +557,13 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 									</label>
 									<div className="relative">
 										<Input
-											label={`Gebühr in €`}
+											label={'Gebühr in €'}
 											type="number"
 											step="0.01"
 											disabled={!watch(item.id as any)}
-											{...register(item.fee as any, { valueAsNumber: true })}
+											{...register(item.fee as any, {
+												valueAsNumber: true,
+											})}
 											className="pl-10"
 										/>
 										<div className="absolute left-4 top-[38px] text-[#bbb]">
@@ -496,7 +584,7 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 							<label className="flex items-center gap-4 cursor-pointer">
 								<input
 									type="checkbox"
-									{...register("allowMagentaTV")}
+									{...register('allowMagentaTV')}
 									className="w-6 h-6 rounded border-[#e20074]/20 text-[#e20074] focus:ring-[#e20074]"
 								/>
 								<div className="flex flex-col">
@@ -519,21 +607,36 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 					>
 						<div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
 							{[
-								{ id: "student", label: "Student & Young" },
-								{ id: "family", label: "Familie mit Kids" },
-								{ id: "senior", label: "Ältere Personen" },
-								{ id: "power", label: "Stream/Gaming" },
-								{ id: "business", label: "Home-Office" }
+								{
+									id: 'student',
+									label: 'Student & Young',
+								},
+								{
+									id: 'family',
+									label: 'Familie mit Kids',
+								},
+								{
+									id: 'senior',
+									label: 'Ältere Personen',
+								},
+								{
+									id: 'power',
+									label: 'Stream/Gaming',
+								},
+								{
+									id: 'business',
+									label: 'Home-Office',
+								},
 							].map((tg) => {
 								const isSelected = targetGroupsArray.includes(tg.id);
 								return (
 									<label
 										key={tg.id}
 										className={clsx(
-											"flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all",
+											'flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all',
 											isSelected
-												? "border-[#e20074] bg-[#e20074]/5 shadow-sm"
-												: "border-[#eaedf0] bg-white hover:border-[#e20074]/30"
+												? 'border-[#e20074] bg-[#e20074]/5 shadow-sm'
+												: 'border-[#eaedf0] bg-white hover:border-[#e20074]/30',
 										)}
 									>
 										<input
@@ -547,10 +650,10 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 										/>
 										<div
 											className={clsx(
-												"w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all",
+												'w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all',
 												isSelected
-													? "bg-[#e20074] border-[#e20074]"
-													: "bg-white border-[#ddd]"
+													? 'bg-[#e20074] border-[#e20074]'
+													: 'bg-white border-[#ddd]',
 											)}
 										>
 											{isSelected && (
@@ -559,8 +662,8 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 										</div>
 										<span
 											className={clsx(
-												"text-[0.8rem] font-bold",
-												isSelected ? "text-[#e20074]" : "text-[#555]"
+												'text-[0.8rem] font-bold',
+												isSelected ? 'text-[#e20074]' : 'text-[#555]',
 											)}
 										>
 											{tg.label}
@@ -589,7 +692,7 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 										value={newFeature}
 										onChange={(e) => setNewFeature(e.target.value)}
 										onKeyDown={(e) => {
-											if (e.key === "Enter") {
+											if (e.key === 'Enter') {
 												e.preventDefault();
 												addFeature();
 											}
@@ -635,7 +738,7 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 								label="Gesprächsleitfaden / Überleitung (Sales Script)"
 								placeholder="Wie schlägt der Verkäufer dieses Produkt vor?"
 								error={errors.salesScript?.message}
-								{...register("salesScript")}
+								{...register('salesScript')}
 								rows={4}
 							/>
 
@@ -643,7 +746,7 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 								label="MagentaInfos Link (Vertriebsinfos)"
 								placeholder="https://magentainfos.telekom.de/..."
 								error={errors.magentaInfosUrl?.message}
-								{...register("magentaInfosUrl")}
+								{...register('magentaInfosUrl')}
 							/>
 
 							<div className="space-y-4 pt-4">
@@ -657,7 +760,7 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 											value={newSalesArgument}
 											onChange={(e) => setNewSalesArgument(e.target.value)}
 											onKeyDown={(e) => {
-												if (e.key === "Enter") {
+												if (e.key === 'Enter') {
 													e.preventDefault();
 													addSalesArgument();
 												}
@@ -723,7 +826,9 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 												step="0.01"
 												placeholder="0.00"
 												error={errors.priceHistory?.[index]?.price?.message}
-												{...register(`priceHistory.${index}.price`, { valueAsNumber: true })}
+												{...register(`priceHistory.${index}.price`, {
+													valueAsNumber: true,
+												})}
 												className="pl-10"
 											/>
 											<div className="absolute left-4 top-[38px] text-[#bbb]">
@@ -741,7 +846,10 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 							))}
 							<button
 								type="button"
-								onClick={() => appendPriceHistory({ price: 0, label: "" })}
+								onClick={() => appendPriceHistory({
+									price: 0,
+									label: '',
+								})}
 								className="w-full h-[52px] rounded-2xl border-2 border-dashed border-[#ddd] flex items-center justify-center gap-2 text-[#888] font-bold hover:border-[#e20074] hover:text-[#e20074] hover:bg-[#e20074]/5 transition-all outline-none"
 							>
 								<Plus className="w-5 h-5" />

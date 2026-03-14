@@ -1,8 +1,10 @@
-import { Metadata } from "next";
-import AddonsClient from "./addons-client";
+import type {
+	Metadata,
+} from 'next';
+import AddonsClient from './addons-client';
 
 export const metadata: Metadata = {
-	title: "Zubuchoptionen"
+	title: 'Zubuchoptionen',
 };
 
 export default function Page() {

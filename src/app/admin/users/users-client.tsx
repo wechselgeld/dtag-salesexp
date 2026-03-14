@@ -1,7 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import {
+	useState,
+} from 'react';
+import {
+	trpc,
+} from '@/lib/trpc';
 import {
 	Shield,
 	Trash2,
@@ -9,16 +13,24 @@ import {
 	Loader2,
 	Pencil,
 	MapPin,
-	Search
-} from "lucide-react";
-import clsx from "clsx";
-import { Skeleton } from "@/components/shared/skeleton";
-import { confirmDelete } from "@/components/shared/delete-confirm-toast";
-import Link from "next/link";
-import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
-import { Tooltip } from "@/components/shared/ui/tooltip";
+	Search,
+} from 'lucide-react';
+import clsx from 'clsx';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import {
+	confirmDelete,
+} from '@/components/shared/delete-confirm-toast';
+import Link from 'next/link';
+import {
+	AdminPageHeader,
+} from '@/components/shared/ui/admin-ui';
+import {
+	Tooltip,
+} from '@/components/shared/ui/tooltip';
 
-type UserResponse = {
+interface UserResponse {
 	id: string;
 	email: string;
 	role: string;
@@ -30,37 +42,45 @@ type UserResponse = {
 	} | null;
 	location?: { name: string; address: string | null } | null;
 	odRegion?: { name: string } | null;
-};
+}
 
 export default function UsersClient() {
 	const utils = trpc.useUtils();
-	const { data: currentUser } = trpc.auth.me.useQuery();
-	const [searchQuery, setSearchQuery] = useState("");
+	const {
+		data: currentUser,
+	} = trpc.auth.me.useQuery();
+	const [
+		searchQuery,
+		setSearchQuery,
+	] = useState('');
 
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+	const {
+		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
+	} =
 		trpc.adminUsers.list.useInfiniteQuery(
 			{
 				limit: 20,
-				search: searchQuery || undefined
+				search: searchQuery || undefined,
 			},
 			{
-				getNextPageParam: (lastPage) => lastPage.nextCursor
-			}
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+			},
 		);
 
-	const isAdmin = currentUser?.role === "ADMIN";
+	const isAdmin = currentUser?.role === 'ADMIN';
 	const isManager =
-		currentUser?.role === "OD_MANAGER" ||
-		currentUser?.role === "LOCATION_MANAGER";
+		currentUser?.role === 'OD_MANAGER' ||
+		currentUser?.role === 'LOCATION_MANAGER';
 
 	const canCreateUser = isAdmin || isManager;
 	const canDeleteUser = isAdmin || isManager;
 
 	const deleteUser = trpc.adminUsers.delete.useMutation({
-		onSuccess: () => utils.adminUsers.list.invalidate()
+		onSuccess: () => utils.adminUsers.list.invalidate(),
 	});
 
-	const users = data?.pages.flatMap((page) => page.items) || [];
+	const users = data?.pages.flatMap((page) => page.items) || [
+	];
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -95,7 +115,13 @@ export default function UsersClient() {
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
 				{isLoading && users.length === 0 ? (
 					<div className="flex flex-col gap-3 p-5">
-						{[1, 2, 3, 4, 5].map((i) => (
+						{[
+							1,
+							2,
+							3,
+							4,
+							5,
+						].map((i) => (
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
@@ -157,10 +183,10 @@ export default function UsersClient() {
 												<div className="flex flex-wrap gap-2">
 													<span
 														className={clsx(
-															"px-2.5 py-1 rounded-lg text-[0.65rem] font-bold tracking-wider uppercase",
-															user.role === "ADMIN"
-																? "bg-[#e20074]/10 text-[#e20074] border border-[#e20074]/20"
-																: "bg-[#1a1a2e] text-white"
+															'px-2.5 py-1 rounded-lg text-[0.65rem] font-bold tracking-wider uppercase',
+															user.role === 'ADMIN'
+																? 'bg-[#e20074]/10 text-[#e20074] border border-[#e20074]/20'
+																: 'bg-[#1a1a2e] text-white',
 														)}
 													>
 														{user.role}
@@ -232,7 +258,9 @@ export default function UsersClient() {
 																		id: user.id,
 																		name: user.email,
 																		onConfirm: () =>
-																			deleteUser.mutate({ id: user.id })
+																			deleteUser.mutate({
+																				id: user.id,
+																			}),
 																	});
 																}}
 																disabled={deleteUser.isPending}
@@ -250,7 +278,7 @@ export default function UsersClient() {
 												</td>
 											)}
 										</tr>
-									)
+									),
 								)}
 							</tbody>
 						</table>
@@ -269,7 +297,7 @@ export default function UsersClient() {
 							) : (
 								<Plus className="w-5 h-5" />
 							)}
-							{isFetchingNextPage ? "Wird geladen..." : "Mehr laden"}
+							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr laden'}
 						</button>
 					</div>
 				)}

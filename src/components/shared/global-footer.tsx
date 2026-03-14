@@ -1,5 +1,5 @@
-import Link from "next/link";
-import clsx from "clsx";
+import Link from 'next/link';
+import clsx from 'clsx';
 
 interface GlobalFooterProps {
 	className?: string;
@@ -10,29 +10,29 @@ interface GlobalFooterProps {
 
 export function GlobalFooter({
 	className,
-	textColor = "text-[#888]",
-	linkColor = "text-[#888]",
-	hoverColor = "hover:text-[#e20074]"
+	textColor = 'text-[#888]',
+	linkColor = 'text-[#888]',
+	hoverColor = 'hover:text-[#e20074]',
 }: GlobalFooterProps) {
 	return (
 		<div
 			className={clsx(
-				"mt-auto flex flex-col items-center justify-center pt-8 pb-6 text-center z-10",
-				className
+				'mt-auto flex flex-col items-center justify-center pt-8 pb-6 text-center z-10',
+				className,
 			)}
 		>
 			<div
 				className={clsx(
-					"flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.7rem] font-medium mb-2",
-					textColor
+					'flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.7rem] font-medium mb-2',
+					textColor,
 				)}
 			>
 				<Link
 					href="/impressum"
 					className={clsx(
-						"transition-colors duration-200",
+						'transition-colors duration-200',
 						linkColor,
-						hoverColor
+						hoverColor,
 					)}
 				>
 					Impressum
@@ -41,9 +41,9 @@ export function GlobalFooter({
 				<Link
 					href="/privacy"
 					className={clsx(
-						"transition-colors duration-200",
+						'transition-colors duration-200',
 						linkColor,
-						hoverColor
+						hoverColor,
 					)}
 				>
 					Datenschutz
@@ -52,9 +52,9 @@ export function GlobalFooter({
 				<Link
 					href="/faq"
 					className={clsx(
-						"transition-colors duration-200",
+						'transition-colors duration-200',
 						linkColor,
-						hoverColor
+						hoverColor,
 					)}
 				>
 					FAQ
@@ -63,8 +63,8 @@ export function GlobalFooter({
 
 			<div
 				className={clsx(
-					"flex flex-wrap items-center justify-center gap-2 text-[0.65rem] font-medium opacity-70",
-					textColor
+					'flex flex-wrap items-center justify-center gap-2 text-[0.65rem] font-medium opacity-70',
+					textColor,
 				)}
 			>
 				<span>

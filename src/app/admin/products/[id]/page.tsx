@@ -1,9 +1,17 @@
-"use client";
+'use client';
 
-import { ProductForm } from "@/components/features/admin/product-form";
-import { trpc } from "@/lib/trpc";
-import { useParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import {
+	ProductForm,
+} from '@/components/features/admin/product-form';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	useParams,
+} from 'next/navigation';
+import {
+	Loader2,
+} from 'lucide-react';
 
 export default function EditProductPage() {
 	const params = useParams();
@@ -11,8 +19,10 @@ export default function EditProductPage() {
 	const {
 		data: product,
 		isLoading,
-		error
-	} = trpc.admin.getProductById.useQuery({ id });
+		error,
+	} = trpc.admin.getProductById.useQuery({
+		id,
+	});
 
 	if (isLoading) {
 		return (

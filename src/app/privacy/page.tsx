@@ -1,13 +1,25 @@
-import { Metadata } from "next";
-import { ShieldCheck, Info, FileText } from "lucide-react";
-import Link from "next/link";
-import { TelekomLogo } from "@/components/shared/telekom-logo";
-import { GlobalFooter } from "@/components/shared/global-footer";
-import { BackButton } from "@/components/shared/back-button";
-import { PageTracker } from "@/components/shared/page-tracker";
+import type {
+	Metadata,
+} from 'next';
+import {
+	ShieldCheck, Info, FileText,
+} from 'lucide-react';
+import Link from 'next/link';
+import {
+	TelekomLogo,
+} from '@/components/shared/telekom-logo';
+import {
+	GlobalFooter,
+} from '@/components/shared/global-footer';
+import {
+	BackButton,
+} from '@/components/shared/back-button';
+import {
+	PageTracker,
+} from '@/components/shared/page-tracker';
 
 export const metadata: Metadata = {
-	title: "Datenschutz"
+	title: 'Datenschutz',
 };
 
 export default function PrivacyPage() {
@@ -128,7 +140,7 @@ export default function PrivacyPage() {
 							<strong>
 								kein Tracking Ihres spezifischen, personenbezogenen
 								Nutzungsverhaltens
-							</strong>{" "}
+							</strong>{' '}
 							statt. Das System erfasst bei der Nutzung lediglich vollständig
 							anonymisiert, welche Tarife und Pfade aufgerufen (einschließlich
 							eindeutiger Seitenaufrufe pro Sitzung), bzw. in den Warenkorb
@@ -239,7 +251,7 @@ export default function PrivacyPage() {
 							Dieses Tool verwendet Cookies, den Local Storage sowie den Session
 							Storage Ihres Browsers, um eine reibungslose Funktion,
 							Sitzungsverwaltung und anonymisierte Statistik-Deduplizierung zu
-							gewährleisten. Es handelt sich hierbei ausschließlich um{" "}
+							gewährleisten. Es handelt sich hierbei ausschließlich um{' '}
 							<strong>technisch notwendige</strong> Daten (funktionale
 							Speicherung). Es erfolgt kein Tracking zu Werbezwecken.
 						</p>

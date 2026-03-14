@@ -1,36 +1,54 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc";
-import { motion } from "framer-motion";
-import { TelekomLogo } from "@/components/shared/telekom-logo";
-import { GlobalFooter } from "@/components/shared/global-footer";
-import { Loader2, CheckCircle2, ShieldAlert, ArrowRight } from "lucide-react";
-import Link from "next/link";
-import clsx from "clsx";
+import {
+	useEffect, useState,
+} from 'react';
+import {
+	useParams, useRouter,
+} from 'next/navigation';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	motion,
+} from 'framer-motion';
+import {
+	TelekomLogo,
+} from '@/components/shared/telekom-logo';
+import {
+	GlobalFooter,
+} from '@/components/shared/global-footer';
+import {
+	Loader2, CheckCircle2, ShieldAlert, ArrowRight,
+} from 'lucide-react';
+import Link from 'next/link';
+import clsx from 'clsx';
 
 export default function VerifyPage() {
 	const params = useParams();
 	const router = useRouter();
 	const token = params.token as string;
 
-	const [status, setStatus] = useState<"loading" | "success" | "error">(
-		"loading"
+	const [
+		status,
+		setStatus,
+	] = useState<'loading' | 'success' | 'error'>(
+		'loading',
 	);
-	const [errorMessage, setErrorMessage] = useState("");
+	const [
+		errorMessage,
+		setErrorMessage,
+	] = useState('');
 
 	const verifyMutation = trpc.session.verifyEmail.useMutation({
 		onSuccess: (data) => {
-			setStatus("success");
+			setStatus('success');
 
-			if (typeof window !== "undefined") {
-				if (data.firstName)
-					localStorage.setItem("setup-user-firstName", data.firstName);
-				if (data.lastName)
-					localStorage.setItem("setup-user-lastName", data.lastName);
-				if (data.email) localStorage.setItem("setup-user-email", data.email);
-				localStorage.setItem("setup-completed", new Date().toISOString());
+			if (typeof window !== 'undefined') {
+				if (data.firstName) { localStorage.setItem('setup-user-firstName', data.firstName); }
+				if (data.lastName) { localStorage.setItem('setup-user-lastName', data.lastName); }
+				if (data.email) { localStorage.setItem('setup-user-email', data.email); }
+				localStorage.setItem('setup-completed', new Date().toISOString());
 			}
 
 			setTimeout(() => {
@@ -39,30 +57,49 @@ export default function VerifyPage() {
 			}, 3000);
 		},
 		onError: (error) => {
-			setStatus("error");
+			setStatus('error');
 			setErrorMessage(
-				error.message || "Die E-Mail konnte nicht bestätigt werden."
+				error.message || 'Die E-Mail konnte nicht bestätigt werden.',
 			);
-		}
+		},
 	});
 
 	useEffect(() => {
 		if (token) {
-			verifyMutation.mutate({ token });
-		} else {
-			setStatus("error");
-			setErrorMessage("Kein Token gefunden.");
+			verifyMutation.mutate({
+				token,
+			});
+		}
+		else {
+			setStatus('error');
+			setErrorMessage('Kein Token gefunden.');
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [token]);
+	}, [
+		token,
+	]);
 
 	return (
 		<div className="min-h-screen py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074] flex flex-col items-center justify-center">
 			<div className="max-w-md w-full mx-auto">
 				<motion.div
-					initial={{ opacity: 0, y: 12 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+					initial={{
+						opacity: 0,
+						y: 12,
+					}}
+					animate={{
+						opacity: 1,
+						y: 0,
+					}}
+					transition={{
+						duration: 0.5,
+						ease: [
+							0.16,
+							1,
+							0.3,
+							1,
+						],
+					}}
 					className="flex flex-col items-center mb-8 text-center"
 				>
 					<TelekomLogo className="w-12 h-12 text-[#e20074] mb-6" />
@@ -72,12 +109,27 @@ export default function VerifyPage() {
 				</motion.div>
 
 				<motion.div
-					initial={{ opacity: 0, y: 15 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+					initial={{
+						opacity: 0,
+						y: 15,
+					}}
+					animate={{
+						opacity: 1,
+						y: 0,
+					}}
+					transition={{
+						duration: 0.5,
+						delay: 0.1,
+						ease: [
+							0.16,
+							1,
+							0.3,
+							1,
+						],
+					}}
 					className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] p-8 text-center"
 				>
-					{status === "loading" && (
+					{status === 'loading' && (
 						<div className="flex flex-col items-center gap-4 py-6">
 							<Loader2 className="w-10 h-10 text-[#e20074] animate-spin" />
 							<div>
@@ -89,7 +141,7 @@ export default function VerifyPage() {
 						</div>
 					)}
 
-					{status === "success" && (
+					{status === 'success' && (
 						<div className="flex flex-col items-center gap-5 py-6">
 							<div className="w-16 h-16 bg-[#e20074]/10 rounded-full flex items-center justify-center">
 								<CheckCircle2 className="w-8 h-8 text-[#e20074]" />
@@ -112,7 +164,7 @@ export default function VerifyPage() {
 						</div>
 					)}
 
-					{status === "error" && (
+					{status === 'error' && (
 						<div className="flex flex-col items-center gap-5 py-6">
 							<div className="w-16 h-16 bg-[#fdf2f8] rounded-full flex items-center justify-center">
 								<ShieldAlert className="w-8 h-8 text-[#e20074]" />

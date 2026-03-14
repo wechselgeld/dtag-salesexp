@@ -1,19 +1,27 @@
-import { UserForm } from "@/components/features/admin/user-form";
-import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import {
+	UserForm,
+} from '@/components/features/admin/user-form';
+import {
+	prisma,
+} from '@/lib/prisma';
+import {
+	notFound,
+} from 'next/navigation';
 
 export const metadata = {
-	title: "Admin bearbeiten | Admin"
+	title: 'Admin bearbeiten | Admin',
 };
 
 export default async function EditUserPage({
-	params
+	params,
 }: {
 	params: Promise<{ id: string }>;
 }) {
 	const resolvedParams = await params;
 	const user = await prisma.user.findUnique({
-		where: { id: resolvedParams.id }
+		where: {
+			id: resolvedParams.id,
+		},
 	});
 
 	if (!user) {
@@ -28,14 +36,14 @@ export default async function EditUserPage({
 				initialData={{
 					email: user.email,
 					role: user.role as
-						| "ADMIN"
-						| "OD_MANAGER"
-						| "LOCATION_MANAGER"
-						| "TEAM_LEADER",
+						| 'ADMIN'
+						| 'OD_MANAGER'
+						| 'LOCATION_MANAGER'
+						| 'TEAM_LEADER',
 					isEditor: user.isEditor,
 					odRegionId: user.odRegionId,
 					locationId: user.locationId,
-					teamId: user.teamId
+					teamId: user.teamId,
 				}}
 			/>
 		</main>

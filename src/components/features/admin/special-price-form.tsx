@@ -1,11 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc";
+import {
+	useState,
+} from 'react';
+import {
+	useForm, useFieldArray,
+} from 'react-hook-form';
+import {
+	zodResolver,
+} from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+	useRouter,
+} from 'next/navigation';
+import {
+	trpc,
+} from '@/lib/trpc';
 import {
 	Loader2,
 	Save,
@@ -20,27 +30,35 @@ import {
 	Layers,
 	Eye,
 	Euro,
-	CheckCircle2
-} from "lucide-react";
-import Link from "next/link";
-import clsx from "clsx";
-import { Input } from "@/components/shared/ui/input";
+	CheckCircle2,
+} from 'lucide-react';
+import Link from 'next/link';
+import clsx from 'clsx';
+import {
+	Input,
+} from '@/components/shared/ui/input';
 import {
 	AdminPageHeader,
 	AdminFormSection,
-	AdminFormContainer
-} from "@/components/shared/ui/admin-ui";
+	AdminFormContainer,
+} from '@/components/shared/ui/admin-ui';
 
 const tierSchema = z.object({
-	price: z.number().min(0, "Preis darf nicht negativ sein"),
-	fromMonth: z.number().min(1, "Minimum ist Monat 1"),
-	toMonth: z.number().min(1, "Minimum ist Monat 1"),
-	discountTarget: z.enum(["BASE_PRICE", "MAGENTA_TV"]).default("BASE_PRICE"),
-	discountType: z.enum(["ABSOLUTE", "RELATIVE"]).default("ABSOLUTE")
+	price: z.number().min(0, 'Preis darf nicht negativ sein'),
+	fromMonth: z.number().min(1, 'Minimum ist Monat 1'),
+	toMonth: z.number().min(1, 'Minimum ist Monat 1'),
+	discountTarget: z.enum([
+		'BASE_PRICE',
+		'MAGENTA_TV',
+	]).default('BASE_PRICE'),
+	discountType: z.enum([
+		'ABSOLUTE',
+		'RELATIVE',
+	]).default('ABSOLUTE'),
 });
 
 const specialPriceSchema = z.object({
-	name: z.string().min(1, "Name ist erforderlich"),
+	name: z.string().min(1, 'Name ist erforderlich'),
 	description: z.string().optional(),
 	internalNote: z.string().optional(),
 	productIds: z.array(z.string()),
@@ -50,26 +68,43 @@ const specialPriceSchema = z.object({
 	requiresNewActivation: z.boolean().default(false),
 	priority: z.number().default(0),
 	isActive: z.boolean().default(true),
-	discountTarget: z.enum(["BASE_PRICE", "MAGENTA_TV"]).default("BASE_PRICE"),
-	discountType: z.enum(["ABSOLUTE", "RELATIVE"]).default("ABSOLUTE"),
-	tiers: z.array(tierSchema).min(1, "Mindestens eine Preisstufe ist nötig")
+	discountTarget: z.enum([
+		'BASE_PRICE',
+		'MAGENTA_TV',
+	]).default('BASE_PRICE'),
+	discountType: z.enum([
+		'ABSOLUTE',
+		'RELATIVE',
+	]).default('ABSOLUTE'),
+	tiers: z.array(tierSchema).min(1, 'Mindestens eine Preisstufe ist nötig'),
 });
 
 type SpecialPriceFormData = z.infer<typeof specialPriceSchema>;
 
 interface SpecialPriceFormProps {
 	initialData?: any;
-	mode: "create" | "edit";
+	mode: 'create' | 'edit';
 }
 
-export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
+export function SpecialPriceForm({
+	initialData, mode,
+}: SpecialPriceFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
-	const { data: productsData } = trpc.product.getAllProducts.useQuery();
-	const products = productsData?.items || [];
+	const {
+		data: productsData,
+	} = trpc.product.getAllProducts.useQuery();
+	const products = productsData?.items || [
+	];
 
-	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+	const [
+		searchQuery,
+		setSearchQuery,
+	] = useState('');
+	const [
+		selectedCategory,
+		setSelectedCategory,
+	] = useState<string>('ALL');
 
 	const {
 		register,
@@ -78,83 +113,121 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 		watch,
 		setValue,
 		getValues,
-		formState: { errors }
+		formState: {
+			errors,
+		},
 	} = useForm({
 		resolver: zodResolver(specialPriceSchema),
-		mode: "onChange",
+		mode: 'onChange',
 		defaultValues: {
-			name: initialData?.name || "",
-			description: initialData?.description || "",
-			internalNote: initialData?.internalNote || "",
-			productIds: initialData?.products?.map((p: any) => p.id) || [],
+			name: initialData?.name || '',
+			description: initialData?.description || '',
+			internalNote: initialData?.internalNote || '',
+			productIds: initialData?.products?.map((p: any) => p.id) || [
+			],
 			requiresMagentaTV: initialData?.requiresMagentaTV || false,
 			requiresSpeedUp: initialData?.requiresSpeedUp || false,
 			requiresMove: initialData?.requiresMove || false,
 			requiresNewActivation: initialData?.requiresNewActivation || false,
 			priority: initialData?.priority || 0,
 			isActive: initialData?.isActive ?? true,
-			discountTarget: initialData?.discountTarget || "BASE_PRICE",
-			discountType: initialData?.discountType || "ABSOLUTE",
+			discountTarget: initialData?.discountTarget || 'BASE_PRICE',
+			discountType: initialData?.discountType || 'ABSOLUTE',
 			tiers:
 				initialData?.tiers && initialData.tiers.length > 0
 					? initialData.tiers.map((t: any) => ({
-							...t,
-							discountTarget: t.discountTarget || initialData.discountTarget || "BASE_PRICE",
-							discountType: t.discountType || initialData.discountType || "ABSOLUTE"
+						...t,
+						discountTarget: t.discountTarget || initialData.discountTarget || 'BASE_PRICE',
+						discountType: t.discountType || initialData.discountType || 'ABSOLUTE',
 					  }))
-					: [{ price: 0, fromMonth: 1, toMonth: 6, discountTarget: "BASE_PRICE", discountType: "ABSOLUTE" }]
-		}
+					: [
+						{
+							price: 0,
+							fromMonth: 1,
+							toMonth: 6,
+							discountTarget: 'BASE_PRICE',
+							discountType: 'ABSOLUTE',
+						},
+					],
+		},
 	});
 
-	const { fields, append, remove } = useFieldArray({
+	const {
+		fields, append, remove,
+	} = useFieldArray({
 		control,
-		name: "tiers"
+		name: 'tiers',
 	});
 
-	const productIdsValue = watch("productIds");
-	const productIds = Array.isArray(productIdsValue) ? productIdsValue : [];
-	const cTiers = watch("tiers") || [];
+	const productIdsValue = watch('productIds');
+	const productIds = Array.isArray(productIdsValue) ? productIdsValue : [
+	];
+	const cTiers = watch('tiers') || [
+	];
 
 	const filteredProducts = products?.filter((p) => {
 		const matchesSearch = p.name
 			.toLowerCase()
 			.includes(searchQuery.toLowerCase());
 		const matchesCategory =
-			selectedCategory === "ALL" || p.category === selectedCategory;
+			selectedCategory === 'ALL' || p.category === selectedCategory;
 		return matchesSearch && matchesCategory;
 	});
 
 	const toggleProduct = (productId: string) => {
-		const currentProductIds = getValues("productIds") || [];
-		const idsArray = Array.isArray(currentProductIds) ? currentProductIds : [];
+		const currentProductIds = getValues('productIds') || [
+		];
+		const idsArray = Array.isArray(currentProductIds) ? currentProductIds : [
+		];
 
 		if (idsArray.includes(productId)) {
 			setValue(
-				"productIds",
+				'productIds',
 				idsArray.filter((id) => id !== productId),
-				{ shouldDirty: true }
+				{
+					shouldDirty: true,
+				},
 			);
-		} else {
-			setValue("productIds", [...idsArray, productId], { shouldDirty: true });
+		}
+		else {
+			setValue('productIds', [
+				...idsArray,
+				productId,
+			], {
+				shouldDirty: true,
+			});
 		}
 	};
 
 	const toggleAllInCategory = () => {
-		const currentProductIds = getValues("productIds") || [];
-		const idsArray = Array.isArray(currentProductIds) ? currentProductIds : [];
-		const filteredIds = filteredProducts?.map((p) => p.id) || [];
+		const currentProductIds = getValues('productIds') || [
+		];
+		const idsArray = Array.isArray(currentProductIds) ? currentProductIds : [
+		];
+		const filteredIds = filteredProducts?.map((p) => p.id) || [
+		];
 
 		const allSelected = filteredIds.every((id) => idsArray.includes(id));
 
 		if (allSelected) {
 			setValue(
-				"productIds",
+				'productIds',
 				idsArray.filter((id) => !filteredIds.includes(id)),
-				{ shouldDirty: true }
+				{
+					shouldDirty: true,
+				},
 			);
-		} else {
-			const newIds = [...new Set([...idsArray, ...filteredIds])];
-			setValue("productIds", newIds, { shouldDirty: true });
+		}
+		else {
+			const newIds = [
+				...new Set([
+					...idsArray,
+					...filteredIds,
+				]),
+			];
+			setValue('productIds', newIds, {
+				shouldDirty: true,
+			});
 		}
 	};
 
@@ -165,8 +238,8 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 			price: 0,
 			fromMonth: lastTier ? lastTier.toMonth + 1 : 1,
 			toMonth: lastTier ? lastTier.toMonth + 6 : 6,
-			discountTarget: lastTier ? lastTier.discountTarget : "BASE_PRICE",
-			discountType: lastTier ? lastTier.discountType : "ABSOLUTE"
+			discountTarget: lastTier ? lastTier.discountTarget : 'BASE_PRICE',
+			discountType: lastTier ? lastTier.discountType : 'ABSOLUTE',
 		});
 	};
 
@@ -174,27 +247,28 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 		onSuccess: () => {
 			utils.admin.getAllSpecialPrices.invalidate();
 			utils.admin.getSpecialPriceById.invalidate();
-			router.push("/admin/special-prices");
+			router.push('/admin/special-prices');
 			router.refresh();
-		}
+		},
 	});
 
 	const updateMutation = trpc.admin.updateSpecialPrice.useMutation({
 		onSuccess: () => {
 			utils.admin.getAllSpecialPrices.invalidate();
 			utils.admin.getSpecialPriceById.invalidate();
-			router.push("/admin/special-prices");
+			router.push('/admin/special-prices');
 			router.refresh();
-		}
+		},
 	});
 
 	const onSubmit = (data: SpecialPriceFormData) => {
-		if (mode === "create") {
+		if (mode === 'create') {
 			createMutation.mutate(data);
-		} else {
+		}
+		else {
 			updateMutation.mutate({
 				id: initialData!.id,
-				...data
+				...data,
 			});
 		}
 	};
@@ -207,10 +281,10 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 			form="special-price-form"
 			disabled={isPending || productIds?.length === 0}
 			className={clsx(
-				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
+				'px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5',
 				isPending || productIds?.length === 0
-					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-					: "bg-[#e20074] hover:bg-[#c70066]"
+					? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+					: 'bg-[#e20074] hover:bg-[#c70066]',
 			)}
 		>
 			{isPending ? (
@@ -226,11 +300,11 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 		<div className="space-y-8 pb-12">
 			<AdminPageHeader
 				title={
-					mode === "create" ? "Neue Aktion / Sonderpreis" : "Aktion bearbeiten"
+					mode === 'create' ? 'Neue Aktion / Sonderpreis' : 'Aktion bearbeiten'
 				}
 				subtitle={
-					mode === "create"
-						? "Erstelle eine neue Preisaktion mit zeitlich begrenzten Rabatten."
+					mode === 'create'
+						? 'Erstelle eine neue Preisaktion mit zeitlich begrenzten Rabatten.'
 						: `Verwalte die Konfiguration für ${initialData?.name}`
 				}
 				backHref="/admin/special-prices"
@@ -248,7 +322,7 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 							label="Name der Aktion"
 							placeholder="z.B. MagentaZuhause Aktion 1–6 Monate"
 							error={errors.name?.message}
-							{...register("name")}
+							{...register('name')}
 						/>
 
 						<div className="flex flex-col gap-1.5 pt-2">
@@ -259,7 +333,7 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 								placeholder="Kurze Beschreibung der Aktion..."
 								rows={3}
 								className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:bg-white focus:outline-none focus:border-[#e20074] transition-all text-[0.9rem] font-medium resize-none"
-								{...register("description")}
+								{...register('description')}
 							/>
 						</div>
 
@@ -271,7 +345,7 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 								placeholder="Notizen zur Aktion..."
 								rows={2}
 								className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:bg-white focus:outline-none focus:border-[#e20074] transition-all text-[0.9rem] font-medium resize-none opacity-80"
-								{...register("internalNote")}
+								{...register('internalNote')}
 							/>
 						</div>
 					</AdminFormSection>
@@ -287,7 +361,9 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 								type="number"
 								placeholder="0"
 								error={errors.priority?.message}
-								{...register("priority", { valueAsNumber: true })}
+								{...register('priority', {
+									valueAsNumber: true,
+								})}
 							/>
 							<div className="flex flex-col gap-1.5">
 								<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
@@ -296,7 +372,7 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 								<div className="flex items-center gap-3 p-3 bg-[#f7f8fa] rounded-xl border border-[#eaedf0]">
 									<input
 										type="checkbox"
-										{...register("isActive")}
+										{...register('isActive')}
 										className="w-5 h-5 rounded border-[#eaedf0] text-[#e20074] focus:ring-[#e20074]"
 									/>
 									<span className="text-[0.85rem] font-bold text-[#1a1a2e]">
@@ -316,10 +392,22 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 					>
 						<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 							{[
-								{ id: "requiresMagentaTV", label: "Benötigt MagentaTV" },
-								{ id: "requiresSpeedUp", label: "Benötigt SpeedUp" },
-								{ id: "requiresNewActivation", label: "Neuanschluss" },
-								{ id: "requiresMove", label: "Umzug" }
+								{
+									id: 'requiresMagentaTV',
+									label: 'Benötigt MagentaTV',
+								},
+								{
+									id: 'requiresSpeedUp',
+									label: 'Benötigt SpeedUp',
+								},
+								{
+									id: 'requiresNewActivation',
+									label: 'Neuanschluss',
+								},
+								{
+									id: 'requiresMove',
+									label: 'Umzug',
+								},
 							].map((cond) => (
 								<label
 									key={cond.id}
@@ -409,9 +497,9 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 										>
 											<CheckSquare className="w-4 h-4" />
 											{filteredProducts?.every((p) =>
-												productIds?.includes(p.id)
+												productIds?.includes(p.id),
 											)
-												? "Alle abwählen"
+												? 'Alle abwählen'
 												: `${filteredProducts?.length} in Ansicht auswählen`}
 										</button>
 
@@ -422,10 +510,10 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 													<label
 														key={product.id}
 														className={clsx(
-															"flex items-center gap-4 p-4 rounded-2xl transition-all cursor-pointer group",
+															'flex items-center gap-4 p-4 rounded-2xl transition-all cursor-pointer group',
 															isChecked
-																? "bg-white shadow-md border border-[#e20074]/10"
-																: "hover:bg-white/50 border border-transparent"
+																? 'bg-white shadow-md border border-[#e20074]/10'
+																: 'hover:bg-white/50 border border-transparent',
 														)}
 													>
 														<div className="relative flex items-center shrink-0">
@@ -511,7 +599,7 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 											min={1}
 											error={errors.tiers?.[index]?.fromMonth?.message}
 											{...register(`tiers.${index}.fromMonth`, {
-												valueAsNumber: true
+												valueAsNumber: true,
 											})}
 										/>
 										<Input
@@ -520,15 +608,15 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 											min={1}
 											error={errors.tiers?.[index]?.toMonth?.message}
 											{...register(`tiers.${index}.toMonth`, {
-												valueAsNumber: true
+												valueAsNumber: true,
 											})}
 										/>
 										<div className="col-span-2 lg:col-span-1">
 											<div className="flex flex-col gap-1.5">
 												<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-													{watch(`tiers.${index}.discountType`) === "RELATIVE"
-														? "Abzug (€)"
-														: "Preis (€)"}
+													{watch(`tiers.${index}.discountType`) === 'RELATIVE'
+														? 'Abzug (€)'
+														: 'Preis (€)'}
 												</label>
 												<div className="relative">
 													<Input
@@ -537,7 +625,7 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 														min={0}
 														error={errors.tiers?.[index]?.price?.message}
 														{...register(`tiers.${index}.price`, {
-															valueAsNumber: true
+															valueAsNumber: true,
 														})}
 														className="pl-10"
 													/>
@@ -602,21 +690,21 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 												<div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-[0.75rem] font-black text-white group-hover/row:bg-[#e20074] transition-colors shrink-0">
 													{i + 1}
 												</div>
-                                                <div className="flex flex-col">
+												<div className="flex flex-col">
     												<span className="text-[#bbb] font-bold text-[0.9rem]">
-	    												Monat {tier.fromMonth || 1} – {tier.toMonth || "?"}
+	    												Monat {tier.fromMonth || 1} – {tier.toMonth || '?'}
 		    										</span>
-                                                    <span className="text-[#888] text-[0.65rem] font-medium leading-tight mt-1">
-                                                        {tier.discountTarget === "MAGENTA_TV" ? "MagentaTV Paket" : "Tarif Grundpreis"}
-                                                        {' • '}
-                                                        {tier.discountType === "RELATIVE" ? "Relativer Abzug" : "Absoluter Preis"}
-                                                    </span>
-                                                </div>
+													<span className="text-[#888] text-[0.65rem] font-medium leading-tight mt-1">
+														{tier.discountTarget === 'MAGENTA_TV' ? 'MagentaTV Paket' : 'Tarif Grundpreis'}
+														{' • '}
+														{tier.discountType === 'RELATIVE' ? 'Relativer Abzug' : 'Absoluter Preis'}
+													</span>
+												</div>
 											</div>
 											<div className="flex items-end flex-col shrink-0">
 												<span className="font-black text-white text-[1.2rem] tracking-tight">
-													{tier.discountType === "RELATIVE" ? "−" : ""}
-													{tier.price?.toFixed(2) || "0.00"} €
+													{tier.discountType === 'RELATIVE' ? '−' : ''}
+													{tier.price?.toFixed(2) || '0.00'} €
 												</span>
 												<span className="text-[0.6rem] text-[#888] font-bold uppercase">
 													Pro Monat

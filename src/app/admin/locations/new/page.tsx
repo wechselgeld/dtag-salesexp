@@ -1,7 +1,9 @@
-import { LocationForm } from "@/components/features/admin/location-form";
+import {
+	LocationForm,
+} from '@/components/features/admin/location-form';
 
 export const metadata = {
-	title: "Standort erstellen | Admin"
+	title: 'Standort erstellen | Admin',
 };
 
 export default function NewLocationPage() {

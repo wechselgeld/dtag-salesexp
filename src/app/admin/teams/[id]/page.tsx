@@ -1,19 +1,27 @@
-import { TeamForm } from "@/components/features/admin/team-form";
-import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import {
+	TeamForm,
+} from '@/components/features/admin/team-form';
+import {
+	prisma,
+} from '@/lib/prisma';
+import {
+	notFound,
+} from 'next/navigation';
 
 export const metadata = {
-	title: "Team bearbeiten | Admin"
+	title: 'Team bearbeiten | Admin',
 };
 
 export default async function EditTeamPage({
-	params
+	params,
 }: {
 	params: Promise<{ id: string }>;
 }) {
 	const resolvedParams = await params;
 	const team = await prisma.team.findUnique({
-		where: { id: resolvedParams.id }
+		where: {
+			id: resolvedParams.id,
+		},
 	});
 
 	if (!team) {
@@ -28,7 +36,7 @@ export default async function EditTeamPage({
 				initialData={{
 					name: team.name,
 					email: team.email,
-					locationId: team.locationId
+					locationId: team.locationId,
 				}}
 			/>
 		</main>

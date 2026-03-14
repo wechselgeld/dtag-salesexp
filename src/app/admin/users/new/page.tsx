@@ -1,7 +1,9 @@
-import { UserForm } from "@/components/features/admin/user-form";
+import {
+	UserForm,
+} from '@/components/features/admin/user-form';
 
 export const metadata = {
-	title: "Admin erstellen | Admin"
+	title: 'Admin erstellen | Admin',
 };
 
 export default function NewUserPage() {

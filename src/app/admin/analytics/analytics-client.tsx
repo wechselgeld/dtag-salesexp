@@ -1,7 +1,11 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc";
-import { useState, useMemo } from "react";
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	useState, useMemo,
+} from 'react';
 import {
 	BarChart3,
 	Eye,
@@ -12,12 +16,10 @@ import {
 	Layers,
 	ArrowUpRight,
 	ArrowDownRight,
-	Calendar
-} from "lucide-react";
-import clsx from "clsx";
+	Calendar,
+} from 'lucide-react';
+import clsx from 'clsx';
 import {
-	BarChart,
-	Bar,
 	XAxis,
 	YAxis,
 	Tooltip,
@@ -25,50 +27,76 @@ import {
 	CartesianGrid,
 	Area,
 	AreaChart,
-	Cell,
-	LabelList
-} from "recharts";
-import { Skeleton } from "@/components/shared/skeleton";
-import { motion } from "framer-motion";
-import { Tooltip as CustomTooltip } from "@/components/shared/ui/tooltip";
+} from 'recharts';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import {
+	motion,
+} from 'framer-motion';
+import {
+	Tooltip as CustomTooltip,
+} from '@/components/shared/ui/tooltip';
 
 const CATEGORY_NAMES: Record<string, string> = {
-	MOBILE: "Mobilfunk",
-	FIBER: "Glasfaser",
-	DSL: "Festnetz",
-	MAGENTA_TV_OTT: "MagentaTV",
-	DEVICE: "Endgeräte",
-	ADDON: "Zubuchoptionen",
-	PAGE_VIEW: "Seitenaufrufe"
+	MOBILE: 'Mobilfunk',
+	FIBER: 'Glasfaser',
+	DSL: 'Festnetz',
+	MAGENTA_TV_OTT: 'MagentaTV',
+	DEVICE: 'Endgeräte',
+	ADDON: 'Zubuchoptionen',
+	PAGE_VIEW: 'Seitenaufrufe',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-	MOBILE: "#e20074",
-	FIBER: "#0090d0",
-	DSL: "#7b61ff",
-	MAGENTA_TV_OTT: "#ff6b00",
-	DEVICE: "#00a878",
-	ADDON: "#64748b",
-	PAGE_VIEW: "#94a3b8"
+	MOBILE: '#e20074',
+	FIBER: '#0090d0',
+	DSL: '#7b61ff',
+	MAGENTA_TV_OTT: '#ff6b00',
+	DEVICE: '#00a878',
+	ADDON: '#64748b',
+	PAGE_VIEW: '#94a3b8',
 };
 
 const PERIOD_OPTIONS = [
-	{ label: "7 Tage", days: 7 },
-	{ label: "30 Tage", days: 30 },
-	{ label: "90 Tage", days: 90 }
+	{
+		label: '7 Tage',
+		days: 7,
+	},
+	{
+		label: '30 Tage',
+		days: 30,
+	},
+	{
+		label: '90 Tage',
+		days: 90,
+	},
 ];
 
 export default function AnalyticsClient() {
-	const [selectedPeriod, setSelectedPeriod] = useState(30);
+	const [
+		selectedPeriod,
+		setSelectedPeriod,
+	] = useState(30);
 
-	const { data, isLoading } = trpc.analytics.getDashboard.useQuery(
-		{ days: selectedPeriod },
-		{ staleTime: 10 * 1000, refetchOnWindowFocus: true }
+	const {
+		data, isLoading,
+	} = trpc.analytics.getDashboard.useQuery(
+		{
+			days: selectedPeriod,
+		},
+		{
+			staleTime: 10 * 1000,
+			refetchOnWindowFocus: true,
+		},
 	);
 
 	// Aggregate daily data for chart
 	const chartData = useMemo(() => {
-		if (!data?.dailyTrend) return [];
+		if (!data?.dailyTrend) {
+			return [
+			];
+		}
 
 		const map = new Map<
 			string,
@@ -88,24 +116,29 @@ export default function AnalyticsClient() {
 					views: 0,
 					basket: 0,
 					pages: 0,
-					uniquePages: 0
+					uniquePages: 0,
 				});
 			}
 			const entry = map.get(d.date)!;
-			if (d.eventType === "PRODUCT_VIEW") entry.views += d.count;
-			else if (d.eventType === "BASKET_ADD") entry.basket += d.count;
-			else if (d.eventType === "PAGE_VIEW") entry.pages += d.count;
-			else if (d.eventType === "UNIQUE_PAGE_VIEW") entry.uniquePages += d.count;
+			if (d.eventType === 'PRODUCT_VIEW') { entry.views += d.count; }
+			else if (d.eventType === 'BASKET_ADD') { entry.basket += d.count; }
+			else if (d.eventType === 'PAGE_VIEW') { entry.pages += d.count; }
+			else if (d.eventType === 'UNIQUE_PAGE_VIEW') { entry.uniquePages += d.count; }
 		});
 
 		return Array.from(map.values()).sort(
-			(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+			(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
 		);
-	}, [data?.dailyTrend]);
+	}, [
+		data?.dailyTrend,
+	]);
 
 	// Aggregate top products: group by productId, show views + basket
 	const topProductsList = useMemo(() => {
-		if (!data?.topProducts) return [];
+		if (!data?.topProducts) {
+			return [
+			];
+		}
 
 		const map = new Map<
 			string,
@@ -125,12 +158,12 @@ export default function AnalyticsClient() {
 					category: p.category,
 					views: 0,
 					basket: 0,
-					conversionRate: 0
+					conversionRate: 0,
 				});
 			}
 			const entry = map.get(p.productId!)!;
-			if (p.eventType === "PRODUCT_VIEW") entry.views += p.count;
-			else if (p.eventType === "BASKET_ADD") entry.basket += p.count;
+			if (p.eventType === 'PRODUCT_VIEW') { entry.views += p.count; }
+			else if (p.eventType === 'BASKET_ADD') { entry.basket += p.count; }
 		});
 
 		// Calculate conversion rate per product
@@ -141,7 +174,9 @@ export default function AnalyticsClient() {
 		});
 
 		return list.sort((a, b) => b.views - a.views).slice(0, 10);
-	}, [data?.topProducts]);
+	}, [
+		data?.topProducts,
+	]);
 
 	// Format date for chart axis
 	const formatDate = (dateStr: string) => {
@@ -174,10 +209,10 @@ export default function AnalyticsClient() {
 							key={opt.days}
 							onClick={() => setSelectedPeriod(opt.days)}
 							className={clsx(
-								"px-4 py-2 rounded-lg text-[0.78rem] font-semibold transition-all duration-200 cursor-pointer",
+								'px-4 py-2 rounded-lg text-[0.78rem] font-semibold transition-all duration-200 cursor-pointer',
 								selectedPeriod === opt.days
-									? "bg-white text-[#1a1a2e] shadow-sm border border-[#eaedf0]"
-									: "text-[#888] hover:text-[#1a1a2e] border border-transparent"
+									? 'bg-white text-[#1a1a2e] shadow-sm border border-[#eaedf0]'
+									: 'text-[#888] hover:text-[#1a1a2e] border border-transparent',
 							)}
 						>
 							<Calendar className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
@@ -190,7 +225,9 @@ export default function AnalyticsClient() {
 			{isLoading ? (
 				<div className="space-y-6">
 					<div className="grid grid-cols-4 gap-4">
-						{[...Array(4)].map((_, i) => (
+						{[
+							...Array(4),
+						].map((_, i) => (
 							<Skeleton key={i} className="h-28 rounded-2xl" />
 						))}
 					</div>
@@ -231,15 +268,23 @@ export default function AnalyticsClient() {
 							value={data?.kpis.totalUniquePageViews ?? 0}
 							icon={Layers}
 							color="#7b61ff"
-							subtitle={`Von gesamt ${data?.kpis.totalPageViews?.toLocaleString("de-DE") ?? 0} Aufrufen`}
+							subtitle={`Von gesamt ${data?.kpis.totalPageViews?.toLocaleString('de-DE') ?? 0} Aufrufen`}
 						/>
 					</div>
 
 					{/* Trend Chart */}
 					<motion.div
-						initial={{ opacity: 0, y: 10 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.1 }}
+						initial={{
+							opacity: 0,
+							y: 10,
+						}}
+						animate={{
+							opacity: 1,
+							y: 0,
+						}}
+						transition={{
+							delay: 0.1,
+						}}
 						className="bg-white rounded-2xl border border-[#eaedf0] p-6"
 					>
 						<h2 className="text-[0.95rem] font-bold text-[#1a1a2e] mb-1 tracking-tight">
@@ -258,7 +303,12 @@ export default function AnalyticsClient() {
 								<ResponsiveContainer width="100%" height="100%">
 									<AreaChart
 										data={chartData}
-										margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+										margin={{
+											top: 5,
+											right: 5,
+											left: -20,
+											bottom: 0,
+										}}
 									>
 										<defs>
 											<linearGradient
@@ -308,25 +358,33 @@ export default function AnalyticsClient() {
 											tickFormatter={formatDate}
 											axisLine={false}
 											tickLine={false}
-											tick={{ fontSize: 10, fill: "#bbb" }}
+											tick={{
+												fontSize: 10,
+												fill: '#bbb',
+											}}
 											interval="preserveStartEnd"
 										/>
 										<YAxis
 											axisLine={false}
 											tickLine={false}
-											tick={{ fontSize: 10, fill: "#bbb" }}
+											tick={{
+												fontSize: 10,
+												fill: '#bbb',
+											}}
 										/>
 										<Tooltip
-											content={({ active, payload, label }) =>
+											content={({
+												active, payload, label,
+											}) =>
 												active && payload?.length ? (
 													<div className="bg-white rounded-xl shadow-lg border border-[#eaedf0] p-3 text-[0.75rem]">
 														<div className="font-bold text-[#1a1a2e] mb-2 border-b border-[#f0f0f0] pb-1.5">
 															{new Date(
-																label as string | number
-															).toLocaleDateString("de-DE", {
-																weekday: "short",
-																day: "numeric",
-																month: "short"
+																label as string | number,
+															).toLocaleDateString('de-DE', {
+																weekday: 'short',
+																day: 'numeric',
+																month: 'short',
 															})}
 														</div>
 														{payload.map((p: any, i: number) => (
@@ -338,13 +396,13 @@ export default function AnalyticsClient() {
 																	<div
 																		className="w-2 h-2 rounded-full"
 																		style={{
-																			backgroundColor: p.color ?? "#ccc"
+																			backgroundColor: p.color ?? '#ccc',
 																		}}
 																	/>
 																	<span className="text-[#888]">
-																		{p.name === "views"
-																			? "Aufrufe"
-																			: "Warenkorb"}
+																		{p.name === 'views'
+																			? 'Aufrufe'
+																			: 'Warenkorb'}
 																	</span>
 																</div>
 																<span className="font-bold text-[#1a1a2e]">
@@ -398,9 +456,17 @@ export default function AnalyticsClient() {
 					<div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6">
 						{/* Top Products */}
 						<motion.div
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.2 }}
+							initial={{
+								opacity: 0,
+								y: 10,
+							}}
+							animate={{
+								opacity: 1,
+								y: 0,
+							}}
+							transition={{
+								delay: 0.2,
+							}}
 							className="bg-white rounded-2xl border border-[#eaedf0] p-6"
 						>
 							<div className="flex items-center justify-between mb-5">
@@ -423,11 +489,11 @@ export default function AnalyticsClient() {
 								<div className="space-y-2">
 									{topProductsList.map((product, i) => {
 										const catColor =
-											CATEGORY_COLORS[product.category] ?? "#888";
+											CATEGORY_COLORS[product.category] ?? '#888';
 										const maxViews = topProductsList[0]?.views ?? 1;
 										const barWidth = Math.max(
 											(product.views / maxViews) * 100,
-											4
+											4,
 										);
 
 										return (
@@ -438,10 +504,10 @@ export default function AnalyticsClient() {
 												{/* Rank */}
 												<span
 													className={clsx(
-														"w-6 h-6 rounded-lg flex items-center justify-center text-[0.65rem] font-bold shrink-0",
+														'w-6 h-6 rounded-lg flex items-center justify-center text-[0.65rem] font-bold shrink-0',
 														i < 3
-															? "bg-[#e20074]/10 text-[#e20074]"
-															: "bg-[#f0f0f0] text-[#aaa]"
+															? 'bg-[#e20074]/10 text-[#e20074]'
+															: 'bg-[#f0f0f0] text-[#aaa]',
 													)}
 												>
 													{i + 1}
@@ -457,7 +523,7 @@ export default function AnalyticsClient() {
 															className="text-[0.6rem] font-bold px-1.5 py-0.5 rounded shrink-0"
 															style={{
 																backgroundColor: `${catColor}15`,
-																color: catColor
+																color: catColor,
 															}}
 														>
 															{CATEGORY_NAMES[product.category] ??
@@ -471,7 +537,7 @@ export default function AnalyticsClient() {
 															className="h-full rounded-full transition-all duration-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
 															style={{
 																width: `${barWidth}%`,
-																backgroundColor: catColor
+																backgroundColor: catColor,
 															}}
 														/>
 													</div>
@@ -498,20 +564,20 @@ export default function AnalyticsClient() {
 													<div className="text-right min-w-[50px]">
 														<div
 															className={clsx(
-																"text-[0.75rem] font-bold flex items-center justify-end gap-0.5",
+																'text-[0.75rem] font-bold flex items-center justify-end gap-0.5',
 																product.conversionRate >= 50
-																	? "text-[#00a878]"
+																	? 'text-[#00a878]'
 																	: product.conversionRate >= 20
-																		? "text-[#ff6b00]"
-																		: "text-[#aaa]"
+																		? 'text-[#ff6b00]'
+																		: 'text-[#aaa]',
 															)}
 														>
 															{product.conversionRate >= 50 ? (
 																<ArrowUpRight className="w-3 h-3" />
 															) : product.conversionRate < 20 &&
 															  product.conversionRate > 0 ? (
-																<ArrowDownRight className="w-3 h-3" />
-															) : null}
+																	<ArrowDownRight className="w-3 h-3" />
+																) : null}
 															{product.conversionRate}%
 														</div>
 														<div className="text-[0.6rem] text-[#aaa] font-medium">
@@ -531,9 +597,17 @@ export default function AnalyticsClient() {
 							{/* Category Distribution */}
 							{data?.topCategories && data.topCategories.length > 0 && (
 								<motion.div
-									initial={{ opacity: 0, y: 10 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ delay: 0.25 }}
+									initial={{
+										opacity: 0,
+										y: 10,
+									}}
+									animate={{
+										opacity: 1,
+										y: 0,
+									}}
+									transition={{
+										delay: 0.25,
+									}}
 									className="bg-white rounded-2xl border border-[#eaedf0] p-6"
 								>
 									<div className="flex items-center justify-between mb-5">
@@ -545,12 +619,12 @@ export default function AnalyticsClient() {
 									<div className="space-y-4">
 										{data.topCategories.map((c: any, i: number) => {
 											const name =
-												CATEGORY_NAMES[c.category?.toUpperCase() ?? ""] ??
+												CATEGORY_NAMES[c.category?.toUpperCase() ?? ''] ??
 												c.category ??
-												"Unbekannt";
+												'Unbekannt';
 											const catColor =
-												CATEGORY_COLORS[c.category?.toUpperCase() ?? ""] ??
-												"#ccc";
+												CATEGORY_COLORS[c.category?.toUpperCase() ?? ''] ??
+												'#ccc';
 											const maxCount = data.topCategories[0]?.count ?? 1;
 											const barWidth = Math.max((c.count / maxCount) * 100, 3);
 
@@ -566,9 +640,11 @@ export default function AnalyticsClient() {
 															</span>
 															<span
 																className="text-[0.78rem] font-extrabold"
-																style={{ color: catColor }}
+																style={{
+																	color: catColor,
+																}}
 															>
-																{c.count.toLocaleString("de-DE")}
+																{c.count.toLocaleString('de-DE')}
 															</span>
 														</div>
 														<div className="h-2.5 bg-[#f0f0f0] rounded-full overflow-hidden">
@@ -576,7 +652,7 @@ export default function AnalyticsClient() {
 																className="h-full rounded-full transition-all duration-1000 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
 																style={{
 																	width: `${barWidth}%`,
-																	backgroundColor: catColor
+																	backgroundColor: catColor,
 																}}
 															/>
 														</div>
@@ -591,9 +667,17 @@ export default function AnalyticsClient() {
 							{/* Team Usage */}
 							{data?.teamUsage && data.teamUsage.length > 0 && (
 								<motion.div
-									initial={{ opacity: 0, y: 10 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ delay: 0.3 }}
+									initial={{
+										opacity: 0,
+										y: 10,
+									}}
+									animate={{
+										opacity: 1,
+										y: 0,
+									}}
+									transition={{
+										delay: 0.3,
+									}}
 									className="bg-white rounded-2xl border border-[#eaedf0] p-6"
 								>
 									<div className="flex items-center justify-between mb-5">
@@ -607,7 +691,7 @@ export default function AnalyticsClient() {
 											const maxCount = data.teamUsage[0]?.count ?? 1;
 											const barWidth = Math.max(
 												(team.count / maxCount) * 100,
-												3
+												3,
 											);
 
 											return (
@@ -634,14 +718,14 @@ export default function AnalyticsClient() {
 																)}
 															</div>
 															<span className="text-[0.78rem] font-extrabold text-[#e20074] shrink-0 ml-2">
-																{team.count.toLocaleString("de-DE")}
+																{team.count.toLocaleString('de-DE')}
 															</span>
 														</div>
 														<div className="h-2.5 bg-[#f0f0f0] rounded-full overflow-hidden">
 															<div
 																className="h-full rounded-full bg-[#e20074]/60 transition-all duration-1000 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
 																style={{
-																	width: `${barWidth}%`
+																	width: `${barWidth}%`,
 																}}
 															/>
 														</div>
@@ -666,8 +750,8 @@ function KPICard({
 	value,
 	icon: Icon,
 	color,
-	suffix = "",
-	subtitle
+	suffix = '',
+	subtitle,
 }: {
 	label: string;
 	value: number;
@@ -678,15 +762,25 @@ function KPICard({
 }) {
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
+			initial={{
+				opacity: 0,
+				y: 10,
+			}}
+			animate={{
+				opacity: 1,
+				y: 0,
+			}}
 			className="bg-white rounded-2xl border border-[#eaedf0] p-5 flex items-start gap-4"
 		>
 			<div
 				className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-				style={{ backgroundColor: `${color}12` }}
+				style={{
+					backgroundColor: `${color}12`,
+				}}
 			>
-				<Icon className="w-5 h-5" style={{ color }} />
+				<Icon className="w-5 h-5" style={{
+					color,
+				}} />
 			</div>
 			<div>
 				<span className="text-[0.72rem] font-semibold text-[#aaa] uppercase tracking-wider block mb-1">
@@ -694,10 +788,12 @@ function KPICard({
 				</span>
 				<span
 					className="text-[1.6rem] font-extrabold tracking-tight leading-none"
-					style={{ color }}
+					style={{
+						color,
+					}}
 				>
-					{typeof value === "number" && suffix !== "%"
-						? value.toLocaleString("de-DE")
+					{typeof value === 'number' && suffix !== '%'
+						? value.toLocaleString('de-DE')
 						: value}
 					{suffix && (
 						<span className="text-[0.85rem] ml-0.5 font-bold">{suffix}</span>

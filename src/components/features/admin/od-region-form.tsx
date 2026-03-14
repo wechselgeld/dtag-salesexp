@@ -1,29 +1,41 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc";
-import { Save, Loader2, ArrowLeft, Globe, ToggleLeft } from "lucide-react";
-import Link from "next/link";
-import clsx from "clsx";
-import { Input } from "@/components/shared/ui/input";
+import {
+	useForm,
+} from 'react-hook-form';
+import {
+	zodResolver,
+} from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+	useRouter,
+} from 'next/navigation';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	Save, Loader2, ArrowLeft, Globe, ToggleLeft,
+} from 'lucide-react';
+import Link from 'next/link';
+import clsx from 'clsx';
+import {
+	Input,
+} from '@/components/shared/ui/input';
 import {
 	AdminPageHeader,
 	AdminFormContainer,
-	AdminFormSection
-} from "@/components/shared/ui/admin-ui";
+	AdminFormSection,
+} from '@/components/shared/ui/admin-ui';
 
 const odRegionSchema = z.object({
-	name: z.string().min(1, "Name ist erforderlich"),
-	isActive: z.boolean().default(true)
+	name: z.string().min(1, 'Name ist erforderlich'),
+	isActive: z.boolean().default(true),
 });
 
 type OdRegionFormData = z.infer<typeof odRegionSchema>;
 
 interface OdRegionFormProps {
-	mode: "create" | "edit";
+	mode: 'create' | 'edit';
 	id?: string;
 	initialData?: {
 		name: string;
@@ -31,44 +43,52 @@ interface OdRegionFormProps {
 	};
 }
 
-export function OdRegionForm({ mode, id, initialData }: OdRegionFormProps) {
+export function OdRegionForm({
+	mode, id, initialData,
+}: OdRegionFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
 	const {
 		register,
 		handleSubmit,
-		formState: { errors }
+		formState: {
+			errors,
+		},
 	} = useForm({
 		resolver: zodResolver(odRegionSchema),
-		mode: "onChange",
+		mode: 'onChange',
 		defaultValues: {
-			name: initialData?.name || "",
-			isActive: initialData?.isActive ?? true
-		}
+			name: initialData?.name || '',
+			isActive: initialData?.isActive ?? true,
+		},
 	});
 
 	const createMutation = trpc.odRegion.create.useMutation({
 		onSuccess: () => {
 			utils.odRegion.list.invalidate();
-			router.push("/admin/od-regions");
+			router.push('/admin/od-regions');
 			router.refresh();
-		}
+		},
 	});
 
 	const updateMutation = trpc.odRegion.update.useMutation({
 		onSuccess: () => {
 			utils.odRegion.list.invalidate();
-			router.push("/admin/od-regions");
+			router.push('/admin/od-regions');
 			router.refresh();
-		}
+		},
 	});
 
 	const onSubmit = (data: OdRegionFormData) => {
-		if (mode === "create") {
+		if (mode === 'create') {
 			createMutation.mutate(data);
-		} else if (mode === "edit" && id) {
-			updateMutation.mutate({ id, ...data });
+		}
+		else if (mode === 'edit' && id) {
+			updateMutation.mutate({
+				id,
+				...data,
+			});
 		}
 	};
 
@@ -80,10 +100,10 @@ export function OdRegionForm({ mode, id, initialData }: OdRegionFormProps) {
 			form="od-region-form"
 			disabled={isPending}
 			className={clsx(
-				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
+				'px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5',
 				isPending
-					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-					: "bg-[#e20074] hover:bg-[#c70066]"
+					? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+					: 'bg-[#e20074] hover:bg-[#c70066]',
 			)}
 		>
 			{isPending ? (
@@ -98,10 +118,10 @@ export function OdRegionForm({ mode, id, initialData }: OdRegionFormProps) {
 	return (
 		<div className="space-y-8 pb-12">
 			<AdminPageHeader
-				title={mode === "create" ? "Neuer OD-Bereich" : "OD-Bereich bearbeiten"}
+				title={mode === 'create' ? 'Neuer OD-Bereich' : 'OD-Bereich bearbeiten'}
 				subtitle={
-					mode === "create"
-						? "Erstelle einen neuen Verbund von Standorten."
+					mode === 'create'
+						? 'Erstelle einen neuen Verbund von Standorten.'
 						: `Verwalte die Einstellungen für ${initialData?.name}`
 				}
 				backHref="/admin/od-regions"
@@ -119,7 +139,7 @@ export function OdRegionForm({ mode, id, initialData }: OdRegionFormProps) {
 							label="Name des OD-Bereichs"
 							placeholder="z.B. OD Süd"
 							error={errors.name?.message as string}
-							{...register("name")}
+							{...register('name')}
 						/>
 
 						<div className="flex items-center gap-4 p-5 bg-[#f7f8fa] border border-[#eaedf0] rounded-[1.5rem] mt-2">
@@ -127,7 +147,7 @@ export function OdRegionForm({ mode, id, initialData }: OdRegionFormProps) {
 								<input
 									type="checkbox"
 									id="isActive"
-									{...register("isActive")}
+									{...register('isActive')}
 									className="peer w-6 h-6 rounded-lg border-[#eaedf0] text-[#e20074] focus:ring-[#e20074] cursor-pointer appearance-none bg-white transition-all checked:bg-[#e20074] checked:border-[#e20074]"
 								/>
 								<div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white opacity-0 peer-checked:opacity-100 transition-opacity">

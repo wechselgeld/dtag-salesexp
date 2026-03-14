@@ -1,20 +1,42 @@
-"use client";
+'use client';
 
-import { BusinessCaseSelector } from "@/components/features/calculator/business-case-selector";
-import { CostTimeline } from "@/components/features/calculator/cost-timeline";
-import { SpecialPriceSelector } from "@/components/features/calculator/special-price-selector";
-import { AddonSelector } from "@/components/features/calculator/addon-selector";
+import {
+	BusinessCaseSelector,
+} from '@/components/features/calculator/business-case-selector';
+import {
+	CostTimeline,
+} from '@/components/features/calculator/cost-timeline';
+import {
+	SpecialPriceSelector,
+} from '@/components/features/calculator/special-price-selector';
+import {
+	AddonSelector,
+} from '@/components/features/calculator/addon-selector';
+import type {
+	MagentaTVPackageKey,
+} from '@/hooks/use-cost-calculator';
 import {
 	useCostCalculator,
-	MagentaTVPackageKey,
-	type BusinessCase
-} from "@/hooks/use-cost-calculator";
-import { MAGENTA_TV_PACKAGES } from "@/lib/constants/pricing";
-import { trpc } from "@/lib/trpc";
-import { AnimatedNumber } from "@/components/shared/animated-number";
-import { Toast } from "@/components/shared/ui/toast";
-import { useSystemAlertStore } from "@/lib/store/system-alert-store";
-import { type Product } from "@/types/product";
+	type BusinessCase,
+} from '@/hooks/use-cost-calculator';
+import {
+	MAGENTA_TV_PACKAGES,
+} from '@/lib/constants/pricing';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	AnimatedNumber,
+} from '@/components/shared/animated-number';
+import {
+	Toast,
+} from '@/components/shared/ui/toast';
+import {
+	useSystemAlertStore,
+} from '@/lib/store/system-alert-store';
+import {
+	type Product,
+} from '@/types/product';
 import {
 	ArrowLeft,
 	Check,
@@ -34,31 +56,45 @@ import {
 	ListTodo,
 	ExternalLink,
 	Edit2,
-	AlertTriangle
-} from "lucide-react";
-import Link from "next/link";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
-import React, { useEffect, Suspense } from "react";
-import clsx from "clsx";
-import { useBasketStore } from "@/hooks/use-basket-store";
-import { useAnalytics } from "@/hooks/use-analytics";
-import { SearchBar } from "@/components/features/search/search-bar";
-import { Skeleton } from "@/components/shared/skeleton";
-import { motion, AnimatePresence } from "framer-motion";
+	AlertTriangle,
+} from 'lucide-react';
+import Link from 'next/link';
+import {
+	useParams, useSearchParams, useRouter,
+} from 'next/navigation';
+import React, {
+	useEffect, Suspense,
+} from 'react';
+import clsx from 'clsx';
+import {
+	useBasketStore,
+} from '@/hooks/use-basket-store';
+import {
+	useAnalytics,
+} from '@/hooks/use-analytics';
+import {
+	SearchBar,
+} from '@/components/features/search/search-bar';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import {
+	motion, AnimatePresence,
+} from 'framer-motion';
 
 const CATEGORY_COLORS: Record<string, string> = {
-	MOBILE: "#e20074",
-	FIBER: "#0090d0",
-	DSL: "#7b61ff",
-	MAGENTA_TV_OTT: "#ff6b00",
-	DEVICE: "#00a878"
+	MOBILE: '#e20074',
+	FIBER: '#0090d0',
+	DSL: '#7b61ff',
+	MAGENTA_TV_OTT: '#ff6b00',
+	DEVICE: '#00a878',
 };
 const CATEGORY_NAMES: Record<string, string> = {
-	MOBILE: "Mobilfunk",
-	FIBER: "Glasfaser",
-	DSL: "DSL",
-	MAGENTA_TV_OTT: "MagentaTV",
-	DEVICE: "Geräte"
+	MOBILE: 'Mobilfunk',
+	FIBER: 'Glasfaser',
+	DSL: 'DSL',
+	MAGENTA_TV_OTT: 'MagentaTV',
+	DEVICE: 'Geräte',
 };
 
 function ProductPageContent() {
@@ -68,26 +104,36 @@ function ProductPageContent() {
 	const router = useRouter();
 
 	const searchParams = useSearchParams();
-	const basketItemId = searchParams.get("basketItemId");
+	const basketItemId = searchParams.get('basketItemId');
 
-	const { items, updateItem, addItem, setIsOpen } = useBasketStore();
-	const { trackProductView, trackBasketAdd, trackPageView } = useAnalytics();
+	const {
+		items, updateItem, addItem, setIsOpen,
+	} = useBasketStore();
+	const {
+		trackProductView, trackBasketAdd, trackPageView,
+	} = useAnalytics();
 
-	const catColor = CATEGORY_COLORS[category] || "#e20074";
+	const catColor = CATEGORY_COLORS[category] || '#e20074';
 	const catName = CATEGORY_NAMES[category] || category;
 
-	const { data: productData, isLoading } = trpc.product.getProductById.useQuery(
+	const {
+		data: productData, isLoading,
+	} = trpc.product.getProductById.useQuery(
 		{
-			id
-		}
+			id,
+		},
 	);
 	const product = productData as any;
-	const { data: session } = trpc.session.getCurrent.useQuery();
-	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery(
+	const {
+		data: session,
+	} = trpc.session.getCurrent.useQuery();
+	const {
+		data: designSettings,
+	} = trpc.settings.getDesignSettings.useQuery(
 		undefined,
 		{
-			staleTime: 10 * 60 * 1000 // 10min – design settings rarely change
-		}
+			staleTime: 10 * 60 * 1000, // 10min – design settings rarely change
+		},
 	);
 
 	const {
@@ -107,24 +153,37 @@ function ProductPageContent() {
 		setPlusKartenCount,
 		settings,
 		customBasePrice,
-		setCustomBasePrice
+		setCustomBasePrice,
 	} = useCostCalculator(product);
 
-	const { addAlert, removeAlert } = useSystemAlertStore();
+	const {
+		addAlert, removeAlert,
+	} = useSystemAlertStore();
 
-	const [salesScriptOpen, setSalesScriptOpen] = React.useState(false);
+	const [
+		salesScriptOpen,
+		setSalesScriptOpen,
+	] = React.useState(false);
 
-	const [isHistoryWarningAccepted, setIsHistoryWarningAccepted] =
+	const [
+		isHistoryWarningAccepted,
+		setIsHistoryWarningAccepted,
+	] =
 		React.useState(false);
-	const [priceDropdownOpen, setPriceDropdownOpen] = React.useState(false);
+	const [
+		priceDropdownOpen,
+		setPriceDropdownOpen,
+	] = React.useState(false);
 
 	const handleSelectHistoryPrice = (price: number) => {
 		setCustomBasePrice(price);
 		setIsHistoryWarningAccepted(false);
 		setPriceDropdownOpen(false);
-		setSelectedSpecialPriceIds([]);
+		setSelectedSpecialPriceIds([
+		]);
 		setMagentaTVPackage(null);
-		setSelectedAddonIds([]);
+		setSelectedAddonIds([
+		]);
 	};
 
 	const existingBasketItem = basketItemId
@@ -136,11 +195,23 @@ function ProductPageContent() {
 		existingBasketItem.config.businessCase === businessCase &&
 		existingBasketItem.config.magentaTVPackage === magentaTVPackage &&
 		JSON.stringify(
-			[...(existingBasketItem.config.selectedSpecialPriceIds || [])].sort()
-		) === JSON.stringify([...(selectedSpecialPriceIds || [])].sort()) &&
+			[
+				...(existingBasketItem.config.selectedSpecialPriceIds || [
+				]),
+			].sort(),
+		) === JSON.stringify([
+			...(selectedSpecialPriceIds || [
+			]),
+		].sort()) &&
 		JSON.stringify(
-			[...(existingBasketItem.config.selectedAddonIds || [])].sort()
-		) === JSON.stringify([...(selectedAddonIds || [])].sort()) &&
+			[
+				...(existingBasketItem.config.selectedAddonIds || [
+				]),
+			].sort(),
+		) === JSON.stringify([
+			...(selectedAddonIds || [
+			]),
+		].sort()) &&
 		existingBasketItem.config.hardwarePurchaseType === hardwarePurchaseType &&
 		existingBasketItem.config.plusKartenCount === plusKartenCount &&
 		existingBasketItem.config.customBasePrice === customBasePrice
@@ -175,12 +246,12 @@ function ProductPageContent() {
 		setSelectedAddonIds,
 		setPlusKartenCount,
 		setHardwarePurchaseType,
-		setCustomBasePrice
+		setCustomBasePrice,
 	]);
 
 	// Persistent Alert Management
 	useEffect(() => {
-		const alertId = "history-price-warning";
+		const alertId = 'history-price-warning';
 		if (customBasePrice !== undefined && !isHistoryWarningAccepted) {
 			addAlert({
 				id: alertId,
@@ -191,14 +262,18 @@ function ProductPageContent() {
 						color="#f59e0b"
 						onDismiss={() => setCustomBasePrice(undefined)}
 						className="bg-amber-50/70 border-2 border-amber-500/20 text-[#1a1a2e]"
-						style={{ borderColor: "#f59e0b40" }}
+						style={{
+							borderColor: '#f59e0b40',
+						}}
 					>
 						<div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-amber-500/10 to-transparent blur-xl pointer-events-none rounded-full" />
 
 						<div className="flex gap-3 align-start">
 							<div
 								className="shrink-0 flex items-center justify-center text-white mt-0.5 p-2 rounded-xl shadow-lg shadow-amber-500/20"
-								style={{ backgroundColor: "#f59e0b" }}
+								style={{
+									backgroundColor: '#f59e0b',
+								}}
 							>
 								<AlertTriangle className="w-5 h-5 text-amber-50" />
 							</div>
@@ -210,8 +285,8 @@ function ProductPageContent() {
 									</h4>
 								</div>
 								<p className="text-[0.8rem] text-amber-900/70 m-0 leading-relaxed max-w-[400px]">
-									Du hast einen{" "}
-									<span className="font-bold">historischen Preis</span>{" "}
+									Du hast einen{' '}
+									<span className="font-bold">historischen Preis</span>{' '}
 									ausgewählt. Sonderpreise und Optionen sind eventuell nicht
 									korrekt. Bitte überprüfe diese sorgfältig.
 								</p>
@@ -236,9 +311,10 @@ function ProductPageContent() {
 							</button>
 						</div>
 					</Toast>
-				)
+				),
 			});
-		} else {
+		}
+		else {
 			removeAlert(alertId);
 		}
 
@@ -249,7 +325,7 @@ function ProductPageContent() {
 		addAlert,
 		removeAlert,
 		setCustomBasePrice,
-		setIsHistoryWarningAccepted
+		setIsHistoryWarningAccepted,
 	]);
 
 	// Track product view (deduplicated per component lifecycle)
@@ -259,7 +335,13 @@ function ProductPageContent() {
 			trackProductView(id, category);
 			trackPageView(`/products/${category}/${id}`, category);
 		}
-	}, [product, id, category, trackProductView, trackPageView]);
+	}, [
+		product,
+		id,
+		category,
+		trackProductView,
+		trackPageView,
+	]);
 
 	if (isLoading || !product) {
 		return (
@@ -311,19 +393,24 @@ function ProductPageContent() {
 			selectedSpecialPriceIds,
 			magentaTVPackage,
 			selectedAddonIds,
-			vouchers: existingBasketItem?.config.vouchers || [],
-			credits: existingBasketItem?.config.credits || [],
+			vouchers: existingBasketItem?.config.vouchers || [
+			],
+			credits: existingBasketItem?.config.credits || [
+			],
 			hardwarePurchaseType,
 			plusKartenCount,
-			customBasePrice
+			customBasePrice,
 		};
 
 		if (existingBasketItem) {
 			updateItem(existingBasketItem.id, config);
 			setIsOpen(true);
-		} else {
+		}
+		else {
 			const newId = addItem(product, config);
-			router.replace(`?basketItemId=${newId}`, { scroll: false });
+			router.replace(`?basketItemId=${newId}`, {
+				scroll: false,
+			});
 		}
 
 		// Track basket add
@@ -338,7 +425,9 @@ function ProductPageContent() {
 	return (
 		<div
 			className="min-h-full"
-			style={{ "--cat-color": catColor } as React.CSSProperties}
+			style={{
+				'--cat-color': catColor,
+			} as React.CSSProperties}
 		>
 			{/* Search Bar */}
 			<div className="pt-2">
@@ -351,23 +440,34 @@ function ProductPageContent() {
 				className="inline-flex items-center gap-1.5 text-[#999] hover:text-(--cat-color) transition-colors mb-6 text-[0.8rem] font-semibold uppercase tracking-wider"
 			>
 				<ArrowLeft className="w-4 h-4" />
-				<span className="mt-0.5" style={{ color: catColor }}>
+				<span className="mt-0.5" style={{
+					color: catColor,
+				}}>
 					{catName}
 				</span>
 			</Link>
 
 			{/* ── Product Hero Card ── */}
 			<motion.div
-				initial={{ opacity: 0, y: 8 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ delay: 0.05, duration: 0.35 }}
+				initial={{
+					opacity: 0,
+					y: 8,
+				}}
+				animate={{
+					opacity: 1,
+					y: 0,
+				}}
+				transition={{
+					delay: 0.05,
+					duration: 0.35,
+				}}
 				className="bg-linear-to-br from-white to-[#fcfafc] rounded-xl border border-[#eaedf0] p-7 mb-6 relative z-40 overflow-visible"
 			>
 				{/* Category gradient */}
 				<div
 					className="absolute inset-0 pointer-events-none rounded-xl"
 					style={{
-						background: `linear-gradient(to right, transparent 40%, ${catColor}08 70%, ${catColor}14 100%)`
+						background: `linear-gradient(to right, transparent 40%, ${catColor}08 70%, ${catColor}14 100%)`,
 					}}
 				/>
 
@@ -377,7 +477,7 @@ function ProductPageContent() {
 						<div className="flex flex-col gap-2 mb-4">
 							{session?.team?.highlights.some(
 								(h) =>
-									h.productId === product.id || h.category === product.category
+									h.productId === product.id || h.category === product.category,
 							) && (
 								<div className="w-fit bg-[rgba(255,213,79,0.15)] text-[#b78900] px-3 py-1 rounded-md text-[0.7rem] font-bold tracking-widest uppercase flex items-center gap-1.5 border border-[rgba(255,213,79,0.3)] shadow-sm whitespace-nowrap">
 									<Star className="w-3.5 h-3.5 fill-current" />
@@ -395,35 +495,41 @@ function ProductPageContent() {
 						</div>
 
 						<div className="flex flex-wrap items-center gap-5">
-							{product.category === "DEVICE"
+							{product.category === 'DEVICE'
 								? (product as any).deviceManufacturer && (
-										<div className="flex items-center gap-2">
-											<Smartphone
-												className="w-4 h-4"
-												style={{ color: catColor }}
-											/>
-											<span className="text-[0.85rem] font-semibold text-[#555]">
-												{(product as any).deviceManufacturer}
-											</span>
-										</div>
-									)
-								: product.dataVolume && (
-										<div className="flex items-center gap-2">
-											<Wifi className="w-4 h-4" style={{ color: catColor }} />
-											<span className="text-[0.85rem] font-semibold text-[#555]">
-												{product.dataVolume}
-											</span>
-										</div>
-									)}
-							{(product.downloadSpeed ?? 0) > 0 &&
-								product.category !== "DEVICE" && (
 									<div className="flex items-center gap-2">
-										<Zap className="w-4 h-4" style={{ color: catColor }} />
+										<Smartphone
+											className="w-4 h-4"
+											style={{
+												color: catColor,
+											}}
+										/>
 										<span className="text-[0.85rem] font-semibold text-[#555]">
-											{product.downloadSpeed} Mbit/s
+											{(product as any).deviceManufacturer}
+										</span>
+									</div>
+								)
+								: product.dataVolume && (
+									<div className="flex items-center gap-2">
+										<Wifi className="w-4 h-4" style={{
+											color: catColor,
+										}} />
+										<span className="text-[0.85rem] font-semibold text-[#555]">
+											{product.dataVolume}
 										</span>
 									</div>
 								)}
+							{(product.downloadSpeed ?? 0) > 0 &&
+								product.category !== 'DEVICE' && (
+								<div className="flex items-center gap-2">
+									<Zap className="w-4 h-4" style={{
+										color: catColor,
+									}} />
+									<span className="text-[0.85rem] font-semibold text-[#555]">
+										{product.downloadSpeed} Mbit/s
+									</span>
+								</div>
+							)}
 							{product.contractDuration && (
 								<span className="text-[0.72rem] font-medium text-[#b0b0b0] uppercase tracking-wider">
 									{product.contractDuration}M Laufzeit
@@ -441,7 +547,9 @@ function ProductPageContent() {
 									>
 										<Sparkles
 											className="w-3.5 h-3.5 shrink-0"
-											style={{ color: catColor }}
+											style={{
+												color: catColor,
+											}}
 										/>
 										<span className="leading-tight">{arg.text}</span>
 									</div>
@@ -461,12 +569,14 @@ function ProductPageContent() {
 								className="flex items-center gap-1.5 px-3.5 h-[46px] rounded-xl border transition-colors group/link shrink-0"
 								style={{
 									backgroundColor: `${catColor}0d`,
-									borderColor: `${catColor}26`
+									borderColor: `${catColor}26`,
 								}}
 							>
 								<ExternalLink
 									className="w-4 h-4 group-hover/link:scale-110 transition-transform"
-									style={{ color: catColor }}
+									style={{
+										color: catColor,
+									}}
 									strokeWidth={2.5}
 								/>
 							</a>
@@ -482,12 +592,12 @@ function ProductPageContent() {
 										: undefined
 								}
 								className={clsx(
-									"bg-[#f7f8fa] border border-[#eaedf0] rounded-xl px-4 h-[46px] flex items-center shadow-sm w-full outline-none",
+									'bg-[#f7f8fa] border border-[#eaedf0] rounded-xl px-4 h-[46px] flex items-center shadow-sm w-full outline-none',
 									product.priceHistory?.length &&
-										"cursor-pointer hover:bg-[#f0f2f5] transition-colors"
+										'cursor-pointer hover:bg-[#f0f2f5] transition-colors',
 								)}
 							>
-								{product.category === "DEVICE" ? (
+								{product.category === 'DEVICE' ? (
 									<div className="flex items-center gap-2">
 										<span className="text-[0.7rem] font-semibold text-[#aaa] uppercase tracking-wider mt-0.5">
 											Ab
@@ -497,17 +607,19 @@ function ProductPageContent() {
 												<div className="flex items-baseline gap-1.5">
 													<span
 														className={clsx(
-															"font-extrabold tracking-tight leading-none",
+															'font-extrabold tracking-tight leading-none',
 															((product as any).rentalPrice ||
 																product.basePrice) > 0
-																? "text-[1.2rem]"
-																: "text-[1.4rem]"
+																? 'text-[1.2rem]'
+																: 'text-[1.4rem]',
 														)}
-														style={{ color: catColor }}
+														style={{
+															color: catColor,
+														}}
 													>
 														<AnimatedNumber
 															value={(product as any).purchasePrice}
-														/>{" "}
+														/>{' '}
 														€
 													</span>
 													<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
@@ -520,19 +632,21 @@ function ProductPageContent() {
 												<div className="flex items-baseline gap-1.5">
 													<span
 														className={clsx(
-															"font-extrabold tracking-tight leading-none",
+															'font-extrabold tracking-tight leading-none',
 															(product as any).purchasePrice > 0
-																? "text-[1.2rem]"
-																: "text-[1.4rem]"
+																? 'text-[1.2rem]'
+																: 'text-[1.4rem]',
 														)}
-														style={{ color: catColor }}
+														style={{
+															color: catColor,
+														}}
 													>
 														<AnimatedNumber
 															value={
 																(product as any).rentalPrice ||
 																product.basePrice
 															}
-														/>{" "}
+														/>{' '}
 														€
 													</span>
 													<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
@@ -549,7 +663,9 @@ function ProductPageContent() {
 										</span>
 										<span
 											className="text-[1.5rem] font-extrabold tracking-tight"
-											style={{ color: catColor }}
+											style={{
+												color: catColor,
+											}}
 										>
 											<AnimatedNumber
 												value={
@@ -557,7 +673,7 @@ function ProductPageContent() {
 														? customBasePrice
 														: product.basePrice
 												}
-											/>{" "}
+											/>{' '}
 											€
 										</span>
 										<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
@@ -565,14 +681,16 @@ function ProductPageContent() {
 										</span>
 										{product.priceHistory &&
 											product.priceHistory.length > 0 && (
-												<ChevronDown
-													className={clsx(
-														"w-4 h-4 ml-1.5 transition-transform",
-														priceDropdownOpen && "rotate-180"
-													)}
-													style={{ color: catColor }}
-												/>
-											)}
+											<ChevronDown
+												className={clsx(
+													'w-4 h-4 ml-1.5 transition-transform',
+													priceDropdownOpen && 'rotate-180',
+												)}
+												style={{
+													color: catColor,
+												}}
+											/>
+										)}
 									</div>
 								)}
 							</button>
@@ -582,97 +700,123 @@ function ProductPageContent() {
 								{priceDropdownOpen &&
 									product.priceHistory &&
 									product.priceHistory.length > 0 && (
-										<>
-											<div
-												className="fixed inset-0 z-40"
-												onClick={() => setPriceDropdownOpen(false)}
-											/>
-											<motion.div
-												initial={{ opacity: 0, y: -4, scale: 0.98 }}
-												animate={{ opacity: 1, y: 0, scale: 1 }}
-												exit={{ opacity: 0, y: -4, scale: 0.98 }}
-												transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-												className="absolute top-[calc(100%+12px)] w-[300px] md:w-[340px] right-0 bg-white border border-[#eaedf0] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.12)] z-1000 overflow-hidden backdrop-blur-xl"
-											>
-												<div className="px-4 py-3 border-b border-amber-100 bg-amber-50/80">
-													<div className="flex items-start gap-2.5">
-														<div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 mt-1 shadow-sm border border-amber-200/50">
-															<AlertTriangle className="w-6 h-6 text-amber-700" />
-														</div>
-														<p className="text-[0.75rem] leading-snug font-bold text-amber-900 m-0">
+									<>
+										<div
+											className="fixed inset-0 z-40"
+											onClick={() => setPriceDropdownOpen(false)}
+										/>
+										<motion.div
+											initial={{
+												opacity: 0,
+												y: -4,
+												scale: 0.98,
+											}}
+											animate={{
+												opacity: 1,
+												y: 0,
+												scale: 1,
+											}}
+											exit={{
+												opacity: 0,
+												y: -4,
+												scale: 0.98,
+											}}
+											transition={{
+												duration: 0.2,
+												ease: [
+													0.23,
+													1,
+													0.32,
+													1,
+												],
+											}}
+											className="absolute top-[calc(100%+12px)] w-[300px] md:w-[340px] right-0 bg-white border border-[#eaedf0] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.12)] z-1000 overflow-hidden backdrop-blur-xl"
+										>
+											<div className="px-4 py-3 border-b border-amber-100 bg-amber-50/80">
+												<div className="flex items-start gap-2.5">
+													<div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 mt-1 shadow-sm border border-amber-200/50">
+														<AlertTriangle className="w-6 h-6 text-amber-700" />
+													</div>
+													<p className="text-[0.75rem] leading-snug font-bold text-amber-900 m-0">
 															Historische Preise
-															<span className="block font-medium text-amber-800/70 mt-0.6">
+														<span className="block font-medium text-amber-800/70 mt-0.6">
 																Nicht für Neubereitstellungen empfohlen.
 																Sonderpreise & Optionen könnten nicht dazu
 																passen.
-															</span>
-														</p>
-													</div>
+														</span>
+													</p>
 												</div>
-												<div className="p-2 flex flex-col gap-1 max-h-[300px] overflow-y-auto scrollbar-none">
-													<button
-														type="button"
-														className={clsx(
-															"w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item",
-															customBasePrice === undefined
-																? "font-bold"
-																: "font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]"
-														)}
-														style={{
-															color:
+											</div>
+											<div className="p-2 flex flex-col gap-1 max-h-[300px] overflow-y-auto scrollbar-none">
+												<button
+													type="button"
+													className={clsx(
+														'w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item',
+														customBasePrice === undefined
+															? 'font-bold'
+															: 'font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]',
+													)}
+													style={{
+														color:
 																customBasePrice === undefined
 																	? catColor
 																	: undefined,
-															...(customBasePrice === undefined
-																? { backgroundColor: `${catColor}12` }
-																: {})
-														}}
-														onClick={() => {
-															setCustomBasePrice(undefined);
-															setPriceDropdownOpen(false);
-														}}
-													>
-														<span className="tracking-tight">
+														...(customBasePrice === undefined
+															? {
+																backgroundColor: `${catColor}12`,
+															}
+															: {
+															}),
+													}}
+													onClick={() => {
+														setCustomBasePrice(undefined);
+														setPriceDropdownOpen(false);
+													}}
+												>
+													<span className="tracking-tight">
 															Aktueller Preis
-														</span>
-														<span className="font-bold opacity-90">
-															{product.basePrice.toFixed(2).replace(".", ",")} €
-														</span>
-													</button>
-													<div className="h-px bg-[#f0f2f5] my-1.5 mx-3" />
-													{product.priceHistory.map((ph: any) => (
-														<button
-															key={ph.id}
-															type="button"
-															className={clsx(
-																"w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item",
-																customBasePrice === ph.price
-																	? "font-bold"
-																	: "font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]"
-															)}
-															style={{
-																color:
+													</span>
+													<span className="font-bold opacity-90">
+														{product.basePrice.toFixed(2).replace('.', ',')} €
+													</span>
+												</button>
+												<div className="h-px bg-[#f0f2f5] my-1.5 mx-3" />
+												{product.priceHistory.map((ph: any) => (
+													<button
+														key={ph.id}
+														type="button"
+														className={clsx(
+															'w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item',
+															customBasePrice === ph.price
+																? 'font-bold'
+																: 'font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]',
+														)}
+														style={{
+															color:
 																	customBasePrice === ph.price
 																		? catColor
 																		: undefined,
-																...(customBasePrice === ph.price
-																	? { backgroundColor: `${catColor}12` }
-																	: {})
-															}}
-															onClick={() => handleSelectHistoryPrice(ph.price)}
-														>
-															<span className="tracking-tight">
-																{ph.label || "Historischer Preis"}
-															</span>
-															<span className="font-bold opacity-90">
-																{ph.price.toFixed(2).replace(".", ",")} €
-															</span>
-														</button>
-													))}
-												</div>
-											</motion.div>
-										</>
-									)}
+															...(customBasePrice === ph.price
+																? {
+																	backgroundColor: `${catColor}12`,
+																}
+																: {
+																}),
+														}}
+														onClick={() => handleSelectHistoryPrice(ph.price)}
+													>
+														<span className="tracking-tight">
+															{ph.label || 'Historischer Preis'}
+														</span>
+														<span className="font-bold opacity-90">
+															{ph.price.toFixed(2).replace('.', ',')} €
+														</span>
+													</button>
+												))}
+											</div>
+										</motion.div>
+									</>
+								)}
 							</AnimatePresence>
 						</div>
 					</div>
@@ -699,14 +843,14 @@ function ProductPageContent() {
 										<div
 											className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200"
 											style={{
-												backgroundColor: salesScriptOpen ? catColor : "white",
-												color: salesScriptOpen ? "white" : catColor,
+												backgroundColor: salesScriptOpen ? catColor : 'white',
+												color: salesScriptOpen ? 'white' : catColor,
 												border: salesScriptOpen
-													? "none"
+													? 'none'
 													: `1px solid ${catColor}30`,
 												boxShadow: salesScriptOpen
 													? `0 4px 12px ${catColor}40`
-													: "none"
+													: 'none',
 											}}
 										>
 											<ListTodo
@@ -726,8 +870,8 @@ function ProductPageContent() {
 									<div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-[#eaedf0] shadow-sm">
 										<ChevronDown
 											className={clsx(
-												"w-4 h-4 text-[#888] transition-transform duration-300",
-												salesScriptOpen ? "rotate-180" : ""
+												'w-4 h-4 text-[#888] transition-transform duration-300',
+												salesScriptOpen ? 'rotate-180' : '',
 											)}
 										/>
 									</div>
@@ -735,10 +879,18 @@ function ProductPageContent() {
 								<motion.div
 									initial={false}
 									animate={{
-										height: salesScriptOpen ? "auto" : 0,
-										opacity: salesScriptOpen ? 1 : 0
+										height: salesScriptOpen ? 'auto' : 0,
+										opacity: salesScriptOpen ? 1 : 0,
 									}}
-									transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+									transition={{
+										duration: 0.3,
+										ease: [
+											0.32,
+											0.72,
+											0,
+											1,
+										],
+									}}
 									className="overflow-hidden"
 								>
 									<div className="px-4 pb-4 pt-1">
@@ -755,14 +907,14 @@ function ProductPageContent() {
 					)}
 
 					{/* Hardware Kaufart (Only for DEVICE) */}
-					{product.category === "DEVICE" && (
+					{product.category === 'DEVICE' && (
 						<ConfigSection
 							title="Kaufoption wählen"
 							catColor={catColor}
 							index={0}
 						>
 							{!items.some(
-								(i) => i.product.category === "DEVICE" && i.id !== basketItemId
+								(i) => i.product.category === 'DEVICE' && i.id !== basketItemId,
 							) && (
 								<div className="mb-4 bg-[#00a8781c] border border-[#00a8787c] text-[#00a878] px-4 py-3 rounded-xl text-[1.3rem] flex items-start gap-3">
 									<Info
@@ -770,38 +922,40 @@ function ProductPageContent() {
 										strokeWidth={1.5}
 									/>
 									<div className="leading-snug mt-0.5">
-										Für Hardware fällt einmalig eine{" "}
+										Für Hardware fällt einmalig eine{' '}
 										<strong>
-											Bereitstellungspauschale i. H. v.{" "}
-											<AnimatedNumber value={settings.shipping_hardware_fee} />{" "}
+											Bereitstellungspauschale i. H. v.{' '}
+											<AnimatedNumber value={settings.shipping_hardware_fee} />{' '}
 											€
-										</strong>{" "}
+										</strong>{' '}
 										an.
 									</div>
 								</div>
 							)}
 							<div
 								className={clsx(
-									"grid gap-3",
+									'grid gap-3',
 									(product as any).rentalPrice > 0 &&
 										(product as any).purchasePrice > 0
-										? "grid-cols-2"
-										: "grid-cols-1"
+										? 'grid-cols-2'
+										: 'grid-cols-1',
 								)}
 							>
 								{((product as any).rentalPrice || product.basePrice) > 0 && (
 									<motion.button
-										whileTap={{ scale: 0.98 }}
-										onClick={() => setHardwarePurchaseType("RENT")}
+										whileTap={{
+											scale: 0.98,
+										}}
+										onClick={() => setHardwarePurchaseType('RENT')}
 										className={clsx(
-											"flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer outline-none",
-											hardwarePurchaseType === "RENT"
-												? "bg-white shadow-sm"
-												: "bg-[#f7f8fa] hover:bg-white hover:border-[#ddd]"
+											'flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer outline-none',
+											hardwarePurchaseType === 'RENT'
+												? 'bg-white shadow-sm'
+												: 'bg-[#f7f8fa] hover:bg-white hover:border-[#ddd]',
 										)}
 										style={{
 											borderColor:
-												hardwarePurchaseType === "RENT" ? catColor : "#eaedf0"
+												hardwarePurchaseType === 'RENT' ? catColor : '#eaedf0',
 										}}
 									>
 										<span className="text-[0.8rem] font-bold text-[#1a1a2e] mb-1">
@@ -812,31 +966,33 @@ function ProductPageContent() {
 												value={
 													(product as any).rentalPrice || product.basePrice
 												}
-											/>{" "}
+											/>{' '}
 											€ mtl.
 										</span>
 									</motion.button>
 								)}
 								{(product as any).purchasePrice > 0 && (
 									<motion.button
-										whileTap={{ scale: 0.98 }}
-										onClick={() => setHardwarePurchaseType("BUY")}
+										whileTap={{
+											scale: 0.98,
+										}}
+										onClick={() => setHardwarePurchaseType('BUY')}
 										className={clsx(
-											"flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer outline-none",
-											hardwarePurchaseType === "BUY"
-												? "bg-white shadow-sm"
-												: "bg-[#f7f8fa] hover:bg-white hover:border-[#ddd]"
+											'flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer outline-none',
+											hardwarePurchaseType === 'BUY'
+												? 'bg-white shadow-sm'
+												: 'bg-[#f7f8fa] hover:bg-white hover:border-[#ddd]',
 										)}
 										style={{
 											borderColor:
-												hardwarePurchaseType === "BUY" ? catColor : "#eaedf0"
+												hardwarePurchaseType === 'BUY' ? catColor : '#eaedf0',
 										}}
 									>
 										<span className="text-[0.8rem] font-bold text-[#1a1a2e] mb-1">
 											Einmalzahlung
 										</span>
 										<span className="text-[0.7rem] text-[#999]">
-											<AnimatedNumber value={(product as any).purchasePrice} />{" "}
+											<AnimatedNumber value={(product as any).purchasePrice} />{' '}
 											€
 										</span>
 									</motion.button>
@@ -846,7 +1002,7 @@ function ProductPageContent() {
 					)}
 
 					{/* Business Case (Hide for DEVICE) */}
-					{product.category !== "DEVICE" && (
+					{product.category !== 'DEVICE' && (
 						<ConfigSection
 							id="tour-config-business-case"
 							title="Vertragsart wählen"
@@ -861,7 +1017,8 @@ function ProductPageContent() {
 								highlightedCases={
 									session?.team?.highlights
 										.filter((h) => h.businessCase)
-										.map((h) => h.businessCase as BusinessCase) || []
+										.map((h) => h.businessCase as BusinessCase) || [
+									]
 								}
 							/>
 						</ConfigSection>
@@ -879,60 +1036,63 @@ function ProductPageContent() {
 								className={clsx(
 									customBasePrice !== undefined &&
 										!isHistoryWarningAccepted &&
-										"opacity-40 pointer-events-none transition-opacity duration-300"
+										'opacity-40 pointer-events-none transition-opacity duration-300',
 								)}
 							>
 								{/* Main Toggle */}
 								<motion.div
-									whileTap={{ scale: 0.98 }}
+									whileTap={{
+										scale: 0.98,
+									}}
 									onClick={() => {
 										if (isMagentaTVSelected) {
 											setMagentaTVPackage(null);
-										} else {
-											setMagentaTVPackage("smart");
+										}
+										else {
+											setMagentaTVPackage('smart');
 										}
 									}}
 									className={clsx(
-										"relative rounded-xl p-4 border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 group overflow-hidden",
+										'relative rounded-xl p-4 border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 group overflow-hidden',
 										session?.team?.highlights.some(
-											(h) => h.category === "MAGENTA_TV_OTT"
+											(h) => h.category === 'MAGENTA_TV_OTT',
 										) &&
 											!isMagentaTVSelected &&
-											"highlight-glow bg-white",
+											'highlight-glow bg-white',
 										isMagentaTVSelected &&
 											!designSettings?.magentatv_background_image
-											? "bg-white"
-											: ""
+											? 'bg-white'
+											: '',
 									)}
 									style={{
 										borderColor: isMagentaTVSelected
 											? catColor
 											: session?.team?.highlights.some(
-														(h) => h.category === "MAGENTA_TV_OTT"
+												(h) => h.category === 'MAGENTA_TV_OTT',
 												  )
 												? catColor
-												: "#eaedf0",
+												: '#eaedf0',
 										backgroundColor:
 											isMagentaTVSelected &&
 											!designSettings?.magentatv_background_image
 												? `${catColor}06`
-												: "white"
+												: 'white',
 									}}
 								>
 									{/* Background Image Overlay */}
 									{designSettings?.magentatv_background_image && (
 										<div
 											className={clsx(
-												"absolute -inset-0.5 z-0 transition-opacity duration-300 pointer-events-none",
+												'absolute -inset-0.5 z-0 transition-opacity duration-300 pointer-events-none',
 												isMagentaTVSelected
-													? "opacity-100"
-													: "opacity-0 group-hover:opacity-100"
+													? 'opacity-100'
+													: 'opacity-0 group-hover:opacity-100',
 											)}
 										>
 											<div
 												className="absolute inset-0 bg-cover bg-center blur-[2px] scale-110"
 												style={{
-													backgroundImage: `url(${designSettings.magentatv_background_image})`
+													backgroundImage: `url(${designSettings.magentatv_background_image})`,
 												}}
 											/>
 											<div className="absolute inset-0 bg-[#1a1a2e]/40" />
@@ -942,10 +1102,10 @@ function ProductPageContent() {
 									{/* TV+ Icon */}
 									<div
 										className={clsx(
-											"relative z-10 w-10 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center italic tracking-tighter text-[0.75rem] transition-all duration-200 border-2",
+											'relative z-10 w-10 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center italic tracking-tighter text-[0.75rem] transition-all duration-200 border-2',
 											isMagentaTVSelected
-												? "bg-(--cat-color) text-white border-transparent"
-												: "bg-transparent text-(--cat-color) border-(--cat-color) group-hover:text-white group-hover:border-white"
+												? 'bg-(--cat-color) text-white border-transparent'
+												: 'bg-transparent text-(--cat-color) border-(--cat-color) group-hover:text-white group-hover:border-white',
 										)}
 									>
 										M TV
@@ -955,42 +1115,42 @@ function ProductPageContent() {
 										<div className="flex items-center gap-2 mb-0.5">
 											<h3
 												className={clsx(
-													"text-[0.95rem] font-bold m-0 transition-colors",
+													'text-[0.95rem] font-bold m-0 transition-colors',
 													designSettings?.magentatv_background_image
 														? isMagentaTVSelected
-															? "text-white"
-															: "text-[#1a1a2e] group-hover:text-white"
+															? 'text-white'
+															: 'text-[#1a1a2e] group-hover:text-white'
 														: isMagentaTVSelected
-															? "text-(--cat-color)"
-															: "text-[#1a1a2e]"
+															? 'text-(--cat-color)'
+															: 'text-[#1a1a2e]',
 												)}
 											>
 												MagentaTV dazubuchen
 											</h3>
 											{session?.team?.highlights.some(
-												(h) => h.category === "MAGENTA_TV_OTT"
+												(h) => h.category === 'MAGENTA_TV_OTT',
 											) &&
 												!isMagentaTVSelected && (
-													<div className="bg-[#fffcf0] text-[#b78900] px-1.5 py-0.5 rounded text-[0.55rem] font-bold tracking-widest uppercase flex items-center gap-0.5 border border-[#fde68a] shadow-sm whitespace-nowrap">
-														<Star className="w-2.5 h-2.5 fill-[#fde047]" />
+												<div className="bg-[#fffcf0] text-[#b78900] px-1.5 py-0.5 rounded text-[0.55rem] font-bold tracking-widest uppercase flex items-center gap-0.5 border border-[#fde68a] shadow-sm whitespace-nowrap">
+													<Star className="w-2.5 h-2.5 fill-[#fde047]" />
 														TEAM-FOKUS
-													</div>
-												)}
+												</div>
+											)}
 										</div>
 										<p
 											className={clsx(
-												"text-[0.78rem] m-0 transition-colors",
+												'text-[0.78rem] m-0 transition-colors',
 												designSettings?.magentatv_background_image
 													? isMagentaTVSelected
-														? "text-white/70"
-														: "text-[#999] group-hover:text-white/70"
-													: "text-[#999]"
+														? 'text-white/70'
+														: 'text-[#999] group-hover:text-white/70'
+													: 'text-[#999]',
 											)}
 										>
-											ab{" "}
+											ab{' '}
 											{settings.magentatv_smart_price
 												.toFixed(2)
-												.replace(".", ",")}{" "}
+												.replace('.', ',')}{' '}
 											€ mtl.
 										</p>
 									</div>
@@ -999,10 +1159,10 @@ function ProductPageContent() {
 									<div
 										className="relative z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
 										style={{
-											borderColor: isMagentaTVSelected ? catColor : "#ddd",
+											borderColor: isMagentaTVSelected ? catColor : '#ddd',
 											backgroundColor: isMagentaTVSelected
 												? catColor
-												: "transparent"
+												: 'transparent',
 										}}
 									>
 										{isMagentaTVSelected && (
@@ -1014,9 +1174,17 @@ function ProductPageContent() {
 								{/* Package Options (shown when toggled on) */}
 								{isMagentaTVSelected && (
 									<motion.div
-										initial={{ opacity: 0, height: 0 }}
-										animate={{ opacity: 1, height: "auto" }}
-										transition={{ duration: 0.25 }}
+										initial={{
+											opacity: 0,
+											height: 0,
+										}}
+										animate={{
+											opacity: 1,
+											height: 'auto',
+										}}
+										transition={{
+											duration: 0.25,
+										}}
 										className="mt-3 space-y-2"
 									>
 										{(
@@ -1024,19 +1192,24 @@ function ProductPageContent() {
 												MagentaTVPackageKey,
 												(typeof MAGENTA_TV_PACKAGES)[MagentaTVPackageKey]
 											][]
-										).map(([key, pkg]) => {
+										).map(([
+											key,
+											pkg,
+										]) => {
 											const isSelected = magentaTVPackage === key;
 											return (
 												<motion.div
 													key={key}
-													whileTap={{ scale: 0.98 }}
+													whileTap={{
+														scale: 0.98,
+													}}
 													onClick={() => setMagentaTVPackage(key)}
 													className="rounded-xl p-3.5 border cursor-pointer transition-all duration-200"
 													style={{
-														borderColor: isSelected ? catColor : "#eaedf0",
+														borderColor: isSelected ? catColor : '#eaedf0',
 														backgroundColor: isSelected
 															? `${catColor}08`
-															: "#fafafa"
+															: '#fafafa',
 													}}
 												>
 													<div className="flex items-center gap-3">
@@ -1044,10 +1217,10 @@ function ProductPageContent() {
 														<div
 															className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
 															style={{
-																borderColor: isSelected ? catColor : "#ccc",
+																borderColor: isSelected ? catColor : '#ccc',
 																backgroundColor: isSelected
 																	? catColor
-																	: "transparent"
+																	: 'transparent',
 															}}
 														>
 															{isSelected && (
@@ -1064,19 +1237,19 @@ function ProductPageContent() {
 														<span
 															className="text-[0.82rem] font-bold shrink-0"
 															style={{
-																color: isSelected ? catColor : "#888"
+																color: isSelected ? catColor : '#888',
 															}}
 														>
 															+
 															<AnimatedNumber
 																value={
-																	key === "smart"
+																	key === 'smart'
 																		? settings.magentatv_smart_price
-																		: key === "smartstream"
+																		: key === 'smartstream'
 																			? settings.magentatv_smartstream_price
 																			: settings.magentatv_megastream_price
 																}
-															/>{" "}
+															/>{' '}
 															€
 														</span>
 													</div>
@@ -1084,12 +1257,18 @@ function ProductPageContent() {
 													{/* Features (shown when selected) */}
 													{isSelected && (
 														<motion.div
-															initial={{ opacity: 0 }}
-															animate={{ opacity: 1 }}
-															transition={{ duration: 0.15 }}
+															initial={{
+																opacity: 0,
+															}}
+															animate={{
+																opacity: 1,
+															}}
+															transition={{
+																duration: 0.15,
+															}}
 															className="mt-2.5 pt-2.5 border-t border-dashed"
 															style={{
-																borderColor: `${catColor}25`
+																borderColor: `${catColor}25`,
 															}}
 														>
 															<ul className="space-y-1 m-0 p-0 list-none">
@@ -1102,13 +1281,13 @@ function ProductPageContent() {
 																			<Check
 																				className="w-3 h-3 shrink-0 mt-0.5"
 																				style={{
-																					color: catColor
+																					color: catColor,
 																				}}
 																				strokeWidth={2.5}
 																			/>
 																			{feature}
 																		</li>
-																	)
+																	),
 																)}
 															</ul>
 														</motion.div>
@@ -1133,7 +1312,7 @@ function ProductPageContent() {
 							className={clsx(
 								customBasePrice !== undefined &&
 									!isHistoryWarningAccepted &&
-									"opacity-40 pointer-events-none transition-opacity duration-300"
+									'opacity-40 pointer-events-none transition-opacity duration-300',
 							)}
 						>
 							<SpecialPriceSelector
@@ -1146,11 +1325,11 @@ function ProductPageContent() {
 								basePrice={product.basePrice}
 								tvBasePrice={
 									isMagentaTVSelected
-										? magentaTVPackage === "smart"
+										? magentaTVPackage === 'smart'
 											? settings.magentatv_smart_price
-											: magentaTVPackage === "smartstream"
+											: magentaTVPackage === 'smartstream'
 												? settings.magentatv_smartstream_price
-												: magentaTVPackage === "megastream"
+												: magentaTVPackage === 'megastream'
 													? settings.magentatv_megastream_price
 													: 0
 										: 0
@@ -1171,7 +1350,7 @@ function ProductPageContent() {
 								className={clsx(
 									customBasePrice !== undefined &&
 										!isHistoryWarningAccepted &&
-										"opacity-40 pointer-events-none transition-opacity duration-300"
+										'opacity-40 pointer-events-none transition-opacity duration-300',
 								)}
 							>
 								<AddonSelector
@@ -1191,9 +1370,18 @@ function ProductPageContent() {
 					{/* Cost Summary */}
 					<motion.div
 						id="tour-config-timeline"
-						initial={{ opacity: 0, y: 8 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.3, duration: 0.35 }}
+						initial={{
+							opacity: 0,
+							y: 8,
+						}}
+						animate={{
+							opacity: 1,
+							y: 0,
+						}}
+						transition={{
+							delay: 0.3,
+							duration: 0.35,
+						}}
 						className="bg-white rounded-xl border border-[#eaedf0] p-5 hidden lg:block"
 					>
 						<CostTimeline calculation={calculation} accentColor={catColor} />
@@ -1202,28 +1390,37 @@ function ProductPageContent() {
 					{/* CTA Button */}
 					<motion.button
 						id="tour-config-action"
-						initial={{ opacity: 0, y: 8 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.35, duration: 0.35 }}
+						initial={{
+							opacity: 0,
+							y: 8,
+						}}
+						animate={{
+							opacity: 1,
+							y: 0,
+						}}
+						transition={{
+							delay: 0.35,
+							duration: 0.35,
+						}}
 						disabled={
 							(existingBasketItem && isSameConfig) ||
 							(customBasePrice !== undefined && !isHistoryWarningAccepted)
 						}
 						onClick={handleAddToBasket}
 						className={clsx(
-							"w-full py-3.5 rounded-xl font-bold text-[0.95rem] transition-all duration-300 flex items-center justify-center gap-2.5 outline-none relative overflow-hidden",
+							'w-full py-3.5 rounded-xl font-bold text-[0.95rem] transition-all duration-300 flex items-center justify-center gap-2.5 outline-none relative overflow-hidden',
 							((existingBasketItem && isSameConfig) ||
 								(customBasePrice !== undefined && !isHistoryWarningAccepted))
-								? "bg-[#e5e7eb] text-[#9ca3af] shadow-none cursor-not-allowed"
-								: "text-white cursor-pointer hover:brightness-110 hover:shadow-lg active:scale-[0.98]"
+								? 'bg-[#e5e7eb] text-[#9ca3af] shadow-none cursor-not-allowed'
+								: 'text-white cursor-pointer hover:brightness-110 hover:shadow-lg active:scale-[0.98]',
 						)}
 						style={
 							existingBasketItem && isSameConfig
 								? undefined
 								: {
-										background: `linear-gradient(30deg, color-mix(in srgb, ${catColor}, white 25%) 0%, color-mix(in srgb, ${catColor}, black 6%) 100%)`,
-										boxShadow: `0 4px 14px -3px ${catColor}40`
-									}
+									background: `linear-gradient(30deg, color-mix(in srgb, ${catColor}, white 25%) 0%, color-mix(in srgb, ${catColor}, black 6%) 100%)`,
+									boxShadow: `0 4px 14px -3px ${catColor}40`,
+								}
 						}
 					>
 						<AnimatePresence mode="popLayout" initial={false}>
@@ -1231,14 +1428,27 @@ function ProductPageContent() {
 								key={
 									existingBasketItem
 										? isSameConfig
-											? "update-disabled"
-											: "update-active"
-										: "add"
+											? 'update-disabled'
+											: 'update-active'
+										: 'add'
 								}
-								initial={{ opacity: 0, y: -20 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: 20 }}
-								transition={{ type: "spring", stiffness: 300, damping: 25 }}
+								initial={{
+									opacity: 0,
+									y: -20,
+								}}
+								animate={{
+									opacity: 1,
+									y: 0,
+								}}
+								exit={{
+									opacity: 0,
+									y: 20,
+								}}
+								transition={{
+									type: 'spring',
+									stiffness: 300,
+									damping: 25,
+								}}
 								className="flex items-center gap-2.5"
 							>
 								{existingBasketItem ? (
@@ -1265,17 +1475,25 @@ function ProductPageContent() {
 
 					<p className="text-[0.7rem] text-center text-[#c0c0c0]">
 						{existingBasketItem
-							? "Konfiguration wird im Warenkorb aktualisiert."
-							: "Produkt konfigurieren und zum Angebot hinzufügen."}
+							? 'Konfiguration wird im Warenkorb aktualisiert.'
+							: 'Produkt konfigurieren und zum Angebot hinzufügen.'}
 					</p>
 
 					{/* Unlimited Advantage Toast */}
 					{calculation.hasUnlimitedAdvantage && (
 						<motion.div
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
+							initial={{
+								opacity: 0,
+								y: 8,
+							}}
+							animate={{
+								opacity: 1,
+								y: 0,
+							}}
 							className="mt-4 w-full py-3.5 rounded-xl text-white font-bold text-[0.95rem] flex items-center justify-center gap-2.5 relative overflow-hidden shadow-[0_10px_25px_-5px_rgba(226,0,116,0.4)]"
-							style={{ backgroundColor: "#e20074" }}
+							style={{
+								backgroundColor: '#e20074',
+							}}
 						>
 							<div className="absolute inset-0 bg-white/10 blur-2xl rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none" />
 							<Sparkles className="w-4.5 h-4.5 shrink-0" />
@@ -1284,45 +1502,62 @@ function ProductPageContent() {
 					)}
 
 					{/* Nudges */}
-					{category === "MOBILE" && (
+					{category === 'MOBILE' && (
 						<motion.div
 							id="tour-config-pluskarte"
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.4, duration: 0.35 }}
+							initial={{
+								opacity: 0,
+								y: 8,
+							}}
+							animate={{
+								opacity: 1,
+								y: 0,
+							}}
+							transition={{
+								delay: 0.4,
+								duration: 0.35,
+							}}
 							className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
 							style={{
 								backgroundColor: `${catColor}0D`,
-								borderColor: `${catColor}33`
+								borderColor: `${catColor}33`,
 							}}
 						>
 							<div
 								className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
-								style={{ backgroundColor: `${catColor}1A` }}
+								style={{
+									backgroundColor: `${catColor}1A`,
+								}}
 							/>
 							<div
 								className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-								style={{ backgroundColor: `${catColor}1A` }}
+								style={{
+									backgroundColor: `${catColor}1A`,
+								}}
 							>
-								<UserPlus className="w-4 h-4" style={{ color: catColor }} />
+								<UserPlus className="w-4 h-4" style={{
+									color: catColor,
+								}} />
 							</div>
 							<div className="flex-1">
 								<h4
 									className="text-[0.85rem] font-bold mb-1 leading-tight"
-									style={{ color: catColor }}
+									style={{
+										color: catColor,
+									}}
 								>
 									Biete eine PlusKarte an.
 								</h4>
 								<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
-									Jede weitere Person surft für nur einen Bruchteil des Preises!{" "}
+									Jede weitere Person surft für nur einen Bruchteil des Preises!{' '}
 									<br />
 									<strong>
-										1. Karte{" "}
-										<AnimatedNumber value={settings.plus_karte_first_price} />{" "}
-										€; ab 2. Karte{" "}
+										1. Karte{' '}
+										<AnimatedNumber value={settings.plus_karte_first_price} />{' '}
+										€; ab 2. Karte{' '}
 										<AnimatedNumber
 											value={settings.plus_karte_following_price}
-										/>{" "}
+										/>{' '}
 										€
 									</strong>
 								</p>
@@ -1333,7 +1568,9 @@ function ProductPageContent() {
 											setPlusKartenCount(Math.max(0, plusKartenCount - 1))
 										}
 										className="w-7 h-7 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center hover:opacity-80 transition-opacity"
-										style={{ color: catColor }}
+										style={{
+											color: catColor,
+										}}
 									>
 										<Minus className="w-3.5 h-3.5" />
 									</button>
@@ -1343,7 +1580,9 @@ function ProductPageContent() {
 									<button
 										onClick={() => setPlusKartenCount(plusKartenCount + 1)}
 										className="w-7 h-7 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center hover:opacity-80 transition-opacity"
-										style={{ color: catColor }}
+										style={{
+											color: catColor,
+										}}
 									>
 										<Plus className="w-3.5 h-3.5" />
 									</button>
@@ -1352,31 +1591,48 @@ function ProductPageContent() {
 						</motion.div>
 					)}
 
-					{(category === "FIBER" || category === "DSL") && (
+					{(category === 'FIBER' || category === 'DSL') && (
 						<motion.div
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.4, duration: 0.35 }}
+							initial={{
+								opacity: 0,
+								y: 8,
+							}}
+							animate={{
+								opacity: 1,
+								y: 0,
+							}}
+							transition={{
+								delay: 0.4,
+								duration: 0.35,
+							}}
 							className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
 							style={{
 								backgroundColor: `${catColor}0D`,
-								borderColor: `${catColor}33`
+								borderColor: `${catColor}33`,
 							}}
 						>
 							<div
 								className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
-								style={{ backgroundColor: `${catColor}1A` }}
+								style={{
+									backgroundColor: `${catColor}1A`,
+								}}
 							/>
 							<div
 								className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-								style={{ backgroundColor: `${catColor}1A` }}
+								style={{
+									backgroundColor: `${catColor}1A`,
+								}}
 							>
-								<Smartphone className="w-4 h-4" style={{ color: catColor }} />
+								<Smartphone className="w-4 h-4" style={{
+									color: catColor,
+								}} />
 							</div>
 							<div>
 								<h4
 									className="text-[0.85rem] font-bold mb-1 leading-tight"
-									style={{ color: catColor }}
+									style={{
+										color: catColor,
+									}}
 								>
 									Biete Mobilfunk an.
 								</h4>
@@ -1386,7 +1642,9 @@ function ProductPageContent() {
 								<Link
 									href="/products/MOBILE"
 									className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold transition-opacity hover:opacity-80"
-									style={{ color: catColor }}
+									style={{
+										color: catColor,
+									}}
 								>
 									Mobilfunktarif finden <ChevronRight className="w-3.5 h-3.5" />
 								</Link>
@@ -1395,33 +1653,50 @@ function ProductPageContent() {
 					)}
 
 					{/* Cross-Sell: Hardware */}
-					{(category === "MOBILE" ||
-						category === "FIBER" ||
-						category === "DSL") && (
+					{(category === 'MOBILE' ||
+						category === 'FIBER' ||
+						category === 'DSL') && (
 						<motion.div
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.45, duration: 0.35 }}
+							initial={{
+								opacity: 0,
+								y: 8,
+							}}
+							animate={{
+								opacity: 1,
+								y: 0,
+							}}
+							transition={{
+								delay: 0.45,
+								duration: 0.35,
+							}}
 							className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
 							style={{
 								backgroundColor: `${catColor}0D`,
-								borderColor: `${catColor}33`
+								borderColor: `${catColor}33`,
 							}}
 						>
 							<div
 								className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
-								style={{ backgroundColor: `${catColor}1A` }}
+								style={{
+									backgroundColor: `${catColor}1A`,
+								}}
 							/>
 							<div
 								className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-								style={{ backgroundColor: `${catColor}1A` }}
+								style={{
+									backgroundColor: `${catColor}1A`,
+								}}
 							>
-								<Smartphone className="w-4 h-4" style={{ color: catColor }} />
+								<Smartphone className="w-4 h-4" style={{
+									color: catColor,
+								}} />
 							</div>
 							<div>
 								<h4
 									className="text-[0.85rem] font-bold mb-1 leading-tight"
-									style={{ color: catColor }}
+									style={{
+										color: catColor,
+									}}
 								>
 									Neues Endgerät dazu?
 								</h4>
@@ -1432,7 +1707,9 @@ function ProductPageContent() {
 								<Link
 									href="/products/DEVICE"
 									className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold transition-opacity hover:opacity-80"
-									style={{ color: catColor }}
+									style={{
+										color: catColor,
+									}}
 								>
 									Zu den Geräten <ChevronRight className="w-3.5 h-3.5" />
 								</Link>
@@ -1441,31 +1718,48 @@ function ProductPageContent() {
 					)}
 
 					{/* Cross-Sell: Tarif for Devices */}
-					{category === "DEVICE" && (
+					{category === 'DEVICE' && (
 						<motion.div
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.45, duration: 0.35 }}
+							initial={{
+								opacity: 0,
+								y: 8,
+							}}
+							animate={{
+								opacity: 1,
+								y: 0,
+							}}
+							transition={{
+								delay: 0.45,
+								duration: 0.35,
+							}}
 							className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
 							style={{
 								backgroundColor: `${catColor}0D`,
-								borderColor: `${catColor}33`
+								borderColor: `${catColor}33`,
 							}}
 						>
 							<div
 								className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
-								style={{ backgroundColor: `${catColor}1A` }}
+								style={{
+									backgroundColor: `${catColor}1A`,
+								}}
 							/>
 							<div
 								className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-								style={{ backgroundColor: `${catColor}1A` }}
+								style={{
+									backgroundColor: `${catColor}1A`,
+								}}
 							>
-								<Wifi className="w-4 h-4" style={{ color: catColor }} />
+								<Wifi className="w-4 h-4" style={{
+									color: catColor,
+								}} />
 							</div>
 							<div>
 								<h4
 									className="text-[0.85rem] font-bold mb-1 leading-tight"
-									style={{ color: catColor }}
+									style={{
+										color: catColor,
+									}}
 								>
 									Den passenden Tarif dazu?
 								</h4>
@@ -1475,7 +1769,9 @@ function ProductPageContent() {
 								<Link
 									href="/products"
 									className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold transition-opacity hover:opacity-80"
-									style={{ color: catColor }}
+									style={{
+										color: catColor,
+									}}
 								>
 									Zu den Tarifen <ChevronRight className="w-3.5 h-3.5" />
 								</Link>
@@ -1513,7 +1809,7 @@ function ConfigSection({
 	catColor,
 	index,
 	children,
-	id
+	id,
 }: {
 	title: string;
 	catColor: string;
@@ -1524,16 +1820,25 @@ function ConfigSection({
 	return (
 		<motion.section
 			id={id}
-			initial={{ opacity: 0, y: 8 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ delay: 0.1 + index * 0.08, duration: 0.35 }}
+			initial={{
+				opacity: 0,
+				y: 8,
+			}}
+			animate={{
+				opacity: 1,
+				y: 0,
+			}}
+			transition={{
+				delay: 0.1 + index * 0.08,
+				duration: 0.35,
+			}}
 			className="bg-white rounded-xl p-5 border border-[#eaedf0] relative"
 		>
 			{/* Subtle gradient */}
 			<div
 				className="absolute inset-0 pointer-events-none rounded-xl"
 				style={{
-					background: `linear-gradient(to right, transparent 50%, ${catColor}05 80%, ${catColor}0a 100%)`
+					background: `linear-gradient(to right, transparent 50%, ${catColor}05 80%, ${catColor}0a 100%)`,
 				}}
 			/>
 

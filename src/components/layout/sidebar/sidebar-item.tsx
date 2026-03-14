@@ -1,9 +1,13 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import clsx from "clsx";
-import { LucideIcon, ChevronRight } from "lucide-react";
-import { Tooltip } from "./sidebar-tooltip";
+import Link from 'next/link';
+import clsx from 'clsx';
+import {
+	ChevronRight,
+} from 'lucide-react';
+import {
+	Tooltip,
+} from './sidebar-tooltip';
 
 interface SidebarItemProps {
 	icon: any;
@@ -12,7 +16,7 @@ interface SidebarItemProps {
 	onClick?: () => void;
 	active?: boolean;
 	collapsed?: boolean;
-	variant?: "default" | "premium" | "danger";
+	variant?: 'default' | 'premium' | 'danger';
 }
 
 export function SidebarItem({
@@ -22,19 +26,19 @@ export function SidebarItem({
 	onClick,
 	active,
 	collapsed,
-	variant = "default"
+	variant = 'default',
 }: SidebarItemProps) {
 	const baseClasses = clsx(
-		"flex items-center gap-3 rounded-[14px] no-underline transition-all duration-200 cursor-pointer border-none overflow-hidden whitespace-nowrap group",
+		'flex items-center gap-3 rounded-[14px] no-underline transition-all duration-200 cursor-pointer border-none overflow-hidden whitespace-nowrap group',
 		collapsed
-			? "w-10 h-10 justify-center mx-auto p-0 hover:bg-[#f7f8fa]"
-			: "px-3 py-2.5 w-full hover:bg-white hover:shadow-sm",
+			? 'w-10 h-10 justify-center mx-auto p-0 hover:bg-[#f7f8fa]'
+			: 'px-3 py-2.5 w-full hover:bg-white hover:shadow-sm',
 		active
-			? "bg-white shadow-[0_2px_12px_rgba(0,0,0,0.06)] text-[#1a1a2e]"
-			: variant === "danger" 
-				? "text-[#999] hover:text-[#dc2626] hover:bg-[#fee2e2]/40" 
-				: "text-[#333]",
-		variant === "danger" && active && "bg-[#fee2e2]/80 text-[#dc2626]"
+			? 'bg-white shadow-[0_2px_12px_rgba(0,0,0,0.06)] text-[#1a1a2e]'
+			: variant === 'danger'
+				? 'text-[#999] hover:text-[#dc2626] hover:bg-[#fee2e2]/40'
+				: 'text-[#333]',
+		variant === 'danger' && active && 'bg-[#fee2e2]/80 text-[#dc2626]',
 	);
 
 	const content = (
@@ -42,16 +46,16 @@ export function SidebarItem({
 			<div className="flex items-center gap-3 min-w-0">
 				<Icon
 					className={clsx(
-						"shrink-0 transition-all duration-300",
-						collapsed ? "w-4.5 h-4.5" : "w-4 h-4",
-						active ? "text-[#1a1a2e]" : (variant === "danger" ? "inherit" : "text-[#444]")
+						'shrink-0 transition-all duration-300',
+						collapsed ? 'w-4.5 h-4.5' : 'w-4 h-4',
+						active ? 'text-[#1a1a2e]' : (variant === 'danger' ? 'inherit' : 'text-[#444]'),
 					)}
 					strokeWidth={active ? 2.5 : 2}
 				/>
 				<span
 					className={clsx(
-						"truncate transition-all duration-300 font-bold text-[0.8rem]",
-						collapsed ? "opacity-0 w-0 -translate-x-2.5" : "opacity-100 w-auto translate-x-0"
+						'truncate transition-all duration-300 font-bold text-[0.8rem]',
+						collapsed ? 'opacity-0 w-0 -translate-x-2.5' : 'opacity-100 w-auto translate-x-0',
 					)}
 				>
 					{label}
@@ -66,7 +70,7 @@ export function SidebarItem({
 		</div>
 	);
 
-	const Element = href ? Link : "button";
+	const Element = href ? Link : 'button';
 
 	return (
 		<Tooltip label={label} show={collapsed || false}>
@@ -74,7 +78,7 @@ export function SidebarItem({
 				href={href as any}
 				onClick={onClick}
 				className={baseClasses}
-				type={href ? undefined : "button"}
+				type={href ? undefined : 'button'}
 			>
 				{content}
 			</Element>
@@ -85,7 +89,7 @@ export function SidebarItem({
 export function SidebarGroup({
 	title,
 	collapsed,
-	children
+	children,
 }: {
 	title: string;
 	collapsed?: boolean;
@@ -98,11 +102,11 @@ export function SidebarGroup({
 					{title}
 				</div>
 			)}
-			<div 
+			<div
 				className={clsx(
-					"flex flex-col gap-0.5",
-					!collapsed && "bg-[#f7f8fa] rounded-[20px] p-2",
-					collapsed && "items-center gap-1.5"
+					'flex flex-col gap-0.5',
+					!collapsed && 'bg-[#f7f8fa] rounded-[20px] p-2',
+					collapsed && 'items-center gap-1.5',
 				)}
 			>
 				{children}

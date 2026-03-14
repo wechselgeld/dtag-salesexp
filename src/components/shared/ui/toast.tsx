@@ -1,9 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { X } from "lucide-react";
-import clsx from "clsx";
+import {
+	useState, useEffect, useRef,
+} from 'react';
+import {
+	motion,
+} from 'framer-motion';
+import {
+	X,
+} from 'lucide-react';
+import clsx from 'clsx';
 
 export interface ToastProps {
 	duration?: number;
@@ -16,20 +22,28 @@ export interface ToastProps {
 
 export function Toast({
 	duration = 5000,
-	color = "#1a1a2e",
+	color = '#1a1a2e',
 	onDismiss,
 	children,
 	className,
-	style
+	style,
 }: ToastProps) {
-	const [progress, setProgress] = useState(0);
+	const [
+		progress,
+		setProgress,
+	] = useState(0);
 	const accumulatedTimeRef = useRef(0);
-	const [isPaused, setIsPaused] = useState(false);
+	const [
+		isPaused,
+		setIsPaused,
+	] = useState(false);
 	const isPausedRef = useRef(isPaused);
 
 	useEffect(() => {
 		isPausedRef.current = isPaused;
-	}, [isPaused]);
+	}, [
+		isPaused,
+	]);
 
 	useEffect(() => {
 		let animationFrame: number;
@@ -55,19 +69,38 @@ export function Toast({
 		animationFrame = requestAnimationFrame(tick);
 
 		return () => cancelAnimationFrame(animationFrame);
-	}, [duration, onDismiss]);
+	}, [
+		duration,
+		onDismiss,
+	]);
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 50, scale: 0.9 }}
-			animate={{ opacity: 1, y: 0, scale: 1 }}
-			exit={{ opacity: 0, y: 20, scale: 0.95 }}
-			transition={{ type: "spring", stiffness: 400, damping: 25 }}
+			initial={{
+				opacity: 0,
+				y: 50,
+				scale: 0.9,
+			}}
+			animate={{
+				opacity: 1,
+				y: 0,
+				scale: 1,
+			}}
+			exit={{
+				opacity: 0,
+				y: 20,
+				scale: 0.95,
+			}}
+			transition={{
+				type: 'spring',
+				stiffness: 400,
+				damping: 25,
+			}}
 			onMouseEnter={() => setIsPaused(true)}
 			onMouseLeave={() => setIsPaused(false)}
 			className={clsx(
-				"relative pointer-events-auto rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden backdrop-blur-xl border border-white/40",
-				className || "bg-white/80"
+				'relative pointer-events-auto rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden backdrop-blur-xl border border-white/40',
+				className || 'bg-white/80',
 			)}
 			style={style}
 		>
@@ -75,9 +108,11 @@ export function Toast({
 				{duration > 0 && (
 					<div
 						className="relative w-5 h-5 flex items-center justify-center transition-opacity duration-300"
-						title={isPaused ? "Pausiert" : "Schließt in kürze..."}
+						title={isPaused ? 'Pausiert' : 'Schließt in kürze...'}
 					>
-						<svg className="w-full h-full -rotate-90" style={{ color: color }}>
+						<svg className="w-full h-full -rotate-90" style={{
+							color,
+						}}>
 							<circle
 								cx="10"
 								cy="10"
@@ -107,14 +142,14 @@ export function Toast({
 					onClick={onDismiss}
 					className="p-1 rounded-full cursor-pointer border-none transition-colors relative z-20"
 					style={{
-						backgroundColor: "rgba(0,0,0,0.05)",
-						color: "inherit"
+						backgroundColor: 'rgba(0,0,0,0.05)',
+						color: 'inherit',
 					}}
 					onMouseEnter={(e) => {
-						e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.1)";
+						e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.1)';
 					}}
 					onMouseLeave={(e) => {
-						e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)";
+						e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)';
 					}}
 				>
 					<X className="w-4 h-4 opacity-70 hover:opacity-100 transition-opacity" />
