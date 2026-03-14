@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence } from "framer-motion";
+import React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useNewsNotificationStore } from "@/lib/store/news-notification-store";
 import {
 	Info,
@@ -12,6 +13,7 @@ import {
 import clsx from "clsx";
 import { Toast } from "@/components/shared/ui/toast";
 import { trpc } from "@/lib/trpc";
+import { useSystemAlertStore } from "@/lib/store/system-alert-store";
 
 const PRIORITY_CONFIG: Record<
 	string,
@@ -35,6 +37,7 @@ export function GlobalNewsNotification() {
 	const addNotification = useNewsNotificationStore(
 		(state) => state.addNotification
 	);
+	const systemAlerts = useSystemAlertStore((state) => state.alerts);
 
 	trpc.news.onAdd.useSubscription(undefined, {
 		onData(news: any) {
@@ -56,14 +59,22 @@ export function GlobalNewsNotification() {
 	});
 
 	return (
-		<div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-9999 flex flex-col gap-4 w-[500px] pointer-events-none">
+		<div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-9999 flex flex-col gap-4 w-full max-w-[500px] px-4 pointer-events-none">
 			<AnimatePresence>
+				{/* Regular Notifications */}
 				{notifications.map((notification) => (
 					<NotificationItem
 						key={notification.id}
 						notification={notification}
 						onDismiss={() => removeNotification(notification.id)}
 					/>
+				))}
+
+				{/* System Alerts (Persistent Warning) */}
+				{systemAlerts.map((alert) => (
+					<React.Fragment key={alert.id}>
+						{alert.content}
+					</React.Fragment>
 				))}
 			</AnimatePresence>
 		</div>

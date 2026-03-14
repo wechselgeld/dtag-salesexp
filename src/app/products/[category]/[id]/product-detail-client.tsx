@@ -12,6 +12,9 @@ import {
 import { MAGENTA_TV_PACKAGES } from "@/lib/constants/pricing";
 import { trpc } from "@/lib/trpc";
 import { AnimatedNumber } from "@/components/shared/animated-number";
+import { Toast } from "@/components/shared/ui/toast";
+import { useSystemAlertStore } from "@/lib/store/system-alert-store";
+import { type Product } from "@/types/product";
 import {
 	ArrowLeft,
 	Check,
@@ -30,7 +33,8 @@ import {
 	ChevronDown,
 	ListTodo,
 	ExternalLink,
-	Edit2
+	Edit2,
+	AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
@@ -72,9 +76,12 @@ function ProductPageContent() {
 	const catColor = CATEGORY_COLORS[category] || "#e20074";
 	const catName = CATEGORY_NAMES[category] || category;
 
-	const { data: product, isLoading } = trpc.product.getProductById.useQuery({
-		id
-	});
+	const { data: productData, isLoading } = trpc.product.getProductById.useQuery(
+		{
+			id
+		}
+	);
+	const product = productData as any;
 	const { data: session } = trpc.session.getCurrent.useQuery();
 	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery(
 		undefined,
@@ -98,10 +105,27 @@ function ProductPageContent() {
 		setHardwarePurchaseType,
 		plusKartenCount,
 		setPlusKartenCount,
-		settings
+		settings,
+		customBasePrice,
+		setCustomBasePrice
 	} = useCostCalculator(product);
 
+	const { addAlert, removeAlert } = useSystemAlertStore();
+
 	const [salesScriptOpen, setSalesScriptOpen] = React.useState(false);
+
+	const [isHistoryWarningAccepted, setIsHistoryWarningAccepted] =
+		React.useState(false);
+	const [priceDropdownOpen, setPriceDropdownOpen] = React.useState(false);
+
+	const handleSelectHistoryPrice = (price: number) => {
+		setCustomBasePrice(price);
+		setIsHistoryWarningAccepted(false);
+		setPriceDropdownOpen(false);
+		setSelectedSpecialPriceIds([]);
+		setMagentaTVPackage(null);
+		setSelectedAddonIds([]);
+	};
 
 	const existingBasketItem = basketItemId
 		? items.find((i) => i.id === basketItemId)
@@ -118,7 +142,8 @@ function ProductPageContent() {
 			[...(existingBasketItem.config.selectedAddonIds || [])].sort()
 		) === JSON.stringify([...(selectedAddonIds || [])].sort()) &&
 		existingBasketItem.config.hardwarePurchaseType === hardwarePurchaseType &&
-		existingBasketItem.config.plusKartenCount === plusKartenCount
+		existingBasketItem.config.plusKartenCount === plusKartenCount &&
+		existingBasketItem.config.customBasePrice === customBasePrice
 	);
 
 	useEffect(() => {
@@ -135,6 +160,9 @@ function ProductPageContent() {
 				if (item.config.plusKartenCount !== undefined) {
 					setPlusKartenCount(item.config.plusKartenCount);
 				}
+				if (item.config.customBasePrice !== undefined) {
+					setCustomBasePrice(item.config.customBasePrice);
+				}
 			}
 		}
 	}, [
@@ -146,7 +174,82 @@ function ProductPageContent() {
 		setMagentaTVPackage,
 		setSelectedAddonIds,
 		setPlusKartenCount,
-		setHardwarePurchaseType
+		setHardwarePurchaseType,
+		setCustomBasePrice
+	]);
+
+	// Persistent Alert Management
+	useEffect(() => {
+		const alertId = "history-price-warning";
+		if (customBasePrice !== undefined && !isHistoryWarningAccepted) {
+			addAlert({
+				id: alertId,
+				content: (
+					<Toast
+						key={alertId}
+						duration={0}
+						color="#f59e0b"
+						onDismiss={() => setCustomBasePrice(undefined)}
+						className="bg-amber-50/70 border-2 border-amber-500/20 text-[#1a1a2e]"
+						style={{ borderColor: "#f59e0b40" }}
+					>
+						<div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-amber-500/10 to-transparent blur-xl pointer-events-none rounded-full" />
+
+						<div className="flex gap-3 align-start">
+							<div
+								className="shrink-0 flex items-center justify-center text-white mt-0.5 p-2 rounded-xl shadow-lg shadow-amber-500/20"
+								style={{ backgroundColor: "#f59e0b" }}
+							>
+								<AlertTriangle className="w-5 h-5 text-amber-50" />
+							</div>
+
+							<div>
+								<div className="flex items-center gap-2 mb-1">
+									<h4 className="font-bold text-[0.95rem] m-0 text-amber-900">
+										Preis ist nicht aktuell
+									</h4>
+								</div>
+								<p className="text-[0.8rem] text-amber-900/70 m-0 leading-relaxed max-w-[400px]">
+									Du hast einen{" "}
+									<span className="font-bold">historischen Preis</span>{" "}
+									ausgewählt. Sonderpreise und Optionen sind eventuell nicht
+									korrekt. Bitte überprüfe diese sorgfältig.
+								</p>
+							</div>
+						</div>
+
+						<div className="flex items-center gap-2 mt-3 ml-12">
+							<button
+								type="button"
+								onClick={() => setIsHistoryWarningAccepted(true)}
+								className="px-4 py-2 bg-[#f59e0b] hover:bg-amber-700 text-amber-50 text-[0.78rem] font-bold rounded-lg transition-all shadow-lg shadow-amber-500/20 outline-none cursor-pointer border-none active:scale-95 flex items-center gap-1.5 backdrop-blur-sm"
+							>
+								<Check className="w-4 h-4" />
+								Akzeptieren
+							</button>
+							<button
+								type="button"
+								onClick={() => setCustomBasePrice(undefined)}
+								className="px-4 py-2 text-[0.78rem] font-bold text-amber-800 hover:bg-black/5 rounded-lg transition-all outline-none cursor-pointer bg-transparent border-none active:scale-95"
+							>
+								Preis zurücksetzen
+							</button>
+						</div>
+					</Toast>
+				)
+			});
+		} else {
+			removeAlert(alertId);
+		}
+
+		return () => removeAlert(alertId);
+	}, [
+		customBasePrice,
+		isHistoryWarningAccepted,
+		addAlert,
+		removeAlert,
+		setCustomBasePrice,
+		setIsHistoryWarningAccepted
 	]);
 
 	// Track product view (deduplicated per component lifecycle)
@@ -211,7 +314,8 @@ function ProductPageContent() {
 			vouchers: existingBasketItem?.config.vouchers || [],
 			credits: existingBasketItem?.config.credits || [],
 			hardwarePurchaseType,
-			plusKartenCount
+			plusKartenCount,
+			customBasePrice
 		};
 
 		if (existingBasketItem) {
@@ -244,10 +348,12 @@ function ProductPageContent() {
 			{/* Breadcrumb-style back */}
 			<Link
 				href={`/products/${category}`}
-				className="inline-flex items-center gap-1.5 text-[#999] hover:text-[#e20074] transition-colors mb-6 text-[0.8rem] font-semibold uppercase tracking-wider"
+				className="inline-flex items-center gap-1.5 text-[#999] hover:text-(--cat-color) transition-colors mb-6 text-[0.8rem] font-semibold uppercase tracking-wider"
 			>
 				<ArrowLeft className="w-4 h-4" />
-				<span style={{ color: catColor }}>{catName} Tarife</span>
+				<span className="mt-0.5" style={{ color: catColor }}>
+					{catName}
+				</span>
 			</Link>
 
 			{/* ── Product Hero Card ── */}
@@ -255,7 +361,7 @@ function ProductPageContent() {
 				initial={{ opacity: 0, y: 8 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ delay: 0.05, duration: 0.35 }}
-				className="bg-linear-to-br from-white to-[#fcfafc] rounded-xl border border-[#eaedf0] p-7 mb-6 relative overflow-hidden"
+				className="bg-linear-to-br from-white to-[#fcfafc] rounded-xl border border-[#eaedf0] p-7 mb-6 relative z-40 overflow-visible"
 			>
 				{/* Category gradient */}
 				<div
@@ -265,7 +371,7 @@ function ProductPageContent() {
 					}}
 				/>
 
-				<div className="relative z-10 flex items-start justify-between">
+				<div className="relative z-20 flex items-start justify-between">
 					{/* Left: Product info */}
 					<div>
 						<div className="flex flex-col gap-2 mb-4">
@@ -367,77 +473,207 @@ function ProductPageContent() {
 						)}
 
 						{/* Price Card */}
-						<div className="bg-[#f7f8fa] border border-[#eaedf0] rounded-xl px-4 h-[46px] flex items-center shadow-sm">
-							{product.category === "DEVICE" ? (
-								<div className="flex items-center gap-2">
-									<span className="text-[0.7rem] font-semibold text-[#aaa] uppercase tracking-wider mt-0.5">
-										Ab
-									</span>
-									<div className="flex items-center gap-3">
-										{(product as any).purchasePrice > 0 && (
-											<div className="flex items-baseline gap-1.5">
-												<span
-													className={clsx(
-														"font-extrabold tracking-tight leading-none",
-														((product as any).rentalPrice ||
-															product.basePrice) > 0
-															? "text-[1.2rem]"
-															: "text-[1.4rem]"
-													)}
-													style={{ color: catColor }}
-												>
-													<AnimatedNumber
-														value={(product as any).purchasePrice}
-													/>{" "}
-													€
-												</span>
-												<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
-													Kauf
-												</span>
-											</div>
-										)}
-										{((product as any).rentalPrice || product.basePrice) >
-											0 && (
-											<div className="flex items-baseline gap-1.5">
-												<span
-													className={clsx(
-														"font-extrabold tracking-tight leading-none",
-														(product as any).purchasePrice > 0
-															? "text-[1.2rem]"
-															: "text-[1.4rem]"
-													)}
-													style={{ color: catColor }}
-												>
-													<AnimatedNumber
-														value={
-															(product as any).rentalPrice || product.basePrice
-														}
-													/>{" "}
-													€
-												</span>
-												<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
-													Miete
-												</span>
-											</div>
-										)}
+						<div className="relative z-50">
+							<button
+								type="button"
+								onClick={() =>
+									product.priceHistory?.length
+										? setPriceDropdownOpen(!priceDropdownOpen)
+										: undefined
+								}
+								className={clsx(
+									"bg-[#f7f8fa] border border-[#eaedf0] rounded-xl px-4 h-[46px] flex items-center shadow-sm w-full outline-none",
+									product.priceHistory?.length &&
+										"cursor-pointer hover:bg-[#f0f2f5] transition-colors"
+								)}
+							>
+								{product.category === "DEVICE" ? (
+									<div className="flex items-center gap-2">
+										<span className="text-[0.7rem] font-semibold text-[#aaa] uppercase tracking-wider mt-0.5">
+											Ab
+										</span>
+										<div className="flex items-center gap-3">
+											{(product as any).purchasePrice > 0 && (
+												<div className="flex items-baseline gap-1.5">
+													<span
+														className={clsx(
+															"font-extrabold tracking-tight leading-none",
+															((product as any).rentalPrice ||
+																product.basePrice) > 0
+																? "text-[1.2rem]"
+																: "text-[1.4rem]"
+														)}
+														style={{ color: catColor }}
+													>
+														<AnimatedNumber
+															value={(product as any).purchasePrice}
+														/>{" "}
+														€
+													</span>
+													<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
+														Kauf
+													</span>
+												</div>
+											)}
+											{((product as any).rentalPrice || product.basePrice) >
+												0 && (
+												<div className="flex items-baseline gap-1.5">
+													<span
+														className={clsx(
+															"font-extrabold tracking-tight leading-none",
+															(product as any).purchasePrice > 0
+																? "text-[1.2rem]"
+																: "text-[1.4rem]"
+														)}
+														style={{ color: catColor }}
+													>
+														<AnimatedNumber
+															value={
+																(product as any).rentalPrice ||
+																product.basePrice
+															}
+														/>{" "}
+														€
+													</span>
+													<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
+														Miete
+													</span>
+												</div>
+											)}
+										</div>
 									</div>
-								</div>
-							) : (
-								<div className="flex items-baseline gap-1.5">
-									<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
-										Ab
-									</span>
-									<span
-										className="text-[1.5rem] font-extrabold tracking-tight"
-										style={{ color: catColor }}
-									>
-										<AnimatedNumber value={product.basePrice} /> €
-									</span>
-									<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
-										/Monat
-									</span>
-								</div>
-							)}
+								) : (
+									<div className="flex items-baseline gap-1.5">
+										<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
+											Ab
+										</span>
+										<span
+											className="text-[1.5rem] font-extrabold tracking-tight"
+											style={{ color: catColor }}
+										>
+											<AnimatedNumber
+												value={
+													customBasePrice !== undefined
+														? customBasePrice
+														: product.basePrice
+												}
+											/>{" "}
+											€
+										</span>
+										<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
+											/Monat
+										</span>
+										{product.priceHistory &&
+											product.priceHistory.length > 0 && (
+												<ChevronDown
+													className={clsx(
+														"w-4 h-4 ml-1.5 transition-transform",
+														priceDropdownOpen && "rotate-180"
+													)}
+													style={{ color: catColor }}
+												/>
+											)}
+									</div>
+								)}
+							</button>
+
+							{/* History Popover */}
+							<AnimatePresence>
+								{priceDropdownOpen &&
+									product.priceHistory &&
+									product.priceHistory.length > 0 && (
+										<>
+											<div
+												className="fixed inset-0 z-40"
+												onClick={() => setPriceDropdownOpen(false)}
+											/>
+											<motion.div
+												initial={{ opacity: 0, y: -4, scale: 0.98 }}
+												animate={{ opacity: 1, y: 0, scale: 1 }}
+												exit={{ opacity: 0, y: -4, scale: 0.98 }}
+												transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+												className="absolute top-[calc(100%+12px)] w-[300px] md:w-[340px] right-0 bg-white border border-[#eaedf0] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.12)] z-1000 overflow-hidden backdrop-blur-xl"
+											>
+												<div className="px-4 py-3 border-b border-amber-100 bg-amber-50/80">
+													<div className="flex items-start gap-2.5">
+														<div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 mt-1 shadow-sm border border-amber-200/50">
+															<AlertTriangle className="w-6 h-6 text-amber-700" />
+														</div>
+														<p className="text-[0.75rem] leading-snug font-bold text-amber-900 m-0">
+															Historische Preise
+															<span className="block font-medium text-amber-800/70 mt-0.6">
+																Nicht für Neubereitstellungen empfohlen.
+																Sonderpreise & Optionen könnten nicht dazu
+																passen.
+															</span>
+														</p>
+													</div>
+												</div>
+												<div className="p-2 flex flex-col gap-1 max-h-[300px] overflow-y-auto scrollbar-none">
+													<button
+														type="button"
+														className={clsx(
+															"w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item",
+															customBasePrice === undefined
+																? "font-bold"
+																: "font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]"
+														)}
+														style={{
+															color:
+																customBasePrice === undefined
+																	? catColor
+																	: undefined,
+															...(customBasePrice === undefined
+																? { backgroundColor: `${catColor}12` }
+																: {})
+														}}
+														onClick={() => {
+															setCustomBasePrice(undefined);
+															setPriceDropdownOpen(false);
+														}}
+													>
+														<span className="tracking-tight">
+															Aktueller Preis
+														</span>
+														<span className="font-bold opacity-90">
+															{product.basePrice.toFixed(2).replace(".", ",")} €
+														</span>
+													</button>
+													<div className="h-px bg-[#f0f2f5] my-1.5 mx-3" />
+													{product.priceHistory.map((ph: any) => (
+														<button
+															key={ph.id}
+															type="button"
+															className={clsx(
+																"w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item",
+																customBasePrice === ph.price
+																	? "font-bold"
+																	: "font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]"
+															)}
+															style={{
+																color:
+																	customBasePrice === ph.price
+																		? catColor
+																		: undefined,
+																...(customBasePrice === ph.price
+																	? { backgroundColor: `${catColor}12` }
+																	: {})
+															}}
+															onClick={() => handleSelectHistoryPrice(ph.price)}
+														>
+															<span className="tracking-tight">
+																{ph.label || "Historischer Preis"}
+															</span>
+															<span className="font-bold opacity-90">
+																{ph.price.toFixed(2).replace(".", ",")} €
+															</span>
+														</button>
+													))}
+												</div>
+											</motion.div>
+										</>
+									)}
+							</AnimatePresence>
 						</div>
 					</div>
 				</div>
@@ -639,242 +875,250 @@ function ProductPageContent() {
 							catColor={catColor}
 							index={1}
 						>
-							{/* Main Toggle */}
-							<motion.div
-								whileTap={{ scale: 0.98 }}
-								onClick={() => {
-									if (isMagentaTVSelected) {
-										setMagentaTVPackage(null);
-									} else {
-										setMagentaTVPackage("smart");
-									}
-								}}
+							<div
 								className={clsx(
-									"relative rounded-xl p-4 border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 group overflow-hidden",
-									session?.team?.highlights.some(
-										(h) => h.category === "MAGENTA_TV_OTT"
-									) &&
-										!isMagentaTVSelected &&
-										"highlight-glow bg-white",
-									isMagentaTVSelected &&
-										!designSettings?.magentatv_background_image
-										? "bg-white"
-										: ""
+									customBasePrice !== undefined &&
+										!isHistoryWarningAccepted &&
+										"opacity-40 pointer-events-none transition-opacity duration-300"
 								)}
-								style={{
-									borderColor: isMagentaTVSelected
-										? catColor
-										: session?.team?.highlights.some(
-													(h) => h.category === "MAGENTA_TV_OTT"
-											  )
-											? catColor
-											: "#eaedf0",
-									backgroundColor:
-										isMagentaTVSelected &&
-										!designSettings?.magentatv_background_image
-											? `${catColor}06`
-											: "white"
-								}}
 							>
-								{/* Background Image Overlay */}
-								{designSettings?.magentatv_background_image && (
-									<div
-										className={clsx(
-											"absolute -inset-0.5 z-0 transition-opacity duration-300 pointer-events-none",
-											isMagentaTVSelected
-												? "opacity-100"
-												: "opacity-0 group-hover:opacity-100"
-										)}
-									>
-										<div
-											className="absolute inset-0 bg-cover bg-center blur-[2px] scale-110"
-											style={{
-												backgroundImage: `url(${designSettings.magentatv_background_image})`
-											}}
-										/>
-										<div className="absolute inset-0 bg-[#1a1a2e]/40" />
-									</div>
-								)}
-
-								{/* TV+ Icon */}
-								<div
+								{/* Main Toggle */}
+								<motion.div
+									whileTap={{ scale: 0.98 }}
+									onClick={() => {
+										if (isMagentaTVSelected) {
+											setMagentaTVPackage(null);
+										} else {
+											setMagentaTVPackage("smart");
+										}
+									}}
 									className={clsx(
-										"relative z-10 w-10 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center italic tracking-tighter text-[0.75rem] transition-all duration-200 border-2",
-										isMagentaTVSelected
-											? "bg-(--cat-color) text-white border-transparent"
-											: "bg-transparent text-(--cat-color) border-(--cat-color) group-hover:text-white group-hover:border-white"
-									)}
-								>
-									M TV
-								</div>
-
-								<div className="flex-1 flex flex-col justify-center items-start relative z-10">
-									<div className="flex items-center gap-2 mb-0.5">
-										<h3
-											className={clsx(
-												"text-[0.95rem] font-bold m-0 transition-colors",
-												designSettings?.magentatv_background_image
-													? isMagentaTVSelected
-														? "text-white"
-														: "text-[#1a1a2e] group-hover:text-white"
-													: isMagentaTVSelected
-														? "text-(--cat-color)"
-														: "text-[#1a1a2e]"
-											)}
-										>
-											MagentaTV dazubuchen
-										</h3>
-										{session?.team?.highlights.some(
+										"relative rounded-xl p-4 border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 group overflow-hidden",
+										session?.team?.highlights.some(
 											(h) => h.category === "MAGENTA_TV_OTT"
 										) &&
-											!isMagentaTVSelected && (
-												<div className="bg-[#fffcf0] text-[#b78900] px-1.5 py-0.5 rounded text-[0.55rem] font-bold tracking-widest uppercase flex items-center gap-0.5 border border-[#fde68a] shadow-sm whitespace-nowrap">
-													<Star className="w-2.5 h-2.5 fill-[#fde047]" />
-													TEAM-FOKUS
-												</div>
-											)}
-									</div>
-									<p
-										className={clsx(
-											"text-[0.78rem] m-0 transition-colors",
-											designSettings?.magentatv_background_image
-												? isMagentaTVSelected
-													? "text-white/70"
-													: "text-[#999] group-hover:text-white/70"
-												: "text-[#999]"
-										)}
-									>
-										ab{" "}
-										{settings.magentatv_smart_price
-											.toFixed(2)
-											.replace(".", ",")}{" "}
-										€ mtl.
-									</p>
-								</div>
-
-								{/* Toggle circle */}
-								<div
-									className="relative z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+											!isMagentaTVSelected &&
+											"highlight-glow bg-white",
+										isMagentaTVSelected &&
+											!designSettings?.magentatv_background_image
+											? "bg-white"
+											: ""
+									)}
 									style={{
-										borderColor: isMagentaTVSelected ? catColor : "#ddd",
-										backgroundColor: isMagentaTVSelected
+										borderColor: isMagentaTVSelected
 											? catColor
-											: "transparent"
+											: session?.team?.highlights.some(
+														(h) => h.category === "MAGENTA_TV_OTT"
+												  )
+												? catColor
+												: "#eaedf0",
+										backgroundColor:
+											isMagentaTVSelected &&
+											!designSettings?.magentatv_background_image
+												? `${catColor}06`
+												: "white"
 									}}
 								>
-									{isMagentaTVSelected && (
-										<Check className="w-3 h-3 text-white" strokeWidth={3} />
-									)}
-								</div>
-							</motion.div>
-
-							{/* Package Options (shown when toggled on) */}
-							{isMagentaTVSelected && (
-								<motion.div
-									initial={{ opacity: 0, height: 0 }}
-									animate={{ opacity: 1, height: "auto" }}
-									transition={{ duration: 0.25 }}
-									className="mt-3 space-y-2"
-								>
-									{(
-										Object.entries(MAGENTA_TV_PACKAGES) as [
-											MagentaTVPackageKey,
-											(typeof MAGENTA_TV_PACKAGES)[MagentaTVPackageKey]
-										][]
-									).map(([key, pkg]) => {
-										const isSelected = magentaTVPackage === key;
-										return (
-											<motion.div
-												key={key}
-												whileTap={{ scale: 0.98 }}
-												onClick={() => setMagentaTVPackage(key)}
-												className="rounded-xl p-3.5 border cursor-pointer transition-all duration-200"
+									{/* Background Image Overlay */}
+									{designSettings?.magentatv_background_image && (
+										<div
+											className={clsx(
+												"absolute -inset-0.5 z-0 transition-opacity duration-300 pointer-events-none",
+												isMagentaTVSelected
+													? "opacity-100"
+													: "opacity-0 group-hover:opacity-100"
+											)}
+										>
+											<div
+												className="absolute inset-0 bg-cover bg-center blur-[2px] scale-110"
 												style={{
-													borderColor: isSelected ? catColor : "#eaedf0",
-													backgroundColor: isSelected
-														? `${catColor}08`
-														: "#fafafa"
+													backgroundImage: `url(${designSettings.magentatv_background_image})`
 												}}
-											>
-												<div className="flex items-center gap-3">
-													{/* Radio */}
-													<div
-														className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
-														style={{
-															borderColor: isSelected ? catColor : "#ccc",
-															backgroundColor: isSelected
-																? catColor
-																: "transparent"
-														}}
-													>
-														{isSelected && (
-															<div className="w-[8px] h-[8px] rounded-full bg-white" />
-														)}
-													</div>
+											/>
+											<div className="absolute inset-0 bg-[#1a1a2e]/40" />
+										</div>
+									)}
 
-													<div className="flex-1 min-w-0">
-														<span className="text-[0.85rem] font-semibold text-[#1a1a2e]">
-															{pkg.shortName}
+									{/* TV+ Icon */}
+									<div
+										className={clsx(
+											"relative z-10 w-10 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center italic tracking-tighter text-[0.75rem] transition-all duration-200 border-2",
+											isMagentaTVSelected
+												? "bg-(--cat-color) text-white border-transparent"
+												: "bg-transparent text-(--cat-color) border-(--cat-color) group-hover:text-white group-hover:border-white"
+										)}
+									>
+										M TV
+									</div>
+
+									<div className="flex-1 flex flex-col justify-center items-start relative z-10">
+										<div className="flex items-center gap-2 mb-0.5">
+											<h3
+												className={clsx(
+													"text-[0.95rem] font-bold m-0 transition-colors",
+													designSettings?.magentatv_background_image
+														? isMagentaTVSelected
+															? "text-white"
+															: "text-[#1a1a2e] group-hover:text-white"
+														: isMagentaTVSelected
+															? "text-(--cat-color)"
+															: "text-[#1a1a2e]"
+												)}
+											>
+												MagentaTV dazubuchen
+											</h3>
+											{session?.team?.highlights.some(
+												(h) => h.category === "MAGENTA_TV_OTT"
+											) &&
+												!isMagentaTVSelected && (
+													<div className="bg-[#fffcf0] text-[#b78900] px-1.5 py-0.5 rounded text-[0.55rem] font-bold tracking-widest uppercase flex items-center gap-0.5 border border-[#fde68a] shadow-sm whitespace-nowrap">
+														<Star className="w-2.5 h-2.5 fill-[#fde047]" />
+														TEAM-FOKUS
+													</div>
+												)}
+										</div>
+										<p
+											className={clsx(
+												"text-[0.78rem] m-0 transition-colors",
+												designSettings?.magentatv_background_image
+													? isMagentaTVSelected
+														? "text-white/70"
+														: "text-[#999] group-hover:text-white/70"
+													: "text-[#999]"
+											)}
+										>
+											ab{" "}
+											{settings.magentatv_smart_price
+												.toFixed(2)
+												.replace(".", ",")}{" "}
+											€ mtl.
+										</p>
+									</div>
+
+									{/* Toggle circle */}
+									<div
+										className="relative z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+										style={{
+											borderColor: isMagentaTVSelected ? catColor : "#ddd",
+											backgroundColor: isMagentaTVSelected
+												? catColor
+												: "transparent"
+										}}
+									>
+										{isMagentaTVSelected && (
+											<Check className="w-3 h-3 text-white" strokeWidth={3} />
+										)}
+									</div>
+								</motion.div>
+
+								{/* Package Options (shown when toggled on) */}
+								{isMagentaTVSelected && (
+									<motion.div
+										initial={{ opacity: 0, height: 0 }}
+										animate={{ opacity: 1, height: "auto" }}
+										transition={{ duration: 0.25 }}
+										className="mt-3 space-y-2"
+									>
+										{(
+											Object.entries(MAGENTA_TV_PACKAGES) as [
+												MagentaTVPackageKey,
+												(typeof MAGENTA_TV_PACKAGES)[MagentaTVPackageKey]
+											][]
+										).map(([key, pkg]) => {
+											const isSelected = magentaTVPackage === key;
+											return (
+												<motion.div
+													key={key}
+													whileTap={{ scale: 0.98 }}
+													onClick={() => setMagentaTVPackage(key)}
+													className="rounded-xl p-3.5 border cursor-pointer transition-all duration-200"
+													style={{
+														borderColor: isSelected ? catColor : "#eaedf0",
+														backgroundColor: isSelected
+															? `${catColor}08`
+															: "#fafafa"
+													}}
+												>
+													<div className="flex items-center gap-3">
+														{/* Radio */}
+														<div
+															className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+															style={{
+																borderColor: isSelected ? catColor : "#ccc",
+																backgroundColor: isSelected
+																	? catColor
+																	: "transparent"
+															}}
+														>
+															{isSelected && (
+																<div className="w-[8px] h-[8px] rounded-full bg-white" />
+															)}
+														</div>
+
+														<div className="flex-1 min-w-0">
+															<span className="text-[0.85rem] font-semibold text-[#1a1a2e]">
+																{pkg.shortName}
+															</span>
+														</div>
+
+														<span
+															className="text-[0.82rem] font-bold shrink-0"
+															style={{
+																color: isSelected ? catColor : "#888"
+															}}
+														>
+															+
+															<AnimatedNumber
+																value={
+																	key === "smart"
+																		? settings.magentatv_smart_price
+																		: key === "smartstream"
+																			? settings.magentatv_smartstream_price
+																			: settings.magentatv_megastream_price
+																}
+															/>{" "}
+															€
 														</span>
 													</div>
 
-													<span
-														className="text-[0.82rem] font-bold shrink-0"
-														style={{
-															color: isSelected ? catColor : "#888"
-														}}
-													>
-														+
-														<AnimatedNumber
-															value={
-																key === "smart"
-																	? settings.magentatv_smart_price
-																	: key === "smartstream"
-																		? settings.magentatv_smartstream_price
-																		: settings.magentatv_megastream_price
-															}
-														/>{" "}
-														€
-													</span>
-												</div>
-
-												{/* Features (shown when selected) */}
-												{isSelected && (
-													<motion.div
-														initial={{ opacity: 0 }}
-														animate={{ opacity: 1 }}
-														transition={{ duration: 0.15 }}
-														className="mt-2.5 pt-2.5 border-t border-dashed"
-														style={{
-															borderColor: `${catColor}25`
-														}}
-													>
-														<ul className="space-y-1 m-0 p-0 list-none">
-															{pkg.features.map(
-																(feature: string, i: number) => (
-																	<li
-																		key={i}
-																		className="flex items-start gap-2 text-[0.75rem] text-[#666]"
-																	>
-																		<Check
-																			className="w-3 h-3 shrink-0 mt-0.5"
-																			style={{
-																				color: catColor
-																			}}
-																			strokeWidth={2.5}
-																		/>
-																		{feature}
-																	</li>
-																)
-															)}
-														</ul>
-													</motion.div>
-												)}
-											</motion.div>
-										);
-									})}
-								</motion.div>
-							)}
+													{/* Features (shown when selected) */}
+													{isSelected && (
+														<motion.div
+															initial={{ opacity: 0 }}
+															animate={{ opacity: 1 }}
+															transition={{ duration: 0.15 }}
+															className="mt-2.5 pt-2.5 border-t border-dashed"
+															style={{
+																borderColor: `${catColor}25`
+															}}
+														>
+															<ul className="space-y-1 m-0 p-0 list-none">
+																{pkg.features.map(
+																	(feature: string, i: number) => (
+																		<li
+																			key={i}
+																			className="flex items-start gap-2 text-[0.75rem] text-[#666]"
+																		>
+																			<Check
+																				className="w-3 h-3 shrink-0 mt-0.5"
+																				style={{
+																					color: catColor
+																				}}
+																				strokeWidth={2.5}
+																			/>
+																			{feature}
+																		</li>
+																	)
+																)}
+															</ul>
+														</motion.div>
+													)}
+												</motion.div>
+											);
+										})}
+									</motion.div>
+								)}
+							</div>
 						</ConfigSection>
 					)}
 
@@ -885,26 +1129,34 @@ function ProductPageContent() {
 						catColor={catColor}
 						index={2}
 					>
-						<SpecialPriceSelector
-							specialPrices={product.specialPrices}
-							selectedIds={selectedSpecialPriceIds}
-							onChange={setSelectedSpecialPriceIds}
-							isMagentaTVSelected={isMagentaTVSelected}
-							businessCase={businessCase}
-							accentColor={catColor}
-							basePrice={product.basePrice}
-							tvBasePrice={
-								isMagentaTVSelected
-									? magentaTVPackage === "smart"
-										? settings.magentatv_smart_price
-										: magentaTVPackage === "smartstream"
-											? settings.magentatv_smartstream_price
-											: magentaTVPackage === "megastream"
-												? settings.magentatv_megastream_price
-												: 0
-									: 0
-							}
-						/>
+						<div
+							className={clsx(
+								customBasePrice !== undefined &&
+									!isHistoryWarningAccepted &&
+									"opacity-40 pointer-events-none transition-opacity duration-300"
+							)}
+						>
+							<SpecialPriceSelector
+								specialPrices={product.specialPrices}
+								selectedIds={selectedSpecialPriceIds}
+								onChange={setSelectedSpecialPriceIds}
+								isMagentaTVSelected={isMagentaTVSelected}
+								businessCase={businessCase}
+								accentColor={catColor}
+								basePrice={product.basePrice}
+								tvBasePrice={
+									isMagentaTVSelected
+										? magentaTVPackage === "smart"
+											? settings.magentatv_smart_price
+											: magentaTVPackage === "smartstream"
+												? settings.magentatv_smartstream_price
+												: magentaTVPackage === "megastream"
+													? settings.magentatv_megastream_price
+													: 0
+										: 0
+								}
+							/>
+						</div>
 					</ConfigSection>
 
 					{/* Add-ons */}
@@ -915,13 +1167,21 @@ function ProductPageContent() {
 							catColor={catColor}
 							index={3}
 						>
-							<AddonSelector
-								addons={product.compatibleAddons}
-								selectedIds={selectedAddonIds}
-								onChange={setSelectedAddonIds}
-								isMagentaTVSelected={isMagentaTVSelected}
-								catColor={catColor}
-							/>
+							<div
+								className={clsx(
+									customBasePrice !== undefined &&
+										!isHistoryWarningAccepted &&
+										"opacity-40 pointer-events-none transition-opacity duration-300"
+								)}
+							>
+								<AddonSelector
+									addons={product.compatibleAddons}
+									selectedIds={selectedAddonIds}
+									onChange={setSelectedAddonIds}
+									isMagentaTVSelected={isMagentaTVSelected}
+									catColor={catColor}
+								/>
+							</div>
 						</ConfigSection>
 					)}
 				</div>
@@ -945,11 +1205,15 @@ function ProductPageContent() {
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.35, duration: 0.35 }}
-						disabled={existingBasketItem && isSameConfig}
+						disabled={
+							(existingBasketItem && isSameConfig) ||
+							(customBasePrice !== undefined && !isHistoryWarningAccepted)
+						}
 						onClick={handleAddToBasket}
 						className={clsx(
 							"w-full py-3.5 rounded-xl font-bold text-[0.95rem] transition-all duration-300 flex items-center justify-center gap-2.5 outline-none relative overflow-hidden",
-							existingBasketItem && isSameConfig
+							((existingBasketItem && isSameConfig) ||
+								(customBasePrice !== undefined && !isHistoryWarningAccepted))
 								? "bg-[#e5e7eb] text-[#9ca3af] shadow-none cursor-not-allowed"
 								: "text-white cursor-pointer hover:brightness-110 hover:shadow-lg active:scale-[0.98]"
 						)}
@@ -1209,7 +1473,7 @@ function ProductPageContent() {
 									Neues Endgerät, aber noch kein passender Tarif am Laufen?
 								</p>
 								<Link
-									href="/products/MOBILE"
+									href="/products"
 									className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold transition-opacity hover:opacity-80"
 									style={{ color: catColor }}
 								>
@@ -1220,6 +1484,8 @@ function ProductPageContent() {
 					)}
 				</div>
 			</div>
+
+			{/* The toast warning is now rendered via GlobalNewsNotification + useSystemAlertStore for correct stacking and glassmorphism */}
 		</div>
 	);
 }
@@ -1261,7 +1527,7 @@ function ConfigSection({
 			initial={{ opacity: 0, y: 8 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.1 + index * 0.08, duration: 0.35 }}
-			className="bg-white rounded-xl p-5 border border-[#eaedf0] relative overflow-hidden"
+			className="bg-white rounded-xl p-5 border border-[#eaedf0] relative"
 		>
 			{/* Subtle gradient */}
 			<div

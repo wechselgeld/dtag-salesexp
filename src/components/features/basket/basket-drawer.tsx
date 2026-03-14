@@ -22,7 +22,8 @@ import {
 	Sparkles,
 	RotateCcw,
 	Edit2,
-	Tag
+	Tag,
+	AlertTriangle
 } from "lucide-react";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNewsNotificationStore } from "@/lib/store/news-notification-store";
 import { useSettingsStore } from "@/hooks/use-settings-store";
+import { Tooltip } from "@/components/shared/ui/tooltip";
 import { Toast } from "@/components/shared/ui/toast";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -59,7 +61,6 @@ export function BasketDrawer() {
 	const {
 		items,
 		removeItem,
-		restoreItem,
 		clearBasket,
 		basketCredits,
 		setBasketCredits
@@ -69,10 +70,6 @@ export function BasketDrawer() {
 	const [isGenerating, setIsGenerating] = useState<
 		"idle" | "generating" | "success"
 	>("idle");
-	const [deletedItem, setDeletedItem] = useState<{
-		item: BasketItem;
-		timeoutId: NodeJS.Timeout;
-	} | null>(null);
 
 	const { data: availableCredits } = trpc.product.getOneTimeCredits.useQuery();
 	const { data: session } = trpc.session.getCurrent.useQuery();
@@ -85,24 +82,6 @@ export function BasketDrawer() {
 		setIsMounted(true);
 	}, []);
 
-	const handleRemoveItem = (itemToRemove: BasketItem) => {
-		removeItem(itemToRemove.id);
-		if (deletedItem?.timeoutId) clearTimeout(deletedItem.timeoutId);
-
-		const timeoutId = setTimeout(() => {
-			setDeletedItem(null);
-		}, 5000);
-
-		setDeletedItem({ item: itemToRemove, timeoutId });
-	};
-
-	const handleRestore = () => {
-		if (deletedItem) {
-			restoreItem(deletedItem.item);
-			clearTimeout(deletedItem.timeoutId);
-			setDeletedItem(null);
-		}
-	};
 	const {
 		totals,
 		combinedSteps,
@@ -110,19 +89,10 @@ export function BasketDrawer() {
 		totalOneTime,
 		totalCredits,
 		hasDevice,
-		deviceShippingCost,
 		settings
 	} = useBasketLogic();
 
 	const totalMonthly = totals.monthly;
-
-	const handleCreditChange = (ids: string[]) => {
-		if (!availableCredits) return;
-		const selected = availableCredits.filter((c) => ids.includes(c.id));
-		setBasketCredits(
-			selected.map((c) => ({ id: c.id, name: c.name, value: c.value }))
-		);
-	};
 
 	return (
 		<aside
@@ -225,7 +195,7 @@ export function BasketDrawer() {
 										<BasketItemCard
 											key={item.id}
 											item={item}
-											removeItem={() => handleRemoveItem(item)}
+											removeItem={() => removeItem(item.id)}
 											settings={settings}
 										/>
 									))
@@ -422,39 +392,6 @@ export function BasketDrawer() {
 						</p>
 					</div>
 				)}
-
-				{/* Undo Toast */}
-				<AnimatePresence>
-					{deletedItem && (
-						<Toast
-							duration={5000}
-							color="rgba(255,255,255,0.7)"
-							onDismiss={() => {
-								clearTimeout(deletedItem.timeoutId);
-								setDeletedItem(null);
-							}}
-							className="absolute bottom-20 left-4 right-4 bg-[#1a1a2e] text-white p-3 rounded-xl shadow-xl border border-white/10 z-50 flex items-center justify-between"
-						>
-							<div className="flex items-center justify-between w-full">
-								<div className="flex flex-col">
-									<span className="text-[0.7rem] text-white/60 font-medium">
-										Gelöscht
-									</span>
-									<span className="text-[0.85rem] font-bold line-clamp-1">
-										{deletedItem.item.product.name}
-									</span>
-								</div>
-								<button
-									onClick={handleRestore}
-									className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-[0.8rem] font-semibold active:scale-95 cursor-pointer border-none text-white shrink-0 mr-0"
-								>
-									<RotateCcw className="w-3.5 h-3.5" />
-									Rückgängig
-								</button>
-							</div>
-						</Toast>
-					)}
-				</AnimatePresence>
 			</div>
 		</aside>
 	);
@@ -480,7 +417,8 @@ function BasketItemCard({
 		vouchers: item.config.vouchers,
 		hardwarePurchaseType: item.config.hardwarePurchaseType,
 		plusKartenCount: item.config.plusKartenCount,
-		settings
+		settings,
+		customBasePrice: item.config.customBasePrice
 	});
 
 	const catColor = CATEGORY_COLORS[item.product.category] || "#e20074";
@@ -656,6 +594,17 @@ function BasketItemCard({
 							)
 						) : (
 							<>
+								{item.config.customBasePrice !== undefined && (
+									<Tooltip
+										content="Historischer Preis verwendet"
+										position="right"
+										className="mr-1"
+									>
+										<div className="w-[26px] h-[26px] flex items-center justify-center rounded-[6px] bg-[#fff7ed] border border-[#fed7aa] text-[#ea580c] cursor-help transition-transform active:scale-95">
+											<AlertTriangle className="w-3.5 h-3.5" />
+										</div>
+									</Tooltip>
+								)}
 								<span className="text-[1.1rem] font-extrabold text-[#1a1a2e] leading-none tracking-tight">
 									Ø {calculation.averageMonthlyCost.toFixed(2)}
 								</span>
@@ -665,63 +614,65 @@ function BasketItemCard({
 							</>
 						)}
 					</div>
-					{(calculation.basePrice !== calculation.averageMonthlyCost ||
-						item.config.selectedAddonIds?.length > 0 ||
-						item.config.selectedSpecialPriceIds?.length > 0 ||
-						item.config.vouchers?.length > 0 ||
-						item.config.magentaTVPackage) && (
-						<motion.div
-							layout
-							onHoverStart={() => setIsBadgeHovered(true)}
-							onHoverEnd={() => setIsBadgeHovered(false)}
-							className={clsx(
-								"overflow-hidden flex items-center h-[26px] px-2 rounded-[6px] border transition-colors duration-300 cursor-pointer",
-								isBadgeHovered
-									? "bg-[#fff7ed] border-[#fed7aa]"
-									: "bg-[#f0fdf4] border-[#bbf7d0]"
-							)}
-						>
-							<AnimatePresence mode="popLayout" initial={false}>
-								{!isBadgeHovered ? (
-									<motion.div
-										key="erledigt"
-										initial={{ opacity: 0 }}
-										animate={{ opacity: 1 }}
-										exit={{ opacity: 0 }}
-										transition={{
-											type: "tween",
-											ease: "easeInOut",
-											duration: 0.2
-										}}
-										className="flex items-center gap-1.5 whitespace-nowrap"
-									>
-										<Check className="w-[11px] h-[11px] text-[#16a34a] stroke-3" />
-										<span className="text-[0.62rem] font-bold text-[#16a34a] tracking-wide">
-											Erledigt
-										</span>
-									</motion.div>
-								) : (
-									<motion.div
-										key="editieren"
-										initial={{ opacity: 0 }}
-										animate={{ opacity: 1 }}
-										exit={{ opacity: 0 }}
-										transition={{
-											type: "tween",
-											ease: "easeInOut",
-											duration: 0.2
-										}}
-										className="flex items-center gap-1.5 whitespace-nowrap"
-									>
-										<Edit2 className="w-[11px] h-[11px] text-[#ea580c] stroke-[2.5]" />
-										<span className="text-[0.62rem] font-bold text-[#ea580c] tracking-wide">
-											Editieren?
-										</span>
-									</motion.div>
+					<div className="flex items-center gap-2">
+						{(calculation.basePrice !== calculation.averageMonthlyCost ||
+							item.config.selectedAddonIds?.length > 0 ||
+							item.config.selectedSpecialPriceIds?.length > 0 ||
+							item.config.vouchers?.length > 0 ||
+							item.config.magentaTVPackage) && (
+							<motion.div
+								layout
+								onHoverStart={() => setIsBadgeHovered(true)}
+								onHoverEnd={() => setIsBadgeHovered(false)}
+								className={clsx(
+									"overflow-hidden flex items-center h-[26px] px-2 rounded-[6px] border transition-colors duration-300 cursor-pointer",
+									isBadgeHovered
+										? "bg-[#fff7ed] border-[#fed7aa]"
+										: "bg-[#f0fdf4] border-[#bbf7d0]"
 								)}
-							</AnimatePresence>
-						</motion.div>
-					)}
+							>
+								<AnimatePresence mode="popLayout" initial={false}>
+									{!isBadgeHovered ? (
+										<motion.div
+											key="erledigt"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{
+												type: "tween",
+												ease: "easeInOut",
+												duration: 0.2
+											}}
+											className="flex items-center gap-1.5 whitespace-nowrap"
+										>
+											<Check className="w-[11px] h-[11px] text-[#16a34a] stroke-3" />
+											<span className="text-[0.62rem] font-bold text-[#16a34a] tracking-wide">
+												Erledigt
+											</span>
+										</motion.div>
+									) : (
+										<motion.div
+											key="editieren"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{
+												type: "tween",
+												ease: "easeInOut",
+												duration: 0.2
+											}}
+											className="flex items-center gap-1.5 whitespace-nowrap"
+										>
+											<Edit2 className="w-[11px] h-[11px] text-[#ea580c] stroke-[2.5]" />
+											<span className="text-[0.62rem] font-bold text-[#ea580c] tracking-wide">
+												Editieren?
+											</span>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</motion.div>
+						)}
+					</div>
 				</div>
 			</div>
 		</motion.div>

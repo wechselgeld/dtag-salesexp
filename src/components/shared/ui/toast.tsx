@@ -39,7 +39,7 @@ export function Toast({
 			const delta = currentTime - lastTime;
 			lastTime = currentTime;
 
-			if (!isPausedRef.current) {
+			if (!isPausedRef.current && duration > 0) {
 				accumulatedTimeRef.current += delta;
 				const p = Math.min((accumulatedTimeRef.current / duration) * 100, 100);
 				setProgress(p);
@@ -66,41 +66,43 @@ export function Toast({
 			onMouseEnter={() => setIsPaused(true)}
 			onMouseLeave={() => setIsPaused(false)}
 			className={clsx(
-				"relative pointer-events-auto rounded-2xl p-4 shadow-2xl overflow-hidden backdrop-blur-sm",
-				className || "bg-white/95"
+				"relative pointer-events-auto rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden backdrop-blur-xl border border-white/40",
+				className || "bg-white/80"
 			)}
 			style={style}
 		>
 			<div className="absolute top-2 right-2 flex items-center gap-2 z-50 text-inherit">
-				<div
-					className="relative w-5 h-5 flex items-center justify-center transition-opacity duration-300"
-					title={isPaused ? "Pausiert" : "Schließt in kürze..."}
-				>
-					<svg className="w-full h-full -rotate-90" style={{ color: color }}>
-						<circle
-							cx="10"
-							cy="10"
-							r="8"
-							stroke="currentColor"
-							strokeWidth="2.5"
-							fill="none"
-							className="opacity-20"
-						/>
-						<circle
-							cx="10"
-							cy="10"
-							r="8"
-							stroke="currentColor"
-							strokeWidth="2.5"
-							fill="none"
-							strokeDasharray={2 * Math.PI * 8}
-							strokeDashoffset={
-								2 * Math.PI * 8 - (2 * Math.PI * 8 * progress) / 100
-							}
-							className="transition-none"
-						/>
-					</svg>
-				</div>
+				{duration > 0 && (
+					<div
+						className="relative w-5 h-5 flex items-center justify-center transition-opacity duration-300"
+						title={isPaused ? "Pausiert" : "Schließt in kürze..."}
+					>
+						<svg className="w-full h-full -rotate-90" style={{ color: color }}>
+							<circle
+								cx="10"
+								cy="10"
+								r="8"
+								stroke="currentColor"
+								strokeWidth="2.5"
+								fill="none"
+								className="opacity-20"
+							/>
+							<circle
+								cx="10"
+								cy="10"
+								r="8"
+								stroke="currentColor"
+								strokeWidth="2.5"
+								fill="none"
+								strokeDasharray={2 * Math.PI * 8}
+								strokeDashoffset={
+									2 * Math.PI * 8 - (2 * Math.PI * 8 * progress) / 100
+								}
+								className="transition-none"
+							/>
+						</svg>
+					</div>
+				)}
 				<button
 					onClick={onDismiss}
 					className="p-1 rounded-full cursor-pointer border-none transition-colors relative z-20"

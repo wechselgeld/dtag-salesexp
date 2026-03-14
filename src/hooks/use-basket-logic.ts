@@ -66,7 +66,8 @@ export function useBasketLogic() {
             vouchers: item.config.vouchers,
             hardwarePurchaseType: item.config.hardwarePurchaseType,
             plusKartenCount: item.config.plusKartenCount,
-            settings: settings
+            settings: settings,
+            customBasePrice: item.config.customBasePrice
         })
     }));
 

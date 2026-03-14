@@ -21,7 +21,7 @@ import {
 	CheckCircle2
 } from "lucide-react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import clsx from "clsx";
@@ -32,6 +32,7 @@ import {
 	AdminFormSection,
 	AdminFormContainer
 } from "@/components/shared/ui/admin-ui";
+import { History } from "lucide-react";
 
 const productSchema = z.object({
 	name: z.string().min(1, "Name ist erforderlich"),
@@ -61,7 +62,13 @@ const productSchema = z.object({
 	targetGroups: z.array(z.string()).default([]),
 	salesArguments: z.array(z.string()).default([]),
 	salesScript: z.string().optional(),
-	magentaInfosUrl: z.string().optional()
+	magentaInfosUrl: z.string().optional(),
+	priceHistory: z.array(
+		z.object({
+			price: z.number().min(0, "Preis muss positiv sein"),
+			label: z.string().optional()
+		})
+	).default([])
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -81,6 +88,7 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 		watch,
 		setValue,
 		getValues,
+		control,
 		formState: { errors }
 	} = useForm({
 		resolver: zodResolver(productSchema),
@@ -114,8 +122,17 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 			salesArguments:
 				initialData?.salesArguments?.map((a: any) => a.text) || [],
 			salesScript: initialData?.salesScript || "",
-			magentaInfosUrl: initialData?.magentaInfosUrl || ""
+			magentaInfosUrl: initialData?.magentaInfosUrl || "",
+			priceHistory: initialData?.priceHistory?.map((ph: any) => ({
+				price: ph.price,
+				label: ph.label || ""
+			})) || []
 		}
+	});
+
+	const { fields: priceHistoryFields, append: appendPriceHistory, remove: removePriceHistory } = useFieldArray({
+		control,
+		name: "priceHistory"
 	});
 
 	const [newFeature, setNewFeature] = useState("");
@@ -676,6 +693,60 @@ export function ProductForm({ initialData, mode }: ProductFormProps) {
 									))}
 								</div>
 							</div>
+						</div>
+					</AdminFormSection>
+
+					{/* Preishistorie Section */}
+					<AdminFormSection
+						title="Preishistorie"
+						description="Alte Preise für diesen Tarif."
+						icon={History}
+					>
+						<div className="space-y-4">
+							{priceHistoryFields.map((field, index) => (
+								<div
+									key={field.id}
+									className="p-5 rounded-2xl bg-[#f7f8fa] border border-[#eaedf0] relative group flex flex-col gap-4"
+								>
+									<button
+										type="button"
+										onClick={() => removePriceHistory(index)}
+										className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white border border-[#eaedf0] shadow-sm flex items-center justify-center text-[#999] hover:text-[#e20074] hover:border-[#e20074] transition-all opacity-0 group-hover:opacity-100 z-10"
+									>
+										<X className="w-4 h-4" />
+									</button>
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<div className="relative">
+											<Input
+												label="Alter Preis (€ / Monat)"
+												type="number"
+												step="0.01"
+												placeholder="0.00"
+												error={errors.priceHistory?.[index]?.price?.message}
+												{...register(`priceHistory.${index}.price`, { valueAsNumber: true })}
+												className="pl-10"
+											/>
+											<div className="absolute left-4 top-[38px] text-[#bbb]">
+												<Euro className="w-4 h-4" />
+											</div>
+										</div>
+										<Input
+											label="Label (optional)"
+											placeholder="z.B. Preis 2023"
+											error={errors.priceHistory?.[index]?.label?.message}
+											{...register(`priceHistory.${index}.label`)}
+										/>
+									</div>
+								</div>
+							))}
+							<button
+								type="button"
+								onClick={() => appendPriceHistory({ price: 0, label: "" })}
+								className="w-full h-[52px] rounded-2xl border-2 border-dashed border-[#ddd] flex items-center justify-center gap-2 text-[#888] font-bold hover:border-[#e20074] hover:text-[#e20074] hover:bg-[#e20074]/5 transition-all outline-none"
+							>
+								<Plus className="w-5 h-5" />
+								Alten Preis hinzufügen
+							</button>
 						</div>
 					</AdminFormSection>
 				</AdminFormContainer>

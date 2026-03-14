@@ -109,6 +109,7 @@ model Product {
   highlights       TeamHighlight[]
   compatibleAddons Addon[]         @relation("ProductAddons")
   salesArguments   SalesArgument[]
+  priceHistory     PriceHistory[]
 }
 
 model SalesArgument {
@@ -123,6 +124,16 @@ model SalesArgument {
   updatedAt DateTime @updatedAt
 }
 
+model PriceHistory {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price     Float
+  label     String?  // Optional label e.g., "Preis 2023"
+
+  createdAt DateTime @default(now())
+}
+
 model SpecialPrice {
   id           String    @id @default(cuid())
   name         String
@@ -133,9 +144,10 @@ model SpecialPrice {
   tiers SpecialPriceTier[]
 
   // Context Conditions
-  requiresMagentaTV Boolean @default(false)
-  requiresSpeedUp   Boolean @default(false)
-  requiresMove      Boolean @default(false)
+  requiresMagentaTV     Boolean @default(false)
+  requiresSpeedUp       Boolean @default(false)
+  requiresMove          Boolean @default(false)
+  requiresNewActivation Boolean @default(false)
 
   discountTarget String @default("BASE_PRICE") // "BASE_PRICE", "MAGENTA_TV"
   discountType   String @default("ABSOLUTE") // "ABSOLUTE", "RELATIVE"
@@ -155,6 +167,9 @@ model SpecialPriceTier {
   price     Float
   fromMonth Int
   toMonth   Int
+
+  discountTarget String @default("BASE_PRICE") // "BASE_PRICE", "MAGENTA_TV"
+  discountType   String @default("ABSOLUTE") // "ABSOLUTE", "RELATIVE"
 }
 
 model Addon {

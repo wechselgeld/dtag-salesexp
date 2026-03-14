@@ -1,0 +1,13 @@
+src/app/products/[category]/[id]/product-detail-client.tsx(104,24): error TS2345: Argument of type '{ id: string; createdAt: string; updatedAt: string; name: string; description: string | null; category: string; basePrice: number; isActive: boolean; priority: number; dataVolume: string | null; ... 26 more ...; priceHistory: { ...; }[]; } | null | undefined' is not assignable to parameter of type 'Product | null | undefined'.
+  Type '{ id: string; createdAt: string; updatedAt: string; name: string; description: string | null; category: string; basePrice: number; isActive: boolean; priority: number; dataVolume: string | null; ... 26 more ...; priceHistory: { ...; }[]; }' is not assignable to type 'Product'.
+    Types of property 'priceHistory' are incompatible.
+      Type '{ id: string; createdAt: string; price: number; productId: string; label: string | null; }[]' is not assignable to type 'PriceHistory[]'.
+        Type '{ id: string; createdAt: string; price: number; productId: string; label: string | null; }' is not assignable to type 'PriceHistory'.
+          Types of property 'createdAt' are incompatible.
+            Type 'string' is not assignable to type 'Date'.
+src/app/products/[category]/[id]/product-detail-client.tsx(235,26): error TS2345: Argument of type '{ id: string; createdAt: string; updatedAt: string; name: string; description: string | null; category: string; basePrice: number; isActive: boolean; priority: number; dataVolume: string | null; ... 26 more ...; priceHistory: { ...; }[]; }' is not assignable to parameter of type 'Product'.
+  Types of property 'priceHistory' are incompatible.
+    Type '{ id: string; createdAt: string; price: number; productId: string; label: string | null; }[]' is not assignable to type 'PriceHistory[]'.
+      Type '{ id: string; createdAt: string; price: number; productId: string; label: string | null; }' is not assignable to type 'PriceHistory'.
+        Types of property 'createdAt' are incompatible.
+          Type 'string' is not assignable to type 'Date'.

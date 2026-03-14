@@ -57,6 +57,9 @@ export const productRouter = router({
                             where: { isActive: true },
                             orderBy: { sortOrder: 'asc' },
                         },
+                        priceHistory: {
+                            orderBy: { createdAt: 'desc' },
+                        },
                     },
                 }),
                 prisma.addon.findMany({

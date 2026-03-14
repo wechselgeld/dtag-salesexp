@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
     const path = req.nextUrl.pathname;
 
     // Protect /admin routes

@@ -23,7 +23,7 @@ function formatDate(): string {
 	});
 }
 
-function getGreeting(): string {
+function getTimeContext(): string {
 	const h = new Date().getHours();
 	if (h < 12) return "Guten Morgen";
 	if (h < 18) return "Guten Tag";
@@ -77,8 +77,8 @@ export function IntroSplash({ children }: { children: React.ReactNode }) {
 	};
 
 	const greeting = firstName
-		? `${getGreeting()}, ${firstName}.`
-		: `${getGreeting()}.`;
+		? `${getTimeContext()}, ${firstName}.`
+		: `${getTimeContext()}.`;
 
 	return (
 		<>

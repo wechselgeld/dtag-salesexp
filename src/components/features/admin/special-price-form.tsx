@@ -34,7 +34,9 @@ import {
 const tierSchema = z.object({
 	price: z.number().min(0, "Preis darf nicht negativ sein"),
 	fromMonth: z.number().min(1, "Minimum ist Monat 1"),
-	toMonth: z.number().min(1, "Minimum ist Monat 1")
+	toMonth: z.number().min(1, "Minimum ist Monat 1"),
+	discountTarget: z.enum(["BASE_PRICE", "MAGENTA_TV"]).default("BASE_PRICE"),
+	discountType: z.enum(["ABSOLUTE", "RELATIVE"]).default("ABSOLUTE")
 });
 
 const specialPriceSchema = z.object({
@@ -45,6 +47,7 @@ const specialPriceSchema = z.object({
 	requiresMagentaTV: z.boolean().default(false),
 	requiresSpeedUp: z.boolean().default(false),
 	requiresMove: z.boolean().default(false),
+	requiresNewActivation: z.boolean().default(false),
 	priority: z.number().default(0),
 	isActive: z.boolean().default(true),
 	discountTarget: z.enum(["BASE_PRICE", "MAGENTA_TV"]).default("BASE_PRICE"),
@@ -87,14 +90,19 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 			requiresMagentaTV: initialData?.requiresMagentaTV || false,
 			requiresSpeedUp: initialData?.requiresSpeedUp || false,
 			requiresMove: initialData?.requiresMove || false,
+			requiresNewActivation: initialData?.requiresNewActivation || false,
 			priority: initialData?.priority || 0,
 			isActive: initialData?.isActive ?? true,
 			discountTarget: initialData?.discountTarget || "BASE_PRICE",
 			discountType: initialData?.discountType || "ABSOLUTE",
 			tiers:
 				initialData?.tiers && initialData.tiers.length > 0
-					? initialData.tiers
-					: [{ price: 0, fromMonth: 1, toMonth: 6 }]
+					? initialData.tiers.map((t: any) => ({
+							...t,
+							discountTarget: t.discountTarget || initialData.discountTarget || "BASE_PRICE",
+							discountType: t.discountType || initialData.discountType || "ABSOLUTE"
+					  }))
+					: [{ price: 0, fromMonth: 1, toMonth: 6, discountTarget: "BASE_PRICE", discountType: "ABSOLUTE" }]
 		}
 	});
 
@@ -156,7 +164,9 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 		append({
 			price: 0,
 			fromMonth: lastTier ? lastTier.toMonth + 1 : 1,
-			toMonth: lastTier ? lastTier.toMonth + 6 : 6
+			toMonth: lastTier ? lastTier.toMonth + 6 : 6,
+			discountTarget: lastTier ? lastTier.discountTarget : "BASE_PRICE",
+			discountType: lastTier ? lastTier.discountType : "ABSOLUTE"
 		});
 	};
 
@@ -296,32 +306,7 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 							</div>
 						</div>
 
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-							<div className="flex flex-col gap-1.5">
-								<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-									Worauf anwenden?
-								</label>
-								<select
-									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:outline-none focus:border-[#e20074] transition-all text-[0.9rem]"
-									{...register("discountTarget")}
-								>
-									<option value="BASE_PRICE">Tarif (Grundpreis)</option>
-									<option value="MAGENTA_TV">MagentaTV Paket</option>
-								</select>
-							</div>
-							<div className="flex flex-col gap-1.5">
-								<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-									Art des Rabatts
-								</label>
-								<select
-									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:outline-none focus:border-[#e20074] transition-all text-[0.9rem]"
-									{...register("discountType")}
-								>
-									<option value="ABSOLUTE">Absoluter (Fest-)Preis</option>
-									<option value="RELATIVE">Zieht diesen Betrag ab</option>
-								</select>
-							</div>
-						</div>
+						{/* Konfiguration selects moved to tiers */}
 					</AdminFormSection>
 
 					<AdminFormSection
@@ -329,11 +314,12 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 						description="Voraussetzungen für diese Aktion."
 						icon={CheckCircle2}
 					>
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+						<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 							{[
 								{ id: "requiresMagentaTV", label: "Benötigt MagentaTV" },
 								{ id: "requiresSpeedUp", label: "Benötigt SpeedUp" },
-								{ id: "requiresMove", label: "Neuanschluss / Umzug" }
+								{ id: "requiresNewActivation", label: "Neuanschluss" },
+								{ id: "requiresMove", label: "Umzug" }
 							].map((cond) => (
 								<label
 									key={cond.id}
@@ -540,7 +526,7 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 										<div className="col-span-2 lg:col-span-1">
 											<div className="flex flex-col gap-1.5">
 												<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-													{watch("discountType") === "RELATIVE"
+													{watch(`tiers.${index}.discountType`) === "RELATIVE"
 														? "Abzug (€)"
 														: "Preis (€)"}
 												</label>
@@ -561,6 +547,32 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 												</div>
 											</div>
 										</div>
+										<div className="col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+											<div className="flex flex-col gap-1.5">
+												<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
+													Worauf anwenden?
+												</label>
+												<select
+													className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:outline-none focus:border-[#e20074] transition-all text-[0.9rem]"
+													{...register(`tiers.${index}.discountTarget`)}
+												>
+													<option value="BASE_PRICE">Tarif (Grundpreis)</option>
+													<option value="MAGENTA_TV">MagentaTV Paket</option>
+												</select>
+											</div>
+											<div className="flex flex-col gap-1.5">
+												<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
+													Art des Rabatts
+												</label>
+												<select
+													className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:outline-none focus:border-[#e20074] transition-all text-[0.9rem]"
+													{...register(`tiers.${index}.discountType`)}
+												>
+													<option value="ABSOLUTE">Absoluter (Fest-)Preis</option>
+													<option value="RELATIVE">Zieht diesen Betrag ab</option>
+												</select>
+											</div>
+										</div>
 									</div>
 								</div>
 							))}
@@ -578,41 +590,32 @@ export function SpecialPriceForm({ initialData, mode }: SpecialPriceFormProps) {
 									Live Vorschau für Verkäufer
 								</div>
 
-								<div className="space-y-4 mb-8">
-									<div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-										<p className="text-[#ccc] text-[0.85rem] leading-relaxed m-0">
-											Wird angewendet auf:{" "}
-											<strong className="text-white bg-[#e20074] px-1.5 py-0.5 rounded text-[0.75rem]">
-												{watch("discountTarget") === "MAGENTA_TV"
-													? "MagentaTV Paket"
-													: "Tarif Grundpreis"}
-											</strong>
-										</p>
-										<p className="text-[#bbb] text-[0.75rem] mt-2 m-0 opacity-70">
-											{watch("discountType") === "RELATIVE"
-												? "Relativer Rabatt: Der Betrag wird vom Listenpreis abgezogen."
-												: "Absoluter Preis: Der Listenpreis wird durch diesen Wert ersetzt."}
-										</p>
-									</div>
-								</div>
+								{/* Global status info removed because settings are now per tier */}
 
-								<div className="space-y-3">
+								<div className="space-y-3 mt-4">
 									{cTiers.map((tier, i) => (
 										<div
 											key={i}
-											className="flex items-center justify-between group/row p-3 rounded-xl hover:bg-white/5 transition-colors"
+											className="flex items-center justify-between group/row p-4 rounded-xl hover:bg-white/5 transition-colors"
 										>
 											<div className="flex items-center gap-4">
-												<div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-[0.75rem] font-black text-white group-hover/row:bg-[#e20074] transition-colors">
+												<div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-[0.75rem] font-black text-white group-hover/row:bg-[#e20074] transition-colors shrink-0">
 													{i + 1}
 												</div>
-												<span className="text-[#bbb] font-bold text-[0.9rem]">
-													Monat {tier.fromMonth || 1} – {tier.toMonth || "?"}
-												</span>
+                                                <div className="flex flex-col">
+    												<span className="text-[#bbb] font-bold text-[0.9rem]">
+	    												Monat {tier.fromMonth || 1} – {tier.toMonth || "?"}
+		    										</span>
+                                                    <span className="text-[#888] text-[0.65rem] font-medium leading-tight mt-1">
+                                                        {tier.discountTarget === "MAGENTA_TV" ? "MagentaTV Paket" : "Tarif Grundpreis"}
+                                                        {' • '}
+                                                        {tier.discountType === "RELATIVE" ? "Relativer Abzug" : "Absoluter Preis"}
+                                                    </span>
+                                                </div>
 											</div>
-											<div className="flex items-end flex-col">
+											<div className="flex items-end flex-col shrink-0">
 												<span className="font-black text-white text-[1.2rem] tracking-tight">
-													{watch("discountType") === "RELATIVE" ? "−" : ""}
+													{tier.discountType === "RELATIVE" ? "−" : ""}
 													{tier.price?.toFixed(2) || "0.00"} €
 												</span>
 												<span className="text-[0.6rem] text-[#888] font-bold uppercase">

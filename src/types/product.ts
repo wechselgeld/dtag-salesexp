@@ -1,9 +1,19 @@
 export type BusinessCase = 'NEW_ACTIVATION' | 'MOVE' | 'PLAN_CHANGE' | 'SPEED_UP';
 
+export type PriceHistory = {
+    id: string;
+    price: number;
+    label?: string | null;
+    createdAt: Date | string;
+};
+
+
 export type SpecialPriceTier = {
     price: number;
     fromMonth: number;
     toMonth: number;
+    discountTarget: string;
+    discountType: string;
 };
 
 export type SpecialPrice = {
@@ -14,6 +24,7 @@ export type SpecialPrice = {
     requiresMagentaTV: boolean;
     requiresSpeedUp: boolean;
     requiresMove: boolean;
+    requiresNewActivation: boolean;
     isActive: boolean;
     priority: number;
     discountTarget: string;
@@ -52,6 +63,18 @@ export type Product = {
     magentaTVBundlePrice: number | null;
     specialPrices: SpecialPrice[];
     compatibleAddons?: Addon[];
+    
+    allowNewActivation: boolean;
+    allowMove: boolean;
+    allowPlanChange: boolean;
+    allowSpeedUp: boolean;
+    allowMagentaTV: boolean;
+
+    description: string | null;
+    downloadSpeed: number | null;
+    dataVolume: string | null;
+    salesArguments: { id: string; text: string; isActive: boolean }[];
+    magentaInfosUrl: string | null;
 
     // Devices
     deviceManufacturer?: string | null;
@@ -59,6 +82,7 @@ export type Product = {
     rentalPrice?: number | null;
 
     salesScript?: string | null;
+    priceHistory?: PriceHistory[];
 };
 
 export type Credit = {

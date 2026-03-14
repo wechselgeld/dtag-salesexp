@@ -29,6 +29,7 @@ export function SpecialPriceSelector({
 	const availablePrices = specialPrices.filter((sp) => {
 		if (sp.requiresMagentaTV && !isMagentaTVSelected) return false;
 		if (sp.requiresMove && businessCase !== "MOVE") return false;
+		if (sp.requiresNewActivation && businessCase !== "NEW_ACTIVATION") return false;
 		if (sp.requiresSpeedUp && businessCase !== "SPEED_UP") return false;
 		return true;
 	});
@@ -54,20 +55,35 @@ export function SpecialPriceSelector({
 			{availablePrices.map((sp) => {
 				const isSelected = selectedIds.includes(sp.id);
 
-				const getTierSavings = (tier: { price: number }) => {
-					if (sp.discountTarget === "MAGENTA_TV") {
-						return sp.discountType === "RELATIVE"
+				const getTierSavings = (tier: { price: number, discountTarget?: string, discountType?: string }) => {
+					const target = tier.discountTarget || sp.discountTarget;
+					const type = tier.discountType || sp.discountType;
+
+					if (target === "MAGENTA_TV") {
+						return type === "RELATIVE"
 							? tier.price
 							: Math.max(0, (tvBasePrice || 0) - tier.price);
 					} else {
-						return sp.discountType === "RELATIVE"
+						return type === "RELATIVE"
 							? tier.price
 							: Math.max(0, (basePrice || 0) - tier.price);
 					}
 				};
 
-				const getTierDisplayPrice = (tier: { price: number }) => {
-					return Math.max(0, (basePrice || 0) - getTierSavings(tier));
+				const getTierDisplayPrice = (tier: { price: number, discountTarget?: string, discountType?: string }) => {
+					const target = tier.discountTarget || sp.discountTarget;
+					const type = tier.discountType || sp.discountType;
+					
+					// Return the exact discounted value, based on relation.
+					if (target === "MAGENTA_TV") {
+						return type === "RELATIVE" 
+							? Math.max(0, (tvBasePrice || 0) + (basePrice || 0) - tier.price)
+							: (basePrice || 0) + tier.price;
+					} else {
+						return type === "RELATIVE"
+							? Math.max(0, (basePrice || 0) - tier.price)
+							: tier.price;
+					}
 				};
 
 				const lowestPrice =

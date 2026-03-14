@@ -362,7 +362,7 @@ export default function ProductListPage() {
 					className="inline-flex items-center gap-2 text-[#999] hover:text-[#e20074] transition-colors mb-5 text-[0.85rem] font-medium"
 				>
 					<ArrowLeft className="w-4 h-4" />
-					<span className="text-[0.8rem] font-semibold uppercase tracking-wider text-[#e20074]">
+					<span className="text-[0.8rem] mt-0.5 font-semibold uppercase tracking-wider text-[#e20074]">
 						Kategorieauswahl
 					</span>
 				</Link>

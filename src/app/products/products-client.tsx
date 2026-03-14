@@ -28,7 +28,7 @@ const CATEGORIES = [
 		icon: Smartphone,
 		href: "/products/MOBILE",
 		color: "#e20074",
-		stats: "48 Tarife"
+		stats: "Lade Anzahl..."
 	},
 	{
 		id: "FIBER",
@@ -36,7 +36,7 @@ const CATEGORIES = [
 		icon: Zap,
 		href: "/products/FIBER",
 		color: "#0090d0",
-		stats: "24 Tarife"
+		stats: "Lade Anzahl..."
 	},
 	{
 		id: "DSL",
@@ -44,7 +44,7 @@ const CATEGORIES = [
 		icon: Wifi,
 		href: "/products/DSL",
 		color: "#7b61ff",
-		stats: "36 Tarife"
+		stats: "Lade Anzahl..."
 	},
 	{
 		id: "MAGENTA_TV_OTT",
@@ -52,7 +52,7 @@ const CATEGORIES = [
 		icon: Tv,
 		href: "/products/MAGENTA_TV_OTT",
 		color: "#ff6b00",
-		stats: "12 Pakete"
+		stats: "Lade Anzahl..."
 	},
 	{
 		id: "DEVICE",
@@ -60,7 +60,7 @@ const CATEGORIES = [
 		icon: Router,
 		href: "/products/DEVICE",
 		color: "#00a878",
-		stats: "99+ Geräte"
+		stats: "Anzahl..."
 	}
 ];
 

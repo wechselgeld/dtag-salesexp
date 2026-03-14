@@ -4,6 +4,11 @@ import { prisma } from '@/lib/prisma';
 import { TRPCError } from '@trpc/server';
 
 // Schema for product creation/update
+const priceHistorySchema = z.object({
+    price: z.number().min(0),
+    label: z.string().optional().nullable(),
+});
+
 const productSchema = z.object({
     name: z.string().min(1),
     category: z.string(),
@@ -42,12 +47,15 @@ const productSchema = z.object({
     salesArguments: z.array(z.string()).default([]),
     salesScript: z.string().optional().nullable(),
     magentaInfosUrl: z.string().optional().nullable(),
+    priceHistory: z.array(priceHistorySchema).default([]),
 });
 
 const tierSchema = z.object({
     price: z.number().min(0),
     fromMonth: z.number().min(1),
     toMonth: z.number().min(1),
+    discountTarget: z.enum(["BASE_PRICE", "MAGENTA_TV"]).default("BASE_PRICE"),
+    discountType: z.enum(["ABSOLUTE", "RELATIVE"]).default("ABSOLUTE"),
 });
 
 const specialPriceSchema = z.object({
@@ -59,6 +67,7 @@ const specialPriceSchema = z.object({
     requiresMagentaTV: z.boolean().default(false),
     requiresSpeedUp: z.boolean().default(false),
     requiresMove: z.boolean().default(false),
+    requiresNewActivation: z.boolean().default(false),
     priority: z.number().default(0),
     isActive: z.boolean().default(true),
     discountTarget: z.enum(["BASE_PRICE", "MAGENTA_TV"]).default("BASE_PRICE"),
@@ -193,7 +202,7 @@ export const adminRouter = router({
     createProduct: editorProcedure
         .input(productSchema)
         .mutation(async ({ input }) => {
-            const { features, targetGroups, salesArguments, ...data } = input;
+            const { features, targetGroups, salesArguments, priceHistory, ...data } = input;
             return await prisma.product.create({
                 data: {
                     ...data,
@@ -206,6 +215,12 @@ export const adminRouter = router({
                             sortOrder: i,
                             isActive: true,
                         }))
+                    },
+                    priceHistory: {
+                        create: priceHistory.map(ph => ({
+                            price: ph.price,
+                            label: ph.label
+                        }))
                     }
                 }
             });
@@ -214,10 +229,11 @@ export const adminRouter = router({
     updateProduct: editorProcedure
         .input(productSchema.extend({ id: z.string() }))
         .mutation(async ({ input }) => {
-            const { id, features, targetGroups, salesArguments, ...data } = input;
+            const { id, features, targetGroups, salesArguments, priceHistory, ...data } = input;
 
-            // Recreate sales arguments to preserve order easily
+            // Recreate relations to preserve order easily and cleanly update
             await prisma.salesArgument.deleteMany({ where: { productId: id } });
+            await prisma.priceHistory.deleteMany({ where: { productId: id } });
 
             return await prisma.product.update({
                 where: { id },
@@ -231,6 +247,12 @@ export const adminRouter = router({
                             text,
                             sortOrder: i,
                             isActive: true,
+                        }))
+                    },
+                    priceHistory: {
+                        create: priceHistory.map(ph => ({
+                            price: ph.price,
+                            label: ph.label
                         }))
                     }
                 }
@@ -250,7 +272,10 @@ export const adminRouter = router({
         .query(async ({ input }) => {
             const product = await prisma.product.findUnique({
                 where: { id: input.id },
-                include: { salesArguments: { orderBy: { sortOrder: 'asc' } } }
+                include: { 
+                    salesArguments: { orderBy: { sortOrder: 'asc' } },
+                    priceHistory: { orderBy: { createdAt: 'desc' } }
+                }
             });
             if (!product) throw new TRPCError({ code: 'NOT_FOUND' });
             return {
