@@ -13,8 +13,6 @@ import {
 	Loader2,
 	Star,
 	X,
-	Tag,
-	Briefcase,
 	Pencil,
 	MapPin,
 	Search,
@@ -261,13 +259,7 @@ export default function TeamsPage() {
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-[#f0f0f0]">
-								{teams.map(
-									(team: {
-										id: string;
-										name: string;
-										highlights: { productId: string | null }[];
-										location: { name: string; address: string | null } | null;
-									}) => (
+								{teams.map((team) => (
 										<tr
 											key={team.id}
 											className="hover:bg-[#fcfcfd] transition-colors group"

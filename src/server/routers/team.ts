@@ -87,6 +87,10 @@ export const teamRouter = router({
 				orderBy: {
 					name: 'asc',
 				},
+				include: {
+					location: true,
+					highlights: true,
+				},
 			});
 
 			let nextCursor: typeof cursor | undefined = undefined;
