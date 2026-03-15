@@ -1,7 +1,7 @@
 # Helper script for the Staging/Production workflow
 
 param (
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [ValidateSet("staging", "production")]
     $Target
 )
@@ -58,12 +58,6 @@ if ($Target -eq "production") {
     # 4. Push to master
     Write-Host "Pushing to master..."
     git push origin master
-    
-    # 5. Ask for data sync
-    $syncChoice = Read-Host "Do you want to sync Catalog Data from STAGING to PROD now? (y/n)"
-    if ($syncChoice -eq "y") {
-        pnpm run db:sync:catalog
-    }
 
     Write-Host "Switching back to $currentBranch..."
     git checkout $currentBranch
