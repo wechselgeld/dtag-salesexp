@@ -43,6 +43,9 @@ import {
 import {
 	SidebarLayout,
 } from './sidebar/sidebar-layout';
+import {
+	useNewsNotificationStore,
+} from '@/lib/store/news-notification-store';
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: '#e20074',
@@ -70,6 +73,7 @@ export function SidebarNav() {
 		setAvailabilityOpen, setCalculatorOpen, setBattlecardOpen,
 	} =
 		useModalStore();
+	const addNotification = useNewsNotificationStore((state) => state.addNotification);
 
 	const [
 		collapsed,
@@ -93,22 +97,34 @@ export function SidebarNav() {
 	] = useState(false);
 	const npsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	// Auto-reset NPS after 2 minutes with animation
+	// Auto-reset NPS after 2 minutes with animation and toast reminder
 	useEffect(() => {
 		if (npsChecked) {
 			npsTimerRef.current = setTimeout(() => {
+				// 1. Trigger vibration and notification
 				setNpsResetting(true);
+				addNotification({
+					id: `nps-reminder-${Date.now()}`,
+					title: 'NPS erledigt?',
+					content: 'Vergiss nicht, den Kunden auf die NPS-Umfrage hinzuweisen!',
+					priority: 'INFO',
+				});
+
+				// 2. Clear state after vibration
 				setTimeout(() => {
 					setNpsChecked(false);
 					setNpsResetting(false);
-				}, 600);
+				}, 1500);
 			}, 120000);
 		}
 		return () => {
-			if (npsTimerRef.current) { clearTimeout(npsTimerRef.current); }
+			if (npsTimerRef.current) {
+				clearTimeout(npsTimerRef.current);
+			}
 		};
 	}, [
 		npsChecked,
+		addNotification,
 	]);
 
 	// Determine current step from route

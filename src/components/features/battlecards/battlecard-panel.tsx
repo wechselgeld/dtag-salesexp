@@ -817,7 +817,7 @@ const OBJECTIONS: Objection[] = [
 		coreArgument: 'Lösung: Überleitung zu Battlecards',
 		exampleText:
 			'„Da haben Sie recht, auf dem Papier sieht das günstiger aus. Aber wissen Sie auch, woran dort gespart wird? Oft ist es die Netzqualität am Abend oder der Kundenservice. Welcher Anbieter ist es denn genau?“',
-		tip: 'Sofort in die Analyse gehen (\'Welcher Anbieter?\') und dann ins Battlecard-Panel (Tab: Wettbewerb) wechseln.',
+		tip: 'Sofort in die Analyse gehen (\'Welcher Anbieter?\') und dann ins Battlecard-Panel (Tab: Anbieter) wechseln.',
 		icon: AlertTriangle,
 	},
 ];
@@ -1437,7 +1437,7 @@ function ObjectionDetail({
 						</span>
 					</div>
 					<p className="text-[1.15rem] font-medium text-[#444] leading-relaxed m-0 italic">
-						&bdquo;{objection.tip}&ldquo;
+						{objection.tip}
 					</p>
 				</div>
 

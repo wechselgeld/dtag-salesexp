@@ -15,7 +15,6 @@ import {
 } from '@/hooks/use-basket-store';
 import {
 	calculateProductCosts,
-	DEFAULT_PRICING,
 } from '@/hooks/use-cost-calculator';
 import {
 	MAGENTA_TV_PACKAGES,
@@ -33,14 +32,13 @@ import {
 	Check,
 	UserPlus,
 	Sparkles,
-	RotateCcw,
 	Edit2,
 	Tag,
 	AlertTriangle,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
-	useRouter,
+	useRouter, useParams, usePathname,
 } from 'next/navigation';
 import {
 	CombinedTimeline,
@@ -58,23 +56,17 @@ import {
 	Skeleton,
 } from '@/components/shared/skeleton';
 import {
-	useState, useEffect, useRef,
+	useState, useEffect,
 } from 'react';
 import {
 	motion, AnimatePresence,
 } from 'framer-motion';
-import {
-	useNewsNotificationStore,
-} from '@/lib/store/news-notification-store';
 import {
 	useSettingsStore,
 } from '@/hooks/use-settings-store';
 import {
 	Tooltip,
 } from '@/components/shared/ui/tooltip';
-import {
-	Toast,
-} from '@/components/shared/ui/toast';
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: '#e20074',
@@ -143,11 +135,22 @@ export function BasketDrawer() {
 
 	const teamEmail = session?.team?.email || 'team06@telekom.de';
 
+	const params = useParams();
+	const pathname = usePathname();
+	const categoryFromUrl = (params?.category as string) || (pathname.match(/\/products\/([^/]+)/)?.[1]);
+	const catColor = categoryFromUrl
+		? CATEGORY_COLORS[categoryFromUrl.toUpperCase()] || '#e20074'
+		: '#e20074';
+
+
 	useEffect(() => {
-		setIsMounted(true);
-		setRandomNotice(
-			EMPTY_NOTICES[Math.floor(Math.random() * EMPTY_NOTICES.length)],
-		);
+		const timer = setTimeout(() => {
+			setIsMounted(true);
+			setRandomNotice(
+				EMPTY_NOTICES[Math.floor(Math.random() * EMPTY_NOTICES.length)],
+			);
+		}, 0);
+		return () => clearTimeout(timer);
 	}, [
 	]);
 
@@ -175,7 +178,13 @@ export function BasketDrawer() {
 						<h2 className="m-0 text-[0.88rem] text-[#1a1a2e] font-bold tracking-tight">
 							Zusammenfassung
 						</h2>
-						<span className="text-[0.65rem] font-semibold text-[#e20074] bg-[#e20074]/6 px-2 py-0.5 rounded-full">
+						<span
+							className="text-[0.65rem] font-semibold px-2 py-0.5 rounded-full transition-all duration-500"
+							style={{
+								color: catColor,
+								backgroundColor: `${catColor}10`,
+							}}
+						>
 							{items.length} {items.length === 1 ? 'Produkt' : 'Produkte'}
 						</span>
 					</div>
@@ -202,7 +211,7 @@ export function BasketDrawer() {
 						{/* Chart */}
 						{items.length > 0 && (
 							<div className="mb-4 bg-[#f7f8fa] rounded-xl p-3.5">
-								<CombinedTimeline />
+								<CombinedTimeline catColor={catColor} />
 							</div>
 						)}
 
@@ -269,10 +278,17 @@ export function BasketDrawer() {
 										}}
 										className="bg-white min-h-[300px] flex flex-col items-center justify-center p-8 text-center"
 									>
-										<div className="w-20 h-20 rounded-[1.5rem] bg-[#fcf2f7] flex items-center justify-center mb-6 shadow-sm border border-[#e20074]/5">
+										<div
+											className="w-20 h-20 rounded-[1.5rem] flex items-center justify-center mb-6 shadow-sm border transition-all duration-500"
+											style={{
+												backgroundColor: `${catColor}10`,
+												borderColor: `${catColor}20`,
+											}}
+										>
 											<ShoppingBag
-												className="w-9 h-9 text-[#e20074]"
-												strokeWidth={1.5}
+												className="w-9 h-9 transition-colors duration-500"
+												color={catColor}
+												strokeWidth={2}
 											/>
 										</div>
 										<h3 className="text-[1.2rem] font-extrabold text-[#1a1a2e] m-0 mb-3 leading-tight tracking-tight">
@@ -410,7 +426,7 @@ export function BasketDrawer() {
 								),
 							)}
 
-							<div className="border-t border-[#e0e0e0] mt-1 pt-2 flex justify-between items-center">
+							<div className="border-t border-ds-border mt-1 pt-2 flex justify-between items-center">
 								<div className="flex flex-col">
 									<span className="text-[0.65rem] uppercase tracking-wider text-[#999] font-medium">
 										Ø Monatlich
@@ -423,9 +439,19 @@ export function BasketDrawer() {
 										€ am Tag
 									</span>
 								</div>
-								<span className="text-[1.3rem] font-extrabold tracking-tight text-[#e20074] flex items-center leading-none">
+								<span
+									className="text-[1.3rem] font-extrabold tracking-tight flex items-center leading-none transition-colors duration-500"
+									style={{
+										color: catColor,
+									}}
+								>
 									<AnimatedNumber value={totalMonthly} />
-									<span className="ml-[3px] text-[0.8rem] font-normal text-[#e20074]/60">
+									<span
+										className="ml-[3px] text-[0.8rem] font-normal transition-colors duration-500"
+										style={{
+											color: `${catColor}99`,
+										}}
+									>
 										€
 									</span>
 								</span>
@@ -466,12 +492,16 @@ export function BasketDrawer() {
 								}}
 								disabled={isGenerating !== 'idle'}
 								className={clsx(
-									'flex-1 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-[0.82rem] cursor-pointer active:scale-95',
-									isGenerating === 'idle' && 'bg-[#e20074] hover:bg-[#c70066]',
+									'flex-1 py-2.5 rounded-xl text-white font-semibold transition-all duration-500 flex items-center justify-center gap-2 text-[0.82rem] cursor-pointer active:scale-95',
+									isGenerating === 'idle' && 'text-white active:scale-95 hover:opacity-90',
 									isGenerating === 'generating' &&
 										'bg-[#ff69b4] cursor-not-allowed',
 									isGenerating === 'success' && 'bg-[#00a878]',
 								)}
+								style={isGenerating === 'idle' ? {
+									backgroundColor: catColor,
+								} : {
+								}}
 							>
 								{isGenerating === 'idle' && (
 									<>

@@ -69,6 +69,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "prisma": "6.1.0",
+    "react-scan": "^0.5.3",
     "shadcn": "^3.8.5",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",

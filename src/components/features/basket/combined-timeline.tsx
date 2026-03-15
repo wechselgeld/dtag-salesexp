@@ -25,7 +25,11 @@ import {
 	AnimatedNumber,
 } from '@/components/shared/animated-number';
 
-export function CombinedTimeline() {
+export function CombinedTimeline({
+	catColor = '#e20074',
+}: {
+	catColor?: string;
+}) {
 	const items = useBasketStore((state) => state.items);
 	const {
 		data: pricingSettings,
@@ -74,6 +78,7 @@ export function CombinedTimeline() {
 		return data;
 	}, [
 		items,
+		settings,
 	]);
 
 	if (items.length === 0) { return null; }
@@ -82,14 +87,19 @@ export function CombinedTimeline() {
 		aggregatedData.reduce((acc, curr) => acc + curr.total, 0) / 24;
 
 	return (
-		<div>
+		<div style={{ '--cat-color': catColor } as React.CSSProperties}>
 			{/* Header */}
 			<div className="flex items-baseline justify-between mb-3">
 				<span className="text-[0.72rem] font-semibold text-[#aaa] uppercase tracking-wider">
 					Kostenverlauf
 				</span>
 				<div className="text-right">
-					<span className="text-[1.1rem] font-extrabold text-[#e20074] leading-none">
+					<span
+						className="text-[1.1rem] font-extrabold leading-none transition-colors duration-500"
+						style={{
+							color: 'var(--cat-color)',
+						}}
+					>
 						<AnimatedNumber value={averageTotal} /> €
 					</span>
 					<span className="text-[0.6rem] text-[#b0b0b0] font-medium ml-1">
@@ -99,7 +109,7 @@ export function CombinedTimeline() {
 			</div>
 
 			{/* Chart */}
-			<div className="h-[100px] w-full">
+			<div className="h-[100px] w-full transition-all duration-500">
 				<ResponsiveContainer width="100%" height="100%">
 					<BarChart
 						data={aggregatedData}
@@ -122,11 +132,12 @@ export function CombinedTimeline() {
 						/>
 						<Tooltip
 							cursor={{
-								fill: 'rgba(226, 0, 116, 0.03)',
+								fill: 'var(--cat-color)',
+								opacity: 0.05,
 							}}
 							content={({
 								active, payload,
-							}: any) => {
+							}: { active?: boolean; payload?: readonly any[] }) => {
 								if (active && payload && payload.length) {
 									const data = payload[0].payload;
 									return (
@@ -149,7 +160,12 @@ export function CombinedTimeline() {
 											)}
 											<div className="border-t border-[#eaedf0] mt-2 pt-1.5 flex justify-between font-bold text-[0.72rem]">
 												<span className="text-[#888]">Gesamt</span>
-												<span className="text-[#e20074]">
+												<span
+													style={{
+														color: 'var(--cat-color)',
+													}}
+													className="transition-colors duration-500"
+												>
 													{data.total.toFixed(2)} €
 												</span>
 											</div>
@@ -169,10 +185,11 @@ export function CombinedTimeline() {
 						/>
 						<ReferenceLine
 							y={averageTotal}
-							stroke="#e20074"
+							stroke="var(--cat-color)"
 							strokeDasharray="3 3"
 							strokeOpacity={0.5}
 							strokeWidth={1}
+							className="transition-all duration-500"
 						/>
 						<Bar
 							dataKey="total"
@@ -187,8 +204,8 @@ export function CombinedTimeline() {
 						/>
 						<defs>
 							<linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-								<stop offset="0%" stopColor="#e20074" stopOpacity={0.2} />
-								<stop offset="100%" stopColor="#e20074" stopOpacity={1} />
+								<stop offset="0%" stopColor="var(--cat-color)" stopOpacity={0.2} />
+								<stop offset="100%" stopColor="var(--cat-color)" stopOpacity={1} />
 							</linearGradient>
 						</defs>
 					</BarChart>

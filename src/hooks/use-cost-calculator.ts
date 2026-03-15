@@ -36,17 +36,17 @@ export type {
 };
 
 export interface CalculationInput {
-    product: Product;
-    businessCase: BusinessCase;
-    magentaTVPackage: MagentaTVPackageKey | null;
-    selectedSpecialPriceIds: string[];
-    selectedAddonIds: string[];
-    vouchers: number[];
-    credits?: Credit[];
-    hardwarePurchaseType?: 'RENT' | 'BUY';
-    plusKartenCount?: number;
-    settings?: PricingSettings;
-    customBasePrice?: number;
+	product: Product;
+	businessCase: BusinessCase;
+	magentaTVPackage: MagentaTVPackageKey | null;
+	selectedSpecialPriceIds: string[];
+	selectedAddonIds: string[];
+	vouchers: number[];
+	credits?: Credit[];
+	hardwarePurchaseType?: 'RENT' | 'BUY';
+	plusKartenCount?: number;
+	settings?: PricingSettings;
+	customBasePrice?: number;
 }
 
 export function calculateProductCosts({
@@ -131,18 +131,18 @@ export function calculateProductCosts({
 
 	let activationFee = 0;
 	switch (businessCase) {
-	case 'NEW_ACTIVATION':
-		activationFee = product.activationFeeNew ?? 0;
-		break;
-	case 'MOVE':
-		activationFee = product.activationFeeMove ?? 0;
-		break;
-	case 'PLAN_CHANGE':
-		activationFee = product.activationFeePlanChange ?? 0;
-		break;
-	case 'SPEED_UP':
-		activationFee = product.activationFeeSpeedUp ?? 0;
-		break;
+		case 'NEW_ACTIVATION':
+			activationFee = product.activationFeeNew ?? 0;
+			break;
+		case 'MOVE':
+			activationFee = product.activationFeeMove ?? 0;
+			break;
+		case 'PLAN_CHANGE':
+			activationFee = product.activationFeePlanChange ?? 0;
+			break;
+		case 'SPEED_UP':
+			activationFee = product.activationFeeSpeedUp ?? 0;
+			break;
 	}
 
 	if (activationFee > 0) {
@@ -205,8 +205,8 @@ export function calculateProductCosts({
 
 	const productNameLower = product.name.toLowerCase();
 	const isAtLeastM = productNameLower.includes('magentamobil m') ||
-        productNameLower.includes('magentamobil l') ||
-        productNameLower.includes('magentamobil xl');
+		productNameLower.includes('magentamobil l') ||
+		productNameLower.includes('magentamobil xl');
 	const hasUnlimitedAdvantage = isAtLeastM && pkCount > 0;
 
 	for (let month = 1; month <= 24; month++) {

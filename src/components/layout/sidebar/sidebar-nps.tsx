@@ -96,70 +96,140 @@ export function SidebarNps({
 
 				<motion.button
 					onClick={onToggle}
-					animate={
+					initial={false}
+					animate={{
+						rotate: npsResetting
+							? [
+								0,
+								-1,
+								1,
+								-1,
+								1,
+								0,
+							]
+							: 0,
+						x: npsResetting
+							? [
+								0,
+								-1,
+								1,
+								-1,
+								1,
+								0,
+							]
+							: 0,
+						backgroundColor: npsChecked ? '#dcfce7' : '#ffffff',
+						borderColor: npsChecked ? '#86efac' : '#e8e8e8',
+						color: npsChecked ? '#166534' : '#ea580c',
+					}}
+					transition={
 						npsResetting
 							? {
-								scale: [
-									1,
-									1.05,
-									0.95,
-									1.05,
-									1,
-								],
-								rotate: [
-									0,
-									-2,
-									2,
-									-1,
-									0,
-								],
+								rotate: {
+									duration: 0.15,
+									repeat: 6,
+									ease: 'easeInOut',
+								},
+								x: {
+									duration: 0.15,
+									repeat: 6,
+									ease: 'easeInOut',
+								},
+								backgroundColor: {
+									duration: 0.5,
+								},
+								borderColor: {
+									duration: 0.5,
+								},
+								color: {
+									duration: 0.5,
+								},
 							}
 							: {
-								scale: 1,
-								rotate: 0,
+								duration: 0.5,
 							}
 					}
-					transition={{
-						duration: 0.5,
-					}}
 					className={clsx(
-						'w-full flex items-center justify-between gap-3 rounded-[20px] transition-all duration-300 cursor-pointer overflow-hidden whitespace-nowrap relative z-10 shrink-0 shadow-sm',
+						'w-full flex items-center justify-between gap-3 rounded-[20px] cursor-pointer border overflow-hidden whitespace-nowrap relative z-10 shrink-0 shadow-sm transition-shadow duration-300',
 						collapsed
 							? 'w-9 h-9 justify-center mx-auto p-0 hover:border-[#ea580c]/30'
 							: 'px-4 py-3 w-full',
-						npsResetting && 'animate-pulse',
-						npsChecked
-							? 'bg-linear-to-r from-[#dcfce7] to-[#bbf7d0] border-[#86efac] text-[#166534]'
-							: 'bg-linear-to-r from-white to-[#fffaf7] border-[#e8e8e8] text-[#ea580c] hover:shadow-md hover:border-[#ea580c]/30',
+						!npsChecked && 'hover:shadow-md hover:border-[#ea580c]/30',
 					)}
 				>
-					<div className="flex items-center gap-3">
-						<div
+					<div className="flex items-center gap-3 relative z-10">
+						<motion.div
+							animate={{
+								backgroundColor: npsChecked ? 'rgba(255,255,255,0.5)' : 'rgba(234,88,12,0.1)',
+								color: npsChecked ? '#16a34a' : '#ea580c',
+							}}
 							className={clsx(
 								'shrink-0 rounded-[12px] flex items-center justify-center transition-all',
 								collapsed ? 'w-full h-full bg-transparent' : 'w-8 h-8',
-								npsChecked
-									? 'bg-white/50 text-[#16a34a]'
-									: 'bg-[#ea580c]/10 text-[#ea580c]',
 							)}
 						>
-							{npsChecked ? (
-								<Check className="w-4 h-4" strokeWidth={3} />
-							) : (
-								<MessageSquare className="w-4 h-4" strokeWidth={2} />
-							)}
-						</div>
+							<AnimatePresence mode="wait" initial={false}>
+								<motion.div
+									key={npsChecked ? 'check' : 'msg'}
+									initial={{
+										opacity: 0,
+										scale: 0.5,
+										rotate: -20,
+									}}
+									animate={{
+										opacity: 1,
+										scale: 1,
+										rotate: 0,
+									}}
+									exit={{
+										opacity: 0,
+										scale: 0.5,
+										rotate: 20,
+									}}
+									transition={{
+										duration: 0.2,
+									}}
+								>
+									{npsChecked ? (
+										<Check className="w-4 h-4" strokeWidth={3} />
+									) : (
+										<MessageSquare className="w-4 h-4" strokeWidth={2} />
+									)}
+								</motion.div>
+							</AnimatePresence>
+						</motion.div>
 
-						<span
-							className="text-[0.8rem] font-bold transition-opacity duration-200 truncate tracking-tight"
+						<div
+							className="text-[0.8rem] font-bold transition-opacity duration-200 truncate tracking-tight relative h-4 min-w-[120px]"
 							style={{
 								opacity: collapsed ? 0 : 1,
 								width: collapsed ? 0 : 'auto',
-								overflow: 'hidden',
 							}}
 						>
-							{npsChecked ? 'NPS erledigt. Top!' : 'Auf NPS hingewiesen?'}
-						</span>
+							<AnimatePresence mode="wait" initial={false}>
+								<motion.span
+									key={npsChecked ? 'done' : 'ask'}
+									initial={{
+										opacity: 0,
+										y: 10,
+									}}
+									animate={{
+										opacity: 1,
+										y: 0,
+									}}
+									exit={{
+										opacity: 0,
+										y: -10,
+									}}
+									transition={{
+										duration: 0.2,
+									}}
+									className="absolute left-0 top-0 whitespace-nowrap"
+								>
+									{npsChecked ? 'NPS erledigt. Top!' : 'Auf NPS hingewiesen?'}
+								</motion.span>
+							</AnimatePresence>
+						</div>
 					</div>
 
 					{/* Loading Circle for the Timer */}

@@ -827,7 +827,7 @@ export default function ProductListPage() {
 															compactView ? 'text-[0.95rem]' : 'text-[1.15rem]',
 															isFocused
 																? ''
-																: 'text-[#1a1a2e] group-hover:text-[var(--cat-color)]',
+																: 'text-[#1a1a2e] group-hover:text-(--cat-color)',
 														)}
 														style={isFocused ? {
 															color: catColor,
