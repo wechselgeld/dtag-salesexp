@@ -1,4 +1,6 @@
-import { SVGProps } from "react";
+import type {
+	SVGProps,
+} from 'react';
 
 export function TelekomLogo(props: SVGProps<SVGSVGElement>) {
 	return (

@@ -1,34 +1,46 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc";
-import { Save, Loader2, ArrowLeft, Users, Mail, MapPin } from "lucide-react";
-import Link from "next/link";
-import clsx from "clsx";
-import { Input } from "@/components/shared/ui/input";
+import {
+	useForm,
+} from 'react-hook-form';
+import {
+	zodResolver,
+} from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+	useRouter,
+} from 'next/navigation';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	Save, Loader2, ArrowLeft, Users, Mail, MapPin,
+} from 'lucide-react';
+import Link from 'next/link';
+import clsx from 'clsx';
+import {
+	Input,
+} from '@/components/shared/ui/input';
 import {
 	AdminPageHeader,
 	AdminFormContainer,
-	AdminFormSection
-} from "@/components/shared/ui/admin-ui";
+	AdminFormSection,
+} from '@/components/shared/ui/admin-ui';
 
 const teamSchema = z.object({
-	name: z.string().min(1, "Name ist erforderlich"),
+	name: z.string().min(1, 'Name ist erforderlich'),
 	email: z
 		.string()
-		.email("Gültige E-Mail erforderlich")
+		.email('Gültige E-Mail erforderlich')
 		.optional()
-		.or(z.literal("")),
-	locationId: z.string().optional().nullable()
+		.or(z.literal('')),
+	locationId: z.string().optional().nullable(),
 });
 
 type TeamFormData = z.infer<typeof teamSchema>;
 
 interface TeamFormProps {
-	mode: "create" | "edit";
+	mode: 'create' | 'edit';
 	teamId?: string;
 	initialData?: {
 		name: string;
@@ -37,50 +49,62 @@ interface TeamFormProps {
 	};
 }
 
-export function TeamForm({ mode, teamId, initialData }: TeamFormProps) {
+export function TeamForm({
+	mode, teamId, initialData,
+}: TeamFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
-	const { data: locationsData, isLoading: isLoadingLocations } =
+	const {
+		data: locationsData, isLoading: isLoadingLocations,
+	} =
 		trpc.location.list.useQuery();
 	const locations = locationsData?.items;
 
 	const {
 		register,
 		handleSubmit,
-		formState: { errors }
+		formState: {
+			errors,
+		},
 	} = useForm({
 		resolver: zodResolver(teamSchema),
-		mode: "onChange",
+		mode: 'onChange',
 		defaultValues: {
-			name: initialData?.name || "",
-			email: initialData?.email || "",
-			locationId: initialData?.locationId || ""
-		}
+			name: initialData?.name || '',
+			email: initialData?.email || '',
+			locationId: initialData?.locationId || '',
+		},
 	});
 
 	const createMutation = trpc.team.create.useMutation({
 		onSuccess: () => {
 			utils.team.list.invalidate();
-			router.push("/admin/teams");
+			router.push('/admin/teams');
 			router.refresh();
-		}
+		},
 	});
 
 	const updateMutation = trpc.team.update.useMutation({
 		onSuccess: () => {
 			utils.team.list.invalidate();
-			utils.team.getById.invalidate({ id: teamId! });
-			router.push("/admin/teams");
+			utils.team.getById.invalidate({
+				id: teamId!,
+			});
+			router.push('/admin/teams');
 			router.refresh();
-		}
+		},
 	});
 
 	const onSubmit = (data: any) => {
-		if (mode === "create") {
+		if (mode === 'create') {
 			createMutation.mutate(data);
-		} else if (mode === "edit" && teamId) {
-			updateMutation.mutate({ id: teamId, ...data });
+		}
+		else if (mode === 'edit' && teamId) {
+			updateMutation.mutate({
+				id: teamId,
+				...data,
+			});
 		}
 	};
 
@@ -92,10 +116,10 @@ export function TeamForm({ mode, teamId, initialData }: TeamFormProps) {
 			form="team-form"
 			disabled={isPending}
 			className={clsx(
-				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
+				'px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5',
 				isPending
-					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-					: "bg-[#e20074] hover:bg-[#c70066]"
+					? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+					: 'bg-[#e20074] hover:bg-[#c70066]',
 			)}
 		>
 			{isPending ? (
@@ -110,10 +134,10 @@ export function TeamForm({ mode, teamId, initialData }: TeamFormProps) {
 	return (
 		<div className="space-y-8 pb-12">
 			<AdminPageHeader
-				title={mode === "create" ? "Neues Team" : "Team bearbeiten"}
+				title={mode === 'create' ? 'Neues Team' : 'Team bearbeiten'}
 				subtitle={
-					mode === "create"
-						? "Erstelle ein neues Vertriebsteam und ordne es einem Standort zu."
+					mode === 'create'
+						? 'Erstelle ein neues Vertriebsteam und ordne es einem Standort zu.'
 						: `Verwalte die Einstellungen für das Team ${initialData?.name}`
 				}
 				backHref="/admin/teams"
@@ -131,7 +155,7 @@ export function TeamForm({ mode, teamId, initialData }: TeamFormProps) {
 							label="Team-Name"
 							placeholder="z.B. Team Berlin Süd"
 							error={errors.name?.message as string}
-							{...register("name")}
+							{...register('name')}
 						/>
 
 						<Input
@@ -139,7 +163,7 @@ export function TeamForm({ mode, teamId, initialData }: TeamFormProps) {
 							type="email"
 							placeholder="z.B. team06@telekom.de"
 							error={errors.email?.message as string}
-							{...register("email")}
+							{...register('email')}
 						/>
 					</AdminFormSection>
 
@@ -154,14 +178,15 @@ export function TeamForm({ mode, teamId, initialData }: TeamFormProps) {
 							</label>
 							<div className="relative">
 								<select
-									{...register("locationId")}
+									{...register('locationId')}
 									disabled={isLoadingLocations}
 									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all disabled:opacity-50 appearance-none cursor-pointer"
 								>
 									<option value="">(Kein Standort zugewiesen)</option>
 									{locations?.map((loc: any) => (
 										<option key={loc.id} value={loc.id}>
-											{loc.name} {loc.isActive ? "" : "(Inaktiv)"}
+											{loc.name} {loc.address ? `(${loc.address})` : ''}{' '}
+											{loc.isActive ? '' : '(Inaktiv)'}
 										</option>
 									))}
 								</select>

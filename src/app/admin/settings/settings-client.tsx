@@ -1,7 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { trpc } from "@/lib/trpc";
+import {
+	useState, useEffect,
+} from 'react';
+import {
+	trpc,
+} from '@/lib/trpc';
 import {
 	Settings,
 	Lock,
@@ -18,31 +22,65 @@ import {
 	Loader2,
 	Save,
 	Euro,
-	Image as ImageIcon
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import clsx from "clsx";
-import { Input } from "@/components/shared/ui/input";
+	Image as ImageIcon,
+} from 'lucide-react';
+import {
+	motion, AnimatePresence,
+} from 'framer-motion';
+import clsx from 'clsx';
+import {
+	Input,
+} from '@/components/shared/ui/input';
 import {
 	AdminPageHeader,
 	AdminFormSection,
-	AdminFormContainer
-} from "@/components/shared/ui/admin-ui";
+	AdminFormContainer,
+} from '@/components/shared/ui/admin-ui';
 
 export default function AdminSettingsPage() {
-	const [activeTab, setActiveTab] = useState<
-		"profile" | "security" | "system" | "pricing" | "design"
-	>("profile");
+	const [
+		activeTab,
+		setActiveTab,
+	] = useState<
+		'profile' | 'security' | 'system' | 'pricing' | 'design'
+	>('profile');
 
-	const { data: user } = trpc.admin.getCurrentUser.useQuery();
-	const isAdmin = user?.role === "ADMIN";
+	const {
+		data: user,
+	} = trpc.admin.getCurrentUser.useQuery();
+	const isAdmin = user?.role === 'ADMIN';
 
 	const tabs = [
-		{ id: "profile", label: "Profil", icon: User, show: true },
-		{ id: "security", label: "Sicherheit", icon: Lock, show: true },
-		{ id: "pricing", label: "Preise", icon: Euro, show: isAdmin },
-		{ id: "design", label: "Design", icon: ImageIcon, show: isAdmin },
-		{ id: "system", label: "System", icon: Hammer, show: isAdmin }
+		{
+			id: 'profile',
+			label: 'Profil',
+			icon: User,
+			show: true,
+		},
+		{
+			id: 'security',
+			label: 'Sicherheit',
+			icon: Lock,
+			show: true,
+		},
+		{
+			id: 'pricing',
+			label: 'Preise',
+			icon: Euro,
+			show: isAdmin,
+		},
+		{
+			id: 'design',
+			label: 'Design',
+			icon: ImageIcon,
+			show: isAdmin,
+		},
+		{
+			id: 'system',
+			label: 'System',
+			icon: Hammer,
+			show: isAdmin,
+		},
 	].filter((t) => t.show);
 
 	return (
@@ -60,10 +98,10 @@ export default function AdminSettingsPage() {
 							key={tab.id}
 							onClick={() => setActiveTab(tab.id as any)}
 							className={clsx(
-								"flex items-center gap-2.5 px-6 py-2.5 rounded-xl text-[0.85rem] font-bold transition-all duration-300 cursor-pointer border-none",
+								'flex items-center gap-2.5 px-6 py-2.5 rounded-xl text-[0.85rem] font-bold transition-all duration-300 cursor-pointer border-none',
 								activeTab === tab.id
-									? "bg-white text-[#e20074] shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#eaedf0]"
-									: "bg-transparent text-[#888] hover:text-[#1a1a2e] hover:bg-white/50"
+									? 'bg-white text-[#e20074] shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#eaedf0]'
+									: 'bg-transparent text-[#888] hover:text-[#1a1a2e] hover:bg-white/50',
 							)}
 						>
 							<tab.icon className="w-4 h-4" />
@@ -74,15 +112,15 @@ export default function AdminSettingsPage() {
 
 				<AdminFormContainer>
 					<AnimatePresence mode="wait">
-						{activeTab === "profile" && (
+						{activeTab === 'profile' && (
 							<ProfilePanel key="profile" user={user} />
 						)}
-						{activeTab === "pricing" && <PricingPanel key="pricing" />}
-						{activeTab === "design" && <DesignPanel key="design" />}
-						{activeTab === "security" && (
+						{activeTab === 'pricing' && <PricingPanel key="pricing" />}
+						{activeTab === 'design' && <DesignPanel key="design" />}
+						{activeTab === 'security' && (
 							<SecurityPanel key="security" isAdmin={isAdmin} />
 						)}
-						{activeTab === "system" && <SystemPanel key="system" />}
+						{activeTab === 'system' && <SystemPanel key="system" />}
 					</AnimatePresence>
 				</AdminFormContainer>
 			</div>
@@ -90,31 +128,44 @@ export default function AdminSettingsPage() {
 	);
 }
 
-function ProfilePanel({ user }: { user: any }) {
-	const { data: stats } = trpc.admin.getDashboardStats.useQuery();
+function ProfilePanel({
+	user,
+}: { user: any }) {
+	const {
+		data: stats,
+	} = trpc.admin.getDashboardStats.useQuery();
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, y: -10 }}
+			initial={{
+				opacity: 0,
+				y: 10,
+			}}
+			animate={{
+				opacity: 1,
+				y: 0,
+			}}
+			exit={{
+				opacity: 0,
+				y: -10,
+			}}
 			className="space-y-6"
 		>
 			<div className="bg-white border border-[#eaedf0] rounded-2xl p-6 shadow-sm overflow-hidden">
 				<div className="flex items-center gap-5 mb-6">
 					<div className="w-16 h-16 bg-linear-to-br from-[#e20074] to-[#c70066] rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-[#e20074]/20 border border-[#e20074]/10 shrink-0">
-						{user?.email?.charAt(0).toUpperCase() || "A"}
+						{user?.email?.charAt(0).toUpperCase() || 'A'}
 					</div>
 					<div>
 						<h3 className="text-[1.3rem] font-extrabold text-[#1a1a2e] m-0 tracking-tight">
-							{user?.email?.split("@")[0] || "Administrator"}
+							{user?.email?.split('@')[0] || 'Administrator'}
 						</h3>
 						<p className="text-[0.85rem] text-[#888] m-0 mb-2 font-medium">
-							{user?.email || "admin@telekom.de"}
+							{user?.email || 'admin@telekom.de'}
 						</p>
 						<div className="flex gap-2">
 							<span className="px-2.5 py-0.5 bg-[#e20074]/10 text-[#e20074] rounded-lg text-[0.65rem] font-bold uppercase tracking-wider">
-								{user?.role || "ADMIN"}
+								{user?.role || 'ADMIN'}
 							</span>
 							<span className="px-2.5 py-0.5 bg-[#f7f8fa] text-[#888] rounded-lg text-[0.65rem] font-bold uppercase tracking-wider border border-[#eaedf0]">
 								{user?.team?.name
@@ -123,7 +174,7 @@ function ProfilePanel({ user }: { user: any }) {
 										? user.location.name
 										: user?.odRegion?.name
 											? user.odRegion.name
-											: "Globaler Zugriff"}
+											: 'Globaler Zugriff'}
 							</span>
 						</div>
 					</div>
@@ -187,75 +238,111 @@ function ProfilePanel({ user }: { user: any }) {
 	);
 }
 
-function SecurityPanel({ isAdmin }: { isAdmin: boolean }) {
-	const [oldPassword, setOldPassword] = useState("");
-	const [newPassword, setNewPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
-	const [status, setStatus] = useState<
-		"idle" | "pending" | "success" | "error"
-	>("idle");
-	const [errorMsg, setErrorMsg] = useState("");
+function SecurityPanel({
+	isAdmin,
+}: { isAdmin: boolean }) {
+	const [
+		oldPassword,
+		setOldPassword,
+	] = useState('');
+	const [
+		newPassword,
+		setNewPassword,
+	] = useState('');
+	const [
+		confirmPassword,
+		setConfirmPassword,
+	] = useState('');
+	const [
+		status,
+		setStatus,
+	] = useState<
+		'idle' | 'pending' | 'success' | 'error'
+	>('idle');
+	const [
+		errorMsg,
+		setErrorMsg,
+	] = useState('');
 
 	const mutation = trpc.admin.settings.changePassword.useMutation({
 		onSuccess: () => {
-			setStatus("success");
-			setOldPassword("");
-			setNewPassword("");
-			setConfirmPassword("");
+			setStatus('success');
+			setOldPassword('');
+			setNewPassword('');
+			setConfirmPassword('');
 			setTimeout(() => {
-				setStatus("idle");
-				setErrorMsg("");
+				setStatus('idle');
+				setErrorMsg('');
 			}, 5000);
 		},
 		onError: (err) => {
-			setStatus("error");
-			setErrorMsg(err.message || "Ein Fehler ist aufgetreten.");
-		}
+			setStatus('error');
+			setErrorMsg(err.message || 'Ein Fehler ist aufgetreten.');
+		},
 	});
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (newPassword !== confirmPassword) {
-			setStatus("error");
-			setErrorMsg("Die neuen Passwörter stimmen nicht überein.");
+			setStatus('error');
+			setErrorMsg('Die neuen Passwörter stimmen nicht überein.');
 			return;
 		}
 		if (newPassword.length < 8) {
-			setStatus("error");
-			setErrorMsg("Das Passwort muss mindestens 8 Zeichen lang sein.");
+			setStatus('error');
+			setErrorMsg('Das Passwort muss mindestens 8 Zeichen lang sein.');
 			return;
 		}
-		setStatus("pending");
-		setErrorMsg("");
-		mutation.mutate({ oldPassword, newPassword });
+		setStatus('pending');
+		setErrorMsg('');
+		mutation.mutate({
+			oldPassword,
+			newPassword,
+		});
 	};
 
-	const { data: securitySettingsData, refetch: refetchSecurity } =
+	const {
+		data: securitySettingsData, refetch: refetchSecurity,
+	} =
 		trpc.admin.getSecuritySettings.useQuery();
 	const updateSecurityMutation = trpc.admin.updateSecuritySettings.useMutation({
-		onSuccess: () => refetchSecurity()
+		onSuccess: () => refetchSecurity(),
 	});
 
-	const [allowedIps, setAllowedIps] = useState("");
-	const [requireEmailVerification, setRequireEmailVerification] =
+	const [
+		allowedIps,
+		setAllowedIps,
+	] = useState('');
+	const [
+		requireEmailVerification,
+		setRequireEmailVerification,
+	] =
 		useState(true);
-	const [isSecurityPending, setIsSecurityPending] = useState(false);
-	const [securitySaved, setSecuritySaved] = useState(false);
+	const [
+		isSecurityPending,
+		setIsSecurityPending,
+	] = useState(false);
+	const [
+		securitySaved,
+		setSecuritySaved,
+	] = useState(false);
 
 	useEffect(() => {
 		if (securitySettingsData) {
 			setAllowedIps(securitySettingsData.allowedIps);
 			setRequireEmailVerification(
-				securitySettingsData.requireEmailVerification
+				securitySettingsData.requireEmailVerification,
 			);
 		}
-	}, [securitySettingsData]);
+	}, [
+		securitySettingsData,
+	]);
 
 	const handleSaveSecurity = async () => {
 		setIsSecurityPending(true);
 		await updateSecurityMutation.mutateAsync({
 			allowedIps,
-			requireEmailVerification
+			requireEmailVerification,
 		});
 		setIsSecurityPending(false);
 		setSecuritySaved(true);
@@ -264,9 +351,18 @@ function SecurityPanel({ isAdmin }: { isAdmin: boolean }) {
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, y: -10 }}
+			initial={{
+				opacity: 0,
+				y: 10,
+			}}
+			animate={{
+				opacity: 1,
+				y: 0,
+			}}
+			exit={{
+				opacity: 0,
+				y: -10,
+			}}
 			className="space-y-8"
 		>
 			<AdminFormSection
@@ -306,14 +402,14 @@ function SecurityPanel({ isAdmin }: { isAdmin: boolean }) {
 						/>
 					</div>
 
-					{status === "error" && (
+					{status === 'error' && (
 						<div className="p-4 bg-red-50 text-red-600 rounded-2xl text-[0.85rem] font-bold border border-red-100 flex gap-2 items-center">
 							<AlertTriangle className="w-4 h-4 shrink-0" />
 							{errorMsg}
 						</div>
 					)}
 
-					{status === "success" && (
+					{status === 'success' && (
 						<div className="p-4 bg-green-50 text-green-700 rounded-2xl text-[0.85rem] font-bold border border-green-100 flex gap-2 items-center">
 							<Check className="w-4 h-4 shrink-0" />
 							Passwort wurde erfolgreich aktualisiert.
@@ -322,20 +418,20 @@ function SecurityPanel({ isAdmin }: { isAdmin: boolean }) {
 
 					<button
 						type="submit"
-						disabled={status === "pending"}
+						disabled={status === 'pending'}
 						className={clsx(
-							"px-6 py-2.5 rounded-xl font-black text-white flex items-center gap-2 transition-all duration-300 text-[0.85rem] cursor-pointer shadow-md active:scale-95",
-							status === "pending"
-								? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-								: "bg-[#1a1a2e] hover:bg-[#2a2a3e] hover:shadow-lg hover:-translate-y-0.5"
+							'px-6 py-2.5 rounded-xl font-black text-white flex items-center gap-2 transition-all duration-300 text-[0.85rem] cursor-pointer shadow-md active:scale-95',
+							status === 'pending'
+								? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+								: 'bg-[#1a1a2e] hover:bg-[#2a2a3e] hover:shadow-lg hover:-translate-y-0.5',
 						)}
 					>
-						{status === "pending" ? (
+						{status === 'pending' ? (
 							<Loader2 className="w-4 h-4 animate-spin" />
 						) : (
 							<Save className="w-4 h-4" />
 						)}
-						{status === "pending" ? "Speichere..." : "Passwort aktualisieren"}
+						{status === 'pending' ? 'Speichere...' : 'Passwort aktualisieren'}
 					</button>
 				</form>
 			</AdminFormSection>
@@ -389,12 +485,12 @@ function SecurityPanel({ isAdmin }: { isAdmin: boolean }) {
 							onClick={handleSaveSecurity}
 							disabled={isSecurityPending}
 							className={clsx(
-								"w-full px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
+								'w-full px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95',
 								isSecurityPending
-									? "bg-[#ddd] shadow-none text-[#999]"
+									? 'bg-[#ddd] shadow-none text-[#999]'
 									: securitySaved
-										? "bg-green-600 text-white shadow-md shadow-green-100"
-										: "bg-[#1a1a2e] text-white hover:bg-[#2a2a3e] shadow-md"
+										? 'bg-green-600 text-white shadow-md shadow-green-100'
+										: 'bg-[#1a1a2e] text-white hover:bg-[#2a2a3e] shadow-md',
 							)}
 						>
 							{isSecurityPending ? (
@@ -404,7 +500,7 @@ function SecurityPanel({ isAdmin }: { isAdmin: boolean }) {
 							) : (
 								<Save className="w-4 h-4" />
 							)}
-							{securitySaved ? "Gespeichert" : "Sicherheit speichern"}
+							{securitySaved ? 'Gespeichert' : 'Sicherheit speichern'}
 						</button>
 					</div>
 				</AdminFormSection>
@@ -414,19 +510,26 @@ function SecurityPanel({ isAdmin }: { isAdmin: boolean }) {
 }
 
 function SystemPanel() {
-	const { data: isMaintenance, refetch } =
+	const {
+		data: isMaintenance, refetch,
+	} =
 		trpc.admin.getMaintenanceStatus.useQuery();
 	const toggleMutation = trpc.admin.toggleMaintenanceMode.useMutation({
 		onSuccess: () => {
 			refetch();
-		}
+		},
 	});
 
-	const [isPending, setIsPending] = useState(false);
+	const [
+		isPending,
+		setIsPending,
+	] = useState(false);
 
 	const handleToggle = async () => {
 		setIsPending(true);
-		await toggleMutation.mutateAsync({ enabled: !isMaintenance });
+		await toggleMutation.mutateAsync({
+			enabled: !isMaintenance,
+		});
 		setIsPending(false);
 	};
 
@@ -440,9 +543,18 @@ function SystemPanel() {
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, y: -10 }}
+			initial={{
+				opacity: 0,
+				y: 10,
+			}}
+			animate={{
+				opacity: 1,
+				y: 0,
+			}}
+			exit={{
+				opacity: 0,
+				y: -10,
+			}}
 			className="space-y-6"
 		>
 			<AdminFormSection
@@ -453,10 +565,10 @@ function SystemPanel() {
 				<div className="p-8 border-2 border-dashed border-[#eaedf0] rounded-3xl flex flex-col items-center text-center">
 					<div
 						className={clsx(
-							"w-20 h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500",
+							'w-20 h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500',
 							isMaintenance
-								? "bg-red-50 text-red-600 shadow-lg shadow-red-100 animate-pulse"
-								: "bg-green-50 text-green-600 shadow-lg shadow-green-100"
+								? 'bg-red-50 text-red-600 shadow-lg shadow-red-100 animate-pulse'
+								: 'bg-green-50 text-green-600 shadow-lg shadow-green-100',
 						)}
 					>
 						{isMaintenance ? (
@@ -467,30 +579,30 @@ function SystemPanel() {
 					</div>
 
 					<h3 className="text-[1.3rem] font-extrabold text-[#1a1a2e] m-0 mb-2">
-						{isMaintenance ? "Wartungsmodus ist AKTIV" : "Tool ist BEREIT"}
+						{isMaintenance ? 'Wartungsmodus ist AKTIV' : 'Tool ist BEREIT'}
 					</h3>
 					<p className="text-[0.9rem] text-[#888] max-w-sm m-0 mb-8 leading-relaxed">
 						{isMaintenance
-							? "Das Sales-Tool ist aktuell für alle Nutzer gesperrt. Nur Administratoren haben Zugriff."
-							: "Das Tool ist für alle registrierten Mitarbeiter uneingeschränkt nutzbar."}
+							? 'Das Sales-Tool ist aktuell für alle Nutzer gesperrt. Nur Administratoren haben Zugriff.'
+							: 'Das Tool ist für alle registrierten Mitarbeiter uneingeschränkt nutzbar.'}
 					</p>
 
 					<button
 						onClick={handleToggle}
 						disabled={isPending}
 						className={clsx(
-							"px-8 py-3.5 rounded-2xl font-black text-[0.85rem] transition-all duration-300 flex items-center gap-3 active:scale-95 shadow-md",
+							'px-8 py-3.5 rounded-2xl font-black text-[0.85rem] transition-all duration-300 flex items-center gap-3 active:scale-95 shadow-md',
 							isMaintenance
-								? "bg-white text-red-600 border border-red-200 hover:bg-red-50"
-								: "bg-[#1a1a2e] text-white hover:bg-[#2a2a3e] hover:shadow-lg hover:-translate-y-0.5"
+								? 'bg-white text-red-600 border border-red-200 hover:bg-red-50'
+								: 'bg-[#1a1a2e] text-white hover:bg-[#2a2a3e] hover:shadow-lg hover:-translate-y-0.5',
 						)}
 					>
 						{isPending ? (
 							<Loader2 className="w-4 h-4 animate-spin" />
 						) : isMaintenance ? (
-							"Wartungsmodus beenden"
+							'Wartungsmodus beenden'
 						) : (
-							"Wartungsmodus aktivieren"
+							'Wartungsmodus aktivieren'
 						)}
 						{!isPending && !isMaintenance && <ArrowRight className="w-4 h-4" />}
 					</button>
@@ -521,32 +633,40 @@ function SystemPanel() {
 
 function PricingPanel() {
 	const utils = trpc.useUtils();
-	const { data: pricingSettings, isLoading } =
+	const {
+		data: pricingSettings, isLoading,
+	} =
 		trpc.settings.getPricingSettings.useQuery();
 
-	const [status, setStatus] = useState<
-		"idle" | "pending" | "success" | "error"
-	>("idle");
+	const [
+		status,
+		setStatus,
+	] = useState<
+		'idle' | 'pending' | 'success' | 'error'
+	>('idle');
 
 	const updateMutation = trpc.settings.updateMany.useMutation({
 		onSuccess: () => {
 			utils.settings.getPricingSettings.invalidate();
-			setStatus("success");
-			setTimeout(() => setStatus("idle"), 3000);
+			setStatus('success');
+			setTimeout(() => setStatus('idle'), 3000);
 		},
 		onError: () => {
-			setStatus("error");
-			setTimeout(() => setStatus("idle"), 3000);
-		}
+			setStatus('error');
+			setTimeout(() => setStatus('idle'), 3000);
+		},
 	});
 
-	const [form, setForm] = useState({
-		magentatv_smart_price: "10.00",
-		magentatv_smartstream_price: "17.00",
-		magentatv_megastream_price: "30.00",
-		shipping_hardware_fee: "6.95",
-		plus_karte_first_price: "19.95",
-		plus_karte_following_price: "9.95"
+	const [
+		form,
+		setForm,
+	] = useState({
+		magentatv_smart_price: '10.00',
+		magentatv_smartstream_price: '17.00',
+		magentatv_megastream_price: '30.00',
+		shipping_hardware_fee: '6.95',
+		plus_karte_first_price: '19.95',
+		plus_karte_following_price: '9.95',
 	});
 
 	useEffect(() => {
@@ -561,21 +681,29 @@ function PricingPanel() {
 				plus_karte_first_price:
 					pricingSettings.plus_karte_first_price.toFixed(2),
 				plus_karte_following_price:
-					pricingSettings.plus_karte_following_price.toFixed(2)
+					pricingSettings.plus_karte_following_price.toFixed(2),
 			});
 		}
-	}, [pricingSettings]);
+	}, [
+		pricingSettings,
+	]);
 
 	const handleChange = (key: keyof typeof form, value: string) => {
-		setForm((prev) => ({ ...prev, [key]: value }));
+		setForm((prev) => ({
+			...prev,
+			[key]: value,
+		}));
 	};
 
 	const handleSave = (e: React.FormEvent) => {
 		e.preventDefault();
-		setStatus("pending");
-		const changes = Object.entries(form).map(([key, value]) => ({
+		setStatus('pending');
+		const changes = Object.entries(form).map(([
 			key,
-			value: value.replace(",", ".")
+			value,
+		]) => ({
+			key,
+			value: value.replace(',', '.'),
 		}));
 		updateMutation.mutate(changes);
 	};
@@ -591,15 +719,15 @@ function PricingPanel() {
 	const SaveButton = (
 		<button
 			onClick={handleSave}
-			disabled={status === "pending"}
+			disabled={status === 'pending'}
 			className={clsx(
-				"px-6 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
-				status === "pending"
-					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-					: "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:-translate-y-0.5"
+				'px-6 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95',
+				status === 'pending'
+					? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+					: 'bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:-translate-y-0.5',
 			)}
 		>
-			{status === "pending" ? (
+			{status === 'pending' ? (
 				<Loader2 className="w-4 h-4 animate-spin" />
 			) : (
 				<Save className="w-4 h-4" />
@@ -610,9 +738,18 @@ function PricingPanel() {
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, y: -10 }}
+			initial={{
+				opacity: 0,
+				y: 10,
+			}}
+			animate={{
+				opacity: 1,
+				y: 0,
+			}}
+			exit={{
+				opacity: 0,
+				y: -10,
+			}}
 			className="space-y-6"
 		>
 			<AdminFormSection
@@ -627,7 +764,7 @@ function PricingPanel() {
 						step="0.01"
 						value={form.magentatv_smart_price}
 						onChange={(e) =>
-							handleChange("magentatv_smart_price", e.target.value)
+							handleChange('magentatv_smart_price', e.target.value)
 						}
 					/>
 					<Input
@@ -636,7 +773,7 @@ function PricingPanel() {
 						step="0.01"
 						value={form.magentatv_smartstream_price}
 						onChange={(e) =>
-							handleChange("magentatv_smartstream_price", e.target.value)
+							handleChange('magentatv_smartstream_price', e.target.value)
 						}
 					/>
 					<Input
@@ -645,7 +782,7 @@ function PricingPanel() {
 						step="0.01"
 						value={form.magentatv_megastream_price}
 						onChange={(e) =>
-							handleChange("magentatv_megastream_price", e.target.value)
+							handleChange('magentatv_megastream_price', e.target.value)
 						}
 					/>
 				</div>
@@ -663,7 +800,7 @@ function PricingPanel() {
 						step="0.01"
 						value={form.plus_karte_first_price}
 						onChange={(e) =>
-							handleChange("plus_karte_first_price", e.target.value)
+							handleChange('plus_karte_first_price', e.target.value)
 						}
 					/>
 					<Input
@@ -672,7 +809,7 @@ function PricingPanel() {
 						step="0.01"
 						value={form.plus_karte_following_price}
 						onChange={(e) =>
-							handleChange("plus_karte_following_price", e.target.value)
+							handleChange('plus_karte_following_price', e.target.value)
 						}
 					/>
 					<Input
@@ -681,7 +818,7 @@ function PricingPanel() {
 						step="0.01"
 						value={form.shipping_hardware_fee}
 						onChange={(e) =>
-							handleChange("shipping_hardware_fee", e.target.value)
+							handleChange('shipping_hardware_fee', e.target.value)
 						}
 					/>
 				</div>
@@ -689,20 +826,20 @@ function PricingPanel() {
 
 			<div className="flex items-center justify-between p-6 bg-[#f7f8fa] border border-[#eaedf0] rounded-3xl">
 				<div className="flex flex-col">
-					{(status === "success" && (
+					{(status === 'success' && (
 						<p className="text-green-600 font-bold text-[0.85rem] m-0 flex items-center gap-2">
 							<Check className="w-4 h-4" /> Änderungen gespeichert
 						</p>
 					)) ||
-						(status === "error" && (
+						(status === 'error' && (
 							<p className="text-red-500 font-bold text-[0.85rem] m-0 flex items-center gap-2">
 								<AlertTriangle className="w-4 h-4" /> Fehler beim Speichern
 							</p>
 						)) || (
-							<p className="text-[#888] font-medium text-[0.8rem] m-0">
+						<p className="text-[#888] font-medium text-[0.8rem] m-0">
 								Änderungen werden sofort für alle Nutzer übernommen.
-							</p>
-						)}
+						</p>
+					)}
 				</div>
 				{SaveButton}
 			</div>
@@ -712,61 +849,77 @@ function PricingPanel() {
 
 function DesignPanel() {
 	const utils = trpc.useUtils();
-	const { data: designSettings, isLoading } =
+	const {
+		data: designSettings, isLoading,
+	} =
 		trpc.settings.getDesignSettings.useQuery();
 
-	const [status, setStatus] = useState<
-		"idle" | "pending" | "success" | "error"
-	>("idle");
+	const [
+		status,
+		setStatus,
+	] = useState<
+		'idle' | 'pending' | 'success' | 'error'
+	>('idle');
 
 	const updateMutation = trpc.settings.updateMany.useMutation({
 		onSuccess: () => {
 			utils.settings.getDesignSettings.invalidate();
-			setStatus("success");
-			setTimeout(() => setStatus("idle"), 3000);
+			setStatus('success');
+			setTimeout(() => setStatus('idle'), 3000);
 		},
 		onError: () => {
-			setStatus("error");
-			setTimeout(() => setStatus("idle"), 3000);
-		}
+			setStatus('error');
+			setTimeout(() => setStatus('idle'), 3000);
+		},
 	});
 
-	const [form, setForm] = useState({
-		magentatv_background_image: "",
-		header_background_image: "",
-		category_image_MOBILE: "",
-		category_image_FIBER: "",
-		category_image_DSL: "",
-		category_image_MAGENTA_TV_OTT: "",
-		category_image_DEVICE: ""
+	const [
+		form,
+		setForm,
+	] = useState({
+		magentatv_background_image: '',
+		header_background_image: '',
+		category_image_MOBILE: '',
+		category_image_FIBER: '',
+		category_image_DSL: '',
+		category_image_MAGENTA_TV_OTT: '',
+		category_image_DEVICE: '',
 	});
 
 	useEffect(() => {
 		if (designSettings) {
 			setForm({
 				magentatv_background_image:
-					designSettings.magentatv_background_image || "",
-				header_background_image: designSettings.header_background_image || "",
-				category_image_MOBILE: designSettings.category_image_MOBILE || "",
-				category_image_FIBER: designSettings.category_image_FIBER || "",
-				category_image_DSL: designSettings.category_image_DSL || "",
+					designSettings.magentatv_background_image || '',
+				header_background_image: designSettings.header_background_image || '',
+				category_image_MOBILE: designSettings.category_image_MOBILE || '',
+				category_image_FIBER: designSettings.category_image_FIBER || '',
+				category_image_DSL: designSettings.category_image_DSL || '',
 				category_image_MAGENTA_TV_OTT:
-					designSettings.category_image_MAGENTA_TV_OTT || "",
-				category_image_DEVICE: designSettings.category_image_DEVICE || ""
+					designSettings.category_image_MAGENTA_TV_OTT || '',
+				category_image_DEVICE: designSettings.category_image_DEVICE || '',
 			});
 		}
-	}, [designSettings]);
+	}, [
+		designSettings,
+	]);
 
 	const handleChange = (key: keyof typeof form, value: string) => {
-		setForm((prev) => ({ ...prev, [key]: value }));
+		setForm((prev) => ({
+			...prev,
+			[key]: value,
+		}));
 	};
 
 	const handleSave = (e: React.FormEvent) => {
 		e.preventDefault();
-		setStatus("pending");
-		const changes = Object.entries(form).map(([key, value]) => ({
+		setStatus('pending');
+		const changes = Object.entries(form).map(([
 			key,
-			value
+			value,
+		]) => ({
+			key,
+			value,
 		}));
 		updateMutation.mutate(changes);
 	};
@@ -783,15 +936,15 @@ function DesignPanel() {
 	const SaveButton = (
 		<button
 			onClick={handleSave}
-			disabled={status === "pending"}
+			disabled={status === 'pending'}
 			className={clsx(
-				"px-6 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95",
-				status === "pending"
-					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-					: "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:-translate-y-0.5"
+				'px-6 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] active:scale-95',
+				status === 'pending'
+					? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+					: 'bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:-translate-y-0.5',
 			)}
 		>
-			{status === "pending" ? (
+			{status === 'pending' ? (
 				<Loader2 className="w-4 h-4 animate-spin" />
 			) : (
 				<Save className="w-4 h-4" />
@@ -802,9 +955,18 @@ function DesignPanel() {
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, y: -10 }}
+			initial={{
+				opacity: 0,
+				y: 10,
+			}}
+			animate={{
+				opacity: 1,
+				y: 0,
+			}}
+			exit={{
+				opacity: 0,
+				y: -10,
+			}}
 			className="space-y-6"
 		>
 			<AdminFormSection
@@ -820,7 +982,7 @@ function DesignPanel() {
 							placeholder="https://test.com/magentatv-bg.png"
 							value={form.magentatv_background_image}
 							onChange={(e) =>
-								handleChange("magentatv_background_image", e.target.value)
+								handleChange('magentatv_background_image', e.target.value)
 							}
 						/>
 						<p className="text-[#888] text-[0.75rem] mt-2 font-medium">
@@ -836,7 +998,7 @@ function DesignPanel() {
 							placeholder="https://test.com/header-bg.png"
 							value={form.header_background_image}
 							onChange={(e) =>
-								handleChange("header_background_image", e.target.value)
+								handleChange('header_background_image', e.target.value)
 							}
 						/>
 						<p className="text-[#888] text-[0.75rem] mt-2 font-medium">
@@ -857,7 +1019,7 @@ function DesignPanel() {
 						type="text"
 						value={form.category_image_MOBILE}
 						onChange={(e) =>
-							handleChange("category_image_MOBILE", e.target.value)
+							handleChange('category_image_MOBILE', e.target.value)
 						}
 					/>
 					<Input
@@ -865,21 +1027,21 @@ function DesignPanel() {
 						type="text"
 						value={form.category_image_FIBER}
 						onChange={(e) =>
-							handleChange("category_image_FIBER", e.target.value)
+							handleChange('category_image_FIBER', e.target.value)
 						}
 					/>
 					<Input
 						label="Festnetz (DSL)"
 						type="text"
 						value={form.category_image_DSL}
-						onChange={(e) => handleChange("category_image_DSL", e.target.value)}
+						onChange={(e) => handleChange('category_image_DSL', e.target.value)}
 					/>
 					<Input
 						label="MagentaTV"
 						type="text"
 						value={form.category_image_MAGENTA_TV_OTT}
 						onChange={(e) =>
-							handleChange("category_image_MAGENTA_TV_OTT", e.target.value)
+							handleChange('category_image_MAGENTA_TV_OTT', e.target.value)
 						}
 					/>
 					<Input
@@ -887,7 +1049,7 @@ function DesignPanel() {
 						type="text"
 						value={form.category_image_DEVICE}
 						onChange={(e) =>
-							handleChange("category_image_DEVICE", e.target.value)
+							handleChange('category_image_DEVICE', e.target.value)
 						}
 					/>
 				</div>
@@ -895,20 +1057,20 @@ function DesignPanel() {
 
 			<div className="flex items-center justify-between p-6 bg-[#f7f8fa] border border-[#eaedf0] rounded-3xl">
 				<div className="flex flex-col">
-					{(status === "success" && (
+					{(status === 'success' && (
 						<p className="text-green-600 font-bold text-[0.85rem] m-0 flex items-center gap-2">
 							<Check className="w-4 h-4" /> Änderungen gespeichert
 						</p>
 					)) ||
-						(status === "error" && (
+						(status === 'error' && (
 							<p className="text-red-500 font-bold text-[0.85rem] m-0 flex items-center gap-2">
 								<AlertTriangle className="w-4 h-4" /> Fehler beim Speichern
 							</p>
 						)) || (
-							<p className="text-[#888] font-medium text-[0.8rem] m-0">
+						<p className="text-[#888] font-medium text-[0.8rem] m-0">
 								Bilder werden sofort im Tool aktualisiert.
-							</p>
-						)}
+						</p>
+					)}
 				</div>
 				{SaveButton}
 			</div>

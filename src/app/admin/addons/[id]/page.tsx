@@ -1,13 +1,23 @@
-"use client";
+'use client';
 
-import { AddonForm } from "@/components/features/admin/addon-form";
-import { trpc } from "@/lib/trpc";
-import { useParams } from "next/navigation";
+import {
+	AddonForm,
+} from '@/components/features/admin/addon-form';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	useParams,
+} from 'next/navigation';
 
 export default function EditAddonPage() {
 	const params = useParams();
 	const id = params.id as string;
-	const { data: addon, isLoading } = trpc.addon.getById.useQuery({ id });
+	const {
+		data: addon, isLoading,
+	} = trpc.addon.getById.useQuery({
+		id,
+	});
 
 	if (isLoading) {
 		return (
@@ -17,7 +27,7 @@ export default function EditAddonPage() {
 		);
 	}
 
-	if (!addon) return <div>Zubuchoption nicht gefunden</div>;
+	if (!addon) { return <div>Zubuchoption nicht gefunden</div>; }
 
 	return <AddonForm initialData={addon} isEditMode />;
 }

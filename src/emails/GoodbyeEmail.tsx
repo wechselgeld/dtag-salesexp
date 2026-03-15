@@ -7,8 +7,8 @@ import {
 	Section,
 	Text,
 	Hr,
-	Img
-} from "@react-email/components";
+	Img,
+} from '@react-email/components';
 
 interface GoodbyeEmailProps {
 	email: string;
@@ -16,56 +16,58 @@ interface GoodbyeEmailProps {
 }
 
 const main = {
-	backgroundColor: "#f6f9fc",
+	backgroundColor: '#f6f9fc',
 	fontFamily:
-		'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif'
+		'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 };
 
 const container = {
-	backgroundColor: "#ffffff",
-	margin: "0 auto",
-	padding: "40px 20px",
-	marginBottom: "64px",
-	borderRadius: "12px",
-	boxShadow: "0 4px 14px rgba(0, 0, 0, 0.05)",
-	maxWidth: "580px"
+	backgroundColor: '#ffffff',
+	margin: '0 auto',
+	padding: '40px 20px',
+	marginBottom: '64px',
+	borderRadius: '12px',
+	boxShadow: '0 4px 14px rgba(0, 0, 0, 0.05)',
+	maxWidth: '580px',
 };
 
 const logoContainer = {
-	textAlign: "left" as const,
-	marginBottom: "32px"
+	textAlign: 'left' as const,
+	marginBottom: '32px',
 };
 
 const h1 = {
-	color: "#e20074",
-	fontSize: "24px",
-	fontWeight: "700",
-	lineHeight: "1.2",
-	margin: "0 0 24px",
-	textAlign: "left" as const
+	color: '#e20074',
+	fontSize: '24px',
+	fontWeight: '700',
+	lineHeight: '1.2',
+	margin: '0 0 24px',
+	textAlign: 'left' as const,
 };
 
 const text = {
-	color: "#333",
-	fontSize: "16px",
-	lineHeight: "26px",
-	margin: "0 0 20px"
+	color: '#333',
+	fontSize: '16px',
+	lineHeight: '26px',
+	margin: '0 0 20px',
 };
 
 const hr = {
-	borderColor: "#eaedf0",
-	margin: "32px 0 24px"
+	borderColor: '#eaedf0',
+	margin: '32px 0 24px',
 };
 
 const footer = {
-	color: "#8898aa",
-	fontSize: "13px",
-	lineHeight: "20px",
-	margin: "0",
-	textAlign: "center" as const
+	color: '#8898aa',
+	fontSize: '13px',
+	lineHeight: '20px',
+	margin: '0',
+	textAlign: 'center' as const,
 };
 
-export const GoodbyeEmail = ({ email, appUrl }: GoodbyeEmailProps) => {
+export const GoodbyeEmail = ({
+	email, appUrl,
+}: GoodbyeEmailProps) => {
 	return (
 		<Html>
 			<Head />
@@ -84,8 +86,10 @@ export const GoodbyeEmail = ({ email, appUrl }: GoodbyeEmailProps) => {
 
 					<Text style={text}>Guten Tag,</Text>
 					<Text style={text}>
-						dein Zugang zur Verwaltung der Sales Experience für die E-Mail{" "}
-						<span style={{ fontWeight: "600" }}>{email}</span> wurde soeben
+						dein Zugang zur Verwaltung der Sales Experience für die E-Mail{' '}
+						<span style={{
+							fontWeight: '600',
+						}}>{email}</span> wurde soeben
 						gelöscht.
 					</Text>
 
@@ -101,12 +105,18 @@ export const GoodbyeEmail = ({ email, appUrl }: GoodbyeEmailProps) => {
 						Diese E-Mail wurde automatisch generiert. Bitte antworte nicht
 						darauf.
 					</Text>
-					<Text style={{ ...footer, marginTop: "8px" }}>
+					<Text style={{
+						...footer,
+						marginTop: '8px',
+					}}>
 						&copy; {new Date().getFullYear()} Felix Kinze für Deutsche Telekom
-						Service GmbH |{" "}
-						<span style={{ color: "#e20074", fontWeight: "600" }}>
+						Service GmbH |{' '}
+						<span style={{
+							color: '#e20074',
+							fontWeight: '600',
+						}}>
 							Sales Experience
-						</span>{" "}
+						</span>{' '}
 						v2.3
 					</Text>
 				</Container>

@@ -1,8 +1,10 @@
-import { Metadata } from "next";
-import ProductsClient from "./products-client";
+import type {
+	Metadata,
+} from 'next';
+import ProductsClient from './products-client';
 
 export const metadata: Metadata = {
-	title: "Produkte verwalten"
+	title: 'Produkte verwalten',
 };
 
 export default function Page() {

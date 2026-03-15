@@ -1,19 +1,27 @@
-import { OdRegionForm } from "@/components/features/admin/od-region-form";
-import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import {
+	OdRegionForm,
+} from '@/components/features/admin/od-region-form';
+import {
+	prisma,
+} from '@/lib/prisma';
+import {
+	notFound,
+} from 'next/navigation';
 
 export const metadata = {
-	title: "OD-Bereich bearbeiten | Admin"
+	title: 'OD-Bereich bearbeiten | Admin',
 };
 
 export default async function EditOdRegionPage({
-	params
+	params,
 }: {
 	params: Promise<{ id: string }>;
 }) {
 	const resolvedParams = await params;
 	const region = await prisma.odRegion.findUnique({
-		where: { id: resolvedParams.id }
+		where: {
+			id: resolvedParams.id,
+		},
 	});
 
 	if (!region) {
@@ -30,7 +38,7 @@ export default async function EditOdRegionPage({
 				id={region.id}
 				initialData={{
 					name: region.name,
-					isActive: region.isActive
+					isActive: region.isActive,
 				}}
 			/>
 		</main>

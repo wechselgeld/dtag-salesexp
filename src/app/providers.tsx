@@ -1,36 +1,64 @@
-"use client";
+'use client';
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
-import { useState, useEffect } from "react";
-import { trpc } from "@/lib/trpc";
-import { MotionConfig } from "framer-motion";
-import { useSettingsStore } from "@/hooks/use-settings-store";
+import {
+	QueryClient, QueryClientProvider,
+} from '@tanstack/react-query';
+import {
+	httpBatchLink,
+	splitLink,
+	unstable_httpSubscriptionLink,
+} from '@trpc/client';
+import {
+	useState, useEffect,
+} from 'react';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	MotionConfig,
+} from 'framer-motion';
+import {
+	useSettingsStore,
+} from '@/hooks/use-settings-store';
 
-function SettingsWrapper({ children }: { children: React.ReactNode }) {
-	const { reduceAnimations } = useSettingsStore();
-	const [hydrated, setHydrated] = useState(false);
+function SettingsWrapper({
+	children,
+}: { children: React.ReactNode }) {
+	const {
+		reduceAnimations,
+	} = useSettingsStore();
+	const [
+		hydrated,
+		setHydrated,
+	] = useState(false);
 
 	useEffect(() => {
 		setHydrated(true);
 		if (reduceAnimations) {
-			document.body.classList.add("reduce-animations");
-		} else {
-			document.body.classList.remove("reduce-animations");
+			document.body.classList.add('reduce-animations');
 		}
-	}, [reduceAnimations]);
+		else {
+			document.body.classList.remove('reduce-animations');
+		}
+	}, [
+		reduceAnimations,
+	]);
 
 	return (
 		<MotionConfig
-			reducedMotion={hydrated && reduceAnimations ? "always" : "user"}
+			reducedMotion={hydrated && reduceAnimations ? 'always' : 'user'}
 		>
 			{children}
 		</MotionConfig>
 	);
 }
 
-export default function Providers({ children }: { children: React.ReactNode }) {
-	const [queryClient] = useState(
+export default function Providers({
+	children,
+}: { children: React.ReactNode }) {
+	const [
+		queryClient,
+	] = useState(
 		() =>
 			new QueryClient({
 				defaultOptions: {
@@ -38,19 +66,29 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 						staleTime: 5 * 60 * 1000, // 5 minutes caching before refetch
 						gcTime: 30 * 60 * 1000, // 30 minutes garbage collection
 						refetchOnWindowFocus: false, // Don't refetch when switching tabs
-						retry: 1
-					}
-				}
-			})
+						retry: 1,
+					},
+				},
+			}),
 	);
-	const [trpcClient] = useState(() =>
+	const [
+		trpcClient,
+	] = useState(() =>
 		trpc.createClient({
 			links: [
-				httpBatchLink({
-					url: "/api/trpc"
-				})
-			]
-		})
+				splitLink({
+					condition(op) {
+						return op.type === 'subscription';
+					},
+					true: unstable_httpSubscriptionLink({
+						url: '/api/trpc',
+					}),
+					false: httpBatchLink({
+						url: '/api/trpc',
+					}),
+				}),
+			],
+		}),
 	);
 
 	return (

@@ -1,141 +1,215 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Smartphone, Wifi, Zap, Tv, Router, Star } from "lucide-react";
-import { motion } from "framer-motion";
-import { SearchBar } from "@/components/features/search/search-bar";
-import { HeroHeader } from "@/components/features/products/hero-header";
-import { NewsCarousel } from "@/components/features/news/news-carousel";
-import { trpc } from "@/lib/trpc";
-import clsx from "clsx";
-import { Skeleton } from "@/components/shared/skeleton";
-import { useEffect, useState } from "react";
+import Link from 'next/link';
+import Image from 'next/image';
+import {
+	Smartphone, Wifi, Zap, Tv, Router, Star,
+} from 'lucide-react';
+import {
+	motion,
+} from 'framer-motion';
+import {
+	SearchBar,
+} from '@/components/features/search/search-bar';
+import {
+	HeroHeader,
+} from '@/components/features/products/hero-header';
+import {
+	NewsCarousel,
+} from '@/components/features/news/news-carousel';
+import {
+	trpc,
+} from '@/lib/trpc';
+import clsx from 'clsx';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import {
+	useEffect, useState,
+} from 'react';
+import {
+	useAnalytics,
+} from '@/hooks/use-analytics';
+import {
+	useSettingsStore,
+} from '@/hooks/use-settings-store';
 
 /* ──────────────────────────────────────────────
    Constants
    ────────────────────────────────────────────── */
 
-const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
-const LS_KEY_FIRST_NAME = "setup-user-firstName";
+const EASE_OUT_EXPO: [number, number, number, number] = [
+	0.16,
+	1,
+	0.3,
+	1,
+];
+const LS_KEY_FIRST_NAME = 'setup-user-firstName';
 
 const CATEGORIES = [
 	{
-		id: "MOBILE",
-		title: "Mobilfunk",
+		id: 'MOBILE',
+		title: 'Mobilfunk',
 		icon: Smartphone,
-		href: "/products/MOBILE",
-		color: "#e20074",
-		stats: "48 Tarife"
+		href: '/products/MOBILE',
+		color: '#e20074',
+		stats: 'Lade Anzahl...',
 	},
 	{
-		id: "FIBER",
-		title: "Glasfaser",
+		id: 'FIBER',
+		title: 'Glasfaser',
 		icon: Zap,
-		href: "/products/FIBER",
-		color: "#0090d0",
-		stats: "24 Tarife"
+		href: '/products/FIBER',
+		color: '#0090d0',
+		stats: 'Lade Anzahl...',
 	},
 	{
-		id: "DSL",
-		title: "Festnetz",
+		id: 'DSL',
+		title: 'Festnetz',
 		icon: Wifi,
-		href: "/products/DSL",
-		color: "#7b61ff",
-		stats: "36 Tarife"
+		href: '/products/DSL',
+		color: '#7b61ff',
+		stats: 'Lade Anzahl...',
 	},
 	{
-		id: "MAGENTA_TV_OTT",
-		title: "MagentaTV — OTT",
+		id: 'MAGENTA_TV_OTT',
+		title: 'MagentaTV — OTT',
 		icon: Tv,
-		href: "/products/MAGENTA_TV_OTT",
-		color: "#ff6b00",
-		stats: "12 Pakete"
+		href: '/products/MAGENTA_TV_OTT',
+		color: '#ff6b00',
+		stats: 'Lade Anzahl...',
 	},
 	{
-		id: "DEVICE",
-		title: "Endgeräte",
+		id: 'DEVICE',
+		title: 'Endgeräte',
 		icon: Router,
-		href: "/products/DEVICE",
-		color: "#00a878",
-		stats: "99+ Geräte"
-	}
+		href: '/products/DEVICE',
+		color: '#00a878',
+		stats: 'Anzahl...',
+	},
 ];
 
 /* ──────────────────────────────────────────────
    Main Component
    ────────────────────────────────────────────── */
 
-export default function ProductsPage() {
-	const { data: session, isLoading: sessionLoading } =
-		trpc.session.getCurrent.useQuery();
-	const { data: allProductsData, isLoading: productsLoading } =
-		trpc.product.getAllProducts.useQuery();
-	const allProducts = allProductsData?.items || [];
-	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery(
+export default function ProductsPage({
+	initialSession,
+	initialProducts,
+	initialSettings,
+	initialNews,
+}: {
+	initialSession?: any;
+	initialProducts?: any;
+	initialSettings?: any;
+	initialNews?: any;
+}) {
+	const {
+		data: session, isLoading: sessionLoading,
+	} =
+		trpc.session.getCurrent.useQuery(undefined, {
+			initialData: initialSession,
+		});
+	const {
+		data: allProductsData, isLoading: productsLoading,
+	} =
+		trpc.product.getAllProducts.useQuery(undefined, {
+			initialData: initialProducts,
+		});
+	const allProducts = allProductsData?.items || [
+	];
+	const {
+		data: designSettings,
+	} = trpc.settings.getDesignSettings.useQuery(
 		undefined,
 		{
-			staleTime: 10 * 60 * 1000
-		}
+			staleTime: 10 * 60 * 1000,
+			initialData: initialSettings,
+		},
 	);
 	const isLoading = sessionLoading || productsLoading;
 	const utils = trpc.useUtils();
+	const {
+		trackPageView,
+	} = useAnalytics();
 
-	const [firstName, setFirstName] = useState("");
-	const [isMounted, setIsMounted] = useState(false);
+	const [
+		firstName,
+		setFirstName,
+	] = useState('');
+	const [
+		isMounted,
+		setIsMounted,
+	] = useState(false);
+
+	useEffect(() => {
+		trackPageView('/products');
+	}, [
+		trackPageView,
+	]);
 
 	useEffect(() => {
 		setIsMounted(true);
-		const stored = localStorage.getItem(LS_KEY_FIRST_NAME) ?? "";
+		const stored = localStorage.getItem(LS_KEY_FIRST_NAME) ?? '';
 		setFirstName(stored);
-	}, []);
+	}, [
+	]);
 
-	// Prefetch all category products in background for "instant" load
-	useEffect(() => {
-		if (allProducts) {
-			CATEGORIES.forEach((category) => {
-				utils.product.getProductsByCategory.prefetch({
-					category: category.id
-				});
-			});
-		}
-	}, [allProducts, utils]);
+	// Prefetching all category products manually is no longer needed since
+	// allProducts is prefetched and cached locally on first load, so filtering is instant.
 
 	const getStats = (categoryId: string, fallback: string) => {
-		if (!allProducts) return fallback;
+		if (!allProducts) { return fallback; }
 		const count = allProducts.filter((p) => p.category === categoryId).length;
-		if (categoryId === "DEVICE") return `${count} Geräte`;
-		if (categoryId === "MAGENTA_TV_OTT") return `${count} Pakete`;
+		if (categoryId === 'DEVICE') { return `${count} Geräte`; }
+		if (categoryId === 'MAGENTA_TV_OTT') { return `${count} Pakete`; }
 		return `${count} Tarife`;
 	};
 
 	const highlightedCategories =
 		session?.team?.highlights
 			.filter((h) => h.category)
-			.map((h) => h.category) || [];
+			.map((h) => h.category) || [
+		];
 
 	const categoryStats = CATEGORIES.map((c) => ({
 		name: c.title,
 		count: allProducts
 			? allProducts.filter((p) => p.category === c.id).length
 			: parseInt(c.stats) || 0,
-		color: c.color
+		color: c.color,
 	}));
+
+	const {
+		showHeroImage,
+	} = useSettingsStore();
 
 	return (
 		<div className="min-h-full">
 			{/* ─── Hero Header ─── */}
 			<HeroHeader
-				firstName={isMounted ? firstName : ""}
+				firstName={isMounted ? firstName : ''}
 				teamName={session?.team?.name}
 				productsCount={allProducts?.length}
 				categories={categoryStats}
+				showHeroImage={showHeroImage}
 			/>
 
 			{/* ─── Search Bar ─── */}
 			<motion.div
-				initial={{ opacity: 0, y: 6 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ delay: 0.12, duration: 0.35, ease: EASE_OUT_EXPO }}
+				initial={{
+					opacity: 0,
+					y: 6,
+				}}
+				animate={{
+					opacity: 1,
+					y: 0,
+				}}
+				transition={{
+					delay: 0.12,
+					duration: 0.35,
+					ease: EASE_OUT_EXPO,
+				}}
 			>
 				<SearchBar />
 			</motion.div>
@@ -144,54 +218,63 @@ export default function ProductsPage() {
 			{isLoading ? (
 				<>
 					<div className="grid grid-cols-3 gap-4 mb-4">
-						{[1, 2, 3].map((i) => (
+						{[
+							1,
+							2,
+							3,
+						].map((i) => (
 							<Skeleton key={i} className="h-[120px] rounded-[20px]" />
 						))}
 					</div>
 					<div className="grid grid-cols-2 gap-4">
-						{[4, 5].map((i) => (
+						{[
+							4,
+							5,
+						].map((i) => (
 							<Skeleton key={i} className="h-[120px] rounded-[20px]" />
 						))}
 					</div>
 				</>
 			) : (
 				<>
-					{/* Row 1 (3 cards) */}
-					<div className="grid grid-cols-3 gap-4 mb-4">
-						{CATEGORIES.slice(0, 3).map((category, index) => (
-							<CategoryCard
-								key={category.id}
-								category={category}
-								index={index}
-								isHighlighted={highlightedCategories.includes(category.id)}
-								dynamicStats={getStats(category.id, category.stats)}
-								backgroundImage={
-									designSettings?.[`category_image_${category.id}`] || null
-								}
-							/>
-						))}
-					</div>
+					<div id="tour-categories">
+						{/* Row 1 (3 cards) */}
+						<div className="grid grid-cols-3 gap-4 mb-4">
+							{CATEGORIES.slice(0, 3).map((category, index) => (
+								<CategoryCard
+									key={category.id}
+									category={category}
+									index={index}
+									isHighlighted={highlightedCategories.includes(category.id)}
+									dynamicStats={getStats(category.id, category.stats)}
+									backgroundImage={
+										designSettings?.[`category_image_${category.id}`] || null
+									}
+								/>
+							))}
+						</div>
 
-					{/* Row 2 (2 cards, wider) */}
-					<div className="grid grid-cols-2 gap-4">
-						{CATEGORIES.slice(3).map((category, index) => (
-							<CategoryCard
-								key={category.id}
-								category={category}
-								index={index + 3}
-								isHighlighted={highlightedCategories.includes(category.id)}
-								dynamicStats={getStats(category.id, category.stats)}
-								backgroundImage={
-									designSettings?.[`category_image_${category.id}`] || null
-								}
-							/>
-						))}
+						{/* Row 2 (2 cards, wider) */}
+						<div className="grid grid-cols-2 gap-4">
+							{CATEGORIES.slice(3).map((category, index) => (
+								<CategoryCard
+									key={category.id}
+									category={category}
+									index={index + 3}
+									isHighlighted={highlightedCategories.includes(category.id)}
+									dynamicStats={getStats(category.id, category.stats)}
+									backgroundImage={
+										designSettings?.[`category_image_${category.id}`] || null
+									}
+								/>
+							))}
+						</div>
 					</div>
 				</>
 			)}
 
 			{/* ─── News ─── */}
-			<NewsCarousel />
+			<NewsCarousel initialNews={initialNews} />
 		</div>
 	);
 }
@@ -205,7 +288,7 @@ function CategoryCard({
 	index,
 	isHighlighted,
 	dynamicStats,
-	backgroundImage
+	backgroundImage,
 }: {
 	category: (typeof CATEGORIES)[number];
 	index: number;
@@ -214,42 +297,56 @@ function CategoryCard({
 	backgroundImage?: string | null;
 }) {
 	const utils = trpc.useUtils();
+	const {
+		trackPageView,
+	} = useAnalytics(); // Added this line
 
 	const handlePrefetch = () => {
-		utils.product.getProductsByCategory.prefetch({ category: category.id });
+		utils.product.getProductsByCategory.prefetch({
+			category: category.id,
+		});
 	};
 
 	return (
 		<Link
 			href={category.href}
-			className="no-underline block h-full"
+			className="no-underline block h-full tour-category-card"
 			onMouseEnter={handlePrefetch}
 			onFocus={handlePrefetch}
 		>
 			<motion.div
-				initial={{ opacity: 0, y: 8 }}
-				animate={{ opacity: 1, y: 0 }}
+				initial={{
+					opacity: 0,
+					y: 8,
+				}}
+				animate={{
+					opacity: 1,
+					y: 0,
+				}}
 				exit={{
 					opacity: 0,
 					scale: 0.98,
-					transition: { duration: 0.1, delay: 0 }
+					transition: {
+						duration: 0.1,
+						delay: 0,
+					},
 				}}
 				transition={{
 					delay: 0.15 + index * 0.04,
 					duration: 0.35,
-					ease: EASE_OUT_EXPO
+					ease: EASE_OUT_EXPO,
 				}}
 				className={clsx(
-					"group relative bg-linear-to-br from-white to-[#fcfafc] border rounded-[20px] h-full flex flex-col justify-center",
-					"px-7 py-5 cursor-pointer overflow-hidden",
-					"transition-all duration-400 ease-out",
-					"hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:border-[#ddd]",
-					isHighlighted ? "highlight-glow" : "border-[#e8e8e8]"
+					'group relative bg-linear-to-br from-white to-[#fcfafc] border rounded-[20px] h-full flex flex-col justify-center',
+					'px-7 py-5 cursor-pointer overflow-hidden',
+					'transition-all duration-400 ease-out',
+					'hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:border-[#ddd]',
+					isHighlighted ? 'highlight-glow' : 'border-[#e8e8e8]',
 				)}
 				style={
 					{
-						"--card-color": category.color,
-						borderColor: isHighlighted ? category.color : undefined
+						'--card-color': category.color,
+						borderColor: isHighlighted ? category.color : undefined,
 					} as React.CSSProperties
 				}
 			>
@@ -258,7 +355,7 @@ function CategoryCard({
 					<div
 						className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[20px]"
 						style={{
-							background: `linear-gradient(to right, transparent 20%, ${category.color}10 60%, ${category.color}18 100%)`
+							background: `linear-gradient(to right, transparent 20%, ${category.color}10 60%, ${category.color}18 100%)`,
 						}}
 					/>
 				)}
@@ -266,9 +363,12 @@ function CategoryCard({
 				{/* Hover Background Image Overlay */}
 				{backgroundImage && (
 					<div className="absolute -inset-0.5 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[20px] overflow-hidden">
-						<div
-							className="absolute inset-0 bg-cover bg-center blur-[1.5px] scale-110"
-							style={{ backgroundImage: `url(${backgroundImage})` }}
+						<Image
+							src={backgroundImage}
+							alt={category.title}
+							fill
+							sizes="(max-width: 768px) 100vw, 33vw"
+							className="object-cover blur-[1.5px] scale-110"
 						/>
 						<div className="absolute inset-0 bg-[#1a1a2e]/30" />
 					</div>
@@ -286,20 +386,20 @@ function CategoryCard({
 						)}
 						<h3
 							className={clsx(
-								"text-[1.15rem] font-bold m-0 leading-tight transition-colors duration-300",
+								'text-[1.15rem] font-bold m-0 leading-tight transition-colors duration-300',
 								backgroundImage
-									? "text-[#1a1a2e] group-hover:text-white"
-									: "text-[#1a1a2e] group-hover:text-(--card-color)"
+									? 'text-[#1a1a2e] group-hover:text-white'
+									: 'text-[#1a1a2e] group-hover:text-(--card-color)',
 							)}
 						>
 							{category.title}
 						</h3>
 						<span
 							className={clsx(
-								"text-[0.72rem] font-medium mt-1 tracking-wide transition-colors duration-300",
+								'text-[0.72rem] font-medium mt-1 tracking-wide transition-colors duration-300',
 								backgroundImage
-									? "text-[#b5b5b5] group-hover:text-[#eee]"
-									: "text-[#b5b5b5]"
+									? 'text-[#b5b5b5] group-hover:text-[#eee]'
+									: 'text-[#b5b5b5]',
 							)}
 						>
 							{dynamicStats}
@@ -309,10 +409,10 @@ function CategoryCard({
 					{/* Right: Icon */}
 					<category.icon
 						className={clsx(
-							"w-8 h-8 transition-all duration-400 group-hover:scale-110",
+							'w-8 h-8 transition-all duration-400 group-hover:scale-110',
 							backgroundImage
-								? "text-[#c8c8c8] group-hover:text-white"
-								: "text-[#c8c8c8] group-hover:text-(--card-color)"
+								? 'text-[#c8c8c8] group-hover:text-white'
+								: 'text-[#c8c8c8] group-hover:text-(--card-color)',
 						)}
 						strokeWidth={1.5}
 					/>

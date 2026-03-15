@@ -1,17 +1,26 @@
-"use client";
+'use client';
 
-import { Addon, AddonTier } from "@/types/product";
+import type {
+	Addon,
+} from '@/types/product';
+import {
+	AddonTier,
+} from '@/types/product';
 import {
 	Check,
 	LayoutList,
 	PackagePlus,
 	ShieldCheck,
 	Tv,
-	Router
-} from "lucide-react";
-import clsx from "clsx";
-import { trpc } from "@/lib/trpc";
-import { motion } from "framer-motion";
+	Router,
+} from 'lucide-react';
+import clsx from 'clsx';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	motion,
+} from 'framer-motion';
 
 interface Props {
 	addons: Addon[];
@@ -26,13 +35,15 @@ export function AddonSelector({
 	selectedIds,
 	onChange,
 	isMagentaTVSelected,
-	catColor = "#e20074"
+	catColor = '#e20074',
 }: Props) {
-	const { data: designSettings } = trpc.settings.getDesignSettings.useQuery(
+	const {
+		data: designSettings,
+	} = trpc.settings.getDesignSettings.useQuery(
 		undefined,
 		{
-			staleTime: 10 * 60 * 1000
-		}
+			staleTime: 10 * 60 * 1000,
+		},
 	);
 
 	// Filter out addons that require no MagentaTV when MagentaTV is selected
@@ -40,11 +51,11 @@ export function AddonSelector({
 		if (addon.requiresNoMagentaTV && isMagentaTVSelected) {
 			return false;
 		}
-		if (!addon.tiers || addon.tiers.length === 0) return false;
+		if (!addon.tiers || addon.tiers.length === 0) { return false; }
 		return true;
 	});
 
-	if (availableAddons.length === 0) return null;
+	if (availableAddons.length === 0) { return null; }
 
 	const handleToggle = (addon: Addon, tierId: string) => {
 		const tierIdsForThisAddon = addon.tiers.map((t) => t.id);
@@ -52,28 +63,30 @@ export function AddonSelector({
 		if (selectedIds.includes(tierId)) {
 			// Unselect if already selected
 			onChange(selectedIds.filter((x) => x !== tierId));
-		} else {
+		}
+		else {
 			// Remove any other selected tier of THIS addon, then add new tier
 			const newIds = selectedIds.filter(
-				(id) => !tierIdsForThisAddon.includes(id)
+				(id) => !tierIdsForThisAddon.includes(id),
 			);
-			onChange([...newIds, tierId]);
+			onChange([
+				...newIds,
+				tierId,
+			]);
 		}
 	};
 
 	// Smart icon logic
 	const getIcon = (name: string) => {
 		const lower = name.toLowerCase();
-		if (lower.includes("router") || lower.includes("speed")) return Router;
-		if (lower.includes("security") || lower.includes("schutz"))
-			return ShieldCheck;
+		if (lower.includes('router') || lower.includes('speed')) { return Router; }
+		if (lower.includes('security') || lower.includes('schutz')) { return ShieldCheck; }
 		if (
-			lower.includes("tv") ||
-			lower.includes("netflix") ||
-			lower.includes("disney")
-		)
-			return Tv;
-		if (lower.includes("paket") || lower.includes("bundle")) return PackagePlus;
+			lower.includes('tv') ||
+			lower.includes('netflix') ||
+			lower.includes('disney')
+		) { return Tv; }
+		if (lower.includes('paket') || lower.includes('bundle')) { return PackagePlus; }
 		return LayoutList;
 	};
 
@@ -83,12 +96,12 @@ export function AddonSelector({
 				const Icon = getIcon(addon.name);
 
 				const selectedTierId = addon.tiers.find((t) =>
-					selectedIds.includes(t.id)
+					selectedIds.includes(t.id),
 				)?.id;
 				const isMultiTier = addon.tiers.length > 1;
 				const hasSelected = !!selectedTierId;
 
-				const isMagentaTV = addon.name.toLowerCase().includes("magentatv");
+				const isMagentaTV = addon.name.toLowerCase().includes('magentatv');
 				const globalImageUrl = isMagentaTV
 					? designSettings?.magentatv_background_image
 					: null;
@@ -99,30 +112,32 @@ export function AddonSelector({
 					<div
 						key={addon.id}
 						className={clsx(
-							"relative p-3.5 rounded-xl border transition-all duration-200 overflow-hidden",
-							hasSelected && !showImageBg ? "bg-white" : "",
-							!hasSelected ? "bg-white hover:border-[#ccc]" : "",
-							showImageBg ? "text-white" : "",
+							'relative p-3.5 rounded-xl border transition-all duration-200 overflow-hidden',
+							hasSelected && !showImageBg ? 'bg-white' : '',
+							!hasSelected ? 'bg-white hover:border-[#ccc]' : '',
+							showImageBg ? 'text-white' : '',
 							isMultiTier
-								? "col-span-1 lg:col-span-2"
-								: "col-span-1 flex flex-col justify-center"
+								? 'col-span-1 lg:col-span-2'
+								: 'col-span-1 flex flex-col justify-center',
 						)}
 						style={{
-							borderColor: hasSelected ? catColor : "#eaedf0",
-							boxShadow: hasSelected ? `0 0 0 1px ${catColor} inset` : "none"
+							borderColor: hasSelected ? catColor : '#eaedf0',
+							boxShadow: hasSelected ? `0 0 0 1px ${catColor} inset` : 'none',
 						}}
 					>
 						{/* Background Image Overlay */}
 						{finalImageUrl && (
 							<div
 								className={clsx(
-									"absolute -inset-0.5 z-0 transition-opacity duration-400 pointer-events-none",
-									hasSelected ? "opacity-100" : "opacity-0"
+									'absolute -inset-0.5 z-0 transition-opacity duration-400 pointer-events-none',
+									hasSelected ? 'opacity-100' : 'opacity-0',
 								)}
 							>
 								<div
 									className="absolute inset-0 bg-cover bg-center blur-[2px] scale-110"
-									style={{ backgroundImage: `url(${finalImageUrl})` }}
+									style={{
+										backgroundImage: `url(${finalImageUrl})`,
+									}}
 								/>
 								<div className="absolute inset-0 bg-[#1a1a2e]/40" />
 							</div>
@@ -130,19 +145,19 @@ export function AddonSelector({
 
 						<div
 							className={clsx(
-								"flex gap-3 relative z-10",
+								'flex gap-3 relative z-10',
 								isMultiTier
-									? "flex-col sm:flex-row sm:items-center"
-									: "flex-row items-center justify-between"
+									? 'flex-col sm:flex-row sm:items-center'
+									: 'flex-row items-center justify-between',
 							)}
 						>
 							<div className="flex items-center gap-3 flex-1 min-w-0">
 								<div
 									className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors"
 									style={{
-										backgroundColor: hasSelected ? catColor : "#f4f5f7",
-										color: hasSelected ? "white" : catColor,
-										border: hasSelected ? "none" : `1px solid ${catColor}20`
+										backgroundColor: hasSelected ? catColor : '#f4f5f7',
+										color: hasSelected ? 'white' : catColor,
+										border: hasSelected ? 'none' : `1px solid ${catColor}20`,
 									}}
 								>
 									<Icon
@@ -153,19 +168,19 @@ export function AddonSelector({
 								<div className="flex-1 min-w-0">
 									<h3
 										className={clsx(
-											"font-bold text-[0.9rem] m-0 truncate leading-snug transition-colors",
-											showImageBg ? "text-white" : "text-[#1a1a2e]"
+											'font-bold text-[0.9rem] m-0 truncate leading-snug transition-colors',
+											showImageBg ? 'text-white' : 'text-[#1a1a2e]',
 										)}
 									>
 										{addon.name}
 									</h3>
 									<p
 										className={clsx(
-											"text-[0.72rem] m-0 line-clamp-1 leading-snug mt-0.5 transition-colors",
-											showImageBg ? "text-[#ccc]" : "text-[#888]"
+											'text-[0.72rem] m-0 line-clamp-1 leading-snug mt-0.5 transition-colors',
+											showImageBg ? 'text-[#ccc]' : 'text-[#888]',
 										)}
 									>
-										{addon.description || "Zusatzoption"}
+										{addon.description || 'Zusatzoption'}
 									</p>
 								</div>
 							</div>
@@ -177,14 +192,18 @@ export function AddonSelector({
 									const isSelected = selectedIds.includes(tier.id);
 									return (
 										<motion.button
-											whileTap={{ scale: 0.98 }}
+											whileTap={{
+												scale: 0.98,
+											}}
 											onClick={() => handleToggle(addon, tier.id)}
 											className="flex items-center justify-between gap-3 shrink-0 px-2 py-1.5 rounded-lg outline-none cursor-pointer group transition-colors hover:bg-black/5 border-none bg-transparent ml-auto"
 										>
 											<div className="text-right">
 												<div
 													className="text-[0.85rem] font-bold drop-shadow-sm"
-													style={{ color: showImageBg ? "#fff" : catColor }}
+													style={{
+														color: showImageBg ? '#fff' : catColor,
+													}}
 												>
 													+{tier.price.toFixed(2)} €
 												</div>
@@ -192,8 +211,8 @@ export function AddonSelector({
 											<div
 												className="w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center transition-all duration-200"
 												style={{
-													borderColor: isSelected ? catColor : "#ccc",
-													backgroundColor: isSelected ? catColor : "transparent"
+													borderColor: isSelected ? catColor : '#ccc',
+													backgroundColor: isSelected ? catColor : 'transparent',
 												}}
 											>
 												{isSelected && (
@@ -218,20 +237,22 @@ export function AddonSelector({
 										return (
 											<motion.button
 												key={tier.id}
-												whileTap={{ scale: 0.98 }}
+												whileTap={{
+													scale: 0.98,
+												}}
 												onClick={() => handleToggle(addon, tier.id)}
 												className="px-3 py-1.5 rounded-lg border flex items-center gap-1.5 transition-all duration-200 text-[0.75rem] font-semibold flex-1 sm:flex-none justify-center cursor-pointer outline-none hover:-translate-y-px hover:shadow-sm active:scale-[0.98]"
 												style={{
-													borderColor: isSelected ? catColor : "#eaedf0",
-													backgroundColor: isSelected ? catColor : "#fff",
-													color: isSelected ? "white" : "#1a1a2e"
+													borderColor: isSelected ? catColor : '#eaedf0',
+													backgroundColor: isSelected ? catColor : '#fff',
+													color: isSelected ? 'white' : '#1a1a2e',
 												}}
 											>
 												<span className="truncate">{tier.name}</span>
 												<span
 													className="opacity-90 font-bold shrink-0"
 													style={{
-														color: isSelected ? "white" : catColor
+														color: isSelected ? 'white' : catColor,
 													}}
 												>
 													+{tier.price.toFixed(2)}€

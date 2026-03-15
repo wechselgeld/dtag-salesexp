@@ -1,90 +1,113 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc";
+import {
+	useForm,
+} from 'react-hook-form';
+import {
+	zodResolver,
+} from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+	useRouter,
+} from 'next/navigation';
+import {
+	trpc,
+} from '@/lib/trpc';
 import {
 	Save,
 	Loader2,
 	ArrowLeft,
 	MapPin,
 	Globe,
-	ToggleLeft
-} from "lucide-react";
-import Link from "next/link";
-import clsx from "clsx";
-import { Input } from "@/components/shared/ui/input";
+	ToggleLeft,
+} from 'lucide-react';
+import Link from 'next/link';
+import clsx from 'clsx';
+import {
+	Input,
+} from '@/components/shared/ui/input';
 import {
 	AdminPageHeader,
 	AdminFormContainer,
-	AdminFormSection
-} from "@/components/shared/ui/admin-ui";
+	AdminFormSection,
+} from '@/components/shared/ui/admin-ui';
 
 const locationSchema = z.object({
-	name: z.string().min(1, "Name ist erforderlich"),
+	name: z.string().min(1, 'Name ist erforderlich'),
+	address: z.string().min(1, 'Adresse ist erforderlich'),
 	isActive: z.boolean().default(true),
 	odRegionId: z
 		.string()
-		.min(1, "Zuordnung zu einem OD-Bereich ist erforderlich")
+		.min(1, 'Zuordnung zu einem OD-Bereich ist erforderlich'),
 });
 
 type LocationFormData = z.infer<typeof locationSchema>;
 
 interface LocationFormProps {
-	mode: "create" | "edit";
+	mode: 'create' | 'edit';
 	id?: string;
 	initialData?: {
 		name: string;
+		address?: string | null;
 		isActive: boolean;
 		odRegionId?: string | null;
 	};
 }
 
-export function LocationForm({ mode, id, initialData }: LocationFormProps) {
+export function LocationForm({
+	mode, id, initialData,
+}: LocationFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
-	const { data: odRegionsData, isLoading: isLoadingOdRegions } =
+	const {
+		data: odRegionsData, isLoading: isLoadingOdRegions,
+	} =
 		trpc.odRegion.list.useQuery();
 	const odRegions = odRegionsData?.items;
 
 	const {
 		register,
 		handleSubmit,
-		formState: { errors }
+		formState: {
+			errors,
+		},
 	} = useForm({
 		resolver: zodResolver(locationSchema),
-		mode: "onChange",
+		mode: 'onChange',
 		defaultValues: {
-			name: initialData?.name || "",
+			name: initialData?.name || '',
+			address: initialData?.address || '',
 			isActive: initialData?.isActive ?? true,
-			odRegionId: initialData?.odRegionId || ""
-		}
+			odRegionId: initialData?.odRegionId || '',
+		},
 	});
 
 	const createMutation = trpc.location.create.useMutation({
 		onSuccess: () => {
 			utils.location.list.invalidate();
-			router.push("/admin/locations");
+			router.push('/admin/locations');
 			router.refresh();
-		}
+		},
 	});
 
 	const updateMutation = trpc.location.update.useMutation({
 		onSuccess: () => {
 			utils.location.list.invalidate();
-			router.push("/admin/locations");
+			router.push('/admin/locations');
 			router.refresh();
-		}
+		},
 	});
 
 	const onSubmit = (data: LocationFormData) => {
-		if (mode === "create") {
+		if (mode === 'create') {
 			createMutation.mutate(data);
-		} else if (mode === "edit" && id) {
-			updateMutation.mutate({ id, ...data });
+		}
+		else if (mode === 'edit' && id) {
+			updateMutation.mutate({
+				id,
+				...data,
+			});
 		}
 	};
 
@@ -96,10 +119,10 @@ export function LocationForm({ mode, id, initialData }: LocationFormProps) {
 			form="location-form"
 			disabled={isPending}
 			className={clsx(
-				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
+				'px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5',
 				isPending
-					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-					: "bg-[#e20074] hover:bg-[#c70066]"
+					? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+					: 'bg-[#e20074] hover:bg-[#c70066]',
 			)}
 		>
 			{isPending ? (
@@ -114,10 +137,10 @@ export function LocationForm({ mode, id, initialData }: LocationFormProps) {
 	return (
 		<div className="space-y-8 pb-12">
 			<AdminPageHeader
-				title={mode === "create" ? "Neuer Standort" : "Standort bearbeiten"}
+				title={mode === 'create' ? 'Neuer Standort' : 'Standort bearbeiten'}
 				subtitle={
-					mode === "create"
-						? "Füge einen neuen physischen Standort zum System hinzu."
+					mode === 'create'
+						? 'Füge einen neuen physischen Standort zum System hinzu.'
 						: `Verwalte die Einstellungen für ${initialData?.name}`
 				}
 				backHref="/admin/locations"
@@ -135,8 +158,16 @@ export function LocationForm({ mode, id, initialData }: LocationFormProps) {
 							label="Name des Standorts"
 							placeholder="z.B. Berlin"
 							error={errors.name?.message as string}
-							{...register("name")}
+							{...register('name')}
 						/>
+						<div className="mt-4">
+							<Input
+								label="Adresse"
+								placeholder="z.B. Musterstraße 1, 12345 Berlin"
+								error={errors.address?.message as string}
+								{...register('address')}
+							/>
+						</div>
 					</AdminFormSection>
 
 					<AdminFormSection
@@ -150,7 +181,7 @@ export function LocationForm({ mode, id, initialData }: LocationFormProps) {
 							</label>
 							<div className="relative">
 								<select
-									{...register("odRegionId")}
+									{...register('odRegionId')}
 									disabled={isLoadingOdRegions}
 									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all disabled:opacity-50 appearance-none cursor-pointer"
 								>
@@ -192,7 +223,7 @@ export function LocationForm({ mode, id, initialData }: LocationFormProps) {
 								<input
 									type="checkbox"
 									id="isActive"
-									{...register("isActive")}
+									{...register('isActive')}
 									className="peer w-6 h-6 rounded-lg border-[#eaedf0] text-[#e20074] focus:ring-[#e20074] cursor-pointer appearance-none bg-white transition-all checked:bg-[#e20074] checked:border-[#e20074]"
 								/>
 								<div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white opacity-0 peer-checked:opacity-100 transition-opacity">

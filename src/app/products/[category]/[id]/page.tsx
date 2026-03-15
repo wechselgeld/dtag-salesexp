@@ -1,23 +1,35 @@
-import { Metadata } from "next";
-import ProductDetailClient from "./product-detail-client";
-import { prisma } from "@/lib/prisma";
+import type {
+	Metadata,
+} from 'next';
+import ProductDetailClient from './product-detail-client';
+import {
+	prisma,
+} from '@/lib/prisma';
 
-type Props = {
+interface Props {
 	params: Promise<{ id: string }>;
-};
+}
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+	params,
+}: Props): Promise<Metadata> {
 	const id = (await params).id;
 	const product = await prisma.product.findUnique({
-		where: { id },
-		select: { name: true }
+		where: {
+			id,
+		},
+		select: {
+			name: true,
+		},
 	});
 
 	return {
-		title: product?.name || "Produktdetails"
+		title: product?.name || 'Produktdetails',
 	};
 }
 
-export default async function Page({ params }: Props) {
+export default async function Page({
+	params,
+}: Props) {
 	return <ProductDetailClient />;
 }

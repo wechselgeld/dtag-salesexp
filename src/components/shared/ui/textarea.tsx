@@ -1,5 +1,5 @@
-import * as React from "react";
-import clsx from "clsx";
+import * as React from 'react';
+import clsx from 'clsx';
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
 	error?: string;
@@ -7,7 +7,9 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-	({ className, error, label, id, ...props }, ref) => {
+	({
+		className, error, label, id, ...props
+	}, ref) => {
 		const generatedId = React.useId();
 		const inputId = id || generatedId;
 
@@ -24,11 +26,11 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 				<textarea
 					id={inputId}
 					className={clsx(
-						"w-full px-4 py-2.5 rounded-xl border bg-[#f7f8fa] focus:bg-white focus:outline-none transition-all text-[0.85rem] resize-y min-h-[80px]",
+						'w-full px-4 py-2.5 rounded-xl border bg-[#f7f8fa] focus:bg-white focus:outline-none transition-all text-[0.85rem] resize-y min-h-[80px]',
 						error
-							? "border-[#dc2626] focus:border-[#dc2626]/30 focus:shadow-[0_0_0_3px_rgba(220,38,38,0.1)]"
-							: "border-[#eaedf0] focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)]",
-						className
+							? 'border-[#dc2626] focus:border-[#dc2626]/30 focus:shadow-[0_0_0_3px_rgba(220,38,38,0.1)]'
+							: 'border-[#eaedf0] focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)]',
+						className,
 					)}
 					ref={ref}
 					{...props}
@@ -40,6 +42,6 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 				)}
 			</div>
 		);
-	}
+	},
 );
-Textarea.displayName = "Textarea";
+Textarea.displayName = 'Textarea';

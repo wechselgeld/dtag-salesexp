@@ -1,9 +1,20 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+	useState, useEffect, useCallback, useMemo, useRef,
+} from 'react';
+import {
+	useRouter,
+} from 'next/navigation';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	useAnalytics,
+} from '@/hooks/use-analytics';
+import {
+	motion, AnimatePresence,
+} from 'framer-motion';
 import {
 	Check,
 	ShieldAlert,
@@ -16,55 +27,67 @@ import {
 	ChevronRight,
 	MapPin,
 	ArrowLeft,
-	Globe
-} from "lucide-react";
-import clsx from "clsx";
-import { TelekomLogo } from "@/components/shared/telekom-logo";
-import { Skeleton } from "@/components/shared/skeleton";
-import Link from "next/link";
-import { GlobalFooter } from "@/components/shared/global-footer";
-import { z } from "zod";
+	Search,
+} from 'lucide-react';
+import clsx from 'clsx';
+import {
+	TelekomLogo,
+} from '@/components/shared/telekom-logo';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import Link from 'next/link';
+import {
+	GlobalFooter,
+} from '@/components/shared/global-footer';
+import {
+	z,
+} from 'zod';
 
 /* ──────────────────────────────────────────────
    Zod schema for form validation
    ────────────────────────────────────────────── */
 
 const setupFormSchema = z.object({
-	firstName: z.string().trim().min(1, "Vorname ist erforderlich"),
-	lastName: z.string().trim().min(1, "Nachname ist erforderlich"),
+	firstName: z.string().trim().min(1, 'Vorname ist erforderlich'),
+	lastName: z.string().trim().min(1, 'Nachname ist erforderlich'),
 	email: z
 		.string()
-		.email("Ungültige E-Mail-Adresse")
-		.refine((val) => val.endsWith("@telekom.de"), {
-			message: "Es sind nur interne Adressen erlaubt."
+		.email('Ungültige E-Mail-Adresse')
+		.refine((val) => val.endsWith('@telekom.de'), {
+			message: 'Es sind nur interne Adressen erlaubt.',
 		}),
-	odRegionId: z.string().min(1, "Bitte wähle einen OD-Bereich aus"),
-	locationId: z.string().min(1, "Bitte wähle einen Standort aus"),
-	teamId: z.string().min(1, "Bitte wähle ein Team aus"),
+	locationId: z.string().min(1, 'Bitte wähle einen Standort aus'),
+	teamId: z.string().min(1, 'Bitte wähle ein Team aus'),
 	acceptedTerms: z.literal(true),
-	acceptedPrivacy: z.literal(true)
+	acceptedPrivacy: z.literal(true),
 });
 
 /* ──────────────────────────────────────────────
    LocalStorage helpers
    ────────────────────────────────────────────── */
 
-const LS_KEY_FIRST_NAME = "setup-user-firstName";
-const LS_KEY_LAST_NAME = "setup-user-lastName";
-const LS_KEY_EMAIL = "setup-user-email";
-const LS_KEY_SETUP_DONE = "setup-completed";
+const LS_KEY_FIRST_NAME = 'setup-user-firstName';
+const LS_KEY_LAST_NAME = 'setup-user-lastName';
+const LS_KEY_EMAIL = 'setup-user-email';
+const LS_KEY_SETUP_DONE = 'setup-completed';
 
 function getStoredUser(): {
 	firstName: string;
 	lastName: string;
 	email: string;
-} {
-	if (typeof window === "undefined")
-		return { firstName: "", lastName: "", email: "" };
+	} {
+	if (typeof window === 'undefined') {
+		return {
+			firstName: '',
+			lastName: '',
+			email: '',
+		};
+	}
 	return {
-		firstName: localStorage.getItem(LS_KEY_FIRST_NAME) ?? "",
-		lastName: localStorage.getItem(LS_KEY_LAST_NAME) ?? "",
-		email: localStorage.getItem(LS_KEY_EMAIL) ?? ""
+		firstName: localStorage.getItem(LS_KEY_FIRST_NAME) ?? '',
+		lastName: localStorage.getItem(LS_KEY_LAST_NAME) ?? '',
+		email: localStorage.getItem(LS_KEY_EMAIL) ?? '',
 	};
 }
 
@@ -79,7 +102,7 @@ function markSetupComplete() {
 }
 
 function isSetupAlreadyDone(): boolean {
-	if (typeof window === "undefined") return false;
+	if (typeof window === 'undefined') { return false; }
 	return !!localStorage.getItem(LS_KEY_SETUP_DONE);
 }
 
@@ -87,134 +110,239 @@ function isSetupAlreadyDone(): boolean {
    Component
    ────────────────────────────────────────────── */
 
-export default function SetupPage() {
+export default function SetupPage({
+	initialLocations,
+	initialIsEmailRequired,
+	initialIpError,
+	initialSession,
+}: {
+	initialLocations?: any;
+	initialIsEmailRequired?: boolean;
+	initialIpError?: string | null;
+	initialSession?: any;
+}) {
 	const router = useRouter();
+	const {
+		trackPageView,
+	} = useAnalytics();
 
 	// Form state
-	const [currentStep, setCurrentStep] = useState(1);
-	const [firstName, setFirstName] = useState("");
-	const [lastName, setLastName] = useState("");
-	const [email, setEmail] = useState("");
-	const [selectedOdRegionId, setSelectedOdRegionId] = useState<string | null>(
-		null
+	const [
+		currentStep,
+		setCurrentStep,
+	] = useState(1);
+	const [
+		firstName,
+		setFirstName,
+	] = useState('');
+	const [
+		lastName,
+		setLastName,
+	] = useState('');
+	const [
+		email,
+		setEmail,
+	] = useState('');
+
+	const [
+		locationSearch,
+		setLocationSearch,
+	] = useState('');
+	const [
+		debouncedSearch,
+		setDebouncedSearch,
+	] = useState('');
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedSearch(locationSearch);
+		}, 300);
+		return () => clearTimeout(timer);
+	}, [
+		locationSearch,
+	]);
+
+	const [
+		selectedLocationId,
+		setSelectedLocationId,
+	] = useState<string | null>(
+		null,
 	);
-	const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
-		null
-	);
-	const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-	const [acceptedTerms, setAcceptedTerms] = useState(false);
-	const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
-	const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+	const [
+		selectedTeamId,
+		setSelectedTeamId,
+	] = useState<string | null>(null);
+	const [
+		acceptedTerms,
+		setAcceptedTerms,
+	] = useState(false);
+	const [
+		acceptedPrivacy,
+		setAcceptedPrivacy,
+	] = useState(false);
+	const [
+		isSubmitting,
+		setIsSubmitting,
+	] = useState(false);
+	const [
+		pendingSessionId,
+		setPendingSessionId,
+	] = useState<string | null>(null);
+	const [
+		formErrors,
+		setFormErrors,
+	] = useState<Record<string, string>>({
+	});
 
 	// Dynamic card height to avoid jumping during AnimatePresence mode="wait"
 	const cardRef = useRef<HTMLDivElement>(null);
-	const [cardHeight, setCardHeight] = useState<number | "auto">("auto");
+	const [
+		cardHeight,
+		setCardHeight,
+	] = useState<number | 'auto'>('auto');
 
 	useEffect(() => {
-		if (!cardRef.current) return;
+		trackPageView('/setup');
+	}, [
+		trackPageView,
+	]);
+
+	useEffect(() => {
+		if (!cardRef.current) { return; }
 		const observer = new ResizeObserver((entries) => {
 			setCardHeight(
 				entries[0].borderBoxSize?.[0]?.blockSize ??
-					entries[0].target.getBoundingClientRect().height
+					entries[0].target.getBoundingClientRect().height,
 			);
 		});
 		observer.observe(cardRef.current);
 		return () => observer.disconnect();
-	}, []);
+	}, [
+	]);
 
 	// Returning-user state
-	const [hasCompletedBefore, setHasCompletedBefore] = useState(false);
-	const [showReconfigure, setShowReconfigure] = useState(false);
+	const [
+		hasCompletedBefore,
+		setHasCompletedBefore,
+	] = useState(false);
+	const [
+		showReconfigure,
+		setShowReconfigure,
+	] = useState(false);
 
-	// Data fetching
-	const { data: odRegions, isLoading: isOdRegionsLoading } =
-		trpc.odRegion.list.useQuery();
-	const { data: locations, isLoading: isLocationsLoading } =
-		trpc.location.list.useQuery(
-			selectedOdRegionId ? { odRegionId: selectedOdRegionId } : undefined,
-			{ enabled: !!selectedOdRegionId }
-		);
-	const { data: teams, isLoading: isTeamsLoading } = trpc.team.list.useQuery(
-		selectedLocationId ? { locationId: selectedLocationId } : undefined,
-		{ enabled: !!selectedLocationId }
-	);
 	const {
-		isLoading: isIpLoading,
-		isError: isIpError,
-		error: ipError
-	} = trpc.session.verifyIp.useQuery(undefined, { retry: false });
-	const { data: existingSession, refetch: refetchCurrentSession } =
-		trpc.session.getCurrent.useQuery();
+		data: locations, isLoading: isLocationsLoading,
+	} =
+		trpc.location.list.useQuery(
+			{
+				search: debouncedSearch || undefined,
+				limit: debouncedSearch ? 100 : 6,
+			},
+			{
+				initialData: debouncedSearch ? undefined : initialLocations,
+				refetchOnWindowFocus: false,
+			},
+		);
+	const {
+		data: teams, isLoading: isTeamsLoading,
+	} = trpc.team.list.useQuery(
+		selectedLocationId ? {
+			locationId: selectedLocationId,
+		} : undefined,
+		{
+			enabled: !!selectedLocationId,
+		},
+	);
+
+	const isIpLoading = false; // Prefetched on server
+	const isIpError = !!initialIpError;
+	const ipError = initialIpError ? {
+		message: initialIpError,
+	} : null;
+
+	const {
+		data: existingSession, refetch: refetchCurrentSession,
+	} =
+		trpc.session.getCurrent.useQuery(undefined, {
+			initialData: initialSession,
+			refetchOnWindowFocus: false,
+		});
 
 	const requestVerification = trpc.session.requestVerification.useMutation({
 		onSuccess: (data) => {
 			setIsSubmitting(false);
 			if (data.bypassed) {
-				finalizeLogin.mutate({ sessionId: data.sessionId });
-			} else {
+				finalizeLogin.mutate({
+					sessionId: data.sessionId,
+				});
+			}
+			else {
 				setPendingSessionId(data.sessionId);
 			}
 		},
 		onError: (error) => {
-			console.error("Setup failed", error);
+			console.error('Setup failed', error);
 			setIsSubmitting(false);
-		}
+		},
 	});
 
-	const { data: verificationStatus } = trpc.session.checkVerification.useQuery(
-		{ sessionId: pendingSessionId as string },
+	const {
+		data: verificationStatus,
+	} = trpc.session.checkVerification.useQuery(
+		{
+			sessionId: pendingSessionId as string,
+		},
 		{
 			enabled: !!pendingSessionId,
-			refetchInterval: 3000 // Poll every 3 seconds
-		}
+			refetchInterval: 3000, // Poll every 3 seconds
+		},
 	);
 
 	const finalizeLogin = trpc.session.finalizeLogin.useMutation({
 		onSuccess: (data) => {
 			persistName(
-				data.firstName?.trim() || "",
-				data.lastName?.trim() || "",
-				data.email?.trim() || ""
+				data.firstName?.trim() || '',
+				data.lastName?.trim() || '',
+				data.email?.trim() || '',
 			);
 			markSetupComplete();
 			refetchCurrentSession().then(() => {
-				router.push("/products");
+				router.push('/products');
 				router.refresh();
 			});
 		},
-		onError: console.error
+		onError: console.error,
 	});
 
 	const reloginReturningUser = trpc.session.reloginReturningUser.useMutation({
 		onSuccess: (data) => {
 			persistName(
-				data.firstName?.trim() || "",
-				data.lastName?.trim() || "",
-				data.email?.trim() || ""
+				data.firstName?.trim() || '',
+				data.lastName?.trim() || '',
+				data.email?.trim() || '',
 			);
 			markSetupComplete();
 			refetchCurrentSession().then(() => {
-				router.push("/products");
+				router.push('/products');
 				router.refresh();
 			});
 		},
 		onError: (error) => {
-			console.error("Relogin failed:", error);
+			console.error('Relogin failed:', error);
 			// Fallback to Reconfigure flow if re-login failed (e.g., cleared from DB)
 			setShowReconfigure(true);
-		}
+		},
 	});
 
 	// Hydrate stored user on mount
 	useEffect(() => {
 		const stored = getStoredUser();
-		if (stored.firstName) setFirstName(stored.firstName);
-		if (stored.lastName) setLastName(stored.lastName);
-		if (stored.email) setEmail(stored.email);
+		if (stored.firstName) { setFirstName(stored.firstName); }
+		if (stored.lastName) { setLastName(stored.lastName); }
+		if (stored.email) { setEmail(stored.email); }
 		setHasCompletedBefore(isSetupAlreadyDone());
-	}, []);
+	}, [
+	]);
 
 	// Listen for verification success
 	useEffect(() => {
@@ -224,16 +352,26 @@ export default function SetupPage() {
 			!finalizeLogin.isPending &&
 			!finalizeLogin.isSuccess
 		) {
-			finalizeLogin.mutate({ sessionId: pendingSessionId });
+			finalizeLogin.mutate({
+				sessionId: pendingSessionId,
+			});
 		}
-	}, [verificationStatus?.verified, pendingSessionId, finalizeLogin]);
+	}, [
+		verificationStatus?.verified,
+		pendingSessionId,
+		finalizeLogin,
+	]);
 
 	// Show welcome-back if user has completed setup before (localStorage persists
 	// beyond the 30-day session cookie, so data survives across re-setups)
 	const isReturningUser = hasCompletedBefore;
 
-	const { data: isEmailRequiredGlobally } =
-		trpc.session.getIsEmailRequired.useQuery();
+	const {
+		data: isEmailRequiredGlobally,
+	} =
+		trpc.session.getIsEmailRequired.useQuery(undefined, {
+			initialData: initialIsEmailRequired,
+		});
 
 	// Zod-based validation
 	const validationResult = useMemo(
@@ -242,10 +380,10 @@ export default function SetupPage() {
 				firstName,
 				lastName,
 				email:
-					isEmailRequiredGlobally === false ? "no-reply@telekom.de" : email,
-				teamId: selectedTeamId ?? "",
+					isEmailRequiredGlobally === false ? 'no-reply@telekom.de' : email,
+				teamId: selectedTeamId ?? '',
 				acceptedTerms,
-				acceptedPrivacy
+				acceptedPrivacy,
 			}),
 		[
 			firstName,
@@ -254,15 +392,14 @@ export default function SetupPage() {
 			selectedTeamId,
 			acceptedTerms,
 			acceptedPrivacy,
-			isEmailRequiredGlobally
-		]
+			isEmailRequiredGlobally,
+		],
 	);
 
 	const anyFieldEmpty =
 		!firstName.trim() ||
 		!lastName.trim() ||
 		(isEmailRequiredGlobally !== false && !email.trim()) ||
-		!selectedOdRegionId ||
 		!selectedLocationId ||
 		!selectedTeamId ||
 		!acceptedTerms ||
@@ -271,34 +408,34 @@ export default function SetupPage() {
 	const canSubmitClick = !anyFieldEmpty && !isSubmitting && !pendingSessionId;
 
 	const handleNextStep = () => {
-		if (currentStep === 1 && selectedOdRegionId) {
+		if (currentStep === 1 && selectedLocationId) {
 			setCurrentStep(2);
-		} else if (currentStep === 2 && selectedLocationId) {
+		}
+		else if (currentStep === 2 && selectedTeamId) {
 			setCurrentStep(3);
-		} else if (currentStep === 3 && selectedTeamId) {
-			setCurrentStep(4);
 		}
 	};
 
 	const handlePrevStep = () => {
-		if (currentStep > 1) setCurrentStep(currentStep - 1);
+		if (currentStep > 1) { setCurrentStep(currentStep - 1); }
 	};
 
 	const handleSubmit = useCallback(async () => {
-		setFormErrors({});
+		setFormErrors({
+		});
 		const result = setupFormSchema.safeParse({
 			firstName,
 			lastName,
-			email: isEmailRequiredGlobally === false ? "no-reply@telekom.de" : email,
-			odRegionId: selectedOdRegionId ?? "",
-			locationId: selectedLocationId ?? "",
-			teamId: selectedTeamId ?? "",
+			email: isEmailRequiredGlobally === false ? 'no-reply@telekom.de' : email,
+			locationId: selectedLocationId ?? '',
+			teamId: selectedTeamId ?? '',
 			acceptedTerms,
-			acceptedPrivacy
+			acceptedPrivacy,
 		});
 
 		if (!result.success) {
-			const errors: Record<string, string> = {};
+			const errors: Record<string, string> = {
+			};
 			for (const issue of result.error.issues) {
 				const fieldName = String(issue.path[0]);
 				errors[fieldName] = issue.message;
@@ -313,10 +450,9 @@ export default function SetupPage() {
 			lastName: result.data.lastName,
 			email: result.data.email,
 			teamId: result.data.teamId,
-			acceptedTerms: true
+			acceptedTerms: true,
 		});
 	}, [
-		selectedOdRegionId,
 		selectedLocationId,
 		selectedTeamId,
 		acceptedTerms,
@@ -325,7 +461,7 @@ export default function SetupPage() {
 		lastName,
 		email,
 		isEmailRequiredGlobally,
-		requestVerification
+		requestVerification,
 	]);
 
 	/* ── Render Helpers ────────────────────────────── */
@@ -333,53 +469,87 @@ export default function SetupPage() {
 	const renderStep1 = () => (
 		<motion.div
 			key="step1"
-			initial={{ opacity: 0, x: 15 }}
+			initial={{
+				opacity: 0,
+				x: 15,
+			}}
 			animate={{
 				opacity: 1,
 				x: 0,
-				transition: { delay: 0.4, duration: 0.3, ease: "easeOut" }
+				transition: {
+					delay: 0.4,
+					duration: 0.3,
+					ease: 'easeOut',
+				},
 			}}
 			exit={{
 				opacity: 0,
 				x: -15,
-				transition: { duration: 0.2, ease: "easeIn" }
+				transition: {
+					duration: 0.2,
+					ease: 'easeIn',
+				},
 			}}
 			className="space-y-6 w-full"
 		>
 			<SectionHeader
-				icon={<Globe className="w-5 h-5 text-[#e20074]" />}
-				title="OD-Bereich wählen"
+				icon={<MapPin className="w-5 h-5 text-[#e20074]" />}
+				title="Standort wählen"
 				step={1}
 			/>
 
-			{isOdRegionsLoading ? (
-				<div className="grid grid-cols-2 gap-3 mt-5">
-					{Array.from({ length: 4 }).map((_, i) => (
-						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
+			{/* Search Bar */}
+			<div className="relative mt-5">
+				<div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+					<Search className="w-[18px] h-[18px] text-[#ccc]" />
+				</div>
+				<input
+					type="text"
+					value={locationSearch}
+					onChange={(e) => setLocationSearch(e.target.value)}
+					placeholder="Standort suchen (z.B. Berlin, München)..."
+					className="w-full h-[52px] pl-11 pr-4 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.95rem] text-[#1a1a2e] font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 focus:bg-white transition-all shadow-sm"
+				/>
+			</div>
+
+			{isLocationsLoading ? (
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+					{Array.from({
+						length: 6,
+					}).map((_, i) => (
+						<Skeleton key={i} className="h-[52px] w-full rounded-xl" />
 					))}
 				</div>
-			) : odRegions?.items?.length === 0 ? (
+			) : locations?.items?.length === 0 ? (
 				<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
-					Bisher wurden keine OD-Bereiche angelegt.
+					Keine Standorte gefunden.
 				</div>
 			) : (
 				<div className="grid grid-cols-2 gap-3 mt-5">
 					<AnimatePresence>
-						{odRegions?.items
-							?.filter((region: any) => region.isActive)
-							.map((region: any, index: number) => (
-								<SelectionTile
-									key={region.id}
-									name={region.name}
-									isSelected={selectedOdRegionId === region.id}
-									onClick={() => {
-										setSelectedOdRegionId(region.id);
-										setSelectedLocationId(null);
-										setSelectedTeamId(null);
-									}}
-									index={index}
-								/>
-							))}
+						{locations?.items
+							?.filter((loc: any) => loc.isActive)
+							.map((loc: any, index: number) => {
+								let subtitle = loc.address || '';
+								if (loc.odRegion?.name) {
+									subtitle = subtitle
+										? `${subtitle} • ${loc.odRegion.name}`
+										: loc.odRegion.name;
+								}
+								return (
+									<SelectionTile
+										key={loc.id}
+										name={loc.name}
+										subtitle={subtitle}
+										isSelected={selectedLocationId === loc.id}
+										onClick={() => {
+											setSelectedLocationId(loc.id);
+											setSelectedTeamId(null);
+										}}
+										index={index}
+									/>
+								);
+							})}
 					</AnimatePresence>
 				</div>
 			)}
@@ -387,12 +557,12 @@ export default function SetupPage() {
 			<div className="flex justify-end pt-4 border-t border-[#eaedf0] mt-8">
 				<button
 					onClick={handleNextStep}
-					disabled={!selectedOdRegionId}
+					disabled={!selectedLocationId}
 					className={clsx(
-						"px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2",
-						selectedOdRegionId
-							? "bg-[#e20074] text-white hover:bg-[#c70066] cursor-pointer"
-							: "bg-[#eaedf0] text-[#aaa] cursor-not-allowed"
+						'px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2',
+						selectedLocationId
+							? 'bg-[#e20074] text-white hover:bg-[#c70066] cursor-pointer'
+							: 'bg-[#eaedf0] text-[#aaa] cursor-not-allowed',
 					)}
 				>
 					Weiter
@@ -405,107 +575,41 @@ export default function SetupPage() {
 	const renderStep2 = () => (
 		<motion.div
 			key="step2"
-			initial={{ opacity: 0, x: 15 }}
+			initial={{
+				opacity: 0,
+				x: 15,
+			}}
 			animate={{
 				opacity: 1,
 				x: 0,
-				transition: { delay: 0.4, duration: 0.3, ease: "easeOut" }
+				transition: {
+					delay: 0.4,
+					duration: 0.3,
+					ease: 'easeOut',
+				},
 			}}
 			exit={{
 				opacity: 0,
 				x: -15,
-				transition: { duration: 0.2, ease: "easeIn" }
-			}}
-			className="space-y-6 w-full"
-		>
-			<SectionHeader
-				icon={<MapPin className="w-5 h-5 text-[#e20074]" />}
-				title="Standort wählen"
-				step={2}
-			/>
-
-			{isLocationsLoading ? (
-				<div className="grid grid-cols-2 gap-3 mt-5">
-					{Array.from({ length: 4 }).map((_, i) => (
-						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
-					))}
-				</div>
-			) : locations?.items?.length === 0 ? (
-				<div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
-					Bisher wurden keine Standorte angelegt.
-				</div>
-			) : (
-				<div className="grid grid-cols-2 gap-3 mt-5">
-					<AnimatePresence>
-						{locations?.items
-							?.filter((loc: any) => loc.isActive)
-							.map((loc: any, index: number) => (
-								<SelectionTile
-									key={loc.id}
-									name={loc.name}
-									isSelected={selectedLocationId === loc.id}
-									onClick={() => {
-										setSelectedLocationId(loc.id);
-										setSelectedTeamId(null);
-									}}
-									index={index}
-								/>
-							))}
-					</AnimatePresence>
-				</div>
-			)}
-
-			<div className="flex justify-between pt-4 border-t border-[#eaedf0] mt-8">
-				<button
-					onClick={handlePrevStep}
-					className="px-5 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2 text-[#666] bg-[#f7f8fa] hover:bg-[#eaedf0] cursor-pointer"
-				>
-					<ArrowLeft className="w-4 h-4" />
-					Zurück
-				</button>
-				<button
-					onClick={handleNextStep}
-					disabled={!selectedLocationId}
-					className={clsx(
-						"px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2",
-						selectedLocationId
-							? "bg-[#e20074] text-white hover:bg-[#c70066] cursor-pointer"
-							: "bg-[#eaedf0] text-[#aaa] cursor-not-allowed"
-					)}
-				>
-					Weiter
-					<ArrowRight className="w-4 h-4" />
-				</button>
-			</div>
-		</motion.div>
-	);
-
-	const renderStep3 = () => (
-		<motion.div
-			key="step3"
-			initial={{ opacity: 0, x: 15 }}
-			animate={{
-				opacity: 1,
-				x: 0,
-				transition: { delay: 0.4, duration: 0.3, ease: "easeOut" }
-			}}
-			exit={{
-				opacity: 0,
-				x: -15,
-				transition: { duration: 0.2, ease: "easeIn" }
+				transition: {
+					duration: 0.2,
+					ease: 'easeIn',
+				},
 			}}
 			className="space-y-6 w-full"
 		>
 			<SectionHeader
 				icon={<Users className="w-5 h-5 text-[#e20074]" />}
 				title="Vertriebsteam wählen"
-				step={3}
+				step={2}
 			/>
 
 			{isTeamsLoading ? (
-				<div className="grid grid-cols-2 gap-3 mt-5">
-					{Array.from({ length: 4 }).map((_, i) => (
-						<Skeleton key={i} className="h-[48px] w-full rounded-xl" />
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+					{Array.from({
+						length: 4,
+					}).map((_, i) => (
+						<Skeleton key={i} className="h-[52px] w-full rounded-xl" />
 					))}
 				</div>
 			) : teams?.items?.length === 0 ? (
@@ -540,10 +644,10 @@ export default function SetupPage() {
 					onClick={handleNextStep}
 					disabled={!selectedTeamId}
 					className={clsx(
-						"px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2",
+						'px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-2',
 						selectedTeamId
-							? "bg-[#e20074] text-white hover:bg-[#c70066] cursor-pointer"
-							: "bg-[#eaedf0] text-[#aaa] cursor-not-allowed"
+							? 'bg-[#e20074] text-white hover:bg-[#c70066] cursor-pointer'
+							: 'bg-[#eaedf0] text-[#aaa] cursor-not-allowed',
 					)}
 				>
 					Weiter
@@ -553,19 +657,29 @@ export default function SetupPage() {
 		</motion.div>
 	);
 
-	const renderStep4 = () => (
+	const renderStep3 = () => (
 		<motion.div
-			key="step4"
-			initial={{ opacity: 0, x: 15 }}
+			key="step3"
+			initial={{
+				opacity: 0,
+				x: 15,
+			}}
 			animate={{
 				opacity: 1,
 				x: 0,
-				transition: { delay: 0.4, duration: 0.3, ease: "easeOut" }
+				transition: {
+					delay: 0.4,
+					duration: 0.3,
+					ease: 'easeOut',
+				},
 			}}
 			exit={{
 				opacity: 0,
 				x: -15,
-				transition: { duration: 0.2, ease: "easeIn" }
+				transition: {
+					duration: 0.2,
+					ease: 'easeIn',
+				},
 			}}
 			className="space-y-8 w-full"
 		>
@@ -573,7 +687,7 @@ export default function SetupPage() {
 				<SectionHeader
 					icon={<User className="w-5 h-5 text-[#e20074]" />}
 					title="Persönliche Daten"
-					step={4}
+					step={3}
 				/>
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
 					<InputField
@@ -642,7 +756,7 @@ export default function SetupPage() {
 										className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2"
 									>
 										Datenschutz
-									</Link>{" "}
+									</Link>{' '}
 									akzeptiert
 								</>
 							}
@@ -655,10 +769,10 @@ export default function SetupPage() {
 							onClick={handleSubmit}
 							disabled={!canSubmitClick}
 							className={clsx(
-								"h-[48px] px-6 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 outline-none text-[0.88rem] whitespace-nowrap",
+								'h-[48px] px-6 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 outline-none text-[0.88rem] whitespace-nowrap',
 								canSubmitClick
-									? "bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_6px_16px_-4px_rgba(226,0,116,0.3)] cursor-pointer active:scale-[0.98]"
-									: "bg-[#f7f8fa] text-[#ccc] border border-[#eaedf0] cursor-not-allowed"
+									? 'bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_6px_16px_-4px_rgba(226,0,116,0.3)] cursor-pointer active:scale-[0.98]'
+									: 'bg-[#f7f8fa] text-[#ccc] border border-[#eaedf0] cursor-not-allowed',
 							)}
 						>
 							{isSubmitting ? (
@@ -699,13 +813,27 @@ export default function SetupPage() {
 	);
 
 	return (
-		<div className="min-h-screen py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074]">
+		<div className="h-screen w-full py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074] scrollbar-none overflow-y-auto overflow-x-hidden fixed inset-0">
 			<div className="max-w-3xl mx-auto">
 				{/* ─── Header / Branding ─── */}
 				<motion.div
-					initial={{ opacity: 0, y: 12 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+					initial={{
+						opacity: 0,
+						y: 12,
+					}}
+					animate={{
+						opacity: 1,
+						y: 0,
+					}}
+					transition={{
+						duration: 0.5,
+						ease: [
+							0.16,
+							1,
+							0.3,
+							1,
+						],
+					}}
 					className="flex flex-col items-center mb-10 text-center"
 				>
 					<TelekomLogo className="w-12 h-12 text-[#e20074] mb-8" />
@@ -721,19 +849,48 @@ export default function SetupPage() {
 
 				{/* ─── Main Card ─── */}
 				<motion.div
-					initial={{ opacity: 0, y: 15 }}
+					initial={{
+						opacity: 0,
+						y: 15,
+					}}
 					animate={{
 						opacity: 1,
 						y: 0,
 						height:
-							typeof cardHeight === "number" && cardHeight > 0
+							typeof cardHeight === 'number' && cardHeight > 0
 								? cardHeight
-								: "auto"
+								: 'auto',
 					}}
 					transition={{
-						height: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
-						opacity: { duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] },
-						y: { duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }
+						height: {
+							duration: 0.4,
+							ease: [
+								0.16,
+								1,
+								0.3,
+								1,
+							],
+						},
+						opacity: {
+							duration: 0.4,
+							delay: 0.1,
+							ease: [
+								0.16,
+								1,
+								0.3,
+								1,
+							],
+						},
+						y: {
+							duration: 0.5,
+							delay: 0.1,
+							ease: [
+								0.16,
+								1,
+								0.3,
+								1,
+							],
+						},
 					}}
 					className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] overflow-hidden relative"
 				>
@@ -758,9 +915,12 @@ export default function SetupPage() {
 								isReloggingIn={reloginReturningUser.isPending}
 								onContinue={() => {
 									if (existingSession) {
-										router.push("/products");
-									} else if (!reloginReturningUser.isPending) {
-										reloginReturningUser.mutate({ email });
+										router.push('/products');
+									}
+									else if (!reloginReturningUser.isPending) {
+										reloginReturningUser.mutate({
+											email,
+										});
 									}
 								}}
 								onReconfigure={() => setShowReconfigure(true)}
@@ -781,10 +941,10 @@ export default function SetupPage() {
 										Bitte überprüfe Dein Postfach
 									</h3>
 									<p className="text-[0.9rem] text-[#888] leading-relaxed max-w-md mx-auto">
-										Wir haben einen Bestätigungslink an{" "}
+										Wir haben einen Bestätigungslink an{' '}
 										<strong className="font-medium text-[#1a1a2e]">
 											{email}
-										</strong>{" "}
+										</strong>{' '}
 										gesendet. Er ist 60 Minuten lang gültig.
 										<br />
 										<strong className="font-medium text-[#1a1a2e] underline underline-offset-2">
@@ -805,10 +965,34 @@ export default function SetupPage() {
 								{currentStep === 1 && renderStep1()}
 								{currentStep === 2 && renderStep2()}
 								{currentStep === 3 && renderStep3()}
-								{currentStep === 4 && renderStep4()}
 							</AnimatePresence>
 						)}
 					</div>
+				</motion.div>
+
+				<motion.div
+					initial={{
+						opacity: 0,
+						y: 12,
+					}}
+					animate={{
+						opacity: 1,
+						y: 0,
+					}}
+					transition={{
+						duration: 0.5,
+						ease: [
+							0.16,
+							1,
+							0.3,
+							1,
+						],
+					}}
+					className="flex flex-col items-center mt-5 text-center"
+				>
+					<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">
+						Mit Liebe gemacht. Aus Chemnitz, für Euch alle. ❤️
+					</p>
 				</motion.div>
 
 				<GlobalFooter
@@ -828,7 +1012,7 @@ export default function SetupPage() {
 function SectionHeader({
 	icon,
 	title,
-	step
+	step,
 }: {
 	icon: React.ReactNode;
 	title: string;
@@ -853,7 +1037,7 @@ function InputField({
 	label,
 	placeholder,
 	value,
-	onChange
+	onChange,
 }: {
 	id: string;
 	label: string;
@@ -884,54 +1068,72 @@ function InputField({
 /** Location or Team selection tile */
 function SelectionTile({
 	name,
+	subtitle,
 	isSelected,
 	onClick,
-	index
+	index,
 }: {
 	name: string;
+	subtitle?: string;
 	isSelected: boolean;
 	onClick: () => void;
 	index: number;
 }) {
 	return (
 		<motion.button
-			initial={{ opacity: 0, scale: 0.95 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ delay: 0.03 * index, duration: 0.25 }}
+			initial={{
+				opacity: 0,
+				scale: 0.95,
+			}}
+			animate={{
+				opacity: 1,
+				scale: 1,
+			}}
+			transition={{
+				delay: 0.03 * index,
+				duration: 0.25,
+			}}
 			onClick={onClick}
 			className={clsx(
-				"relative flex items-center gap-3 px-4 h-[48px] rounded-xl border transition-all duration-300 cursor-pointer outline-none group",
+				'relative flex items-center gap-3 px-4 h-auto min-h-[52px] py-2 rounded-xl border transition-all duration-300 cursor-pointer outline-none group',
 				isSelected
-					? "border-[#e20074]/40 bg-[#e20074]/5 shadow-[0_4px_20px_rgba(226,0,116,0.08)] ring-1 ring-[#e20074]/30"
-					: "border-[#eaedf0] bg-[#f7f8fa] hover:bg-white hover:border-[#d1d5db] hover:shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
+					? 'border-[#e20074]/40 bg-[#e20074]/5 shadow-[0_4px_20px_rgba(226,0,116,0.08)] ring-1 ring-[#e20074]/30'
+					: 'border-[#eaedf0] bg-[#f7f8fa] hover:bg-white hover:border-[#d1d5db] hover:shadow-[0_2px_10px_rgba(0,0,0,0.03)]',
 			)}
 		>
 			{/* Checkmark indicator */}
 			<div
 				className={clsx(
-					"w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all duration-200",
+					'w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all duration-200 mt-0.5',
 					isSelected
-						? "bg-[#e20074] border-[#e20074]"
-						: "border-[#d1d5db] bg-white group-hover:border-[#a3a8b4]"
+						? 'bg-[#e20074] border-[#e20074]'
+						: 'border-[#d1d5db] bg-white group-hover:border-[#a3a8b4]',
 				)}
 			>
 				<Check
 					className={clsx(
-						"w-2.5 h-2.5 text-white transition-transform duration-200",
-						isSelected ? "scale-100" : "scale-0"
+						'w-2.5 h-2.5 text-white transition-transform duration-200',
+						isSelected ? 'scale-100' : 'scale-0',
 					)}
 					strokeWidth={4}
 				/>
 			</div>
 
-			<span
-				className={clsx(
-					"text-[0.88rem] font-bold transition-colors text-left leading-tight",
-					isSelected ? "text-[#e20074]" : "text-[#1a1a2e]"
+			<div className="flex flex-col items-start gap-0.5 text-left">
+				<span
+					className={clsx(
+						'text-[0.88rem] font-bold transition-colors leading-tight',
+						isSelected ? 'text-[#e20074]' : 'text-[#1a1a2e]',
+					)}
+				>
+					{name}
+				</span>
+				{subtitle && (
+					<span className="text-[0.7rem] text-[#888] font-medium leading-[1.2] line-clamp-1">
+						{subtitle}
+					</span>
 				)}
-			>
-				{name}
-			</span>
+			</div>
 		</motion.button>
 	);
 }
@@ -940,7 +1142,7 @@ function SelectionTile({
 function CheckboxRow({
 	checked,
 	onChange,
-	label
+	label,
 }: {
 	checked: boolean;
 	onChange: () => void;
@@ -957,16 +1159,16 @@ function CheckboxRow({
 				/>
 				<div
 					className={clsx(
-						"w-[20px] h-[20px] rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200",
+						'w-[20px] h-[20px] rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200',
 						checked
-							? "bg-[#e20074] border-[#e20074]"
-							: "border-[#d1d5db] bg-white group-hover:border-[#e20074]/50"
+							? 'bg-[#e20074] border-[#e20074]'
+							: 'border-[#d1d5db] bg-white group-hover:border-[#e20074]/50',
 					)}
 				>
 					<Check
 						className={clsx(
-							"w-3 h-3 text-white transition-transform duration-200",
-							checked ? "scale-100" : "scale-0"
+							'w-3 h-3 text-white transition-transform duration-200',
+							checked ? 'scale-100' : 'scale-0',
 						)}
 						strokeWidth={4}
 					/>
@@ -980,7 +1182,9 @@ function CheckboxRow({
 }
 
 /** IP blocked error card */
-function IpBlockedCard({ error }: { error: { message: string } | null }) {
+function IpBlockedCard({
+	error,
+}: { error: { message: string } | null }) {
 	return (
 		<div className="flex flex-col items-center text-center gap-5 py-4">
 			<div className="w-16 h-16 bg-[#fdf2f8] rounded-full flex items-center justify-center">
@@ -992,7 +1196,7 @@ function IpBlockedCard({ error }: { error: { message: string } | null }) {
 				</h3>
 				<p className="text-[0.9rem] text-[#888] leading-relaxed max-w-md mx-auto">
 					{error?.message ||
-						"Dein aktueller Standort (IP-Adresse) ist für den Zugriff auf dieses System nicht autorisiert."}
+						'Dein aktueller Standort (IP-Adresse) ist für den Zugriff auf dieses System nicht autorisiert. Der Zugriff ist nur über das Konzernnetz möglich.'}
 				</p>
 			</div>
 		</div>
@@ -1006,7 +1210,7 @@ function WelcomeBackCard({
 	teamName,
 	isReloggingIn,
 	onContinue,
-	onReconfigure
+	onReconfigure,
 }: {
 	firstName: string;
 	lastName: string;
@@ -1023,15 +1227,15 @@ function WelcomeBackCard({
 
 			<div>
 				<h3 className="text-[1.25rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight">
-					Willkommen zurück{firstName ? `, ${firstName}` : ""}!
+					Willkommen zurück{firstName ? `, ${firstName}` : ''}!
 				</h3>
 				<p className="text-[0.95rem] text-[#888] leading-relaxed max-w-md mx-auto">
 					Dein Setup ist bereits abgeschlossen
 					{teamName ? (
 						<>
-							{" "}
-							und Du bist dem Team{" "}
-							<span className="font-bold text-[#1a1a2e]">{teamName}</span>{" "}
+							{' '}
+							und Du bist dem Team{' '}
+							<span className="font-bold text-[#1a1a2e]">{teamName}</span>{' '}
 							zugeordnet
 						</>
 					) : null}

@@ -1,64 +1,68 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Smartphone, Wifi, Phone, Tv, PlusCircle, Router } from "lucide-react";
-import Link from "next/link";
+import {
+	motion,
+} from 'framer-motion';
+import {
+	Smartphone, Wifi, Phone, Tv, PlusCircle, Router,
+} from 'lucide-react';
+import Link from 'next/link';
 
 const categories = [
 	{
-		id: "MOBILE",
-		name: "Mobilfunk",
+		id: 'MOBILE',
+		name: 'Mobilfunk',
 		icon: Smartphone,
-		href: "/products/MOBILE",
-		sub: "MagentaMobil Tarife für jeden Bedarf.",
-		stats: "48 Tarife",
-		color: "#e20074"
+		href: '/products/MOBILE',
+		sub: 'MagentaMobil Tarife für jeden Bedarf.',
+		stats: '48 Tarife',
+		color: '#e20074',
 	},
 	{
-		id: "FIBER",
-		name: "Glasfaser",
+		id: 'FIBER',
+		name: 'Glasfaser',
 		icon: Wifi,
-		href: "/products/FIBER",
-		sub: "Highspeed Internet mit bis zu 1.000 Mbit/s.",
-		stats: "24 Tarife",
-		color: "#0090d0"
+		href: '/products/FIBER',
+		sub: 'Highspeed Internet mit bis zu 1.000 Mbit/s.',
+		stats: '24 Tarife',
+		color: '#0090d0',
 	},
 	{
-		id: "DSL",
-		name: "DSL & VDSL",
+		id: 'DSL',
+		name: 'DSL & VDSL',
 		icon: Phone,
-		href: "/products/DSL",
-		sub: "Zuverlässiges Internet für Zuhause.",
-		stats: "36 Tarife",
-		color: "#7b61ff"
+		href: '/products/DSL',
+		sub: 'Zuverlässiges Internet für Zuhause.',
+		stats: '36 Tarife',
+		color: '#7b61ff',
 	},
 	{
-		id: "MAGENTA_TV_OTT",
-		name: "MagentaTV",
+		id: 'MAGENTA_TV_OTT',
+		name: 'MagentaTV',
 		icon: Tv,
-		href: "/products/MAGENTA_TV_OTT",
-		sub: "Fernsehen, Streaming und mehr.",
-		stats: "12 Pakete",
-		color: "#ff6b00"
+		href: '/products/MAGENTA_TV_OTT',
+		sub: 'Fernsehen, Streaming und mehr.',
+		stats: '12 Pakete',
+		color: '#ff6b00',
 	},
 	{
-		id: "ADDON",
-		name: "Datentarife",
+		id: 'ADDON',
+		name: 'Datentarife',
 		icon: PlusCircle,
-		href: "/products/ADDON",
-		sub: "Surfen mit Tablet oder Laptop.",
-		stats: "28 Optionen",
-		color: "#00a878"
+		href: '/products/ADDON',
+		sub: 'Surfen mit Tablet oder Laptop.',
+		stats: '28 Optionen',
+		color: '#00a878',
 	},
 	{
-		id: "DEVICE",
-		name: "Endgeräte",
+		id: 'DEVICE',
+		name: 'Endgeräte',
 		icon: Router,
-		href: "/products/DEVICE",
-		sub: "Hardware & Zubehör.",
-		stats: "99+ Geräte",
-		color: "#e67e22"
-	}
+		href: '/products/DEVICE',
+		sub: 'Hardware & Zubehör.',
+		stats: '99+ Geräte',
+		color: '#e67e22',
+	},
 ];
 
 export function CategoryGrid() {
@@ -68,11 +72,25 @@ export function CategoryGrid() {
 			className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
 		>
 			{categories.map((category, index) => (
-				<Link href={category.href} key={category.id} className="no-underline">
+				<Link
+					href={category.href}
+					key={category.id}
+					className="no-underline tour-category-card"
+				>
 					<motion.div
-						initial={{ opacity: 0, y: 12 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: index * 0.06, duration: 0.4, ease: "easeOut" }}
+						initial={{
+							opacity: 0,
+							y: 12,
+						}}
+						animate={{
+							opacity: 1,
+							y: 0,
+						}}
+						transition={{
+							delay: index * 0.06,
+							duration: 0.4,
+							ease: 'easeOut',
+						}}
 						className="
 							group relative bg-linear-to-br from-white to-[#fcfafc] border border-[#eaedf0] rounded-2xl p-6
 							cursor-pointer flex flex-col justify-between min-h-[180px]
@@ -82,7 +100,7 @@ export function CategoryGrid() {
 						style={
 							{
 								// CSS variable for per-card color
-								"--card-accent": category.color
+								'--card-accent': category.color,
 							} as React.CSSProperties
 						}
 					>
@@ -90,7 +108,7 @@ export function CategoryGrid() {
 						<div
 							className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"
 							style={{
-								background: `linear-gradient(135deg, ${category.color}08 0%, ${category.color}15 50%, ${category.color}05 100%)`
+								background: `linear-gradient(135deg, ${category.color}08 0%, ${category.color}15 50%, ${category.color}05 100%)`,
 							}}
 						/>
 
@@ -99,8 +117,8 @@ export function CategoryGrid() {
 							className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
 							style={{
 								background: `linear-gradient(105deg, transparent 40%, ${category.color}12 45%, ${category.color}18 50%, ${category.color}12 55%, transparent 60%)`,
-								backgroundSize: "200% 100%",
-								animation: "shimmer 2s ease-in-out infinite"
+								backgroundSize: '200% 100%',
+								animation: 'shimmer 2s ease-in-out infinite',
 							}}
 						/>
 
@@ -110,7 +128,9 @@ export function CategoryGrid() {
 							<div className="flex items-start gap-4 mb-3">
 								<category.icon
 									className="w-7 h-7 shrink-0 mt-0.5 transition-all duration-300 group-hover:scale-110"
-									style={{ color: category.color }}
+									style={{
+										color: category.color,
+									}}
 									strokeWidth={1.8}
 								/>
 								<div className="flex-1 min-w-0">

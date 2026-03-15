@@ -1,8 +1,13 @@
-"use client";
+'use client';
 
-import React from "react";
-import Link from "next/link";
-import { ArrowLeft, LucideIcon } from "lucide-react";
+import React from 'react';
+import Link from 'next/link';
+import type {
+	LucideIcon,
+} from 'lucide-react';
+import {
+	ArrowLeft,
+} from 'lucide-react';
 
 interface AdminPageHeaderProps {
 	title: string;
@@ -15,7 +20,7 @@ export function AdminPageHeader({
 	title,
 	subtitle,
 	backHref,
-	action
+	action,
 }: AdminPageHeaderProps) {
 	return (
 		<div className="flex flex-col gap-6 mb-8">
@@ -48,7 +53,9 @@ interface AdminFormContainerProps {
 	children: React.ReactNode;
 }
 
-export function AdminFormContainer({ children }: AdminFormContainerProps) {
+export function AdminFormContainer({
+	children,
+}: AdminFormContainerProps) {
 	return (
 		<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 			<div className="lg:col-span-2 space-y-8">{children}</div>
@@ -82,7 +89,7 @@ export function AdminFormSection({
 	description,
 	children,
 	icon: Icon,
-	action
+	action,
 }: AdminFormSectionProps) {
 	return (
 		<div className="bg-white rounded-[2rem] border border-[#eaedf0] shadow-sm overflow-hidden">

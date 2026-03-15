@@ -1,37 +1,54 @@
-"use client";
+'use client';
 
-import { useBasketStore } from "@/hooks/use-basket-store";
+import {
+	useBasketStore,
+} from '@/hooks/use-basket-store';
 import {
 	calculateProductCosts,
-	DEFAULT_PRICING
-} from "@/hooks/use-cost-calculator";
-import { trpc } from "@/lib/trpc";
-import { useMemo } from "react";
+	DEFAULT_PRICING,
+} from '@/hooks/use-cost-calculator';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	useMemo,
+} from 'react';
 import {
 	Bar,
 	BarChart,
 	ReferenceLine,
 	ResponsiveContainer,
 	Tooltip,
-	XAxis
-} from "recharts";
-import { AnimatedNumber } from "@/components/shared/animated-number";
+	XAxis,
+} from 'recharts';
+import {
+	AnimatedNumber,
+} from '@/components/shared/animated-number';
 
-export function CombinedTimeline() {
+export function CombinedTimeline({
+	catColor = '#e20074',
+}: {
+	catColor?: string;
+}) {
 	const items = useBasketStore((state) => state.items);
-	const { data: pricingSettings } = trpc.settings.getPricingSettings.useQuery(
+	const {
+		data: pricingSettings,
+	} = trpc.settings.getPricingSettings.useQuery(
 		undefined,
 		{
-			staleTime: 10 * 60 * 1000
-		}
+			staleTime: 10 * 60 * 1000,
+		},
 	);
 	const settings = pricingSettings || DEFAULT_PRICING;
 
 	const aggregatedData = useMemo(() => {
-		const data = Array.from({ length: 24 }, (_, i) => ({
+		const data = Array.from({
+			length: 24,
+		}, (_, i) => ({
 			month: i + 1,
 			total: 0,
-			details: [] as { name: string; cost: number }[]
+			details: [
+			] as { name: string; cost: number }[],
 		}));
 
 		items.forEach((item) => {
@@ -42,8 +59,9 @@ export function CombinedTimeline() {
 				selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
 				selectedAddonIds: item.config.selectedAddonIds,
 				vouchers: item.config.vouchers,
-				credits: item.config.credits || [],
-				settings
+				credits: item.config.credits || [
+				],
+				settings,
 			});
 
 			calculation.monthlyCosts.forEach((mc, index) => {
@@ -51,29 +69,37 @@ export function CombinedTimeline() {
 					data[index].total += mc.total;
 					data[index].details.push({
 						name: item.product.name,
-						cost: mc.total
+						cost: mc.total,
 					});
 				}
 			});
 		});
 
 		return data;
-	}, [items]);
+	}, [
+		items,
+		settings,
+	]);
 
-	if (items.length === 0) return null;
+	if (items.length === 0) { return null; }
 
 	const averageTotal =
 		aggregatedData.reduce((acc, curr) => acc + curr.total, 0) / 24;
 
 	return (
-		<div>
+		<div style={{ '--cat-color': catColor } as React.CSSProperties}>
 			{/* Header */}
 			<div className="flex items-baseline justify-between mb-3">
 				<span className="text-[0.72rem] font-semibold text-[#aaa] uppercase tracking-wider">
 					Kostenverlauf
 				</span>
 				<div className="text-right">
-					<span className="text-[1.1rem] font-extrabold text-[#e20074] leading-none">
+					<span
+						className="text-[1.1rem] font-extrabold leading-none transition-colors duration-500"
+						style={{
+							color: 'var(--cat-color)',
+						}}
+					>
 						<AnimatedNumber value={averageTotal} /> €
 					</span>
 					<span className="text-[0.6rem] text-[#b0b0b0] font-medium ml-1">
@@ -83,22 +109,35 @@ export function CombinedTimeline() {
 			</div>
 
 			{/* Chart */}
-			<div className="h-[100px] w-full">
+			<div className="h-[100px] w-full transition-all duration-500">
 				<ResponsiveContainer width="100%" height="100%">
 					<BarChart
 						data={aggregatedData}
-						margin={{ top: 4, right: 0, left: 0, bottom: 0 }}
+						margin={{
+							top: 4,
+							right: 0,
+							left: 0,
+							bottom: 0,
+						}}
 					>
 						<XAxis
 							dataKey="month"
 							axisLine={false}
 							tickLine={false}
-							tick={{ fontSize: 8, fill: "#ccc" }}
+							tick={{
+								fontSize: 8,
+								fill: '#ccc',
+							}}
 							interval={5}
 						/>
 						<Tooltip
-							cursor={{ fill: "rgba(226, 0, 116, 0.03)" }}
-							content={({ active, payload }: any) => {
+							cursor={{
+								fill: 'var(--cat-color)',
+								opacity: 0.05,
+							}}
+							content={({
+								active, payload,
+							}: { active?: boolean; payload?: readonly any[] }) => {
 								if (active && payload && payload.length) {
 									const data = payload[0].payload;
 									return (
@@ -117,11 +156,16 @@ export function CombinedTimeline() {
 															{d.cost.toFixed(2)} €
 														</span>
 													</div>
-												)
+												),
 											)}
 											<div className="border-t border-[#eaedf0] mt-2 pt-1.5 flex justify-between font-bold text-[0.72rem]">
 												<span className="text-[#888]">Gesamt</span>
-												<span className="text-[#e20074]">
+												<span
+													style={{
+														color: 'var(--cat-color)',
+													}}
+													className="transition-colors duration-500"
+												>
 													{data.total.toFixed(2)} €
 												</span>
 											</div>
@@ -141,21 +185,27 @@ export function CombinedTimeline() {
 						/>
 						<ReferenceLine
 							y={averageTotal}
-							stroke="#e20074"
+							stroke="var(--cat-color)"
 							strokeDasharray="3 3"
 							strokeOpacity={0.5}
 							strokeWidth={1}
+							className="transition-all duration-500"
 						/>
 						<Bar
 							dataKey="total"
 							fill="url(#colorTotal)"
-							radius={[7, 7, 0, 0]}
+							radius={[
+								7,
+								7,
+								0,
+								0,
+							]}
 							maxBarSize={14}
 						/>
 						<defs>
 							<linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-								<stop offset="0%" stopColor="#e20074" stopOpacity={0.2} />
-								<stop offset="100%" stopColor="#e20074" stopOpacity={1} />
+								<stop offset="0%" stopColor="var(--cat-color)" stopOpacity={0.2} />
+								<stop offset="100%" stopColor="var(--cat-color)" stopOpacity={1} />
 							</linearGradient>
 						</defs>
 					</BarChart>

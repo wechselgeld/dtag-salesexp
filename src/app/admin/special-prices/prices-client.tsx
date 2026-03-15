@@ -1,36 +1,56 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc";
-import { Plus, Edit, Trash2, Search, Tag, MessageSquare } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { Skeleton } from "@/components/shared/skeleton";
-import { confirmDelete } from "@/components/shared/delete-confirm-toast";
-import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
-import { Loader2 } from "lucide-react";
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	Plus, Edit, Trash2, Search, Tag, MessageSquare,
+} from 'lucide-react';
+import Link from 'next/link';
+import {
+	useState,
+} from 'react';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import {
+	confirmDelete,
+} from '@/components/shared/delete-confirm-toast';
+import {
+	AdminPageHeader,
+} from '@/components/shared/ui/admin-ui';
+import {
+	Loader2,
+} from 'lucide-react';
 
 export default function AdminSpecialPricesPage() {
-	const [search, setSearch] = useState("");
+	const [
+		search,
+		setSearch,
+	] = useState('');
 	const utils = trpc.useUtils();
 
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+	const {
+		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
+	} =
 		trpc.admin.getAllSpecialPrices.useInfiniteQuery(
 			{
 				limit: 20,
-				search: search || undefined
+				search: search || undefined,
 			},
 			{
-				getNextPageParam: (lastPage) => lastPage.nextCursor
-			}
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+			},
 		);
 
 	const deleteMutation = trpc.admin.deleteSpecialPrice.useMutation({
 		onSuccess: () => {
 			utils.admin.getAllSpecialPrices.invalidate();
-		}
+		},
 	});
 
-	const specialPrices = data?.pages.flatMap((page) => page.items) || [];
+	const specialPrices = data?.pages.flatMap((page) => page.items) || [
+	];
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -63,7 +83,13 @@ export default function AdminSpecialPricesPage() {
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
 				{isLoading && specialPrices.length === 0 ? (
 					<div className="flex flex-col gap-3 p-5">
-						{[1, 2, 3, 4, 5].map((i) => (
+						{[
+							1,
+							2,
+							3,
+							4,
+							5,
+						].map((i) => (
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
@@ -156,7 +182,7 @@ export default function AdminSpecialPricesPage() {
 														{tier.fromMonth === tier.toMonth
 															? `Monat ${tier.fromMonth}`
 															: `${tier.fromMonth}-${tier.toMonth}. Mo`}
-														:{" "}
+														:{' '}
 														<span className="text-[#e20074]">
 															{tier.price.toFixed(2)} €
 														</span>
@@ -178,7 +204,9 @@ export default function AdminSpecialPricesPage() {
 															id: sp.id,
 															name: sp.name,
 															onConfirm: () =>
-																deleteMutation.mutate({ id: sp.id })
+																deleteMutation.mutate({
+																	id: sp.id,
+																}),
 														})
 													}
 													className="p-2 text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all cursor-pointer border-none bg-transparent"
@@ -206,7 +234,7 @@ export default function AdminSpecialPricesPage() {
 							) : (
 								<Plus className="w-5 h-5" />
 							)}
-							{isFetchingNextPage ? "Wird geladen..." : "Mehr Aktionen laden"}
+							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr Aktionen laden'}
 						</button>
 					</div>
 				)}

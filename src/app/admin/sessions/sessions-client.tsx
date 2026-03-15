@@ -1,6 +1,8 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc";
+import {
+	trpc,
+} from '@/lib/trpc';
 import {
 	Activity,
 	Loader2,
@@ -9,21 +11,38 @@ import {
 	MapPin,
 	Users,
 	Globe,
-	Mail
-} from "lucide-react";
-import { Skeleton } from "@/components/shared/skeleton";
-import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
-import { motion } from "framer-motion";
+	Mail,
+} from 'lucide-react';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import {
+	AdminPageHeader,
+} from '@/components/shared/ui/admin-ui';
+import {
+	format,
+} from 'date-fns';
+import {
+	de,
+} from 'date-fns/locale';
+import {
+	motion,
+} from 'framer-motion';
+import {
+	Tooltip,
+} from '@/components/shared/ui/tooltip';
 
 export default function SessionsClient() {
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+	const {
+		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
+	} =
 		trpc.session.list.useInfiniteQuery(
-			{ limit: 20 },
 			{
-				getNextPageParam: (lastPage) => lastPage.nextCursor
-			}
+				limit: 20,
+			},
+			{
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+			},
 		);
 
 	if (isLoading) {
@@ -35,7 +54,13 @@ export default function SessionsClient() {
 					backHref="/admin"
 				/>
 				<div className="bg-white rounded-3xl border border-[#eaedf0] p-6 space-y-4">
-					{[1, 2, 3, 4, 5].map((i) => (
+					{[
+						1,
+						2,
+						3,
+						4,
+						5,
+					].map((i) => (
 						<Skeleton key={i} className="h-16 w-full rounded-2xl" />
 					))}
 				</div>
@@ -43,7 +68,8 @@ export default function SessionsClient() {
 		);
 	}
 
-	const allSessions = data?.pages.flatMap((page) => page.items) || [];
+	const allSessions = data?.pages.flatMap((page) => page.items) || [
+	];
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -101,16 +127,25 @@ export default function SessionsClient() {
 												name: string;
 												location: {
 													name: string;
+													address: string | null;
 													odRegion: { name: string } | null;
 												} | null;
 											};
 										},
-										idx: number
+										idx: number,
 									) => (
 										<motion.tr
-											initial={{ opacity: 0, y: 5 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ delay: idx * 0.03 }}
+											initial={{
+												opacity: 0,
+												y: 5,
+											}}
+											animate={{
+												opacity: 1,
+												y: 0,
+											}}
+											transition={{
+												delay: idx * 0.03,
+											}}
 											key={session.id}
 											className="hover:bg-[#fcfcfd] transition-colors"
 										>
@@ -121,12 +156,12 @@ export default function SessionsClient() {
 													</span>
 													<div className="flex items-center gap-2 mt-1">
 														<span
-															className={`w-2 h-2 rounded-full ${session.isVerified ? "bg-green-500" : "bg-amber-500"}`}
+															className={`w-2 h-2 rounded-full ${session.isVerified ? 'bg-green-500' : 'bg-amber-500'}`}
 														/>
 														<span className="text-[0.75rem] font-medium text-[#888]">
 															{session.isVerified
-																? "Verifiziert"
-																: "Ausstehend"}
+																? 'Verifiziert'
+																: 'Ausstehend'}
 														</span>
 													</div>
 												</div>
@@ -142,12 +177,22 @@ export default function SessionsClient() {
 													<div className="flex flex-col gap-0.5 ml-5">
 														<div className="flex items-center gap-1.5 text-[0.75rem] text-[#888] font-medium">
 															<MapPin className="w-3 h-3" />
-															{session.team.location?.name || "Kein Standort"}
+															{session.team.location?.address ? (
+																<Tooltip
+																	content={session.team.location.address}
+																>
+																	<span className="border-b border-dashed border-[#eaedf0] cursor-help">
+																		{session.team.location.name}
+																	</span>
+																</Tooltip>
+															) : (
+																session.team.location?.name || 'Kein Standort'
+															)}
 														</div>
 														<div className="flex items-center gap-1.5 text-[0.7rem] text-[#bbb] font-medium">
 															<Globe className="w-3 h-3" />
 															{session.team.location?.odRegion?.name ||
-																"Keine Region"}
+																'Keine Region'}
 														</div>
 													</div>
 												</div>
@@ -161,7 +206,7 @@ export default function SessionsClient() {
 														</div>
 													)}
 													<span className="text-[0.7rem] font-mono text-[#aaa]">
-														IP: {session.ip || "Unbekannt"}
+														IP: {session.ip || 'Unbekannt'}
 													</span>
 												</div>
 											</td>
@@ -170,19 +215,19 @@ export default function SessionsClient() {
 													<span className="text-[0.85rem] font-bold text-[#1a1a2e]">
 														{format(
 															new Date(session.createdAt),
-															"dd. MMM yyyy",
+															'dd. MMM yyyy',
 															{
-																locale: de
-															}
+																locale: de,
+															},
 														)}
 													</span>
 													<span className="text-[0.75rem] font-medium text-[#999] mt-0.5">
-														{format(new Date(session.createdAt), "HH:mm 'Uhr'")}
+														{format(new Date(session.createdAt), 'HH:mm \'Uhr\'')}
 													</span>
 												</div>
 											</td>
 										</motion.tr>
-									)
+									),
 								)}
 							</tbody>
 						</table>
@@ -201,7 +246,7 @@ export default function SessionsClient() {
 							) : (
 								<Activity className="w-5 h-5 group-hover:rotate-12 transition-transform" />
 							)}
-							{isFetchingNextPage ? "Wird geladen..." : "Mehr Sessions laden"}
+							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr Sessions laden'}
 						</button>
 					</div>
 				)}

@@ -1,31 +1,43 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc";
-import clsx from "clsx";
+import {
+	useForm,
+} from 'react-hook-form';
+import {
+	zodResolver,
+} from '@hookform/resolvers/zod';
+import {
+	z,
+} from 'zod';
+import {
+	useRouter,
+} from 'next/navigation';
+import {
+	trpc,
+} from '@/lib/trpc';
+import clsx from 'clsx';
 import {
 	Save,
 	Loader2,
 	ArrowLeft,
 	Euro,
 	ToggleLeft,
-	FileText
-} from "lucide-react";
-import Link from "next/link";
-import { Input } from "@/components/shared/ui/input";
+	FileText,
+} from 'lucide-react';
+import Link from 'next/link';
+import {
+	Input,
+} from '@/components/shared/ui/input';
 import {
 	AdminPageHeader,
 	AdminFormContainer,
-	AdminFormSection
-} from "@/components/shared/ui/admin-ui";
+	AdminFormSection,
+} from '@/components/shared/ui/admin-ui';
 
 const creditSchema = z.object({
-	name: z.string().min(1, "Name ist erforderlich"),
-	value: z.number().min(0, "Wert muss positiv sein"),
-	isActive: z.boolean().default(true)
+	name: z.string().min(1, 'Name ist erforderlich'),
+	value: z.number().min(0, 'Wert muss positiv sein'),
+	isActive: z.boolean().default(true),
 });
 
 type CreditFormData = z.infer<typeof creditSchema>;
@@ -37,7 +49,7 @@ interface CreditFormProps {
 
 export function CreditForm({
 	initialData,
-	isEditMode = false
+	isEditMode = false,
 }: CreditFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
@@ -45,39 +57,45 @@ export function CreditForm({
 	const {
 		register,
 		handleSubmit,
-		formState: { errors }
+		formState: {
+			errors,
+		},
 	} = useForm({
 		resolver: zodResolver(creditSchema),
-		mode: "onChange",
+		mode: 'onChange',
 		defaultValues: {
-			name: initialData ? initialData.name : "",
+			name: initialData ? initialData.name : '',
 			value: initialData ? initialData.value : 0,
-			isActive: initialData ? initialData.isActive : true
-		}
+			isActive: initialData ? initialData.isActive : true,
+		},
 	});
 
 	const createMutation = trpc.admin.oneTimeCredit.create.useMutation({
 		onSuccess: () => {
 			utils.admin.oneTimeCredit.list.invalidate();
 			utils.admin.oneTimeCredit.getById.invalidate();
-			router.push("/admin/credits");
+			router.push('/admin/credits');
 			router.refresh();
-		}
+		},
 	});
 
 	const updateMutation = trpc.admin.oneTimeCredit.update.useMutation({
 		onSuccess: () => {
 			utils.admin.oneTimeCredit.list.invalidate();
 			utils.admin.oneTimeCredit.getById.invalidate();
-			router.push("/admin/credits");
+			router.push('/admin/credits');
 			router.refresh();
-		}
+		},
 	});
 
 	const onSubmit = (data: CreditFormData) => {
 		if (isEditMode && initialData) {
-			updateMutation.mutate({ ...data, id: initialData.id });
-		} else {
+			updateMutation.mutate({
+				...data,
+				id: initialData.id,
+			});
+		}
+		else {
 			createMutation.mutate(data);
 		}
 	};
@@ -90,10 +108,10 @@ export function CreditForm({
 			form="credit-form"
 			disabled={isSubmitting}
 			className={clsx(
-				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
+				'px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5',
 				isSubmitting
-					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-					: "bg-[#e20074] hover:bg-[#c70066]"
+					? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+					: 'bg-[#e20074] hover:bg-[#c70066]',
 			)}
 		>
 			{isSubmitting ? (
@@ -108,11 +126,11 @@ export function CreditForm({
 	return (
 		<div className="space-y-8 pb-12">
 			<AdminPageHeader
-				title={isEditMode ? "Gutschrift bearbeiten" : "Neue Gutschrift"}
+				title={isEditMode ? 'Gutschrift bearbeiten' : 'Neue Gutschrift'}
 				subtitle={
 					isEditMode
 						? `Verwalte die Details für ${initialData?.name}`
-						: "Erstelle eine neue Einmal-Gutschrift für Produkte."
+						: 'Erstelle eine neue Einmal-Gutschrift für Produkte.'
 				}
 				backHref="/admin/credits"
 				action={SaveButton}
@@ -129,7 +147,7 @@ export function CreditForm({
 							label="Bezeichnung"
 							placeholder="z.B. Anschlusspreisbefreiung"
 							error={errors.name?.message as string}
-							{...register("name")}
+							{...register('name')}
 						/>
 
 						<div className="flex flex-col gap-1.5">
@@ -142,7 +160,9 @@ export function CreditForm({
 									step="0.01"
 									placeholder="0.00"
 									error={errors.value?.message as string}
-									{...register("value", { valueAsNumber: true })}
+									{...register('value', {
+										valueAsNumber: true,
+									})}
 									className="pl-10"
 								/>
 								<div className="absolute left-4 top-[38px] text-[#bbb]">
@@ -162,7 +182,7 @@ export function CreditForm({
 								<input
 									type="checkbox"
 									id="isActive"
-									{...register("isActive")}
+									{...register('isActive')}
 									className="peer w-6 h-6 rounded-lg border-[#eaedf0] text-[#e20074] focus:ring-[#e20074] cursor-pointer appearance-none bg-white transition-all checked:bg-[#e20074] checked:border-[#e20074]"
 								/>
 								<div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white opacity-0 peer-checked:opacity-100 transition-opacity">

@@ -1,7 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import {
+	useState,
+} from 'react';
+import {
+	trpc,
+} from '@/lib/trpc';
 import {
 	Users,
 	Trash2,
@@ -13,44 +17,100 @@ import {
 	Briefcase,
 	Pencil,
 	MapPin,
-	Search
-} from "lucide-react";
-import clsx from "clsx";
-import { Skeleton } from "@/components/shared/skeleton";
-import Link from "next/link";
-import { confirmDelete } from "@/components/shared/delete-confirm-toast";
-import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
+	Search,
+} from 'lucide-react';
+import clsx from 'clsx';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import Link from 'next/link';
+import {
+	confirmDelete,
+} from '@/components/shared/delete-confirm-toast';
+import {
+	AdminPageHeader,
+} from '@/components/shared/ui/admin-ui';
+import {
+	Tooltip,
+} from '@/components/shared/ui/tooltip';
 
 const CATEGORIES = [
-	{ id: "MOBILE", label: "Mobilfunk" },
-	{ id: "FIBER", label: "Glasfaser" },
-	{ id: "DSL", label: "Festnetz" },
-	{ id: "MAGENTA_TV_OTT", label: "MagentaTV" },
-	{ id: "DEVICE", label: "Gerät" },
-	{ id: "ADDON", label: "Option" }
+	{
+		id: 'MOBILE',
+		label: 'Mobilfunk',
+	},
+	{
+		id: 'FIBER',
+		label: 'Glasfaser',
+	},
+	{
+		id: 'DSL',
+		label: 'Festnetz',
+	},
+	{
+		id: 'MAGENTA_TV_OTT',
+		label: 'MagentaTV',
+	},
+	{
+		id: 'DEVICE',
+		label: 'Gerät',
+	},
+	{
+		id: 'ADDON',
+		label: 'Option',
+	},
 ];
 
 const BUSINESS_CASES = [
-	{ id: "NEW_ACTIVATION", label: "Neubereitstellung" },
-	{ id: "MOVE", label: "Umzug" },
-	{ id: "PLAN_CHANGE", label: "Tarifwechsel" },
-	{ id: "SPEED_UP", label: "SpeedUp" }
+	{
+		id: 'NEW_ACTIVATION',
+		label: 'Neubereitstellung',
+	},
+	{
+		id: 'MOVE',
+		label: 'Umzug',
+	},
+	{
+		id: 'PLAN_CHANGE',
+		label: 'Tarifwechsel',
+	},
+	{
+		id: 'SPEED_UP',
+		label: 'SpeedUp',
+	},
 ];
 
 export default function TeamsPage() {
 	const utils = trpc.useUtils();
-	const [selectedLocationId, setSelectedLocationId] = useState<string>("all");
-	const [teamSearchQuery, setTeamSearchQuery] =
-		useState(""); /* Used for teams list */
-	const [searchQuery, setSearchQuery] = useState(""); /* Used in modal */
-	const [managingFocusTeamId, setManagingFocusTeamId] = useState<string | null>(
-		null
+	const [
+		selectedLocationId,
+		setSelectedLocationId,
+	] = useState<string>('all');
+	const [
+		teamSearchQuery,
+		setTeamSearchQuery,
+	] =
+		useState(''); /* Used for teams list */
+	const [
+		searchQuery,
+		setSearchQuery,
+	] = useState(''); /* Used in modal */
+	const [
+		managingFocusTeamId,
+		setManagingFocusTeamId,
+	] = useState<string | null>(
+		null,
 	);
-	const [activeTab, setActiveTab] = useState<
-		"products" | "categories" | "businessCases"
-	>("products");
+	const [
+		activeTab,
+		setActiveTab,
+	] = useState<
+		'products' | 'categories' | 'businessCases'
+	>('products');
 
-	const { data: locations, isLoading: isLocationsLoading } =
+	const {
+		data: locations, isLoading: isLocationsLoading,
+	} =
 		trpc.location.list.useQuery();
 
 	const {
@@ -58,16 +118,16 @@ export default function TeamsPage() {
 		isLoading,
 		fetchNextPage,
 		hasNextPage,
-		isFetchingNextPage
+		isFetchingNextPage,
 	} = trpc.team.list.useInfiniteQuery(
 		{
 			limit: 20,
 			search: teamSearchQuery || undefined,
-			locationId: selectedLocationId !== "all" ? selectedLocationId : undefined
+			locationId: selectedLocationId !== 'all' ? selectedLocationId : undefined,
 		},
 		{
-			getNextPageParam: (lastPage) => lastPage.nextCursor
-		}
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+		},
 	);
 
 	const {
@@ -75,27 +135,29 @@ export default function TeamsPage() {
 		isLoading: isProductsLoading,
 		fetchNextPage: fetchNextProducts,
 		hasNextPage: hasNextProducts,
-		isFetchingNextPage: isFetchingNextProducts
+		isFetchingNextPage: isFetchingNextProducts,
 	} = trpc.product.getAllProducts.useInfiniteQuery(
 		{
 			limit: 20,
-			search: searchQuery || undefined
+			search: searchQuery || undefined,
 		},
 		{
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
-			enabled: managingFocusTeamId !== null && activeTab === "products"
-		}
+			enabled: managingFocusTeamId !== null && activeTab === 'products',
+		},
 	);
 
 	const deleteTeam = trpc.team.delete.useMutation({
-		onSuccess: () => utils.team.list.invalidate()
+		onSuccess: () => utils.team.list.invalidate(),
 	});
 	const toggleFocus = trpc.team.toggleFocus.useMutation({
-		onSuccess: () => utils.team.list.invalidate()
+		onSuccess: () => utils.team.list.invalidate(),
 	});
 
-	const teams = teamsData?.pages.flatMap((page) => page.items) || [];
-	const products = productsData?.pages.flatMap((page) => page.items) || [];
+	const teams = teamsData?.pages.flatMap((page) => page.items) || [
+	];
+	const products = productsData?.pages.flatMap((page) => page.items) || [
+	];
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -134,7 +196,11 @@ export default function TeamsPage() {
 					>
 						<option value="all">Alle Standorte</option>
 						{locations?.items?.map((loc: any) => (
-							<option key={loc.id} value={loc.id}>
+							<option
+								key={loc.id}
+								value={loc.id}
+								title={loc.address || undefined}
+							>
 								{loc.name}
 							</option>
 						))}
@@ -156,7 +222,13 @@ export default function TeamsPage() {
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
 				{isLoading && teams.length === 0 ? (
 					<div className="flex flex-col gap-3 p-5">
-						{[1, 2, 3, 4, 5].map((i) => (
+						{[
+							1,
+							2,
+							3,
+							4,
+							5,
+						].map((i) => (
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
@@ -194,7 +266,7 @@ export default function TeamsPage() {
 										id: string;
 										name: string;
 										highlights: { productId: string | null }[];
-										location: { name: string } | null;
+										location: { name: string; address: string | null } | null;
 									}) => (
 										<tr
 											key={team.id}
@@ -217,7 +289,15 @@ export default function TeamsPage() {
 												{team.location ? (
 													<div className="flex items-center gap-1.5 text-[0.85rem] text-[#666]">
 														<MapPin className="w-3.5 h-3.5" />
-														{team.location.name}
+														{team.location.address ? (
+															<Tooltip content={team.location.address}>
+																<span className="border-b border-dashed border-[#eaedf0] cursor-help">
+																	{team.location.name}
+																</span>
+															</Tooltip>
+														) : (
+															team.location.name
+														)}
 													</div>
 												) : (
 													<span className="text-[#bbb] italic text-[0.8rem]">
@@ -245,7 +325,9 @@ export default function TeamsPage() {
 																id: team.id,
 																name: team.name,
 																onConfirm: () =>
-																	deleteTeam.mutate({ id: team.id })
+																	deleteTeam.mutate({
+																		id: team.id,
+																	}),
 															})
 														}
 														className="p-2 text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all cursor-pointer border-none bg-transparent"
@@ -255,7 +337,7 @@ export default function TeamsPage() {
 												</div>
 											</td>
 										</tr>
-									)
+									),
 								)}
 							</tbody>
 						</table>
@@ -274,7 +356,7 @@ export default function TeamsPage() {
 							) : (
 								<Plus className="w-5 h-5" />
 							)}
-							{isFetchingNextPage ? "Wird geladen..." : "Mehr laden"}
+							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr laden'}
 						</button>
 					</div>
 				)}
@@ -309,18 +391,27 @@ export default function TeamsPage() {
 						<div className="p-6 overflow-y-auto flex-1 bg-[#fcfcfd] flex flex-col gap-6">
 							<div className="flex gap-2 bg-[#f0f2f5] p-1.5 rounded-2xl w-fit self-center">
 								{[
-									{ id: "products", label: "Tarife" },
-									{ id: "categories", label: "Kategorien" },
-									{ id: "businessCases", label: "Vertragsarten" }
+									{
+										id: 'products',
+										label: 'Tarife',
+									},
+									{
+										id: 'categories',
+										label: 'Kategorien',
+									},
+									{
+										id: 'businessCases',
+										label: 'Vertragsarten',
+									},
 								].map((tab) => (
 									<button
 										key={tab.id}
 										onClick={() => setActiveTab(tab.id as any)}
 										className={clsx(
-											"px-6 py-2 rounded-xl text-[0.85rem] font-bold transition-all duration-200 cursor-pointer border-none",
+											'px-6 py-2 rounded-xl text-[0.85rem] font-bold transition-all duration-200 cursor-pointer border-none',
 											activeTab === tab.id
-												? "bg-white text-[#1a1a2e] shadow-md"
-												: "bg-transparent text-[#999] hover:text-[#666]"
+												? 'bg-white text-[#1a1a2e] shadow-md'
+												: 'bg-transparent text-[#999] hover:text-[#666]',
 										)}
 									>
 										{tab.label}
@@ -329,7 +420,7 @@ export default function TeamsPage() {
 							</div>
 
 							<div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
-								{activeTab === "products" && (
+								{activeTab === 'products' && (
 									<div className="space-y-4">
 										<div className="relative">
 											<Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#aaa]" />
@@ -344,10 +435,10 @@ export default function TeamsPage() {
 										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 											{products.map((product) => {
 												const team = teams.find(
-													(t) => t.id === managingFocusTeamId
+													(t) => t.id === managingFocusTeamId,
 												);
 												const isFocused = team?.highlights.some(
-													(h: any) => h.productId === product.id
+													(h: any) => h.productId === product.id,
 												);
 
 												return (
@@ -356,22 +447,22 @@ export default function TeamsPage() {
 														onClick={() =>
 															toggleFocus.mutate({
 																teamId: managingFocusTeamId,
-																productId: product.id
+																productId: product.id,
 															})
 														}
 														className={clsx(
-															"p-4 rounded-2xl border-2 text-left transition-all duration-300 flex items-start gap-4 cursor-pointer bg-white group",
+															'p-4 rounded-2xl border-2 text-left transition-all duration-300 flex items-start gap-4 cursor-pointer bg-white group',
 															isFocused
-																? "border-[#e20074] bg-[#e20074]/2 shadow-sm shadow-[#e20074]/10"
-																: "border-[#eaedf0] hover:border-[#ddd]"
+																? 'border-[#e20074] bg-[#e20074]/2 shadow-sm shadow-[#e20074]/10'
+																: 'border-[#eaedf0] hover:border-[#ddd]',
 														)}
 													>
 														<div
 															className={clsx(
-																"mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
+																'mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200',
 																isFocused
-																	? "bg-[#e20074] border-[#e20074] text-white shadow-md shadow-[#e20074]/20"
-																	: "border-[#eaedf0] bg-[#fcfcfd]"
+																	? 'bg-[#e20074] border-[#e20074] text-white shadow-md shadow-[#e20074]/20'
+																	: 'border-[#eaedf0] bg-[#fcfcfd]',
 															)}
 														>
 															{isFocused && (
@@ -384,7 +475,7 @@ export default function TeamsPage() {
 															</div>
 															<div className="text-[0.7rem] text-[#999] mt-0.5 font-bold uppercase tracking-wider">
 																{CATEGORIES.find(
-																	(c) => c.id === product.category
+																	(c) => c.id === product.category,
 																)?.label || product.category}
 															</div>
 														</div>
@@ -421,14 +512,14 @@ export default function TeamsPage() {
 									</div>
 								)}
 
-								{activeTab === "categories" && (
+								{activeTab === 'categories' && (
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 										{CATEGORIES.map((category) => {
 											const team = teams.find(
-												(t) => t.id === managingFocusTeamId
+												(t) => t.id === managingFocusTeamId,
 											);
 											const isFocused = team?.highlights.some(
-												(h: any) => h.category === category.id
+												(h: any) => h.category === category.id,
 											);
 											return (
 												<button
@@ -436,22 +527,22 @@ export default function TeamsPage() {
 													onClick={() =>
 														toggleFocus.mutate({
 															teamId: managingFocusTeamId,
-															category: category.id as any
+															category: category.id as any,
 														})
 													}
 													className={clsx(
-														"p-4 rounded-2xl border-2 text-left transition-all duration-300 flex items-start gap-4 cursor-pointer bg-white group",
+														'p-4 rounded-2xl border-2 text-left transition-all duration-300 flex items-start gap-4 cursor-pointer bg-white group',
 														isFocused
-															? "border-[#e20074] bg-[#e20074]/2 shadow-sm shadow-[#e20074]/10"
-															: "border-[#eaedf0] hover:border-[#ddd]"
+															? 'border-[#e20074] bg-[#e20074]/2 shadow-sm shadow-[#e20074]/10'
+															: 'border-[#eaedf0] hover:border-[#ddd]',
 													)}
 												>
 													<div
 														className={clsx(
-															"mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
+															'mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200',
 															isFocused
-																? "bg-[#e20074] border-[#e20074] text-white shadow-md shadow-[#e20074]/20"
-																: "border-[#eaedf0] bg-[#fcfcfd]"
+																? 'bg-[#e20074] border-[#e20074] text-white shadow-md shadow-[#e20074]/20'
+																: 'border-[#eaedf0] bg-[#fcfcfd]',
 														)}
 													>
 														{isFocused && (
@@ -472,14 +563,14 @@ export default function TeamsPage() {
 									</div>
 								)}
 
-								{activeTab === "businessCases" && (
+								{activeTab === 'businessCases' && (
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 										{BUSINESS_CASES.map((bc) => {
 											const team = teams.find(
-												(t) => t.id === managingFocusTeamId
+												(t) => t.id === managingFocusTeamId,
 											);
 											const isFocused = team?.highlights.some(
-												(h: any) => h.businessCase === bc.id
+												(h: any) => h.businessCase === bc.id,
 											);
 											return (
 												<button
@@ -487,22 +578,22 @@ export default function TeamsPage() {
 													onClick={() =>
 														toggleFocus.mutate({
 															teamId: managingFocusTeamId,
-															businessCase: bc.id as any
+															businessCase: bc.id as any,
 														})
 													}
 													className={clsx(
-														"p-4 rounded-2xl border-2 text-left transition-all duration-300 flex items-start gap-4 cursor-pointer bg-white group",
+														'p-4 rounded-2xl border-2 text-left transition-all duration-300 flex items-start gap-4 cursor-pointer bg-white group',
 														isFocused
-															? "border-[#e20074] bg-[#e20074]/2 shadow-sm shadow-[#e20074]/10"
-															: "border-[#eaedf0] hover:border-[#ddd]"
+															? 'border-[#e20074] bg-[#e20074]/2 shadow-sm shadow-[#e20074]/10'
+															: 'border-[#eaedf0] hover:border-[#ddd]',
 													)}
 												>
 													<div
 														className={clsx(
-															"mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
+															'mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200',
 															isFocused
-																? "bg-[#e20074] border-[#e20074] text-white shadow-md shadow-[#e20074]/20"
-																: "border-[#eaedf0] bg-[#fcfcfd]"
+																? 'bg-[#e20074] border-[#e20074] text-white shadow-md shadow-[#e20074]/20'
+																: 'border-[#eaedf0] bg-[#fcfcfd]',
 														)}
 													>
 														{isFocused && (

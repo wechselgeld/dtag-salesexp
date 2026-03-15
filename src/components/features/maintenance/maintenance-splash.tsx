@@ -1,18 +1,40 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Lock, ShieldAlert } from "lucide-react";
-import { TelekomLogo } from "@/components/shared/telekom-logo";
-import { GlobalFooter } from "@/components/shared/global-footer";
-import Link from "next/link";
+import {
+	motion,
+} from 'framer-motion';
+import {
+	Lock, ShieldAlert,
+} from 'lucide-react';
+import {
+	TelekomLogo,
+} from '@/components/shared/telekom-logo';
+import {
+	GlobalFooter,
+} from '@/components/shared/global-footer';
+import Link from 'next/link';
 
 export function MaintenanceSplash() {
 	return (
 		<div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 sm:p-8 font-sans selection:bg-[#e20074]/20 selection:text-[#e20074]">
 			<motion.div
-				initial={{ opacity: 0, y: 15 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+				initial={{
+					opacity: 0,
+					y: 15,
+				}}
+				animate={{
+					opacity: 1,
+					y: 0,
+				}}
+				transition={{
+					duration: 0.5,
+					ease: [
+						0.16,
+						1,
+						0.3,
+						1,
+					],
+				}}
 				className="w-full max-w-[480px] flex flex-col items-center text-center"
 			>
 				{/* Top Branding */}

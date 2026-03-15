@@ -1,9 +1,15 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { TelekomLogo } from "@/components/shared/telekom-logo";
-import { ArrowLeft } from "lucide-react";
-import { GlobalFooter } from "@/components/shared/global-footer";
+import Link from 'next/link';
+import {
+	TelekomLogo,
+} from '@/components/shared/telekom-logo';
+import {
+	ArrowLeft,
+} from 'lucide-react';
+import {
+	GlobalFooter,
+} from '@/components/shared/global-footer';
 
 export default function NotFound() {
 	return (

@@ -1,11 +1,21 @@
-"use client";
+'use client';
 
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc";
-import clsx from "clsx";
+import {
+	useForm, useFieldArray,
+} from 'react-hook-form';
+import {
+	zodResolver,
+} from '@hookform/resolvers/zod';
+import {
+	z,
+} from 'zod';
+import {
+	useRouter,
+} from 'next/navigation';
+import {
+	trpc,
+} from '@/lib/trpc';
+import clsx from 'clsx';
 import {
 	Save,
 	Loader2,
@@ -17,20 +27,26 @@ import {
 	ListChecks,
 	Layers,
 	Globe,
-	Euro
-} from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { Input } from "@/components/shared/ui/input";
-import { Textarea } from "@/components/shared/ui/textarea";
+	Euro,
+} from 'lucide-react';
+import Link from 'next/link';
+import {
+	useState,
+} from 'react';
+import {
+	Input,
+} from '@/components/shared/ui/input';
+import {
+	Textarea,
+} from '@/components/shared/ui/textarea';
 import {
 	AdminPageHeader,
 	AdminFormSection,
-	AdminFormContainer
-} from "@/components/shared/ui/admin-ui";
+	AdminFormContainer,
+} from '@/components/shared/ui/admin-ui';
 
 const addonSchema = z.object({
-	name: z.string().min(1, "Name ist erforderlich"),
+	name: z.string().min(1, 'Name ist erforderlich'),
 	description: z.string().optional(),
 	category: z.string().optional(),
 	imageUrl: z.string().optional(),
@@ -41,11 +57,11 @@ const addonSchema = z.object({
 		.array(
 			z.object({
 				id: z.string().optional(),
-				name: z.string().min(1, "Varianten-Name erforderlich"),
-				price: z.number().min(0, "Preis erforderlich")
-			})
+				name: z.string().min(1, 'Varianten-Name erforderlich'),
+				price: z.number().min(0, 'Preis erforderlich'),
+			}),
 		)
-		.min(1, "Mindestens eine Variante wird benötigt")
+		.min(1, 'Mindestens eine Variante wird benötigt'),
 });
 
 type AddonFormData = z.infer<typeof addonSchema>;
@@ -55,15 +71,23 @@ interface AddonFormProps {
 	isEditMode?: boolean;
 }
 
-export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
+export function AddonForm({
+	initialData, isEditMode = false,
+}: AddonFormProps) {
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
-	const { data: allProductsData } = trpc.product.getAllProducts.useQuery();
+	const {
+		data: allProductsData,
+	} = trpc.product.getAllProducts.useQuery();
 	const allProducts = allProductsData?.items;
 
-	const [selectedProductIds, setSelectedProductIds] = useState<string[]>(
-		initialData?.productIds || []
+	const [
+		selectedProductIds,
+		setSelectedProductIds,
+	] = useState<string[]>(
+		initialData?.productIds || [
+		],
 	);
 
 	const {
@@ -71,58 +95,72 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 		control,
 		handleSubmit,
 		watch,
-		formState: { errors }
+		formState: {
+			errors,
+		},
 	} = useForm({
 		resolver: zodResolver(addonSchema),
-		mode: "onChange",
+		mode: 'onChange',
 		defaultValues: {
-			name: initialData?.name || "",
-			description: initialData?.description || "",
-			category: initialData?.category || "",
-			imageUrl: initialData?.imageUrl || "",
+			name: initialData?.name || '',
+			description: initialData?.description || '',
+			category: initialData?.category || '',
+			imageUrl: initialData?.imageUrl || '',
 			isGlobal: initialData?.isGlobal || false,
 			isActive: initialData?.isActive ?? true,
 			requiresNoMagentaTV: initialData?.requiresNoMagentaTV || false,
 			tiers: initialData?.tiers?.length
 				? initialData.tiers
-				: [{ name: "", price: 0 }]
-		}
+				: [
+					{
+						name: '',
+						price: 0,
+					},
+				],
+		},
 	});
 
 	const {
 		fields: tiers,
 		append,
-		remove
+		remove,
 	} = useFieldArray({
 		control,
-		name: "tiers"
+		name: 'tiers',
 	});
 
-	const isGlobal = watch("isGlobal");
+	const isGlobal = watch('isGlobal');
 
 	const createMutation = trpc.addon.create.useMutation({
 		onSuccess: () => {
 			utils.addon.list.invalidate();
 			utils.addon.getById.invalidate();
-			router.push("/admin/addons");
+			router.push('/admin/addons');
 			router.refresh();
-		}
+		},
 	});
 
 	const updateMutation = trpc.addon.update.useMutation({
 		onSuccess: () => {
 			utils.addon.list.invalidate();
 			utils.addon.getById.invalidate();
-			router.push("/admin/addons");
+			router.push('/admin/addons');
 			router.refresh();
-		}
+		},
 	});
 
 	const onSubmit = (data: AddonFormData) => {
-		const payload = { ...data, productIds: selectedProductIds };
+		const payload = {
+			...data,
+			productIds: selectedProductIds,
+		};
 		if (isEditMode && initialData) {
-			updateMutation.mutate({ ...payload, id: initialData.id });
-		} else {
+			updateMutation.mutate({
+				...payload,
+				id: initialData.id,
+			});
+		}
+		else {
 			createMutation.mutate(payload);
 		}
 	};
@@ -135,10 +173,10 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 			form="addon-form"
 			disabled={isSubmitting}
 			className={clsx(
-				"px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5",
+				'px-6 py-2.5 rounded-2xl font-bold text-white flex items-center gap-2.5 transition-all duration-300 text-[0.85rem] cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(226,0,116,0.3)] hover:shadow-[0_8px_24px_rgba(226,0,116,0.4)] hover:-translate-y-0.5',
 				isSubmitting
-					? "bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50"
-					: "bg-[#e20074] hover:bg-[#c70066]"
+					? 'bg-[#ddd] shadow-none cursor-not-allowed text-[#999] opacity-50'
+					: 'bg-[#e20074] hover:bg-[#c70066]',
 			)}
 		>
 			{isSubmitting ? (
@@ -154,18 +192,21 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 		setSelectedProductIds((prev) =>
 			prev.includes(productId)
 				? prev.filter((id) => id !== productId)
-				: [...prev, productId]
+				: [
+					...prev,
+					productId,
+				],
 		);
 	};
 
 	return (
 		<div className="space-y-8 pb-12">
 			<AdminPageHeader
-				title={isEditMode ? "Zusatzoption bearbeiten" : "Neue Zusatzoption"}
+				title={isEditMode ? 'Zusatzoption bearbeiten' : 'Neue Zusatzoption'}
 				subtitle={
 					isEditMode
 						? `Verwalte die Konfiguration für ${initialData?.name}`
-						: "Erstelle eine neue Option (z.B. Netflix, MagentaTV One), die zu Produkten hinzu gebucht werden kann."
+						: 'Erstelle eine neue Option (z.B. Netflix, MagentaTV One), die zu Produkten hinzu gebucht werden kann.'
 				}
 				backHref="/admin/addons"
 				action={SaveButton}
@@ -182,21 +223,21 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 							label="Name (z.B. Netflix)"
 							placeholder="Options-Gruppenname"
 							error={errors.name?.message as string}
-							{...register("name")}
+							{...register('name')}
 						/>
 
 						<Textarea
 							label="Beschreibung / Teaser (optional)"
 							placeholder="Kurze Beschreibung..."
 							error={errors.description?.message as string}
-							{...register("description")}
+							{...register('description')}
 						/>
 
 						<Input
 							label="Bild-URL (Für Hintergrundbilder)"
 							placeholder="https://example.com/image.png"
 							error={errors.imageUrl?.message as string}
-							{...register("imageUrl")}
+							{...register('imageUrl')}
 						/>
 					</AdminFormSection>
 
@@ -211,7 +252,7 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 									<input
 										type="checkbox"
 										id="isActive"
-										{...register("isActive")}
+										{...register('isActive')}
 										className="peer w-6 h-6 rounded-lg border-[#eaedf0] text-[#e20074] focus:ring-[#e20074] cursor-pointer appearance-none bg-white transition-all checked:bg-[#e20074] checked:border-[#e20074]"
 									/>
 									<div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white opacity-0 peer-checked:opacity-100 transition-opacity">
@@ -251,7 +292,7 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 									<input
 										type="checkbox"
 										id="requiresNoMagentaTV"
-										{...register("requiresNoMagentaTV")}
+										{...register('requiresNoMagentaTV')}
 										className="peer w-6 h-6 rounded-lg border-[#fed7aa] text-[#f97316] focus:ring-[#f97316] cursor-pointer appearance-none bg-white transition-all checked:bg-[#f97316] checked:border-[#f97316]"
 									/>
 									<div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white opacity-0 peer-checked:opacity-100 transition-opacity">
@@ -300,7 +341,7 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 								<input
 									type="checkbox"
 									id="isGlobal"
-									{...register("isGlobal")}
+									{...register('isGlobal')}
 									className="w-4 h-4 rounded border-[#eaedf0] text-[#e20074] focus:ring-[#e20074]"
 								/>
 								<label
@@ -318,10 +359,10 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 									<label
 										key={product.id}
 										className={clsx(
-											"flex items-center gap-4 p-4 rounded-3xl transition-all cursor-pointer group",
+											'flex items-center gap-4 p-4 rounded-3xl transition-all cursor-pointer group',
 											selectedProductIds.includes(product.id)
-												? "bg-white shadow-md border border-[#e20074]/10"
-												: "hover:bg-white/50 border border-transparent"
+												? 'bg-white shadow-md border border-[#e20074]/10'
+												: 'hover:bg-white/50 border border-transparent',
 										)}
 									>
 										<div className="relative flex items-center shrink-0">
@@ -378,7 +419,10 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 						action={
 							<button
 								type="button"
-								onClick={() => append({ name: "", price: 0 })}
+								onClick={() => append({
+									name: '',
+									price: 0,
+								})}
 								className="text-[0.7rem] font-bold text-white bg-[#e20074] hover:bg-[#c70066] flex items-center gap-1 px-3 py-1.5 rounded-xl transition-all shadow-sm active:scale-95"
 							>
 								<Plus className="w-3.5 h-3.5" /> Hinzufügen
@@ -435,7 +479,7 @@ export function AddonForm({ initialData, isEditMode = false }: AddonFormProps) {
 													placeholder="10.00"
 													error={errors.tiers?.[index]?.price?.message}
 													{...register(`tiers.${index}.price`, {
-														valueAsNumber: true
+														valueAsNumber: true,
 													})}
 													className="pl-10"
 												/>

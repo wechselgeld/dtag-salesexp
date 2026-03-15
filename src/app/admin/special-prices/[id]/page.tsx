@@ -1,9 +1,17 @@
-"use client";
+'use client';
 
-import { SpecialPriceForm } from "@/components/features/admin/special-price-form";
-import { trpc } from "@/lib/trpc";
-import { useParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import {
+	SpecialPriceForm,
+} from '@/components/features/admin/special-price-form';
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	useParams,
+} from 'next/navigation';
+import {
+	Loader2,
+} from 'lucide-react';
 
 export default function EditSpecialPricePage() {
 	const params = useParams();
@@ -11,8 +19,10 @@ export default function EditSpecialPricePage() {
 	const {
 		data: sp,
 		isLoading,
-		error
-	} = trpc.admin.getSpecialPriceById.useQuery({ id });
+		error,
+	} = trpc.admin.getSpecialPriceById.useQuery({
+		id,
+	});
 
 	if (isLoading) {
 		return (

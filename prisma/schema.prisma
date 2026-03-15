@@ -10,46 +10,49 @@ datasource db {
 // Models
 
 model User {
-  id         String    @id @default(cuid())
-  email      String    @unique
-  password   String
-  role       String    @default("TEAM_LEADER") // "ADMIN", "OD_MANAGER", "LOCATION_MANAGER", "TEAM_LEADER"
-  isEditor   Boolean   @default(false)
-  
+  id       String  @id @default(cuid())
+  email    String  @unique
+  password String
+  role     String  @default("TEAM_LEADER") // "ADMIN", "OD_MANAGER", "LOCATION_MANAGER", "TEAM_LEADER"
+  isEditor Boolean @default(false)
+
   odRegionId String?
   odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: SetNull)
-  
+
   locationId String?
   location   Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
 
-  teamId     String?
-  team       Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OdRegion {
-  id        String   @id @default(cuid())
-  name      String
-  isActive  Boolean  @default(true)
-  
+  id       String  @id @default(cuid())
+  name     String
+  isActive Boolean @default(true)
+
   locations Location[]
   users     User[]
+  news      News[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Location {
-  id        String   @id @default(cuid())
-  name      String
-  isActive  Boolean  @default(true)
+  id         String    @id @default(cuid())
+  name       String
+  address    String?
+  isActive   Boolean   @default(true)
   odRegionId String?
   odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: SetNull)
 
-  teams     Team[]
-  users     User[]
+  teams Team[]
+  users User[]
+  news  News[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -94,9 +97,9 @@ model Product {
   purchasePrice      Float?
   rentalPrice        Float?
 
-  features     String? @db.Text // JSON string
-  targetGroups String? @db.Text // JSON string array of target groups e.g. ["student", "family"]
-  salesScript  String? @db.Text // Text for sales agents
+  features        String? @db.Text // JSON string
+  targetGroups    String? @db.Text // JSON string array of target groups e.g. ["student", "family"]
+  salesScript     String? @db.Text // Text for sales agents
   magentaInfosUrl String? // Link to internal information platform
 
   createdAt DateTime @default(now())
@@ -106,6 +109,7 @@ model Product {
   highlights       TeamHighlight[]
   compatibleAddons Addon[]         @relation("ProductAddons")
   salesArguments   SalesArgument[]
+  priceHistory     PriceHistory[]
 }
 
 model SalesArgument {
@@ -120,22 +124,33 @@ model SalesArgument {
   updatedAt DateTime @updatedAt
 }
 
+model PriceHistory {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price     Float
+  label     String?  // Optional label e.g., "Preis 2023"
+
+  createdAt DateTime @default(now())
+}
+
 model SpecialPrice {
   id           String    @id @default(cuid())
   name         String
   description  String?
   internalNote String?
-  products Product[] @relation("ProductSpecialPrices")
+  products     Product[] @relation("ProductSpecialPrices")
 
   tiers SpecialPriceTier[]
 
   // Context Conditions
-  requiresMagentaTV Boolean @default(false)
-  requiresSpeedUp   Boolean @default(false)
-  requiresMove      Boolean @default(false)
+  requiresMagentaTV     Boolean @default(false)
+  requiresSpeedUp       Boolean @default(false)
+  requiresMove          Boolean @default(false)
+  requiresNewActivation Boolean @default(false)
 
   discountTarget String @default("BASE_PRICE") // "BASE_PRICE", "MAGENTA_TV"
-  discountType   String @default("ABSOLUTE")   // "ABSOLUTE", "RELATIVE"
+  discountType   String @default("ABSOLUTE") // "ABSOLUTE", "RELATIVE"
 
   isActive Boolean @default(true)
   priority Int     @default(0)
@@ -152,6 +167,9 @@ model SpecialPriceTier {
   price     Float
   fromMonth Int
   toMonth   Int
+
+  discountTarget String @default("BASE_PRICE") // "BASE_PRICE", "MAGENTA_TV"
+  discountType   String @default("ABSOLUTE") // "ABSOLUTE", "RELATIVE"
 }
 
 model Addon {
@@ -160,8 +178,8 @@ model Addon {
   description String?
   category    String?
 
-  isGlobal Boolean @default(false)
-  isActive Boolean @default(true)
+  isGlobal            Boolean @default(false)
+  isActive            Boolean @default(true)
   requiresNoMagentaTV Boolean @default(false)
 
   imageUrl String?
@@ -229,17 +247,18 @@ model OneTimeCredit {
 }
 
 model Team {
-  id         String   @id @default(cuid())
-  name       String
-  email      String   @default("team06@telekom.de")
-  
+  id    String @id @default(cuid())
+  name  String
+  email String @default("team06@telekom.de")
+
   locationId String?
   location   Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  
-  users      User[]
+
+  users User[]
 
   sessions   SalesSession[]
   highlights TeamHighlight[]
+  news       News[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -259,11 +278,11 @@ model SalesSession {
   expiresAt DateTime?
 
   // Nutzerinformationen / Verifizierung
-  email             String?
-  firstName         String?
-  lastName          String?
-  isVerified            Boolean @default(false)
-  verificationToken     String? @unique
+  email                 String?
+  firstName             String?
+  lastName              String?
+  isVerified            Boolean   @default(false)
+  verificationToken     String?   @unique
   verificationExpiresAt DateTime?
 
   createdAt DateTime @default(now())
@@ -277,9 +296,19 @@ model News {
   priority String  @default("INFO") // "INFO", "UPDATE", "IMPORTANT", "CRITICAL"
   isActive Boolean @default(true)
 
+  odRegionId String?
+  odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: Cascade)
+
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 model SystemSetting {
   key   String @id
   value String
@@ -288,14 +317,14 @@ model SystemSetting {
 model AnalyticsEvent {
   id        String   @id @default(cuid())
   date      DateTime @db.Date
-  eventType String   @db.VarChar(50)      // "PAGE_VIEW", "PRODUCT_VIEW", "BASKET_ADD"
+  eventType String   @db.VarChar(50) // "PAGE_VIEW", "PRODUCT_VIEW", "BASKET_ADD"
   path      String?  @db.VarChar(255)
   productId String?  @db.VarChar(50)
   category  String?  @db.VarChar(50)
   teamId    String?  @db.VarChar(50)
   count     Int      @default(1)
 
-  @@unique([date, eventType, path, productId, teamId], name: "analytics_unique_event")
+  @@unique([date, eventType, path, productId, category, teamId], name: "analytics_unique_event")
   @@index([date])
   @@index([eventType])
   @@index([productId])

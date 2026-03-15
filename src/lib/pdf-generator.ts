@@ -1,16 +1,26 @@
-import { jsPDF } from "jspdf";
-import { BasketItem } from "@/hooks/use-basket-store";
-import { calculateProductCosts, DEFAULT_PRICING } from "@/hooks/use-cost-calculator";
-import { Credit, PricingSettings } from "@/types/product";
-import { MAGENTA_TV_PACKAGES, CATEGORY_COLORS, CATEGORY_NAMES, SHIPPING_HARDWARE_FEE } from "@/lib/constants/pricing";
-import { hexToRgb } from "@/lib/utils";
+import {
+    jsPDF,
+} from 'jspdf';
+import type {
+    BasketItem,
+} from '@/hooks/use-basket-store';
+import {
+    calculateProductCosts, DEFAULT_PRICING,
+} from '@/hooks/use-cost-calculator';
+import type {
+    Credit, PricingSettings,
+} from '@/types/product';
+import {
+    MAGENTA_TV_PACKAGES, CATEGORY_COLORS, CATEGORY_NAMES,
+} from '@/lib/constants/pricing';
+import {
+    hexToRgb,
+} from '@/lib/utils';
 
-
-
-export const getSvgAsPngBase64 = async (url: string): Promise<string> => {
+export const getSvgAsPngBase64 = (url: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         const img = new Image();
-        img.crossOrigin = "anonymous";
+        img.crossOrigin = 'anonymous';
         img.onload = () => {
             const canvas = document.createElement('canvas');
             // Higher resolution for PDF clarity
@@ -28,26 +38,47 @@ export const getSvgAsPngBase64 = async (url: string): Promise<string> => {
     });
 };
 
-export async function generateOfferPdf(items: BasketItem[], basketCredits: Credit[], settings: PricingSettings = DEFAULT_PRICING, teamEmail: string = "team06@telekom.de") {
+export async function generateOfferPdf(items: BasketItem[], basketCredits: Credit[], settings: PricingSettings = DEFAULT_PRICING, teamEmail = 'team06@telekom.de') {
     // A4 dimensions: 210 x 297 mm
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+    });
     const pageWidth = 210;
     const pageHeight = 297;
     const margin = 16;
     let currentY = margin;
 
-    const magenta = [226, 0, 116] as [number, number, number];
-    const navy = [26, 26, 46] as [number, number, number];
-    const darkGray = [50, 50, 50] as [number, number, number];
-    const lightGray = [150, 150, 150] as [number, number, number];
+    const magenta = [
+        226,
+        0,
+        116,
+    ] as [number, number, number];
+    const navy = [
+        26,
+        26,
+        46,
+    ] as [number, number, number];
+    const darkGray = [
+        50,
+        50,
+        50,
+    ] as [number, number, number];
+    const lightGray = [
+        150,
+        150,
+        150,
+    ] as [number, number, number];
 
     // Helper functions
-    const addRoundedRect = (x: number, y: number, w: number, h: number, r: number, color: [number, number, number], fill: boolean = true) => {
+    const addRoundedRect = (x: number, y: number, w: number, h: number, r: number, color: [number, number, number], fill = true) => {
         doc.setDrawColor(color[0], color[1], color[2]);
         doc.setFillColor(color[0], color[1], color[2]);
         if (fill) {
             doc.roundedRect(x, y, w, h, r, r, 'F');
-        } else {
+        }
+        else {
             doc.roundedRect(x, y, w, h, r, r, 'D'); // draw outline
         }
     };
@@ -58,7 +89,8 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
     let hasOneTimeValues = false;
 
     // Track credits
-    const allCredits: { name: string; amount: number }[] = [];
+    const allCredits: { name: string; amount: number }[] = [
+    ];
 
     items.forEach((item) => {
         const calc = calculateProductCosts({
@@ -70,7 +102,7 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
             vouchers: item.config.vouchers,
             credits: item.config.credits,
             hardwarePurchaseType: item.config.hardwarePurchaseType,
-            settings: settings
+            settings,
         });
 
         calc.monthlyCosts.forEach((mc, i) => {
@@ -78,19 +110,22 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
         });
 
         const itemOneTime = calc.oneTimeCosts.breakdown
-            .filter(b => b.name !== "Versand Hardware")
+            .filter(b => b.name !== 'Versand Hardware')
             .reduce((sum, b) => sum + b.cost, 0);
 
         totalBasketOneTime += itemOneTime;
-        if (itemOneTime !== 0) hasOneTimeValues = true;
+        if (itemOneTime !== 0) { hasOneTimeValues = true; }
     });
 
     basketCredits.forEach(c => {
         totalBasketOneTime -= c.value;
-        allCredits.push({ name: c.name, amount: c.value });
+        allCredits.push({
+            name: c.name,
+            amount: c.value,
+        });
         hasOneTimeValues = true;
     });
-    const hasDevice = items.some(i => i.product.category === "DEVICE");
+    const hasDevice = items.some(i => i.product.category === 'DEVICE');
     if (hasDevice) {
         totalBasketOneTime += settings.shipping_hardware_fee;
         hasOneTimeValues = true;
@@ -106,42 +141,50 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
 
     // Telekom "T" Logo
     try {
-        const logoData = await getSvgAsPngBase64("/Deutsche_Telekom.svg");
+        const logoData = await getSvgAsPngBase64('/Deutsche_Telekom.svg');
         // Logo dimensions approx 76.7 / 91.2 = 0.84 aspect ratio. height = 10 -> width = 8.4
-        doc.addImage(logoData, "PNG", margin, currentY - 8, 8.4, 10);
-    } catch (e) {
+        doc.addImage(logoData, 'PNG', margin, currentY - 8, 8.4, 10);
+    }
+    catch (error) {
         doc.setTextColor(magenta[0], magenta[1], magenta[2]);
-        doc.setFont("helvetica", "bold");
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(26);
-        doc.text("T", margin, currentY);
+        doc.text('T', margin, currentY);
+        console.error(error);
     }
 
     doc.setTextColor(navy[0], navy[1], navy[2]);
     doc.setFontSize(22);
     // Align horizontally with the logo
-    doc.text("Ihr persönliches Angebot", margin + 12, currentY);
+    doc.text('Ihr persönliches Angebot', margin + 12, currentY);
 
-    const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+    const today = new Date().toLocaleDateString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    });
     doc.setFontSize(10);
     doc.setTextColor(lightGray[0], lightGray[1], lightGray[2]);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Erstellt für Sie, am ${today} in Chemnitz`, pageWidth - margin, currentY - 2, { align: "right" });
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Erstellt für Sie, am ${today} in Chemnitz`, pageWidth - margin, currentY - 2, {
+        align: 'right',
+    });
 
     currentY += 10;
 
     // --- INTRO TEXT ---
     doc.setFontSize(11);
     doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-    const introText = "Vielen Dank für das angenehme Gespräch. Wir freuen uns, dass Sie sich für unsere Tarife interessieren. Nachfolgend habe ich Ihnen ein maßgeschneidertes Angebot angehangen - so, wie telefonisch besprochen.";
+    const introText = 'Vielen Dank für das angenehme Gespräch. Wir freuen uns, dass Sie sich für unsere Tarife interessieren. Nachfolgend habe ich Ihnen ein maßgeschneidertes Angebot angehangen - so, wie telefonisch besprochen.';
     const splitIntro = doc.splitTextToSize(introText, pageWidth - margin * 2);
     doc.text(splitIntro, margin, currentY);
     currentY += splitIntro.length * 5 + 8;
 
     // --- TITLE BAR ---
-    doc.setFont("helvetica", "bold");
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(navy[0], navy[1], navy[2]);
-    doc.text(`Zusammenfassung für ${items.length} ${items.length === 1 ? "Produkt" : "Produkte"}`, margin, currentY + 5);
+    doc.text(`Zusammenfassung für ${items.length} ${items.length === 1 ? 'Produkt' : 'Produkte'}`, margin, currentY + 5);
 
     currentY += 12;
     doc.setDrawColor(240, 240, 240);
@@ -150,13 +193,17 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
 
     // --- KOSTENVERLAUF CHART ---
     // A nice rounded box with light grey background
-    addRoundedRect(margin, currentY, pageWidth - margin * 2, 45, 5, [248, 249, 250]);
+    addRoundedRect(margin, currentY, pageWidth - margin * 2, 45, 5, [
+        248,
+        249,
+        250,
+    ]);
     currentY += 8;
 
     doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(160, 160, 170);
-    doc.text("KOSTENVERLAUF", margin + 12, currentY);
+    doc.text('KOSTENVERLAUF', margin + 12, currentY);
 
     doc.setTextColor(magenta[0], magenta[1], magenta[2]);
     const avgText = `${averageTotal.toFixed(2)} €`;
@@ -164,11 +211,15 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
     // Draw string from right so that it aligns correctly without pushing off-screen
     doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
-    doc.text("Ø mtl.", pageWidth - margin - 12, currentY, { align: "right" });
+    doc.text('Ø mtl.', pageWidth - margin - 12, currentY, {
+        align: 'right',
+    });
 
     doc.setFontSize(22);
     doc.setTextColor(magenta[0], magenta[1], magenta[2]);
-    doc.text(avgText, pageWidth - margin - 24, currentY + 0.5, { align: "right" });
+    doc.text(avgText, pageWidth - margin - 24, currentY + 0.5, {
+        align: 'right',
+    });
 
     currentY += 10;
 
@@ -186,14 +237,18 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
         const y = currentY + (chartHeight - h);
 
         doc.setFillColor(236, 126, 185); // Light magenta gradient simulation
-        if (i > 11) doc.setFillColor(226, 0, 116); // darker for second year
+        if (i > 11) { doc.setFillColor(226, 0, 116); } // darker for second year
         doc.roundedRect(x, y, barWidth, h, 1, 1, 'F');
 
         // Labels
-        if (i === 0) { doc.setFontSize(7); doc.setTextColor(180, 180, 180); doc.text("1", x + 1.5, currentY + chartHeight + 4); }
-        if (i === 6) { doc.text("7", x + 1.5, currentY + chartHeight + 4); }
-        if (i === 12) { doc.text("13", x + 1, currentY + chartHeight + 4); }
-        if (i === 18) { doc.text("19", x + 1, currentY + chartHeight + 4); }
+        if (i === 0) {
+            doc.setFontSize(7);
+            doc.setTextColor(180, 180, 180);
+            doc.text('1', x + 1.5, currentY + chartHeight + 4);
+        }
+        if (i === 6) { doc.text('7', x + 1.5, currentY + chartHeight + 4); }
+        if (i === 12) { doc.text('13', x + 1, currentY + chartHeight + 4); }
+        if (i === 18) { doc.text('19', x + 1, currentY + chartHeight + 4); }
     }
 
     currentY += chartHeight + 20;
@@ -217,14 +272,16 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
             doc.setFillColor(250, 253, 251); // slight green tint
             doc.roundedRect(margin, currentY, pageWidth - margin * 2, h, 2, 2, 'FD');
 
-            doc.setFont("helvetica", "normal");
+            doc.setFont('helvetica', 'normal');
             doc.setFontSize(10);
             doc.setTextColor(navy[0], navy[1], navy[2]);
             doc.text(`%   ${c.name}`, margin + 5, currentY + 8);
 
-            doc.setFont("helvetica", "bold");
+            doc.setFont('helvetica', 'bold');
             doc.setTextColor(0, 168, 120);
-            doc.text(`-${c.amount.toFixed(2)} €`, pageWidth - margin - 5, currentY + 8, { align: 'right' });
+            doc.text(`-${c.amount.toFixed(2)} €`, pageWidth - margin - 5, currentY + 8, {
+                align: 'right',
+            });
             currentY += h + 4;
         });
         currentY += 4;
@@ -240,23 +297,26 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
             selectedAddonIds: item.config.selectedAddonIds,
             vouchers: item.config.vouchers,
             credits: item.config.credits,
-            settings: settings
+            settings,
         });
 
-        const activeAddons: string[] = [];
+        const activeAddons: string[] = [
+        ];
         if (item.config.selectedAddonIds?.length > 0 && item.product.compatibleAddons) {
             item.config.selectedAddonIds.forEach(tierId => {
-                const a = item.product.compatibleAddons?.find(x => (x.tiers || []).some(t => t.id === tierId));
+                const a = item.product.compatibleAddons?.find(x => (x.tiers || [
+                ]).some(t => t.id === tierId));
                 if (a) {
-                    const t = (a.tiers || []).find(t => t.id === tierId);
-                    if (t) activeAddons.push(`${a.name} ${a.tiers.length > 1 ? `(${t.name})` : ''} +${t.price.toFixed(2)}€`);
+                    const t = (a.tiers || [
+                    ]).find(t => t.id === tierId);
+                    if (t) { activeAddons.push(`${a.name} ${a.tiers.length > 1 ? `(${t.name})` : ''} +${t.price.toFixed(2)}€`); }
                 }
             });
         }
 
         // Calculate needed height for text dynamically
         let detailLines = 1; // Basispreis
-        if (itemCalc.effectiveBasePrice !== itemCalc.basePrice) detailLines++;
+        if (itemCalc.effectiveBasePrice !== itemCalc.basePrice) { detailLines++; }
 
         const spSet = new Set<string>();
         itemCalc.monthlyCosts.forEach(mc => {
@@ -285,11 +345,11 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
 
         // Category Tag
         doc.setFontSize(8);
-        doc.setFont("helvetica", "bold");
-        const colorHex = CATEGORY_COLORS[item.product.category] || "#666666";
+        doc.setFont('helvetica', 'bold');
+        const colorHex = CATEGORY_COLORS[item.product.category] || '#666666';
         const color = hexToRgb(colorHex);
         doc.setTextColor(color[0], color[1], color[2]);
-        doc.text(CATEGORY_NAMES[item.product.category]?.toUpperCase() || "PRODUKT", margin + 5, currentY + 7);
+        doc.text(CATEGORY_NAMES[item.product.category]?.toUpperCase() || 'PRODUKT', margin + 5, currentY + 7);
 
         // Product Title
         let title = item.product.name;
@@ -302,7 +362,7 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
 
         // Details
         let detailY = currentY + 19;
-        doc.setFont("helvetica", "normal");
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
 
@@ -312,7 +372,8 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
         if (itemCalc.effectiveBasePrice !== itemCalc.basePrice && item.config.magentaTVPackage) {
             doc.text(`Paketpreis inkl. MagentaTV: ${itemCalc.effectiveBasePrice.toFixed(2)} € mtl.`, margin + 5, detailY);
             detailY += 5;
-        } else if (itemCalc.effectiveBasePrice !== itemCalc.basePrice) {
+        }
+        else if (itemCalc.effectiveBasePrice !== itemCalc.basePrice) {
             doc.text(`Aktions-Basispreis: ${itemCalc.effectiveBasePrice.toFixed(2)} € mtl.`, margin + 5, detailY);
             detailY += 5;
         }
@@ -331,7 +392,7 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
         }
 
         if (activeAddons.length > 0) {
-            doc.text("Zubuchoptionen:", margin + 5, detailY);
+            doc.text('Zubuchoptionen:', margin + 5, detailY);
             detailY += 5;
             activeAddons.forEach(addon => {
                 doc.text(`   + Inkl. ${addon}`, margin + 5, detailY);
@@ -340,17 +401,17 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
         }
 
         // Price
-        doc.setFont("helvetica", "bold");
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(14);
         doc.setTextColor(navy[0], navy[1], navy[2]);
         const pr = `Ø ${itemCalc.averageMonthlyCost.toFixed(2)} €`;
         doc.text(pr, margin + 5, currentY + boxHeight - 5);
 
-        doc.setFont("helvetica", "normal");
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         doc.setTextColor(150, 150, 150);
         const prWidth = doc.getTextWidth(pr);
-        doc.text("mtl.", margin + 15 + prWidth + 1.5, currentY + boxHeight - 5);
+        doc.text('mtl.', margin + 15 + prWidth + 1.5, currentY + boxHeight - 5);
 
         currentY += boxHeight + 6;
     });
@@ -364,26 +425,37 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
 
     // --- EINMALIG & KOSTENÜBERSICHT ---
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
+    doc.setFont('helvetica', 'normal');
     doc.setTextColor(150, 150, 150);
-    doc.text("Einmalig", margin, currentY);
+    doc.text('Einmalig', margin, currentY);
 
     if (totalBasketOneTime < 0) {
-        doc.setFont("helvetica", "bold");
+        doc.setFont('helvetica', 'bold');
         doc.setTextColor(0, 168, 120);
-        doc.text(`Gutschrift i. H. v. ${Math.abs(totalBasketOneTime).toFixed(2)} €`, pageWidth - margin, currentY, { align: 'right' });
-    } else if (totalBasketOneTime > 0) {
-        doc.setFont("helvetica", "bold");
+        doc.text(`Gutschrift i. H. v. ${Math.abs(totalBasketOneTime).toFixed(2)} €`, pageWidth - margin, currentY, {
+            align: 'right',
+        });
+    }
+    else if (totalBasketOneTime > 0) {
+        doc.setFont('helvetica', 'bold');
         doc.setTextColor(navy[0], navy[1], navy[2]);
-        doc.text(`Kosten i. H. v. ${totalBasketOneTime.toFixed(2)} €`, pageWidth - margin, currentY, { align: 'right' });
-    } else if (hasOneTimeValues) {
-        doc.setFont("helvetica", "bold");
+        doc.text(`Kosten i. H. v. ${totalBasketOneTime.toFixed(2)} €`, pageWidth - margin, currentY, {
+            align: 'right',
+        });
+    }
+    else if (hasOneTimeValues) {
+        doc.setFont('helvetica', 'bold');
         doc.setTextColor(navy[0], navy[1], navy[2]);
-        doc.text("0.00 €", pageWidth - margin, currentY, { align: 'right' });
-    } else {
-        doc.setFont("helvetica", "bold");
+        doc.text('0.00 €', pageWidth - margin, currentY, {
+            align: 'right',
+        });
+    }
+    else {
+        doc.setFont('helvetica', 'bold');
         doc.setTextColor(navy[0], navy[1], navy[2]);
-        doc.text("-", pageWidth - margin, currentY, { align: 'right' });
+        doc.text('-', pageWidth - margin, currentY, {
+            align: 'right',
+        });
     }
 
     currentY += 8;
@@ -392,15 +464,24 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
     // Calculate periods
     let currentPrice = combinedMonths[0];
     let startMonth = 1;
-    const periods = [];
+    const periods = [
+    ];
     for (let i = 1; i < 24; i++) {
         if (Math.abs(combinedMonths[i] - currentPrice) > 0.01) {
-            periods.push({ startMonth, endMonth: i, price: currentPrice });
+            periods.push({
+                startMonth,
+                endMonth: i,
+                price: currentPrice,
+            });
             startMonth = i + 1;
             currentPrice = combinedMonths[i];
         }
     }
-    periods.push({ startMonth, endMonth: 24, price: currentPrice });
+    periods.push({
+        startMonth,
+        endMonth: 24,
+        price: currentPrice,
+    });
 
     const summaryBoxH = 30 + (periods.length * 8) + 15;
     checkPageBreak(summaryBoxH + 20);
@@ -409,20 +490,22 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
 
     let navyY = currentY + 12;
     doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(150, 150, 160);
-    doc.text("KOSTENÜBERSICHT (24 MONATE)", margin + 6, navyY);
+    doc.text('KOSTENÜBERSICHT (24 MONATE)', margin + 6, navyY);
     navyY += 12;
 
     periods.forEach(p => {
         doc.setFontSize(11);
-        doc.setFont("helvetica", "normal");
+        doc.setFont('helvetica', 'normal');
         doc.setTextColor(230, 230, 230);
         doc.text(`Monat ${p.startMonth} - ${p.endMonth}`, margin + 6, navyY);
 
-        doc.setFont("helvetica", "bold");
+        doc.setFont('helvetica', 'bold');
         doc.setTextColor(255, 255, 255);
-        doc.text(`${p.price.toFixed(2)} €`, pageWidth - margin - 6, navyY, { align: 'right' });
+        doc.text(`${p.price.toFixed(2)} €`, pageWidth - margin - 6, navyY, {
+            align: 'right',
+        });
         navyY += 8;
     });
 
@@ -433,20 +516,22 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
     navyY += 10;
 
     doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(150, 150, 160);
-    doc.text("Ø MONATLICH", margin + 6, navyY);
+    doc.text('Ø MONATLICH', margin + 6, navyY);
 
     doc.setFontSize(16);
     doc.setTextColor(255, 255, 255);
-    doc.text(`${averageTotal.toFixed(2)} €`, pageWidth - margin - 6, navyY, { align: 'right' });
+    doc.text(`${averageTotal.toFixed(2)} €`, pageWidth - margin - 6, navyY, {
+        align: 'right',
+    });
 
     currentY = navyY + 20;
     checkPageBreak(30);
 
     // --- OUTRO TEXT ---
     doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
+    doc.setFont('helvetica', 'normal');
     doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
     const outroText = `Fragen, Unstimmigkeiten oder möchten Sie das Angebot direkt buchen? Wir rufen Sie zurück. Schreiben Sie uns dafür eine E-Mail an ${teamEmail} und geben Sie die gewünschte Rückrufzeit- und Nummer an.`;
     const splitOutro = doc.splitTextToSize(outroText, pageWidth - margin * 2);
@@ -454,12 +539,14 @@ export async function generateOfferPdf(items: BasketItem[], basketCredits: Credi
 
     // --- FOOTER ---
     doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
+    doc.setFont('helvetica', 'normal');
     doc.setTextColor(180, 180, 180);
     doc.text(`Jederzeit für Sie erreichbar unter ${teamEmail}.`, margin, pageHeight - 15);
-    doc.text("Deutsche Telekom Service GmbH @ Chemnitz", margin, pageHeight - 10);
-    doc.text("Connecting your world.", pageWidth - margin, pageHeight - 10, { align: "right" });
+    doc.text('Deutsche Telekom Service GmbH @ Chemnitz', margin, pageHeight - 10);
+    doc.text('Connecting your world.', pageWidth - margin, pageHeight - 10, {
+        align: 'right',
+    });
 
-    doc.save("Angebot_Telekom.pdf");
+    doc.save('Angebot_Telekom.pdf');
     return doc.output('datauristring');
 }

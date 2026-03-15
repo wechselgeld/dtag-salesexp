@@ -1,7 +1,9 @@
-import { OdRegionForm } from "@/components/features/admin/od-region-form";
+import {
+	OdRegionForm,
+} from '@/components/features/admin/od-region-form';
 
 export const metadata = {
-	title: "OD-Bereich erstellen | Admin"
+	title: 'OD-Bereich erstellen | Admin',
 };
 
 export default function NewOdRegionPage() {

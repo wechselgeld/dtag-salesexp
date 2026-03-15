@@ -1,58 +1,88 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc";
-import { Plus, Edit, Trash2, Search, CheckCircle, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useState, useMemo } from "react";
-import clsx from "clsx";
-import { Skeleton } from "@/components/shared/skeleton";
-import { confirmDelete } from "@/components/shared/delete-confirm-toast";
-import { AdminPageHeader } from "@/components/shared/ui/admin-ui";
+import {
+	trpc,
+} from '@/lib/trpc';
+import {
+	Plus, Edit, Trash2, Search, CheckCircle, Loader2, Calculator,
+} from 'lucide-react';
+import Link from 'next/link';
+import {
+	useState, useMemo,
+} from 'react';
+import clsx from 'clsx';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
+import {
+	confirmDelete,
+} from '@/components/shared/delete-confirm-toast';
+import {
+	AdminPageHeader,
+} from '@/components/shared/ui/admin-ui';
+import {
+	BulkUpdateDialog,
+} from '@/components/features/admin/bulk-update-dialog';
 
 const CATEGORY_COLORS: Record<string, string> = {
-	MOBILE: "#e20074",
-	FIBER: "#0090d0",
-	DSL: "#7b61ff",
-	MAGENTA_TV_OTT: "#ff6b00",
-	DEVICE: "#00a878",
-	ADDON: "#e67e22"
+	MOBILE: '#e20074',
+	FIBER: '#0090d0',
+	DSL: '#7b61ff',
+	MAGENTA_TV_OTT: '#ff6b00',
+	DEVICE: '#00a878',
+	ADDON: '#e67e22',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-	MOBILE: "Mobilfunk",
-	FIBER: "Glasfaser",
-	DSL: "Festnetz",
-	MAGENTA_TV_OTT: "MagentaTV — OTT",
-	DEVICE: "Endgeräte",
-	ADDON: "Zubuchoptionen"
+	MOBILE: 'Mobilfunk',
+	FIBER: 'Glasfaser',
+	DSL: 'Festnetz',
+	MAGENTA_TV_OTT: 'MagentaTV — OTT',
+	DEVICE: 'Endgeräte',
+	ADDON: 'Zubuchoptionen',
 };
 
 export default function AdminProductsPage() {
-	const [search, setSearch] = useState("");
-	const [filterCat, setFilterCat] = useState<string | "ALL">("ALL");
+	const [
+		search,
+		setSearch,
+	] = useState('');
+	const [
+		filterCat,
+		setFilterCat,
+	] = useState<string | 'ALL'>('ALL');
+	const [
+		bulkOpen,
+		setBulkOpen,
+	] = useState(false);
 	const utils = trpc.useUtils();
 
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+	const {
+		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
+	} =
 		trpc.product.getAllProducts.useInfiniteQuery(
 			{
 				limit: 20,
 				search: search || undefined,
-				category: filterCat === "ALL" ? undefined : filterCat
+				category: filterCat === 'ALL' ? undefined : filterCat,
 			},
 			{
-				getNextPageParam: (lastPage) => lastPage.nextCursor
-			}
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+			},
 		);
 
 	const deleteMutation = trpc.admin.deleteProduct.useMutation({
 		onSuccess: () => {
 			utils.product.getAllProducts.invalidate();
-		}
+		},
 	});
 
 	const processedProducts = useMemo(() => {
-		return data?.pages.flatMap((page) => page.items) || [];
-	}, [data]);
+		return data?.pages.flatMap((page) => page.items) || [
+		];
+	}, [
+		data,
+	]);
 
 	const allCategories = Object.keys(CATEGORY_LABELS);
 
@@ -65,13 +95,22 @@ export default function AdminProductsPage() {
 					backHref="/admin"
 				/>
 
-				<Link
-					href="/admin/products/new"
-					className="flex items-center gap-2 bg-[#e20074] hover:bg-[#c70066] text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-[0_4px_14px_rgba(226,0,116,0.25)] hover:shadow-[0_6px_20px_rgba(226,0,116,0.3)] hover:-translate-y-0.5 active:scale-95 text-[0.82rem] no-underline"
-				>
-					<Plus className="w-4 h-4" />
-					Neues Produkt
-				</Link>
+				<div className="flex items-center gap-3">
+					<button
+						onClick={() => setBulkOpen(true)}
+						className="flex items-center gap-2 bg-white hover:bg-[#f7f8fa] text-[#1a1a2e] px-5 py-2.5 rounded-xl font-semibold transition-all border border-[#eaedf0] shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 text-[0.82rem] cursor-pointer"
+					>
+						<Calculator className="w-4 h-4" />
+						Massenänderung
+					</button>
+					<Link
+						href="/admin/products/new"
+						className="flex items-center gap-2 bg-[#e20074] hover:bg-[#c70066] text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-[0_4px_14px_rgba(226,0,116,0.25)] hover:shadow-[0_6px_20px_rgba(226,0,116,0.3)] hover:-translate-y-0.5 active:scale-95 text-[0.82rem] no-underline"
+					>
+						<Plus className="w-4 h-4" />
+						Neues Produkt
+					</Link>
+				</div>
 			</div>
 
 			{/* Search & Filters */}
@@ -88,30 +127,33 @@ export default function AdminProductsPage() {
 				</div>
 				<div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none items-center">
 					<button
-						onClick={() => setFilterCat("ALL")}
+						onClick={() => setFilterCat('ALL')}
 						className={clsx(
-							"px-4 py-2.5 rounded-xl font-medium text-[0.78rem] transition-colors whitespace-nowrap cursor-pointer active:scale-95",
-							filterCat === "ALL"
-								? "bg-[#1a1a2e] text-white"
-								: "bg-white border border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa]"
+							'px-4 py-2.5 rounded-xl font-medium text-[0.78rem] transition-colors whitespace-nowrap cursor-pointer active:scale-95',
+							filterCat === 'ALL'
+								? 'bg-[#1a1a2e] text-white'
+								: 'bg-white border border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa]',
 						)}
 					>
 						Alle
 					</button>
 					{allCategories.map((catKey) => {
 						const isSelected = filterCat === catKey;
-						const catColor = CATEGORY_COLORS[catKey] || "#e20074";
+						const catColor = CATEGORY_COLORS[catKey] || '#e20074';
 						return (
 							<button
 								key={catKey}
 								onClick={() => setFilterCat(catKey)}
 								className={clsx(
-									"px-4 py-2.5 rounded-xl font-medium text-[0.78rem] transition-colors whitespace-nowrap cursor-pointer active:scale-95",
+									'px-4 py-2.5 rounded-xl font-medium text-[0.78rem] transition-colors whitespace-nowrap cursor-pointer active:scale-95',
 									isSelected
-										? "bg-[#1a1a2e] text-white border-transparent"
-										: "bg-white border border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa]"
+										? 'bg-[#1a1a2e] text-white border-transparent'
+										: 'bg-white border border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa]',
 								)}
-								style={isSelected ? { backgroundColor: catColor } : {}}
+								style={isSelected ? {
+									backgroundColor: catColor,
+								} : {
+								}}
 							>
 								{CATEGORY_LABELS[catKey]}
 							</button>
@@ -123,7 +165,13 @@ export default function AdminProductsPage() {
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
 				{isLoading && processedProducts.length === 0 ? (
 					<div className="flex flex-col gap-3 p-5">
-						{[1, 2, 3, 4, 5].map((i) => (
+						{[
+							1,
+							2,
+							3,
+							4,
+							5,
+						].map((i) => (
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
@@ -153,14 +201,14 @@ export default function AdminProductsPage() {
 									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
 										Grundpreis
 									</th>
-									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider text-right font-bold">
+									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider text-right">
 										Aktionen
 									</th>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-[#f0f0f0]">
 								{processedProducts.map((p) => {
-									const catColor = CATEGORY_COLORS[p.category] || "#e20074";
+									const catColor = CATEGORY_COLORS[p.category] || '#e20074';
 									return (
 										<tr
 											key={p.id}
@@ -175,11 +223,15 @@ export default function AdminProductsPage() {
 														<div className="flex items-center gap-1 mt-0.5">
 															<CheckCircle
 																className="w-3 h-3"
-																style={{ color: catColor }}
+																style={{
+																	color: catColor,
+																}}
 															/>
 															<span
 																className="text-[0.65rem] font-bold"
-																style={{ color: catColor }}
+																style={{
+																	color: catColor,
+																}}
 															>
 																TV Bundle verfügbar
 															</span>
@@ -193,16 +245,16 @@ export default function AdminProductsPage() {
 													style={{
 														color: catColor,
 														backgroundColor: `${catColor}10`,
-														border: `1px solid ${catColor}20`
+														border: `1px solid ${catColor}20`,
 													}}
 												>
 													{CATEGORY_LABELS[p.category] || p.category}
 												</span>
 											</td>
 											<td className="px-6 py-4 text-[0.9rem] font-bold text-[#1a1a2e]">
-												{p.basePrice?.toLocaleString("de-DE", {
-													style: "currency",
-													currency: "EUR"
+												{p.basePrice?.toLocaleString('de-DE', {
+													style: 'currency',
+													currency: 'EUR',
 												})}
 											</td>
 											<td className="px-6 py-4 text-right">
@@ -219,7 +271,9 @@ export default function AdminProductsPage() {
 																id: p.id,
 																name: p.name,
 																onConfirm: () =>
-																	deleteMutation.mutate({ id: p.id })
+																	deleteMutation.mutate({
+																		id: p.id,
+																	}),
 															})
 														}
 														className="p-2 text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all cursor-pointer border-none bg-transparent"
@@ -248,11 +302,18 @@ export default function AdminProductsPage() {
 							) : (
 								<Plus className="w-5 h-5" />
 							)}
-							{isFetchingNextPage ? "Wird geladen..." : "Mehr Produkte laden"}
+							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr Produkte laden'}
 						</button>
 					</div>
 				)}
 			</div>
+
+			{/* Bulk Update Dialog */}
+			<BulkUpdateDialog
+				open={bulkOpen}
+				onClose={() => setBulkOpen(false)}
+				onSuccess={() => utils.product.getAllProducts.invalidate()}
+			/>
 		</div>
 	);
 }

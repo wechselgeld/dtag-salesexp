@@ -1,10 +1,16 @@
-import { router, publicProcedure, protectedProcedure } from '@/server/trpc';
-import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
+import {
+    router, publicProcedure, protectedProcedure,
+} from '@/server/trpc';
+import {
+    z,
+} from 'zod';
+import {
+    prisma,
+} from '@/lib/prisma';
 
 export const settingsRouter = router({
-    getAll: publicProcedure.query(async () => {
-        return await prisma.systemSetting.findMany();
+    getAll: publicProcedure.query(() => {
+        return prisma.systemSetting.findMany();
     }),
 
     getDesignSettings: publicProcedure.query(async () => {
@@ -18,10 +24,10 @@ export const settingsRouter = router({
                         'category_image_FIBER',
                         'category_image_DSL',
                         'category_image_MAGENTA_TV_OTT',
-                        'category_image_DEVICE'
-                    ]
-                }
-            }
+                        'category_image_DEVICE',
+                    ],
+                },
+            },
         });
 
         const result: Record<string, string> = {
@@ -31,7 +37,7 @@ export const settingsRouter = router({
             category_image_FIBER: '',
             category_image_DSL: '',
             category_image_MAGENTA_TV_OTT: '',
-            category_image_DEVICE: ''
+            category_image_DEVICE: '',
         };
         settings.forEach((s) => {
             result[s.key] = s.value;
@@ -50,10 +56,10 @@ export const settingsRouter = router({
                         'magentatv_megastream_price',
                         'shipping_hardware_fee',
                         'plus_karte_first_price',
-                        'plus_karte_following_price'
-                    ]
-                }
-            }
+                        'plus_karte_following_price',
+                    ],
+                },
+            },
         });
 
         // Default values as fallback
@@ -63,10 +69,12 @@ export const settingsRouter = router({
             magentatv_megastream_price: '30',
             shipping_hardware_fee: '6.95',
             plus_karte_first_price: '19.95',
-            plus_karte_following_price: '9.95'
+            plus_karte_following_price: '9.95',
         };
 
-        const result: Record<string, string> = { ...defaultSettings };
+        const result: Record<string, string> = {
+            ...defaultSettings,
+        };
         settings.forEach((s) => {
             result[s.key] = s.value;
         });
@@ -77,7 +85,7 @@ export const settingsRouter = router({
             magentatv_megastream_price: parseFloat(result.magentatv_megastream_price),
             shipping_hardware_fee: parseFloat(result.shipping_hardware_fee),
             plus_karte_first_price: parseFloat(result.plus_karte_first_price),
-            plus_karte_following_price: parseFloat(result.plus_karte_following_price)
+            plus_karte_following_price: parseFloat(result.plus_karte_following_price),
         };
     }),
 
@@ -85,27 +93,48 @@ export const settingsRouter = router({
         .input(
             z.object({
                 key: z.string(),
-                value: z.string()
-            })
+                value: z.string(),
+            }),
         )
-        .mutation(async ({ input }) => {
-            return await prisma.systemSetting.upsert({
-                where: { key: input.key },
-                update: { value: input.value },
-                create: { key: input.key, value: input.value }
+        .mutation(({
+            input,
+        }) => {
+            return prisma.systemSetting.upsert({
+                where: {
+                    key: input.key,
+                },
+                update: {
+                    value: input.value,
+                },
+                create: {
+                    key: input.key,
+                    value: input.value,
+                },
             });
         }),
 
     updateMany: protectedProcedure
-        .input(z.array(z.object({ key: z.string(), value: z.string() })))
-        .mutation(async ({ input }) => {
+        .input(z.array(z.object({
+            key: z.string(),
+            value: z.string(),
+        })))
+        .mutation(({
+            input,
+        }) => {
             const updates = input.map(item =>
                 prisma.systemSetting.upsert({
-                    where: { key: item.key },
-                    update: { value: item.value },
-                    create: { key: item.key, value: item.value }
-                })
+                    where: {
+                        key: item.key,
+                    },
+                    update: {
+                        value: item.value,
+                    },
+                    create: {
+                        key: item.key,
+                        value: item.value,
+                    },
+                }),
             );
-            return await prisma.$transaction(updates);
-        })
+            return prisma.$transaction(updates);
+        }),
 });

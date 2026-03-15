@@ -1,15 +1,23 @@
-"use client";
+'use client';
 
-import { CalculationResult } from "@/types/product";
-import { Coffee, Calculator, Tag, Calendar } from "lucide-react";
-import { AnimatedNumber } from "@/components/shared/animated-number";
+import type {
+	CalculationResult,
+} from '@/types/product';
+import {
+	Coffee, Calculator, Tag, Calendar,
+} from 'lucide-react';
+import {
+	AnimatedNumber,
+} from '@/components/shared/animated-number';
 
 interface Props {
 	calculation: CalculationResult;
 	accentColor?: string;
 }
 
-export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
+export function CostTimeline({
+	calculation, accentColor = '#e20074',
+}: Props) {
 	const {
 		monthlyCosts,
 		averageMonthlyCost,
@@ -17,7 +25,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 		oneTimeCosts,
 		basePrice,
 		effectiveBasePrice,
-		dailyPriceTrivialization
+		dailyPriceTrivialization,
 	} = calculation;
 
 	const getPeriods = () => {
@@ -26,7 +34,8 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 			end: number;
 			price: number;
 			name?: string;
-		}[] = [];
+		}[] = [
+		];
 		let currentPeriod: (typeof periods)[0] | null = null;
 
 		monthlyCosts.forEach((month) => {
@@ -34,18 +43,19 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 				!currentPeriod ||
 				Math.abs(currentPeriod.price - month.total) > 0.01
 			) {
-				if (currentPeriod) periods.push(currentPeriod);
+				if (currentPeriod) { periods.push(currentPeriod); }
 				currentPeriod = {
 					start: month.month,
 					end: month.month,
 					price: month.total,
-					name: month.specialPriceApplied?.name
+					name: month.specialPriceApplied?.name,
 				};
-			} else {
+			}
+			else {
 				currentPeriod.end = month.month;
 			}
 		});
-		if (currentPeriod) periods.push(currentPeriod);
+		if (currentPeriod) { periods.push(currentPeriod); }
 		return periods;
 	};
 
@@ -57,16 +67,22 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 			{/* 4 Key Metrics — 2x2 Grid using exactly the Business Case Card Design */}
 			<div
 				className="grid grid-cols-2 gap-4 mb-6"
-				style={{ "--accent": accentColor } as React.CSSProperties}
+				style={{
+					'--accent': accentColor,
+				} as React.CSSProperties}
 			>
 				{/* Ø Monatlich — Highlighted */}
 				<div
 					className="relative flex flex-col items-center text-center p-3.5 rounded-xl border-2 transition-all duration-200 bg-(--accent)/4"
-					style={{ borderColor: accentColor }}
+					style={{
+						borderColor: accentColor,
+					}}
 				>
 					<Calculator
 						className="w-5 h-5 mb-2 transition-colors"
-						style={{ color: accentColor }}
+						style={{
+							color: accentColor,
+						}}
 						strokeWidth={1.8}
 					/>
 					<div className="text-[0.8rem] font-semibold leading-tight transition-colors text-[#1a1a2e]">
@@ -81,7 +97,9 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 				<div className="relative flex flex-col items-center text-center p-3.5 rounded-xl border-2 transition-all duration-200 border-[#eaedf0] bg-white">
 					<Tag
 						className="w-5 h-5 mb-2 transition-colors"
-						style={{ color: "#bbb" }}
+						style={{
+							color: '#bbb',
+						}}
 						strokeWidth={1.8}
 					/>
 					<div className="text-[0.8rem] font-semibold leading-tight transition-colors text-[#888]">
@@ -96,11 +114,15 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 				<div
 					id="tour-config-daily-price"
 					className="relative flex flex-col items-center text-center p-3.5 rounded-xl border-2 transition-all duration-200 bg-(--accent)/4"
-					style={{ borderColor: accentColor }}
+					style={{
+						borderColor: accentColor,
+					}}
 				>
 					<Coffee
 						className="w-5 h-5 mb-2 transition-colors"
-						style={{ color: accentColor }}
+						style={{
+							color: accentColor,
+						}}
 						strokeWidth={1.8}
 					/>
 					<div className="text-[0.8rem] font-semibold leading-tight transition-colors text-[#1a1a2e]">
@@ -119,7 +141,9 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 				<div className="relative flex flex-col items-center text-center p-3.5 rounded-xl border-2 transition-all duration-200 border-[#eaedf0] bg-white">
 					<Calendar
 						className="w-5 h-5 mb-2 transition-colors"
-						style={{ color: "#bbb" }}
+						style={{
+							color: '#bbb',
+						}}
 						strokeWidth={1.8}
 					/>
 					<div className="text-[0.8rem] font-semibold leading-tight transition-colors text-[#888]">
@@ -152,7 +176,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 									<span>{item.name}</span>
 									<span
 										className={
-											item.cost < 0 ? "text-green-600 font-medium" : ""
+											item.cost < 0 ? 'text-green-600 font-medium' : ''
 										}
 									>
 										<AnimatedNumber value={item.cost} /> €
@@ -184,7 +208,7 @@ export function CostTimeline({ calculation, accentColor = "#e20074" }: Props) {
 										className="text-[0.65rem] font-semibold px-2 py-0.5 rounded"
 										style={{
 											color: accentColor,
-											backgroundColor: `${accentColor}0a`
+											backgroundColor: `${accentColor}0a`,
 										}}
 									>
 										{period.name}
