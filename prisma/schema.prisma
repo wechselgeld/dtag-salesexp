@@ -262,6 +262,8 @@ model Team {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([locationId])
 }
 
 model SalesSession {

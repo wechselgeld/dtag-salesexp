@@ -16,9 +16,10 @@ $currentBranch = Get-CurrentBranch
 if ($Target -eq "staging") {
     Write-Host "[STAGING] Deploying to STAGING..." -ForegroundColor Cyan
     
-    pnpm run db:push:staging
+    # 1. Run migrations for Staging
+    pnpm run db:migrate:staging
 
-    # 1. Ensure we are on staging or a feature branch
+    # 2. Ensure we are on staging or a feature branch
     Write-Host "Pushing $currentBranch to origin staging..."
     git push origin "${currentBranch}:staging"
     
@@ -30,19 +31,19 @@ if ($Target -eq "production") {
     Write-Host "[PROD] Deploying to PRODUCTION..." -ForegroundColor Red
     
     # 1. Ask for confirmation
-    $confirmation = Read-Host "Are you sure you want to merge STAGING into MAIN and deploy to PROD? (y/n)"
+    $confirmation = Read-Host "Are you sure you want to merge STAGING into MASTER and deploy to PROD? (y/n)"
     if ($confirmation -ne "y") {
         Write-Host "[CANCEL] Aborted." -ForegroundColor Yellow
         exit
     }
 
     # 2. Perform merge
-    Write-Host "Switching to main..."
-    git checkout main
-    Write-Host "Pulling latest main..."
-    git pull origin main
+    Write-Host "Switching to master..."
+    git checkout master
+    Write-Host "Pulling latest master..."
+    git pull origin master
     
-    Write-Host "Merging staging into main..."
+    Write-Host "Merging staging into master..."
     git merge staging
     
     if ($LASTEXITCODE -ne 0) {
@@ -50,13 +51,22 @@ if ($Target -eq "production") {
         exit
     }
 
-    pnpm run db:push:prod
+    # 3. Run migrations for Production
+    Write-Host "Running PRODUCTION migrations..." -ForegroundColor Yellow
+    pnpm run db:migrate:prod
 
-    Write-Host "Pushing to main..."
-    git push origin main
+    # 4. Push to master
+    Write-Host "Pushing to master..."
+    git push origin master
     
+    # 5. Ask for data sync
+    $syncChoice = Read-Host "Do you want to sync Catalog Data from STAGING to PROD now? (y/n)"
+    if ($syncChoice -eq "y") {
+        pnpm run db:sync:catalog
+    }
+
     Write-Host "Switching back to $currentBranch..."
     git checkout $currentBranch
 
-    Write-Host "[SUCCESS] PRODUCTION deployment triggered!" -ForegroundColor Green
+    Write-Host "[SUCCESS] PRODUCTION deployment triggered and database updated!" -ForegroundColor Green
 }

@@ -84,14 +84,6 @@ export const teamRouter = router({
 					id: cursor,
 				} : undefined,
 				where,
-				include: {
-					location: true,
-					highlights: {
-						include: {
-							product: true,
-						},
-					},
-				},
 				orderBy: {
 					name: 'asc',
 				},

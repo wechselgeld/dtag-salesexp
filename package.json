@@ -12,9 +12,13 @@
     "db:push:dev": "dotenv -e .env.development -- prisma db push",
     "db:push:staging": "dotenv -e .env.staging -- prisma db push",
     "db:push:prod": "dotenv -e .env.production -- prisma db push",
+    "db:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
+    "db:migrate:staging": "dotenv -e .env.staging -- prisma migrate deploy",
+    "db:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
     "db:seed:dev": "dotenv -e .env.development -- prisma db seed",
     "db:seed:staging": "dotenv -e .env.staging -- prisma db seed",
     "db:seed:prod": "dotenv -e .env.production -- prisma db seed",
+    "db:sync:catalog": "tsx scripts/sync-catalog.ts",
     "deploy:staging": "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1 -Target staging",
     "deploy:prod": "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1 -Target production"
   },
