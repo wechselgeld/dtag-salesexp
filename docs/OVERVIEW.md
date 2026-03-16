@@ -1,6 +1,6 @@
 # Sales Experience – Projektübersicht
 
-> Internes Vertriebsberatungstool für Telekom Partner-Shops. **Nur für internen Gebrauch – keine Weitergabe an Dritte.**
+> Internes Vertriebsberatungstool für die Deutsche Telekom Service GmbH. **Nur für internen Gebrauch – keine Weitergabe an Dritte.**
 
 ---
 

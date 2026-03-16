@@ -9,6 +9,9 @@ import {
 	AppShell,
 } from '@/components/layout/app-shell';
 import {
+	ResolutionGuard,
+} from '@/components/layout/resolution-guard';
+import {
 	SpeedInsights,
 } from '@vercel/speed-insights/next';
 
@@ -108,7 +111,9 @@ export default function RootLayout({
 					/>
 				)}
 				<Providers>
-					<AppShell>{children}</AppShell>
+					<ResolutionGuard>
+						<AppShell>{children}</AppShell>
+					</ResolutionGuard>
 				</Providers>
 				<SpeedInsights />
 			</body>

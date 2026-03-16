@@ -2,7 +2,7 @@
 
 Dieses Dokument gibt eine realistische Einschätzung der laufenden Kosten für den Betrieb der _Sales Experience_ in Produktion.
 
-> **Nutzungskontext:** Das Tool wird im Produktivbetrieb von ca. **1.000 Nutzern** täglich verwendet (Vertriebsmitarbeiter in Telekom Partner-Shops bundesweit).
+> **Nutzungskontext:** Das Tool wird im Produktivbetrieb von ca. **300 Nutzern** täglich verwendet (Vertriebsmitarbeiter bundesweit).
 
 ---
 
