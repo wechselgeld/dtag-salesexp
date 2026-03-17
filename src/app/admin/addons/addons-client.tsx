@@ -123,20 +123,7 @@ export default function AddonsPage() {
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-[#f0f0f0]">
-								{addons.map(
-									(addon: {
-										id: string;
-										name: string;
-										magentaTVRequirement: 'REQUIRED' | 'NOT_ALLOWED' | 'NONE';
-										internalNote?: string | null;
-										isActive: boolean;
-										tiers: { id: string; name: string; price: number }[];
-										compatibleProducts: {
-											id: string;
-											name: string;
-											category: string | null;
-										}[];
-									}) => (
+								{addons.map((addon: any) => (
 										<tr
 											key={addon.id}
 											className="hover:bg-[#fcfcfd] transition-colors group"
