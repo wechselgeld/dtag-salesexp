@@ -311,13 +311,13 @@ export const adminRouter = router({
         }),
     createProduct: editorProcedure
         .input(productSchema)
-        .mutation(({
+        .mutation(async ({
             input,
         }) => {
             const {
                 features, targetGroups, salesArguments, priceHistory, ...data
             } = input;
-            return prisma.product.create({
+            const result = await prisma.product.create({
                 data: {
                     ...data,
                     features: JSON.stringify(features),
