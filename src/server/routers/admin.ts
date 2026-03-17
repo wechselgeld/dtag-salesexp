@@ -86,7 +86,11 @@ const specialPriceSchema = z.object({
     internalNote: z.string().optional(),
     productIds: z.array(z.string()).min(1),
     tiers: z.array(tierSchema).min(1),
-    requiresMagentaTV: z.boolean().default(false),
+    magentaTVRequirement: z.enum([
+        'REQUIRED',
+        'NOT_ALLOWED',
+        'NONE',
+    ]).default('NONE'),
     requiresSpeedUp: z.boolean().default(false),
     requiresMove: z.boolean().default(false),
     requiresNewActivation: z.boolean().default(false),

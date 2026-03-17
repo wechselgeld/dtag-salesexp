@@ -19,7 +19,6 @@ import clsx from 'clsx';
 import {
 	Save,
 	Loader2,
-	ArrowLeft,
 	Plus,
 	Trash2,
 	Settings,
@@ -29,7 +28,6 @@ import {
 	Globe,
 	Euro,
 } from 'lucide-react';
-import Link from 'next/link';
 import {
 	useState,
 } from 'react';
@@ -52,7 +50,11 @@ const addonSchema = z.object({
 	imageUrl: z.string().optional(),
 	isGlobal: z.boolean().default(false),
 	isActive: z.boolean().default(true),
-	requiresNoMagentaTV: z.boolean().default(false),
+	magentaTVRequirement: z.enum([
+		'REQUIRED',
+		'NOT_ALLOWED',
+		'NONE',
+	]).default('NONE'),
 	tiers: z
 		.array(
 			z.object({
@@ -108,7 +110,7 @@ export function AddonForm({
 			imageUrl: initialData?.imageUrl || '',
 			isGlobal: initialData?.isGlobal || false,
 			isActive: initialData?.isActive ?? true,
-			requiresNoMagentaTV: initialData?.requiresNoMagentaTV || false,
+			magentaTVRequirement: initialData?.magentaTVRequirement || 'NONE',
 			tiers: initialData?.tiers?.length
 				? initialData.tiers
 				: [
@@ -287,46 +289,85 @@ export function AddonForm({
 								</div>
 							</div>
 
-							<div className="flex items-start gap-4 p-5 bg-[#fff8f1] border border-[#ffedd5] rounded-[1.5rem]">
-								<div className="relative flex items-center">
-									<input
-										type="checkbox"
-										id="requiresNoMagentaTV"
-										{...register('requiresNoMagentaTV')}
-										className="peer w-6 h-6 rounded-lg border-[#fed7aa] text-[#f97316] focus:ring-[#f97316] cursor-pointer appearance-none bg-white transition-all checked:bg-[#f97316] checked:border-[#f97316]"
-									/>
-									<div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white opacity-0 peer-checked:opacity-100 transition-opacity">
-										<svg
-											width="12"
-											height="10"
-											viewBox="0 0 12 10"
-											fill="none"
-											xmlns="http://www.w3.org/2000/svg"
-										>
-											<path
-												d="M1 5L4.5 8.5L11 1.5"
-												stroke="currentColor"
-												strokeWidth="3"
-												strokeLinecap="round"
-												strokeLinejoin="round"
-											/>
-										</svg>
-									</div>
-								</div>
-								<div>
-									<label
-										htmlFor="requiresNoMagentaTV"
-										className="text-[0.7rem] font-bold text-[#1a1a2e] cursor-pointer uppercase tracking-wider"
-									>
-										Ausschluss-Logik
-									</label>
-									<p className="text-[0.75rem] text-[#9a3412] m-0 mt-0.5 leading-relaxed font-bold">
-										Nur ohne MagentaTV buchbar
-									</p>
-									<p className="text-[0.65rem] text-[#9a3412] m-0 mt-0.5 opacity-70">
-										Option wird ausgeblendet, sobald MagentaTV im Warenkorb
-										liegt.
-									</p>
+							<div className="p-5 bg-white border border-[#eaedf0] rounded-[1.5rem] shadow-sm">
+								<label className="text-[0.7rem] font-bold text-[#1a1a2e] mb-4 uppercase tracking-wider flex items-center gap-2">
+									<div className="w-1.5 h-1.5 rounded-full bg-[#f97316]" />
+									MagentaTV Abhängigkeit
+								</label>
+								<div className="grid grid-cols-1 gap-4">
+									{[
+										{
+											id: 'NONE',
+											label: 'Immer buchbar',
+											desc: 'Keine Einschränkung bezüglich MagentaTV.',
+											color: '#888',
+											bgColor: '#f7f8fa',
+											borderColor: '#eaedf0',
+										},
+										{
+											id: 'REQUIRED',
+											label: 'Nur mit MagentaTV buchbar',
+											desc: 'Option erscheint nur, wenn MagentaTV ausgewählt ist.',
+											color: '#e20074',
+											bgColor: '#fff1f2',
+											borderColor: '#ffe4e6',
+										},
+										{
+											id: 'NOT_ALLOWED',
+											label: 'Nur ohne MagentaTV buchbar',
+											desc: 'Option verschwindet, sobald MagentaTV ausgewählt wird.',
+											color: '#f97316',
+											bgColor: '#fff8f1',
+											borderColor: '#ffedd5',
+										},
+									].map((opt) => {
+										const isSelected = watch('magentaTVRequirement') === opt.id;
+										return (
+											<label
+												key={opt.id}
+												className={clsx(
+													'flex items-start gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer group',
+													isSelected
+														? 'bg-white shadow-sm'
+														: 'bg-transparent border-transparent hover:bg-[#f7f8fa]',
+												)}
+												style={{
+													borderColor: isSelected ? opt.color : 'transparent',
+												}}
+											>
+												<div className="relative flex items-center mt-0.5">
+													<input
+														type="radio"
+														value={opt.id}
+														{...register('magentaTVRequirement')}
+														className="peer sr-only"
+													/>
+													<div
+														className="w-4 h-4 rounded-full border-2 transition-all flex items-center justify-center peer-checked:border-transparent"
+														style={{
+															borderColor: isSelected ? opt.color : '#ddd',
+															backgroundColor: isSelected ? opt.color : 'transparent',
+														}}
+													>
+														<div className="w-1.5 h-1.5 rounded-full bg-white opacity-0 peer-checked:opacity-100" />
+													</div>
+												</div>
+												<div className="flex-1">
+													<div
+														className="text-[0.82rem] font-bold transition-colors"
+														style={{
+															color: isSelected ? opt.color : '#1a1a2e',
+														}}
+													>
+														{opt.label}
+													</div>
+													<p className="text-[0.7rem] text-[#666] m-0 mt-0.5 leading-relaxed opacity-80">
+														{opt.desc}
+													</p>
+												</div>
+											</label>
+										);
+									})}
 								</div>
 							</div>
 						</div>

@@ -264,10 +264,13 @@ export function AddonSelector({
 		},
 	);
 
-	// Filter out addons that require no MagentaTV when MagentaTV is selected
+	// Filter out addons based on MagentaTV requirement
 	const availableAddons = useMemo(() => {
 		return addons.filter((addon) => {
-			if (addon.requiresNoMagentaTV && isMagentaTVSelected) {
+			if (addon.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) {
+				return false;
+			}
+			if (addon.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) {
 				return false;
 			}
 			if (!addon.tiers || addon.tiers.length === 0) { return false; }

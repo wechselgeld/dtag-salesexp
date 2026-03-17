@@ -127,7 +127,7 @@ export default function AddonsPage() {
 									(addon: {
 										id: string;
 										name: string;
-										requiresNoMagentaTV: boolean;
+										magentaTVRequirement: 'REQUIRED' | 'NOT_ALLOWED' | 'NONE';
 										internalNote?: string | null;
 										isActive: boolean;
 										tiers: { id: string; name: string; price: number }[];
@@ -147,9 +147,14 @@ export default function AddonsPage() {
 														{addon.name}
 													</span>
 													<div className="flex flex-wrap gap-1 mt-1">
-														{addon.requiresNoMagentaTV && (
-															<span className="text-[0.65rem] text-[#e20074] bg-[#e20074]/5 border border-[#e20074]/10 px-1.5 py-0.5 rounded font-bold">
+														{addon.magentaTVRequirement === 'NOT_ALLOWED' && (
+															<span className="text-[0.65rem] text-[#f97316] bg-[#fff8f1] border border-[#ffedd5] px-1.5 py-0.5 rounded font-bold">
 																Ohne MagentaTV
+															</span>
+														)}
+														{addon.magentaTVRequirement === 'REQUIRED' && (
+															<span className="text-[0.65rem] text-[#e20074] bg-[#fff1f2] border border-[#ffe4e6] px-1.5 py-0.5 rounded font-bold">
+																Mit MagentaTV
 															</span>
 														)}
 														{addon.internalNote && (

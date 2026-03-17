@@ -147,7 +147,7 @@ model SpecialPrice {
   tiers SpecialPriceTier[]
 
   // Context Conditions
-  requiresMagentaTV     Boolean @default(false)
+  magentaTVRequirement String @default("NONE") // "REQUIRED", "NOT_ALLOWED", "NONE"
   requiresSpeedUp       Boolean @default(false)
   requiresMove          Boolean @default(false)
   requiresNewActivation Boolean @default(false)
@@ -183,7 +183,7 @@ model Addon {
 
   isGlobal            Boolean @default(false)
   isActive            Boolean @default(true)
-  requiresNoMagentaTV Boolean @default(false)
+  magentaTVRequirement String  @default("NONE") // "REQUIRED", "NOT_ALLOWED", "NONE"
 
   imageUrl String?
 

@@ -33,7 +33,8 @@ export function SpecialPriceSelector({
 	tvBasePrice,
 }: Props) {
 	const availablePrices = specialPrices.filter((sp) => {
-		if (sp.requiresMagentaTV && !isMagentaTVSelected) { return false; }
+		if (sp.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
+		if (sp.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
 		if (sp.requiresMove && businessCase !== 'MOVE') { return false; }
 		if (sp.requiresNewActivation && businessCase !== 'NEW_ACTIVATION') { return false; }
 		if (sp.requiresSpeedUp && businessCase !== 'SPEED_UP') { return false; }

@@ -21,7 +21,11 @@ const addonFormSchema = z.object({
     imageUrl: z.string().optional(),
     isGlobal: z.boolean().default(false),
     isActive: z.boolean().default(true),
-    requiresNoMagentaTV: z.boolean().default(false),
+    magentaTVRequirement: z.enum([
+        'REQUIRED',
+        'NOT_ALLOWED',
+        'NONE',
+    ]).default('NONE'),
 });
 
 const tierSchema = z.object({

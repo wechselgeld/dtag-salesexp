@@ -93,7 +93,7 @@ export function calculateProductCosts({
 	else if (magentaTVPackage === 'smartstream') { tvPackagePrice = settings.magentatv_smartstream_price; }
 	else if (magentaTVPackage === 'megastream') { tvPackagePrice = settings.magentatv_megastream_price; }
 
-	const duration = product.contractDuration || 24;
+	// const duration = product.contractDuration || 24;
 
 	// 1. Determine Base Price (Standard or Bundle or Hardware)
 	let effectiveBasePrice = product.basePrice;
@@ -377,7 +377,7 @@ export function useCostCalculator(
 	] = useState<HardwareTier>('none');
 
 	// Derived boolean for backward compat
-	const isMagentaTVSelected = magentaTVPackage !== null;
+	const isMagentaTVSelected = magentaTVPackage !== null || product?.category === 'MAGENTA_TV_OTT';
 
 	// Auto-deselect special prices whose conditions are no longer met
 	useEffect(() => {
@@ -386,7 +386,8 @@ export function useCostCalculator(
 		const stillValid = selectedSpecialPriceIds.filter(spId => {
 			const sp = product.specialPrices.find(s => s.id === spId);
 			if (!sp) { return false; }
-			if (sp.requiresMagentaTV && !isMagentaTVSelected) { return false; }
+			if (sp.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
+			if (sp.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
 			if (sp.requiresMove && businessCase !== 'MOVE') { return false; }
 			if (sp.requiresNewActivation && businessCase !== 'NEW_ACTIVATION') { return false; }
 			if (sp.requiresSpeedUp && businessCase !== 'SPEED_UP') { return false; }
@@ -411,7 +412,8 @@ export function useCostCalculator(
 			const addon = product.compatibleAddons!.find(a => (a.tiers || [
 			]).some(t => t.id === tierId));
 			if (!addon) { return false; }
-			if (addon.requiresNoMagentaTV && isMagentaTVSelected) { return false; }
+			if (addon.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
+			if (addon.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
 			return true;
 		});
 

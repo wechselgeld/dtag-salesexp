@@ -63,7 +63,11 @@ const specialPriceSchema = z.object({
 	description: z.string().optional(),
 	internalNote: z.string().optional(),
 	productIds: z.array(z.string()),
-	requiresMagentaTV: z.boolean().default(false),
+	magentaTVRequirement: z.enum([
+		'REQUIRED',
+		'NOT_ALLOWED',
+		'NONE',
+	]).default('NONE'),
 	requiresSpeedUp: z.boolean().default(false),
 	requiresMove: z.boolean().default(false),
 	requiresNewActivation: z.boolean().default(false),
@@ -126,7 +130,7 @@ export function SpecialPriceForm({
 			internalNote: initialData?.internalNote || '',
 			productIds: initialData?.products?.map((p: any) => p.id) || [
 			],
-			requiresMagentaTV: initialData?.requiresMagentaTV || false,
+			magentaTVRequirement: initialData?.magentaTVRequirement || 'NONE',
 			requiresSpeedUp: initialData?.requiresSpeedUp || false,
 			requiresMove: initialData?.requiresMove || false,
 			requiresNewActivation: initialData?.requiresNewActivation || false,
@@ -384,15 +388,69 @@ export function SpecialPriceForm({
 						description="Voraussetzungen für diese Aktion."
 						icon={CheckCircle2}
 					>
-						<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 							{[
 								{
-									id: 'requiresMagentaTV',
-									label: 'Benötigt MagentaTV',
+									id: 'NONE',
+									label: 'Immer buchbar',
+									desc: 'Keine TV-Abhängigkeit.',
+									color: 'bg-telekom-gray-50',
+									activeColor: 'border-telekom-gray-300 bg-telekom-gray-50/50',
 								},
 								{
+									id: 'REQUIRED',
+									label: 'Nur mit MagentaTV',
+									desc: 'Voraussetzung: MagentaTV.',
+									color: 'bg-[#e20074]/5',
+									activeColor: 'border-[#e20074] bg-[#e20074]/5',
+								},
+								{
+									id: 'NOT_ALLOWED',
+									label: 'Nur OHNE MagentaTV',
+									desc: 'Aktiv nur ohne TV.',
+									color: 'bg-[#ff6b00]/5',
+									activeColor: 'border-[#ff6b00] bg-[#ff6b00]/5',
+								},
+							].map((opt) => {
+								const isSelected = watch('magentaTVRequirement') === opt.id;
+								return (
+									<label
+										key={opt.id}
+										className={clsx(
+											'flex flex-col p-4 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden group',
+											isSelected ? opt.activeColor : 'border-[#eaedf0] bg-white hover:border-[#ddd]',
+										)}
+									>
+										<input
+											type="radio"
+											value={opt.id}
+											{...register('magentaTVRequirement')}
+											className="sr-only"
+										/>
+										<div className="flex items-center gap-3 mb-1">
+											<div className={clsx(
+												'w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all',
+												isSelected ? 'border-[#e20074]' : 'border-[#ddd]',
+											)}>
+												{isSelected && <div className="w-2 h-2 rounded-full bg-[#e20074]" />}
+											</div>
+											<span className="text-[0.75rem] font-extrabold uppercase tracking-wider text-[#1a1a2e]">
+												{opt.label}
+											</span>
+										</div>
+										<p className="text-[0.65rem] text-[#888] m-0 pl-7 leading-tight">
+											{opt.desc}
+										</p>
+									</label>
+								);
+							})}
+						</div>
+
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+							{[
+								{
 									id: 'requiresSpeedUp',
-									label: 'Benötigt SpeedUp',
+									label: 'SpeedUp',
 								},
 								{
 									id: 'requiresNewActivation',
@@ -405,29 +463,17 @@ export function SpecialPriceForm({
 							].map((cond) => (
 								<label
 									key={cond.id}
-									className="flex flex-col items-center gap-3 p-5 rounded-3xl bg-[#f7f8fa] border border-[#eaedf0] cursor-pointer hover:bg-white hover:border-[#e20074]/30 hover:shadow-md transition-all group relative overflow-hidden"
+									className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-[#f7f8fa] border border-[#eaedf0] cursor-pointer hover:bg-white transition-all group relative overflow-hidden"
 								>
 									<input
 										type="checkbox"
 										{...register(cond.id as any)}
 										className="peer opacity-0 absolute w-0 h-0"
 									/>
-									<div className="w-6 h-6 rounded-lg border-2 border-[#ddd] bg-white peer-checked:bg-[#e20074] peer-checked:border-[#e20074] transition-all flex items-center justify-center group-hover:border-[#e20074]/50">
-										<svg
-											className="w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
-											viewBox="0 0 14 10"
-											fill="none"
-										>
-											<path
-												d="M1 5L4.5 8.5L13 1"
-												stroke="currentColor"
-												strokeWidth="3"
-												strokeLinecap="round"
-												strokeLinejoin="round"
-											/>
-										</svg>
+									<div className="w-5 h-5 rounded-lg border-2 border-[#ddd] bg-white peer-checked:bg-[#e20074] peer-checked:border-[#e20074] transition-all flex items-center justify-center">
+										<CheckCircle2 className="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
 									</div>
-									<span className="text-[0.75rem] font-extrabold text-[#1a1a2e] text-center uppercase tracking-wider relative z-10">
+									<span className="text-[0.7rem] font-extrabold text-[#1a1a2e] uppercase tracking-wider">
 										{cond.label}
 									</span>
 								</label>

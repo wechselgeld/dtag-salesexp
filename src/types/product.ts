@@ -21,7 +21,7 @@ export interface SpecialPrice {
     name: string;
     description?: string | null;
     internalNote?: string | null;
-    requiresMagentaTV: boolean;
+    magentaTVRequirement: 'REQUIRED' | 'NOT_ALLOWED' | 'NONE';
     requiresSpeedUp: boolean;
     requiresMove: boolean;
     requiresNewActivation: boolean;
@@ -43,7 +43,7 @@ export interface Addon {
     id: string;
     name: string;
     description: string | null;
-    requiresNoMagentaTV: boolean;
+    magentaTVRequirement: 'REQUIRED' | 'NOT_ALLOWED' | 'NONE';
     tiers: AddonTier[];
     imageUrl?: string | null;
     isGlobal?: boolean;

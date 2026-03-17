@@ -243,6 +243,13 @@ export function SidebarNav() {
 
 	const group2: UtilityLink[] = [
 		{
+			id: 'feedback-button',
+			icon: MessageSquare,
+			label: 'Feedback geben',
+			onClick: () => setFeedbackOpen(true),
+			type: 'button',
+		},
+		{
 			id: 'settings-link',
 			icon: Settings,
 			label: 'Einstellungen',
@@ -262,13 +269,6 @@ export function SidebarNav() {
 			label: 'Admin',
 			href: '/login',
 			type: 'link',
-		},
-		{
-			id: 'feedback-button',
-			icon: MessageSquare,
-			label: 'Feedback geben',
-			onClick: () => setFeedbackOpen(true),
-			type: 'button',
 		},
 	];
 
