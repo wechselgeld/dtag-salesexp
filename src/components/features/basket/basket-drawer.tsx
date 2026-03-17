@@ -115,9 +115,9 @@ export function BasketDrawer() {
 		'idle' | 'generating' | 'success'
 	>('idle');
 
-	const {
+	/* const {
 		data: availableCredits,
-	} = trpc.product.getOneTimeCredits.useQuery();
+	} = trpc.product.getOneTimeCredits.useQuery(); */
 	const {
 		data: session,
 	} = trpc.session.getCurrent.useQuery();
@@ -612,7 +612,14 @@ function BasketItemCard({
 							{item.product.name}
 							{item.config.magentaTVPackage
 								? ` mit ${MAGENTA_TV_PACKAGES[item.config.magentaTVPackage].name}`
-								: ''}
+								: item.config.hardwareTier && item.config.hardwareTier !== 'none'
+									? ` mit ${{
+										smartphone: 'Smartphone',
+										top: 'Top-Smartphone',
+										premium: 'Premium-Smartphone',
+										premium_plus: 'Premium-Plus-Smartphone',
+									}[item.config.hardwareTier] || 'Smartphone'}`
+									: ''}
 						</h4>
 					</div>
 

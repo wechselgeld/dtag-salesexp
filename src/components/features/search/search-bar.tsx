@@ -187,8 +187,8 @@ export function SearchBar({
 				className={clsx(
 					'relative flex items-center border px-5 z-[110] transition-all duration-300 transform-gpu',
 					compact ? 'rounded-xl' : 'rounded-2xl',
-					open 
-						? 'rounded-b-none bg-white/70 backdrop-blur-xl border-white/60 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)]' 
+					open
+						? 'rounded-b-none bg-white/70 backdrop-blur-xl border-white/60 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)]'
 						: 'bg-linear-to-br from-white to-[#fcfafc] border-[#eaedf0] shadow-sm',
 					compact ? 'py-2.5' : 'py-3.5',
 				)}

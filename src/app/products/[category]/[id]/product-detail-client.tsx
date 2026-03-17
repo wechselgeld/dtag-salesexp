@@ -425,9 +425,19 @@ function ProductPageContent() {
 	};
 
 	// Merged product name
-	const displayName = magentaTVPackage
-		? `${product.name} mit ${MAGENTA_TV_PACKAGES[magentaTVPackage].name}`
-		: product.name;
+	let displayName = product.name;
+	if (magentaTVPackage) {
+		displayName += ` mit ${MAGENTA_TV_PACKAGES[magentaTVPackage].name}`;
+	}
+	else if (hardwareTier && hardwareTier !== 'none') {
+		const tierNames: Record<string, string> = {
+			smartphone: 'Smartphone',
+			top: 'Top-Smartphone',
+			premium: 'Premium-Smartphone',
+			premium_plus: 'Premium-Plus-Smartphone',
+		};
+		displayName += ` mit ${tierNames[hardwareTier] || 'Smartphone'}`;
+	}
 
 	return (
 		<div
