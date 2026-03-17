@@ -7,6 +7,9 @@ import {
 import {
     prisma,
 } from '@/lib/prisma';
+import {
+    getCached,
+} from '@/lib/cache';
 
 export const productRouter = router({
     getProductsByCategory: publicProcedure
@@ -62,15 +65,16 @@ export const productRouter = router({
         .input(z.object({
             id: z.string(),
         }))
-        .query(async ({
+        .query(({
             input,
         }) => {
-            // Run both queries in parallel for ~50% less latency
-            const [
-                product,
-                globalAddons,
-            ] = await Promise.all([
-                prisma.product.findUnique({
+            return getCached(`product:${input.id}`, 60 * 1000, async () => {
+                // Run both queries in parallel for ~50% less latency
+                const [
+                    product,
+                    globalAddons,
+                ] = await Promise.all([
+                    prisma.product.findUnique({
                     where: {
                         id: input.id,
                     },
@@ -118,17 +122,18 @@ export const productRouter = router({
                 }),
             ]);
 
-            if (!product) { return null; }
+                if (!product) { return null; }
 
-            // Merge product-specific + global addons (deduplicated)
-            const addonMap = new Map();
-            product.compatibleAddons.forEach(a => addonMap.set(a.id, a));
-            globalAddons.forEach(a => addonMap.set(a.id, a));
+                // Merge product-specific + global addons (deduplicated)
+                const addonMap = new Map();
+                product.compatibleAddons.forEach(a => addonMap.set(a.id, a));
+                globalAddons.forEach(a => addonMap.set(a.id, a));
 
-            return {
-                ...product,
-                compatibleAddons: Array.from(addonMap.values()),
-            };
+                return {
+                    ...product,
+                    compatibleAddons: Array.from(addonMap.values()),
+                };
+            });
         }),
 
     getAllProducts: publicProcedure
@@ -138,7 +143,7 @@ export const productRouter = router({
             search: z.string().optional(),
             category: z.string().optional(),
         }).optional())
-        .query(async ({
+        .query(({
             input,
         }) => {
             const limit = input?.limit ?? 50;
@@ -146,7 +151,9 @@ export const productRouter = router({
             const search = input?.search;
             const category = input?.category;
 
-            const where: any = {
+            const cacheKey = `products:all:${category || 'ALL'}:${search || ''}:${cursor || ''}:${limit}`;
+            return getCached(cacheKey, 60 * 1000, async () => {
+                const where: any = {
                 isActive: true,
             };
             if (search) {
@@ -165,12 +172,12 @@ export const productRouter = router({
                     },
                 ];
             }
-            if (category && category !== 'ALL') {
-                where.category = category;
-            }
+                if (category && category !== 'ALL') {
+                    where.category = category;
+                }
 
-            const items = await prisma.product.findMany({
-                take: limit + 1,
+                const items = await prisma.product.findMany({
+                    take: limit + 1,
                 cursor: cursor ? {
                     id: cursor,
                 } : undefined,
@@ -180,16 +187,17 @@ export const productRouter = router({
                 },
             });
 
-            let nextCursor: typeof cursor | undefined = undefined;
-            if (items.length > limit) {
-                const nextItem = items.pop();
-                nextCursor = nextItem!.id;
-            }
+                let nextCursor: typeof cursor | undefined = undefined;
+                if (items.length > limit) {
+                    const nextItem = items.pop();
+                    nextCursor = nextItem!.id;
+                }
 
-            return {
-                items,
-                nextCursor,
-            };
+                return {
+                    items,
+                    nextCursor,
+                };
+            });
         }),
 
     getOneTimeCredits: publicProcedure.query(() => {
@@ -245,36 +253,38 @@ export const productRouter = router({
             });
         }),
 
-    getCategoryStats: publicProcedure.query(async () => {
-        const stats = await prisma.product.groupBy({
-            by: [
-                'category',
-            ],
-            where: {
-                isActive: true,
-            },
-            _count: {
-                _all: true,
-            },
-        });
+    getCategoryStats: publicProcedure.query(() => {
+        return getCached('product:categoryStats', 15 * 60 * 1000, async () => {
+            const stats = await prisma.product.groupBy({
+                by: [
+                    'category',
+                ],
+                where: {
+                    isActive: true,
+                },
+                _count: {
+                    _all: true,
+                },
+            });
 
-        // Add special counts for andons or news if needed, but for now just products
-        const result: Record<string, number> = {
-        };
-        stats.forEach(s => {
-            result[s.category] = s._count._all;
-        });
+            // Add special counts for andons or news if needed, but for now just products
+            const result: Record<string, number> = {
+            };
+            stats.forEach(s => {
+                result[s.category] = s._count._all;
+            });
 
-        // Add counts for compatible addons or other categories if they don't exist as products
-        // (e.g. ADDON might be a different model but handled in the grid)
-        const addonCount = await prisma.addon.count({
-            where: {
-                isActive: true,
-            },
-        });
-        result['ADDON'] = addonCount;
+            // Add counts for compatible addons or other categories if they don't exist as products
+            // (e.g. ADDON might be a different model but handled in the grid)
+            const addonCount = await prisma.addon.count({
+                where: {
+                    isActive: true,
+                },
+            });
+            result['ADDON'] = addonCount;
 
-        return result;
+            return result;
+        });
     }),
 
     // Returns the IDs of "Top Seller" products based on analytics (PRODUCT_VIEW + BASKET_ADD)
@@ -283,7 +293,7 @@ export const productRouter = router({
             limit: z.number().min(1).max(20).default(5),
             days: z.number().min(1).max(90).default(30),
         }).optional())
-        .query(async ({
+        .query(({
             input,
         }) => {
             const limit = input?.limit ?? 5;
@@ -292,8 +302,10 @@ export const productRouter = router({
             since.setDate(since.getDate() - days);
             since.setHours(0, 0, 0, 0);
 
-            try {
-                const topProducts = await (prisma as any).analyticsEvent.groupBy({
+            const cacheKey = `product:topIds:${limit}:${days}`;
+            return getCached(cacheKey, 60 * 60 * 1000, async () => {
+                try {
+                    const topProducts = await (prisma as any).analyticsEvent.groupBy({
                     by: [
                         'productId',
                     ],
@@ -322,14 +334,15 @@ export const productRouter = router({
                     take: limit,
                 });
 
-                return topProducts
-                    .filter((p: any) => p.productId && (p._sum?.count ?? 0) > 0)
-                    .map((p: any) => p.productId as string);
-            }
-            catch {
-                // If analyticsEvent table doesn't exist yet, return empty
-                return [
-                ];
-            }
+                    return topProducts
+                        .filter((p: any) => p.productId && (p._sum?.count ?? 0) > 0)
+                        .map((p: any) => p.productId as string);
+                }
+                catch {
+                    // If analyticsEvent table doesn't exist yet, return empty
+                    return [
+                    ];
+                }
+            });
         }),
 });

@@ -10,6 +10,9 @@ import {
 import {
     TRPCError,
 } from '@trpc/server';
+import {
+    getCached, invalidateCache,
+} from '@/lib/cache';
 
 // Schema for product creation/update
 const priceHistorySchema = z.object({
@@ -308,13 +311,13 @@ export const adminRouter = router({
         }),
     createProduct: editorProcedure
         .input(productSchema)
-        .mutation(({
+        .mutation(async ({
             input,
         }) => {
             const {
                 features, targetGroups, salesArguments, priceHistory, ...data
             } = input;
-            return prisma.product.create({
+            const result = await prisma.product.create({
                 data: {
                     ...data,
                     features: JSON.stringify(features),
@@ -334,6 +337,8 @@ export const adminRouter = router({
                     },
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     updateProduct: editorProcedure
@@ -359,7 +364,7 @@ export const adminRouter = router({
                 },
             });
 
-            return prisma.product.update({
+            const result = await prisma.product.update({
                 where: {
                     id,
                 },
@@ -382,20 +387,24 @@ export const adminRouter = router({
                     },
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     deleteProduct: editorProcedure
         .input(z.object({
             id: z.string(),
         }))
-        .mutation(({
+        .mutation(async ({
             input,
         }) => {
-            return prisma.product.delete({
+            const result = await prisma.product.delete({
                 where: {
                     id: input.id,
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     getProductById: protectedProcedure
@@ -1271,6 +1280,8 @@ export const adminRouter = router({
                     }),
                 ),
             );
+
+            invalidateCache('product');
 
             return {
                 updated: updates.length,

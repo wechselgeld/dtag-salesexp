@@ -7,14 +7,20 @@ import {
 import {
     prisma,
 } from '@/lib/prisma';
+import {
+    getCached, invalidateCache,
+} from '@/lib/cache';
+
+const TTL = 1000 * 60 * 60; // 1 hour
 
 export const settingsRouter = router({
     getAll: publicProcedure.query(() => {
         return prisma.systemSetting.findMany();
     }),
 
-    getDesignSettings: publicProcedure.query(async () => {
-        const settings = await prisma.systemSetting.findMany({
+    getDesignSettings: publicProcedure.query(() => {
+        return getCached('systemSettings:design', TTL, async () => {
+            const settings = await prisma.systemSetting.findMany({
             where: {
                 key: {
                     in: [
@@ -44,10 +50,12 @@ export const settingsRouter = router({
         });
 
         return result;
+        });
     }),
 
-    getPricingSettings: publicProcedure.query(async () => {
-        const settings = await prisma.systemSetting.findMany({
+    getPricingSettings: publicProcedure.query(() => {
+        return getCached('systemSettings:pricing', TTL, async () => {
+            const settings = await prisma.systemSetting.findMany({
             where: {
                 key: {
                     in: [
@@ -87,6 +95,7 @@ export const settingsRouter = router({
             plus_karte_first_price: parseFloat(result.plus_karte_first_price),
             plus_karte_following_price: parseFloat(result.plus_karte_following_price),
         };
+        });
     }),
 
     update: protectedProcedure
@@ -96,10 +105,10 @@ export const settingsRouter = router({
                 value: z.string(),
             }),
         )
-        .mutation(({
+        .mutation(async ({
             input,
         }) => {
-            return prisma.systemSetting.upsert({
+            const result = await prisma.systemSetting.upsert({
                 where: {
                     key: input.key,
                 },
@@ -111,6 +120,8 @@ export const settingsRouter = router({
                     value: input.value,
                 },
             });
+            invalidateCache('systemSettings');
+            return result;
         }),
 
     updateMany: protectedProcedure
@@ -118,7 +129,7 @@ export const settingsRouter = router({
             key: z.string(),
             value: z.string(),
         })))
-        .mutation(({
+        .mutation(async ({
             input,
         }) => {
             const updates = input.map(item =>
@@ -135,6 +146,8 @@ export const settingsRouter = router({
                     },
                 }),
             );
-            return prisma.$transaction(updates);
+            const result = await prisma.$transaction(updates);
+            invalidateCache('systemSettings');
+            return result;
         }),
 });
