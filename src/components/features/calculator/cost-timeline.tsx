@@ -23,9 +23,9 @@ export function CostTimeline({
 		averageMonthlyCost,
 		totalCost24Months,
 		oneTimeCosts,
-		basePrice,
 		effectiveBasePrice,
-		dailyPriceTrivialization,
+		regularAddonCost,
+		regularMagentaTVCost,
 	} = calculation;
 
 	const getPeriods = () => {
@@ -60,7 +60,7 @@ export function CostTimeline({
 	};
 
 	const displayBasePrice =
-		effectiveBasePrice !== basePrice ? effectiveBasePrice : basePrice;
+		effectiveBasePrice + regularAddonCost + regularMagentaTVCost;
 
 	return (
 		<div>
@@ -129,7 +129,11 @@ export function CostTimeline({
 						Pro Tag
 					</div>
 					<div className="text-[1.0rem] font-extrabold mt-1">
-						{dailyPriceTrivialization || (
+						{averageMonthlyCost / 30 < 1 ? (
+							<>
+								<AnimatedNumber value={(averageMonthlyCost / 30) * 100} precision={0} /> Cent
+							</>
+						) : (
 							<>
 								<AnimatedNumber value={averageMonthlyCost / 30} /> €
 							</>

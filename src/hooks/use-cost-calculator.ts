@@ -5,9 +5,6 @@ import type {
 	MagentaTVPackageKey,
 } from '@/lib/constants/pricing';
 import {
-	MAGENTA_TV_PACKAGES,
-} from '@/lib/constants/pricing';
-import {
 	trpc,
 } from '@/lib/trpc';
 import type {
@@ -78,6 +75,8 @@ export function calculateProductCosts({
 			effectiveBasePrice: 0,
 			plusKartenCost: 0,
 			hasUnlimitedAdvantage: false,
+			regularAddonCost: 0,
+			regularMagentaTVCost: 0,
 		};
 	}
 
@@ -104,11 +103,9 @@ export function calculateProductCosts({
 			effectiveBasePrice = product.rentalPrice ?? product.basePrice;
 		}
 	}
-	else {
+	else if (isMagentaTVSelected && product.magentaTVBundlePrice) {
 		// If MagentaTV is selected, we might have a different base price for the bundle
-		if (isMagentaTVSelected && product.magentaTVBundlePrice) {
-			effectiveBasePrice = product.magentaTVBundlePrice;
-		}
+		effectiveBasePrice = product.magentaTVBundlePrice;
 	}
 
 	if (customBasePrice !== undefined) {
@@ -142,6 +139,9 @@ export function calculateProductCosts({
 			break;
 		case 'SPEED_UP':
 			activationFee = product.activationFeeSpeedUp ?? 0;
+			break;
+		default:
+			activationFee = 0;
 			break;
 	}
 
@@ -285,6 +285,8 @@ export function calculateProductCosts({
 		dailyPriceTrivialization: dailyPriceFormatted,
 		plusKartenCost: plusKartenCostPerMonth,
 		hasUnlimitedAdvantage,
+		regularAddonCost: monthlyAddonCost,
+		regularMagentaTVCost: tvPackagePrice,
 	};
 }
 
@@ -431,6 +433,8 @@ export function useCostCalculator(
 				effectiveBasePrice: 0,
 				plusKartenCost: 0,
 				hasUnlimitedAdvantage: false,
+				regularAddonCost: 0,
+				regularMagentaTVCost: 0,
 			};
 		}
 
