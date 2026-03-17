@@ -1182,7 +1182,7 @@ function ProductPageContent() {
 										</p>
 									</div>
 
-									{/* Toggle circle */}
+									{/* Toggle checkbox circle */}
 									<div
 										className="relative z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
 										style={{
@@ -1193,7 +1193,7 @@ function ProductPageContent() {
 										}}
 									>
 										{isMagentaTVSelected && (
-											<Check className="w-3 h-3 text-white" strokeWidth={3} />
+											<Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />
 										)}
 									</div>
 								</motion.div>
@@ -1231,7 +1231,7 @@ function ProductPageContent() {
 														scale: 0.98,
 													}}
 													onClick={() => setMagentaTVPackage(key)}
-													className="rounded-xl p-3.5 border cursor-pointer transition-all duration-200"
+													className="rounded-xl p-3.5 border-2 cursor-pointer transition-all duration-200"
 													style={{
 														borderColor: isSelected ? catColor : '#eaedf0',
 														backgroundColor: isSelected
@@ -1240,9 +1240,9 @@ function ProductPageContent() {
 													}}
 												>
 													<div className="flex items-center gap-3">
-														{/* Radio */}
+														{/* Radio circle with Check */}
 														<div
-															className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+															className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
 															style={{
 																borderColor: isSelected ? catColor : '#ccc',
 																backgroundColor: isSelected
@@ -1251,7 +1251,7 @@ function ProductPageContent() {
 															}}
 														>
 															{isSelected && (
-																<div className="w-[8px] h-[8px] rounded-full bg-white" />
+																<Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />
 															)}
 														</div>
 
@@ -2029,7 +2029,7 @@ function HardwareTierSelector({
 					</p>
 				</div>
 
-				{/* Toggle circle */}
+				{/* Toggle checkbox circle */}
 				<div
 					className={clsx(
 						'relative z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200',
@@ -2046,7 +2046,7 @@ function HardwareTierSelector({
 						backgroundColor: isEnabled ? accentColor : 'transparent',
 					}}
 				>
-					{isEnabled && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+					{isEnabled && <Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />}
 				</div>
 			</motion.div>
 
@@ -2077,23 +2077,23 @@ function HardwareTierSelector({
 									scale: 0.98,
 								}}
 								onClick={() => onChange(tier.id)}
-								className="rounded-xl p-3.5 border cursor-pointer transition-all duration-200"
+								className="rounded-xl p-3.5 border-2 cursor-pointer transition-all duration-200"
 								style={{
 									borderColor: isSelected ? accentColor : '#eaedf0',
 									backgroundColor: isSelected ? `${accentColor}08` : '#fafafa',
 								}}
 							>
 								<div className="flex items-center gap-3">
-									{/* Radio */}
+									{/* Radio circle with Check */}
 									<div
-										className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+										className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
 										style={{
 											borderColor: isSelected ? accentColor : '#ccc',
 											backgroundColor: isSelected ? accentColor : 'transparent',
 										}}
 									>
 										{isSelected && (
-											<div className="w-[8px] h-[8px] rounded-full bg-white" />
+											<Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />
 										)}
 									</div>
 

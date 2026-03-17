@@ -338,7 +338,7 @@ function TierSelect({
 						)}
 						<div
 							className={clsx(
-								'w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 border-2',
+								'w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 border-2',
 								selectedId
 									? 'border-[#e20074] bg-[#e20074]'
 									: 'border-[#d1d5db] bg-white group-hover:border-[#999]',
@@ -752,7 +752,7 @@ export function StreamingCalculatorModal({
 															<div className="flex items-center gap-3">
 																<div
 																	className={clsx(
-																		'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300',
+																		'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300',
 																		isSelected
 																			? 'border-[#e20074] bg-[#e20074]'
 																			: 'border-[#d1d5db] bg-white group-hover:border-[#999]',

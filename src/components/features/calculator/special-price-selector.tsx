@@ -8,7 +8,7 @@ import {
 	motion,
 } from 'framer-motion';
 import {
-	ArrowDown, TrendingDown,
+	ArrowDown, TrendingDown, Check,
 } from 'lucide-react';
 
 interface Props {
@@ -129,20 +129,16 @@ export function SpecialPriceSelector({
 					>
 						{/* Main row */}
 						<div className="flex items-center p-4">
-							{/* Radio button */}
+							{/* Radio circle with Checkmark */}
 							<div
-								className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center mr-3 shrink-0 transition-all duration-200"
+								className="w-5 h-5 rounded-full border-2 flex items-center justify-center mr-3 shrink-0 transition-all duration-200"
 								style={{
 									borderColor: isSelected ? accentColor : '#ddd',
+									backgroundColor: isSelected ? accentColor : 'transparent',
 								}}
 							>
 								{isSelected && (
-									<div
-										className="w-[8px] h-[8px] rounded-full"
-										style={{
-											backgroundColor: accentColor,
-										}}
-									/>
+									<Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />
 								)}
 							</div>
 
