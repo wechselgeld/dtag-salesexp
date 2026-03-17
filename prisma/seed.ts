@@ -230,7 +230,7 @@ async function main() {
 	await prisma.specialPrice.create({
 		data: {
 			name: 'MagentaTV Bundle Promo',
-			requiresMagentaTV: true,
+			magentaTVRequirement: 'REQUIRED',
 			priority: 20,
 			products: {
 				connect: [

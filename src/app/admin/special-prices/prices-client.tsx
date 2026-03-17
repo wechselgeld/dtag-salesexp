@@ -148,9 +148,14 @@ export default function AdminSpecialPricesPage() {
 														<Tag className="w-3" />
 														Prio: {sp.priority}
 													</div>
-													{sp.requiresMagentaTV && (
+													{sp.magentaTVRequirement === 'REQUIRED' && (
 														<div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#e20074]/5 border border-[#e20074]/10 text-[0.65rem] font-bold text-[#e20074]">
 															MagentaTV erforderlich
+														</div>
+													)}
+													{sp.magentaTVRequirement === 'NOT_ALLOWED' && (
+														<div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#f97316]/5 border border-[#f97316]/10 text-[0.65rem] font-bold text-[#f97316]">
+															Nur ohne MagentaTV
 														</div>
 													)}
 												</div>
