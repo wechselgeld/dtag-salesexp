@@ -10,6 +10,9 @@ import {
 import {
     TRPCError,
 } from '@trpc/server';
+import {
+    getCached, invalidateCache,
+} from '@/lib/cache';
 
 // Schema for product creation/update
 const priceHistorySchema = z.object({
@@ -334,6 +337,8 @@ export const adminRouter = router({
                     },
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     updateProduct: editorProcedure
@@ -359,7 +364,7 @@ export const adminRouter = router({
                 },
             });
 
-            return prisma.product.update({
+            const result = await prisma.product.update({
                 where: {
                     id,
                 },
@@ -382,20 +387,24 @@ export const adminRouter = router({
                     },
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     deleteProduct: editorProcedure
         .input(z.object({
             id: z.string(),
         }))
-        .mutation(({
+        .mutation(async ({
             input,
         }) => {
-            return prisma.product.delete({
+            const result = await prisma.product.delete({
                 where: {
                     id: input.id,
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     getProductById: protectedProcedure
@@ -1271,6 +1280,8 @@ export const adminRouter = router({
                     }),
                 ),
             );
+
+            invalidateCache('product');
 
             return {
                 updated: updates.length,
