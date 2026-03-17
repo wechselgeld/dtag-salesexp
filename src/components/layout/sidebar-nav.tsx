@@ -17,6 +17,7 @@ import {
 	HelpCircle,
 	ExternalLink,
 	MessageSquare,
+	Logs,
 } from 'lucide-react';
 
 import {
@@ -248,6 +249,13 @@ export function SidebarNav() {
 			label: 'Feedback geben',
 			onClick: () => setFeedbackOpen(true),
 			type: 'button',
+		},
+		{
+			id: 'changelog-link',
+			icon: Logs,
+			label: 'Changelog',
+			href: '/changelog',
+			type: 'link',
 		},
 		{
 			id: 'settings-link',

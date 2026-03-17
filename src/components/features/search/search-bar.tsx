@@ -179,31 +179,17 @@ export function SearchBar({
 		<div
 			ref={containerRef as any}
 			id="tour-search"
-			className={`relative z-30 ${compact ? 'mb-6' : 'mb-14'}`}
+			className={`relative z-[100] ${compact ? 'mb-6' : 'mb-14'}`}
 		>
 			{/* Search input container */}
 			<motion.div
 				initial={false}
-				animate={{
-					backgroundColor: open ? '#ffffff' : '#f7f8fa',
-					borderColor: open ? 'rgba(226, 0, 116, 0.3)' : '#e5e7eb',
-					boxShadow: open
-						? '0 0 0 3px rgba(226, 0, 116, 0.06), 0 8px 32px rgba(0, 0, 0, 0.12)'
-						: '0 1px 3px rgba(0, 0, 0, 0.04)',
-				}}
-				transition={{
-					duration: 0.3,
-					ease: [
-						0.23,
-						1,
-						0.32,
-						1,
-					],
-				}}
 				className={clsx(
-					'relative flex items-center border px-5 z-50 transition-all duration-300',
+					'relative flex items-center border px-5 z-[110] transition-all duration-300 transform-gpu',
 					compact ? 'rounded-xl' : 'rounded-2xl',
-					open && 'rounded-b-none',
+					open 
+						? 'rounded-b-none bg-white/70 backdrop-blur-xl border-white/60 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)]' 
+						: 'bg-linear-to-br from-white to-[#fcfafc] border-[#eaedf0] shadow-sm',
 					compact ? 'py-2.5' : 'py-3.5',
 				)}
 				onClick={() => {
@@ -264,7 +250,7 @@ export function SearchBar({
 							transition={{
 								duration: 0.2,
 							}}
-							className="fixed inset-0 z-40 bg-black/10"
+							className="fixed inset-0 z-[105] bg-black/5"
 							onClick={() => setOpen(false)}
 						/>
 
@@ -292,8 +278,8 @@ export function SearchBar({
 								],
 							}}
 							className={`
-								absolute left-0 right-0 top-full z-50 bg-white border border-t-0 border-[#e20074]/30
-								shadow-[0_12px_40px_rgba(0,0,0,0.08)] overflow-hidden max-h-[420px] overflow-y-auto scrollbar-none
+								absolute left-0 right-0 top-full z-[110] bg-white/70 backdrop-blur-xl border border-t-0 border-white/60
+								shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden max-h-[420px] overflow-y-auto scrollbar-none transform-gpu
 								${compact ? 'rounded-b-xl' : 'rounded-b-2xl'}
 							`}
 						>
