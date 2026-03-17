@@ -12,6 +12,11 @@ import {
 } from '@trpc/server';
 import ipaddr from 'ipaddr.js';
 import crypto from 'crypto';
+import {
+    getCached,
+} from '@/lib/cache';
+
+const SETTINGS_TTL = 1000 * 60 * 60; // 1 hour
 
 function checkIpIsAllowed(ipString: string, allowedIpsString: string) {
     if (!allowedIpsString || allowedIpsString.trim() === '') { return true; } // Empty string means all IPs allowed
@@ -53,10 +58,12 @@ export const sessionRouter = router({
     }) => {
         const clientIp = ctx.ip || '127.0.0.1';
 
-        const setting = await ctx.prisma.systemSetting.findUnique({
-            where: {
-                key: 'allowed_ips',
-            },
+        const setting = await getCached('systemSettings:allowed_ips', SETTINGS_TTL, () => {
+            return ctx.prisma.systemSetting.findUnique({
+                where: {
+                    key: 'allowed_ips',
+                },
+            });
         });
 
         const isAllowed = checkIpIsAllowed(clientIp, setting?.value || '');
@@ -76,10 +83,12 @@ export const sessionRouter = router({
     getIsEmailRequired: publicProcedure.query(async ({
         ctx,
     }) => {
-        const setting = await ctx.prisma.systemSetting.findUnique({
-            where: {
-                key: 'require_email_verification',
-            },
+        const setting = await getCached('systemSettings:require_email_verification', SETTINGS_TTL, () => {
+            return ctx.prisma.systemSetting.findUnique({
+                where: {
+                    key: 'require_email_verification',
+                },
+            });
         });
         return setting?.value !== 'false';
     }),
@@ -98,15 +107,17 @@ export const sessionRouter = router({
             const clientIp = ctx.ip || '127.0.0.1';
 
             // Fetch both settings in a single query instead of two
-            const systemSettings = await ctx.prisma.systemSetting.findMany({
-                where: {
-                    key: {
-                        in: [
-                            'allowed_ips',
-                            'require_email_verification',
-                        ],
+            const systemSettings = await getCached('systemSettings:verifyAndEmail', SETTINGS_TTL, () => {
+                return ctx.prisma.systemSetting.findMany({
+                    where: {
+                        key: {
+                            in: [
+                                'allowed_ips',
+                                'require_email_verification',
+                            ],
+                        },
                     },
-                },
+                });
             });
             const allowedIpsValue = systemSettings.find(s => s.key === 'allowed_ips')?.value || '';
             const emailVerificationValue = systemSettings.find(s => s.key === 'require_email_verification')?.value;
@@ -387,10 +398,12 @@ export const sessionRouter = router({
             ctx, input,
         }) => {
             const clientIp = ctx.ip || '127.0.0.1';
-            const setting = await ctx.prisma.systemSetting.findUnique({
-                where: {
-                    key: 'allowed_ips',
-                },
+            const setting = await getCached('systemSettings:allowed_ips', SETTINGS_TTL, () => {
+                return ctx.prisma.systemSetting.findUnique({
+                    where: {
+                        key: 'allowed_ips',
+                    },
+                });
             });
 
             if (!checkIpIsAllowed(clientIp, setting?.value || '')) {

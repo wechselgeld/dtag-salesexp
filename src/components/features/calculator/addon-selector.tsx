@@ -4,15 +4,14 @@ import type {
 	Addon,
 } from '@/types/product';
 import {
-	AddonTier,
-} from '@/types/product';
-import {
 	Check,
 	LayoutList,
 	PackagePlus,
 	ShieldCheck,
 	Tv,
 	Router,
+	Search,
+	X,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -21,6 +20,9 @@ import {
 import {
 	motion,
 } from 'framer-motion';
+import {
+	useState, useMemo,
+} from 'react';
 
 interface Props {
 	addons: Addon[];
@@ -37,6 +39,11 @@ export function AddonSelector({
 	isMagentaTVSelected,
 	catColor = '#e20074',
 }: Props) {
+	const [
+		searchQuery,
+		setSearchQuery,
+	] = useState('');
+
 	const {
 		data: designSettings,
 	} = trpc.settings.getDesignSettings.useQuery(
@@ -47,15 +54,30 @@ export function AddonSelector({
 	);
 
 	// Filter out addons that require no MagentaTV when MagentaTV is selected
-	const availableAddons = addons.filter((addon) => {
-		if (addon.requiresNoMagentaTV && isMagentaTVSelected) {
-			return false;
-		}
-		if (!addon.tiers || addon.tiers.length === 0) { return false; }
-		return true;
-	});
+	const availableAddons = useMemo(() => {
+		return addons.filter((addon) => {
+			if (addon.requiresNoMagentaTV && isMagentaTVSelected) {
+				return false;
+			}
+			if (!addon.tiers || addon.tiers.length === 0) { return false; }
 
-	if (availableAddons.length === 0) { return null; }
+			if (searchQuery.trim()) {
+				const query = searchQuery.toLowerCase();
+				const matchesName = addon.name.toLowerCase().includes(query);
+				const matchesDesc = addon.description?.toLowerCase().includes(query);
+				const matchesTiers = addon.tiers.some(t => t.name.toLowerCase().includes(query));
+				if (!matchesName && !matchesDesc && !matchesTiers) { return false; }
+			}
+
+			return true;
+		});
+	}, [
+		addons,
+		isMagentaTVSelected,
+		searchQuery,
+	]);
+
+	if (addons.length === 0) { return null; }
 
 	const handleToggle = (addon: Addon, tierId: string) => {
 		const tierIdsForThisAddon = addon.tiers.map((t) => t.id);
@@ -91,8 +113,57 @@ export function AddonSelector({
 	};
 
 	return (
-		<div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
-			{availableAddons.map((addon) => {
+		<div className="space-y-4">
+			{addons.length > 5 && (
+				<div
+					className={clsx(
+						'relative flex items-center border px-4 rounded-xl transition-all duration-300 bg-[#f7f8fa] py-2.5',
+					)}
+					style={{
+						borderColor: searchQuery ? `${catColor}4d` : '#e5e7eb',
+						boxShadow: searchQuery
+							? `0 0 0 3px ${catColor}10, 0 4px 12px rgba(0, 0, 0, 0.05)`
+							: '0 1px 3px rgba(0, 0, 0, 0.02)',
+						backgroundColor: searchQuery ? '#ffffff' : '#f7f8fa',
+					}}
+				>
+					<Search
+						className={clsx(
+							'mr-2.5 shrink-0 transition-colors duration-400 w-4 h-4',
+						)}
+						style={{
+							color: searchQuery ? catColor : '#b0b0b0',
+						}}
+					/>
+					<input
+						type="text"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						placeholder="Zubuchoptionen suchen..."
+						className="border-none outline-none w-full font-sans text-[#1a1a2e] bg-transparent placeholder:text-[#b0b0b0] placeholder:font-normal text-[0.85rem]"
+					/>
+					{searchQuery && (
+						<button
+							onClick={(e) => {
+								e.stopPropagation();
+								setSearchQuery('');
+							}}
+							className="p-1 rounded-lg hover:bg-[#f0f0f0] text-[#ccc] hover:text-[#999] transition-colors cursor-pointer border-none bg-transparent ml-2 shrink-0"
+						>
+							<X className="w-4 h-4" />
+						</button>
+					)}
+				</div>
+			)}
+
+			{availableAddons.length === 0 && searchQuery && (
+				<div className="py-6 text-center text-[#999] text-[0.85rem]">
+					Keine Option gefunden für „{searchQuery}“.
+				</div>
+			)}
+
+			<div className="grid grid-cols-1 lg:grid-cols-2 grid-flow-dense gap-2.5">
+				{availableAddons.map((addon) => {
 				const Icon = getIcon(addon.name);
 
 				const selectedTierId = addon.tiers.find((t) =>
@@ -264,7 +335,8 @@ export function AddonSelector({
 						)}
 					</div>
 				);
-			})}
+				})}
+			</div>
 		</div>
 	);
 }

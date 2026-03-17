@@ -108,6 +108,8 @@ export interface CalculationResult {
     dailyPriceTrivialization?: string;
     hasUnlimitedAdvantage?: boolean;
     plusKartenCost: number;
+    regularAddonCost: number;
+    regularMagentaTVCost: number;
 }
 
 export interface PricingSettings {
