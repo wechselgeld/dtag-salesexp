@@ -14,6 +14,7 @@ import type {
 	CalculationResult,
 	Credit,
 	PricingSettings,
+	HardwareTier,
 } from '@/types/product';
 
 export const DEFAULT_PRICING: PricingSettings = {
@@ -23,6 +24,10 @@ export const DEFAULT_PRICING: PricingSettings = {
 	shipping_hardware_fee: 6.95,
 	plus_karte_first_price: 19.95,
 	plus_karte_following_price: 9.95,
+	mobile_tier_smartphone: 10,
+	mobile_tier_top: 20,
+	mobile_tier_premium: 30,
+	mobile_tier_premium_plus: 40,
 };
 
 export type {
@@ -44,6 +49,7 @@ export interface CalculationInput {
 	plusKartenCount?: number;
 	settings?: PricingSettings;
 	customBasePrice?: number;
+	hardwareTier?: HardwareTier;
 }
 
 export function calculateProductCosts({
@@ -59,6 +65,7 @@ export function calculateProductCosts({
 	plusKartenCount,
 	settings = DEFAULT_PRICING,
 	customBasePrice,
+	hardwareTier = 'none',
 }: CalculationInput): CalculationResult {
 	if (!product) {
 		return {
@@ -110,6 +117,28 @@ export function calculateProductCosts({
 
 	if (customBasePrice !== undefined) {
 		effectiveBasePrice = customBasePrice;
+	}
+
+	// Hardware Tier Surcharge (MOBILE only)
+	let hardwareTierSurcharge = 0;
+	if (product.category === 'MOBILE' && hardwareTier !== 'none') {
+		switch (hardwareTier) {
+			case 'smartphone':
+				hardwareTierSurcharge = settings.mobile_tier_smartphone;
+				break;
+			case 'top':
+				hardwareTierSurcharge = settings.mobile_tier_top;
+				break;
+			case 'premium':
+				hardwareTierSurcharge = settings.mobile_tier_premium;
+				break;
+			case 'premium_plus':
+				hardwareTierSurcharge = settings.mobile_tier_premium_plus;
+				break;
+			default:
+				break;
+		}
+		effectiveBasePrice += hardwareTierSurcharge;
 	}
 
 	// 2. Determine One-Time Costs (Activation Fee)
@@ -342,6 +371,10 @@ export function useCostCalculator(
 		customBasePrice,
 		setCustomBasePrice,
 	] = useState<number | undefined>(undefined);
+	const [
+		hardwareTier,
+		setHardwareTier,
+	] = useState<HardwareTier>('none');
 
 	// Derived boolean for backward compat
 	const isMagentaTVSelected = magentaTVPackage !== null;
@@ -452,6 +485,7 @@ export function useCostCalculator(
 			plusKartenCount,
 			settings,
 			customBasePrice,
+			hardwareTier,
 		});
 	}, [
 		product,
@@ -466,6 +500,7 @@ export function useCostCalculator(
 		plusKartenCount,
 		settings,
 		customBasePrice,
+		hardwareTier,
 	]);
 
 	return {
@@ -492,5 +527,7 @@ export function useCostCalculator(
 		settings,
 		customBasePrice,
 		setCustomBasePrice,
+		hardwareTier,
+		setHardwareTier,
 	};
 }

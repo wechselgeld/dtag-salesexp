@@ -3,7 +3,6 @@
 import {
 	useState, useEffect,
 } from 'react';
-import Link from 'next/link';
 import {
 	usePathname, useRouter,
 } from 'next/navigation';
@@ -72,7 +71,7 @@ export default function AdminLayout({
 		data: currentUser,
 	} = trpc.auth.me.useQuery();
 
-	const handleLogout = async () => {
+	const handleLogout = () => {
 		logoutMutation.mutate();
 	};
 

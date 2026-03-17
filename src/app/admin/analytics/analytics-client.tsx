@@ -581,7 +581,7 @@ export default function AnalyticsClient() {
 															{product.conversionRate}%
 														</div>
 														<div className="text-[0.6rem] text-[#aaa] font-medium">
-															Conv.
+															Add Rate
 														</div>
 													</div>
 												</div>

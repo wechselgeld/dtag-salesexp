@@ -40,6 +40,9 @@ import {
 import {
 	analyticsRouter,
 } from './analytics';
+import {
+	feedbackRouter,
+} from './feedback';
 
 export const appRouter = router({
 	health: publicProcedure.query(() => {
@@ -58,6 +61,7 @@ export const appRouter = router({
 	location: locationRouter,
 	odRegion: odRegionRouter,
 	analytics: analyticsRouter,
+	feedback: feedbackRouter,
 	public: router({
 		getActiveAnnouncements: publicProcedure.query(async () => {
 			const {

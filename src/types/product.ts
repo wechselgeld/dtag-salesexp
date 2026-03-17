@@ -1,4 +1,5 @@
 export type BusinessCase = 'NEW_ACTIVATION' | 'MOVE' | 'PLAN_CHANGE' | 'SPEED_UP';
+export type HardwareTier = 'none' | 'smartphone' | 'top' | 'premium' | 'premium_plus';
 
 export interface PriceHistory {
     id: string;
@@ -119,4 +120,8 @@ export interface PricingSettings {
     shipping_hardware_fee: number;
     plus_karte_first_price: number;
     plus_karte_following_price: number;
+    mobile_tier_smartphone: number;
+    mobile_tier_top: number;
+    mobile_tier_premium: number;
+    mobile_tier_premium_plus: number;
 }

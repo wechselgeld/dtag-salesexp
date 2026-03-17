@@ -61,7 +61,7 @@ model Location {
 model Product {
   id          String  @id @default(cuid())
   name        String
-  description String?
+  description String? @db.Text
   category    String // "MOBILE", "FIBER", "DSL", "MAGENTA_TV_OTT", "DEVICE"
   basePrice   Float
   isActive    Boolean @default(true)
@@ -90,6 +90,9 @@ model Product {
   hasMagentaTVBundle   Boolean @default(false)
   magentaTVBundleName  String?
   magentaTVBundlePrice Float?
+
+  // Mobile Hardware Tiers
+  allowHardwareTiers Boolean @default(false)
 
   // Device Specifics
   deviceManufacturer String?
@@ -137,8 +140,8 @@ model PriceHistory {
 model SpecialPrice {
   id           String    @id @default(cuid())
   name         String
-  description  String?
-  internalNote String?
+  description  String? @db.Text
+  internalNote String? @db.Text
   products     Product[] @relation("ProductSpecialPrices")
 
   tiers SpecialPriceTier[]
@@ -175,7 +178,7 @@ model SpecialPriceTier {
 model Addon {
   id          String  @id @default(cuid())
   name        String
-  description String?
+  description String? @db.Text
   category    String?
 
   isGlobal            Boolean @default(false)

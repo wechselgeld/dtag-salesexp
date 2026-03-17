@@ -11,7 +11,8 @@ import {
     getCached, invalidateCache,
 } from '@/lib/cache';
 
-const TTL = 1000 * 60 * 60; // 1 hour
+// 1 hour
+const TTL = 1000 * 60 * 60;
 
 export const settingsRouter = router({
     getAll: publicProcedure.query(() => {
@@ -25,6 +26,7 @@ export const settingsRouter = router({
                 key: {
                     in: [
                         'magentatv_background_image',
+                        'smartphone_background_image',
                         'header_background_image',
                         'category_image_MOBILE',
                         'category_image_FIBER',
@@ -38,6 +40,7 @@ export const settingsRouter = router({
 
         const result: Record<string, string> = {
             magentatv_background_image: '',
+            smartphone_background_image: '',
             header_background_image: '',
             category_image_MOBILE: '',
             category_image_FIBER: '',
@@ -65,6 +68,10 @@ export const settingsRouter = router({
                         'shipping_hardware_fee',
                         'plus_karte_first_price',
                         'plus_karte_following_price',
+                        'mobile_tier_smartphone',
+                        'mobile_tier_top',
+                        'mobile_tier_premium',
+                        'mobile_tier_premium_plus',
                     ],
                 },
             },
@@ -78,6 +85,10 @@ export const settingsRouter = router({
             shipping_hardware_fee: '6.95',
             plus_karte_first_price: '19.95',
             plus_karte_following_price: '9.95',
+            mobile_tier_smartphone: '10',
+            mobile_tier_top: '20',
+            mobile_tier_premium: '30',
+            mobile_tier_premium_plus: '40',
         };
 
         const result: Record<string, string> = {
@@ -94,6 +105,10 @@ export const settingsRouter = router({
             shipping_hardware_fee: parseFloat(result.shipping_hardware_fee),
             plus_karte_first_price: parseFloat(result.plus_karte_first_price),
             plus_karte_following_price: parseFloat(result.plus_karte_following_price),
+            mobile_tier_smartphone: parseFloat(result.mobile_tier_smartphone),
+            mobile_tier_top: parseFloat(result.mobile_tier_top),
+            mobile_tier_premium: parseFloat(result.mobile_tier_premium),
+            mobile_tier_premium_plus: parseFloat(result.mobile_tier_premium_plus),
         };
         });
     }),

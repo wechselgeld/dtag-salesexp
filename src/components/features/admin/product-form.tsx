@@ -68,6 +68,7 @@ const productSchema = z.object({
 	activationFeePlanChange: z.number().optional().default(0),
 	activationFeeSpeedUp: z.number().optional().default(0),
 	allowMagentaTV: z.boolean().default(false),
+	allowHardwareTiers: z.boolean().default(false),
 	hasMagentaTVBundle: z.boolean().default(false),
 	magentaTVBundleName: z.string().optional(),
 	magentaTVBundlePrice: z.number().optional().default(0),
@@ -135,6 +136,7 @@ export function ProductForm({
 			activationFeePlanChange: initialData?.activationFeePlanChange || 0,
 			activationFeeSpeedUp: initialData?.activationFeeSpeedUp || 0,
 			allowMagentaTV: initialData?.allowMagentaTV || false,
+			allowHardwareTiers: initialData?.allowHardwareTiers || false,
 			hasMagentaTVBundle: initialData?.hasMagentaTVBundle || false,
 			magentaTVBundleName: initialData?.magentaTVBundleName || '',
 			magentaTVBundlePrice: initialData?.magentaTVBundlePrice || 0,
@@ -599,6 +601,33 @@ export function ProductForm({
 							</label>
 						</div>
 					</AdminFormSection>
+
+					{category === 'MOBILE' && (
+						<AdminFormSection
+							title="Smartphone-Optionen"
+							description="Hardware-Stufen für Mobilfunktarife."
+							icon={Smartphone}
+						>
+							<div className="p-6 rounded-[2rem] bg-[#e20074]/5 border border-[#e20074]/10">
+								<label className="flex items-center gap-4 cursor-pointer">
+									<input
+										type="checkbox"
+										{...register('allowHardwareTiers')}
+										className="w-6 h-6 rounded border-[#e20074]/20 text-[#e20074] focus:ring-[#e20074]"
+									/>
+									<div className="flex flex-col">
+										<span className="text-[1rem] font-bold text-[#e20074]">
+											Smartphone-Optionen erlauben
+										</span>
+										<span className="text-[0.75rem] text-[#e20074]/70 font-medium italic">
+											Wenn aktiviert, kann der Nutzer im Konfigurator eine
+											Smartphone-Stufe auswählen (Smartphone, Top, Premium, Premium-Plus).
+										</span>
+									</div>
+								</label>
+							</div>
+						</AdminFormSection>
+					)}
 
 					<AdminFormSection
 						title="Zielgruppen"

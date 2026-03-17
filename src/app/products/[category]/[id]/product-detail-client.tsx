@@ -51,7 +51,6 @@ import {
 	Plus,
 	Minus,
 	Sparkles,
-	MessageSquare,
 	ChevronDown,
 	ListTodo,
 	ExternalLink,
@@ -154,6 +153,8 @@ function ProductPageContent() {
 		settings,
 		customBasePrice,
 		setCustomBasePrice,
+		hardwareTier,
+		setHardwareTier,
 	} = useCostCalculator(product);
 
 	const {
@@ -214,7 +215,8 @@ function ProductPageContent() {
 		].sort()) &&
 		existingBasketItem.config.hardwarePurchaseType === hardwarePurchaseType &&
 		existingBasketItem.config.plusKartenCount === plusKartenCount &&
-		existingBasketItem.config.customBasePrice === customBasePrice
+		existingBasketItem.config.customBasePrice === customBasePrice &&
+		(existingBasketItem.config.hardwareTier || 'none') === hardwareTier
 	);
 
 	useEffect(() => {
@@ -234,6 +236,9 @@ function ProductPageContent() {
 				if (item.config.customBasePrice !== undefined) {
 					setCustomBasePrice(item.config.customBasePrice);
 				}
+				if (item.config.hardwareTier) {
+					setHardwareTier(item.config.hardwareTier);
+				}
 			}
 		}
 	}, [
@@ -247,6 +252,7 @@ function ProductPageContent() {
 		setPlusKartenCount,
 		setHardwarePurchaseType,
 		setCustomBasePrice,
+		setHardwareTier,
 	]);
 
 	// Persistent Alert Management
@@ -400,6 +406,7 @@ function ProductPageContent() {
 			hardwarePurchaseType,
 			plusKartenCount,
 			customBasePrice,
+			hardwareTier,
 		};
 
 		if (existingBasketItem) {
@@ -1024,6 +1031,26 @@ function ProductPageContent() {
 						</ConfigSection>
 					)}
 
+					{/* Hardware Tier (Only for products with allowHardwareTiers) */}
+					{product.allowHardwareTiers && (
+						<ConfigSection
+							title="Smartphone-Option"
+							catColor={catColor}
+							index={0.5}
+						>
+							<p className="text-[0.75rem] text-[#888] mb-4 -mt-3.5 leading-relaxed">
+								Beachte, dass Smartphone-Preise je nach Modell und Aktionen abweichen können! Verbindliche Preisauskünfte können <span className="font-bold">ausschließlich über T-VPP oder MagentaView</span> eingeholt werden. Aus diesem Grund sind die Endgeräte in der Sales Experience nicht buchbar.
+							</p>
+							<HardwareTierSelector
+								selected={hardwareTier}
+								onChange={setHardwareTier}
+								accentColor={catColor}
+								settings={settings}
+								designSettings={designSettings}
+							/>
+						</ConfigSection>
+					)}
+
 					{/* MagentaTV Option — Toggle + Package Selector */}
 					{product.allowMagentaTV && (
 						<ConfigSection
@@ -1102,13 +1129,13 @@ function ProductPageContent() {
 									{/* TV+ Icon */}
 									<div
 										className={clsx(
-											'relative z-10 w-10 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center italic tracking-tighter text-[0.75rem] transition-all duration-200 border-2',
+											'relative z-10 w-25 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center text-[0.85rem] transition-all duration-200 border-2',
 											isMagentaTVSelected
 												? 'bg-(--cat-color) text-white border-transparent'
 												: 'bg-transparent text-(--cat-color) border-(--cat-color) group-hover:text-white group-hover:border-white',
 										)}
 									>
-										M TV
+										MAGENTATV
 									</div>
 
 									<div className="flex-1 flex flex-col justify-center items-start relative z-10">
@@ -1847,5 +1874,249 @@ function ConfigSection({
 				{children}
 			</div>
 		</motion.section>
+	);
+}
+
+/* ── Hardware Tier Selector (MOBILE) ── */
+const HARDWARE_TIERS = [
+	{
+		id: 'none' as const,
+		label: 'SIM Only',
+		sublabel: 'Ohne Smartphone',
+		surchargeKey: null,
+	},
+	{
+		id: 'smartphone' as const,
+		label: 'Smartphone',
+		sublabel: 'Standard-Geräte',
+		surchargeKey: 'mobile_tier_smartphone' as const,
+	},
+	{
+		id: 'top' as const,
+		label: 'Top-Smartphone',
+		sublabel: 'z. B. Galaxy S, iPhone',
+		surchargeKey: 'mobile_tier_top' as const,
+	},
+	{
+		id: 'premium' as const,
+		label: 'Premium-Smartphone',
+		sublabel: 'z. B. iPhone Pro',
+		surchargeKey: 'mobile_tier_premium' as const,
+	},
+	{
+		id: 'premium_plus' as const,
+		label: 'Premium-Plus',
+		sublabel: 'z. B. iPhone Pro Max, Fold',
+		surchargeKey: 'mobile_tier_premium_plus' as const,
+	},
+];
+
+function HardwareTierSelector({
+	selected,
+	onChange,
+	accentColor,
+	settings,
+	designSettings,
+}: any) {
+	const isEnabled = selected !== 'none';
+	const smartphoneTiers = HARDWARE_TIERS.filter((t) => t.id !== 'none');
+
+	return (
+		<div>
+			{/* Main Toggle */}
+			<motion.div
+				whileTap={{
+					scale: 0.98,
+				}}
+				onClick={() => {
+					if (isEnabled) {
+						onChange('none');
+					}
+					else {
+						onChange('smartphone');
+					}
+				}}
+				className={clsx(
+					'relative rounded-xl p-4 border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 group overflow-hidden',
+					isEnabled && !designSettings?.smartphone_background_image
+						? 'bg-white'
+						: '',
+				)}
+				style={{
+					borderColor: isEnabled ? accentColor : '#eaedf0',
+					backgroundColor:
+						isEnabled && !designSettings?.smartphone_background_image
+							? `${accentColor}06`
+							: 'white',
+				}}
+			>
+				{/* Background Image Overlay */}
+				{designSettings?.smartphone_background_image && (
+					<div
+						className={clsx(
+							'absolute -inset-0.5 z-0 transition-opacity duration-300 pointer-events-none',
+							isEnabled ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+						)}
+					>
+						<div
+							className="absolute inset-0 bg-cover bg-center blur-[2px] scale-110"
+							style={{
+								backgroundImage: `url(${designSettings.smartphone_background_image})`,
+							}}
+						/>
+						<div className="absolute inset-0 bg-[#1a1a2e]/40" />
+					</div>
+				)}
+
+				{/* Icon */}
+				<div
+					className={clsx(
+						'relative z-10 w-26 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center text-[0.85rem] transition-all duration-200 border-2',
+						isEnabled
+							? 'text-white border-transparent'
+							: 'bg-transparent border-current group-hover:text-white group-hover:border-white',
+					)}
+					style={{
+						color:
+							isEnabled || designSettings?.smartphone_background_image
+								? undefined
+								: accentColor,
+						backgroundColor: isEnabled ? accentColor : 'transparent',
+						borderColor: isEnabled
+							? 'transparent'
+							: designSettings?.smartphone_background_image
+								? undefined
+								: accentColor,
+					}}
+				>
+					SMARTPHONE
+				</div>
+
+				<div className="flex-1 flex flex-col justify-center items-start relative z-10">
+					<div className="flex items-center gap-2 mb-0.5">
+						<h3
+							className={clsx(
+								'text-[0.95rem] font-bold m-0 transition-colors',
+								designSettings?.smartphone_background_image
+									? isEnabled
+										? 'text-white'
+										: 'text-[#1a1a2e] group-hover:text-white'
+									: '',
+							)}
+							style={{
+								color:
+									isEnabled || designSettings?.smartphone_background_image
+										? undefined
+										: accentColor,
+							}}
+						>
+							Mit Smartphone buchen
+						</h3>
+					</div>
+					<p
+						className={clsx(
+							'text-[0.78rem] m-0 transition-colors',
+							designSettings?.smartphone_background_image
+								? isEnabled
+									? 'text-white/80'
+									: 'text-[#999] group-hover:text-white/80'
+								: 'text-[#999]',
+						)}
+					>
+						ab{' '}
+						{settings.mobile_tier_smartphone.toFixed(2).replace('.', ',')} €
+						mtl. Aufpreis
+					</p>
+				</div>
+
+				{/* Toggle circle */}
+				<div
+					className={clsx(
+						'relative z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200',
+						designSettings?.smartphone_background_image && !isEnabled
+							? 'border-white/30 group-hover:border-white/60'
+							: '',
+					)}
+					style={{
+						borderColor: isEnabled
+							? accentColor
+							: designSettings?.smartphone_background_image
+								? undefined
+								: '#ddd',
+						backgroundColor: isEnabled ? accentColor : 'transparent',
+					}}
+				>
+					{isEnabled && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+				</div>
+			</motion.div>
+
+			{/* Tier Options (shown when toggled on) */}
+			{isEnabled && (
+				<motion.div
+					initial={{
+						opacity: 0,
+						height: 0,
+					}}
+					animate={{
+						opacity: 1,
+						height: 'auto',
+					}}
+					transition={{
+						duration: 0.25,
+					}}
+					className="mt-3 space-y-2"
+				>
+					{smartphoneTiers.map((tier) => {
+						const isSelected = selected === tier.id;
+						const surcharge = tier.surchargeKey ? settings[tier.surchargeKey] : 0;
+
+						return (
+							<motion.div
+								key={tier.id}
+								whileTap={{
+									scale: 0.98,
+								}}
+								onClick={() => onChange(tier.id)}
+								className="rounded-xl p-3.5 border cursor-pointer transition-all duration-200"
+								style={{
+									borderColor: isSelected ? accentColor : '#eaedf0',
+									backgroundColor: isSelected ? `${accentColor}08` : '#fafafa',
+								}}
+							>
+								<div className="flex items-center gap-3">
+									{/* Radio */}
+									<div
+										className="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+										style={{
+											borderColor: isSelected ? accentColor : '#ccc',
+											backgroundColor: isSelected ? accentColor : 'transparent',
+										}}
+									>
+										{isSelected && (
+											<div className="w-[8px] h-[8px] rounded-full bg-white" />
+										)}
+									</div>
+
+									<div className="flex-1 min-w-0">
+										<span className="text-[0.85rem] font-semibold text-[#1a1a2e]">
+											{tier.label}
+										</span>
+									</div>
+
+									<span
+										className="text-[0.82rem] font-bold shrink-0"
+										style={{
+											color: isSelected ? accentColor : '#888',
+										}}
+									>
+										+{surcharge.toFixed(2).replace('.', ',')} €
+									</span>
+								</div>
+							</motion.div>
+						);
+					})}
+				</motion.div>
+			)}
+		</div>
 	);
 }

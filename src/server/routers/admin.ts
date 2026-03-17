@@ -44,6 +44,7 @@ const productSchema = z.object({
     activationFeePlanChange: z.number().optional().nullable(),
     activationFeeSpeedUp: z.number().optional().nullable(),
     allowMagentaTV: z.boolean().default(false),
+    allowHardwareTiers: z.boolean().default(false),
     hasMagentaTVBundle: z.boolean().default(false),
     magentaTVBundleName: z.string().optional().nullable(),
     magentaTVBundlePrice: z.number().optional().nullable(),

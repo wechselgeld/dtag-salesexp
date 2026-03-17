@@ -7,7 +7,6 @@ import {
 	trpc,
 } from '@/lib/trpc';
 import {
-	Settings,
 	Lock,
 	Shield,
 	User,
@@ -667,6 +666,10 @@ function PricingPanel() {
 		shipping_hardware_fee: '6.95',
 		plus_karte_first_price: '19.95',
 		plus_karte_following_price: '9.95',
+		mobile_tier_smartphone: '10.00',
+		mobile_tier_top: '20.00',
+		mobile_tier_premium: '30.00',
+		mobile_tier_premium_plus: '40.00',
 	});
 
 	useEffect(() => {
@@ -682,6 +685,14 @@ function PricingPanel() {
 					pricingSettings.plus_karte_first_price.toFixed(2),
 				plus_karte_following_price:
 					pricingSettings.plus_karte_following_price.toFixed(2),
+				mobile_tier_smartphone:
+					pricingSettings.mobile_tier_smartphone.toFixed(2),
+				mobile_tier_top:
+					pricingSettings.mobile_tier_top.toFixed(2),
+				mobile_tier_premium:
+					pricingSettings.mobile_tier_premium.toFixed(2),
+				mobile_tier_premium_plus:
+					pricingSettings.mobile_tier_premium_plus.toFixed(2),
 			});
 		}
 	}, [
@@ -824,6 +835,51 @@ function PricingPanel() {
 				</div>
 			</AdminFormSection>
 
+			<AdminFormSection
+				title="Mobilfunk — Smartphone-Aufschläge"
+				description="Monatliche Aufschläge pro Hardware-Stufe auf den Mobilfunktarif-Grundpreis."
+				icon={Euro}
+			>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<Input
+						label="Smartphone"
+						type="number"
+						step="0.01"
+						value={form.mobile_tier_smartphone}
+						onChange={(e) =>
+							handleChange('mobile_tier_smartphone', e.target.value)
+						}
+					/>
+					<Input
+						label="Top-Smartphone"
+						type="number"
+						step="0.01"
+						value={form.mobile_tier_top}
+						onChange={(e) =>
+							handleChange('mobile_tier_top', e.target.value)
+						}
+					/>
+					<Input
+						label="Premium-Smartphone"
+						type="number"
+						step="0.01"
+						value={form.mobile_tier_premium}
+						onChange={(e) =>
+							handleChange('mobile_tier_premium', e.target.value)
+						}
+					/>
+					<Input
+						label="Premium-Plus-Smartphone"
+						type="number"
+						step="0.01"
+						value={form.mobile_tier_premium_plus}
+						onChange={(e) =>
+							handleChange('mobile_tier_premium_plus', e.target.value)
+						}
+					/>
+				</div>
+			</AdminFormSection>
+
 			<div className="flex items-center justify-between p-6 bg-[#f7f8fa] border border-[#eaedf0] rounded-3xl">
 				<div className="flex flex-col">
 					{(status === 'success' && (
@@ -878,6 +934,7 @@ function DesignPanel() {
 		setForm,
 	] = useState({
 		magentatv_background_image: '',
+		smartphone_background_image: '',
 		header_background_image: '',
 		category_image_MOBILE: '',
 		category_image_FIBER: '',
@@ -891,6 +948,8 @@ function DesignPanel() {
 			setForm({
 				magentatv_background_image:
 					designSettings.magentatv_background_image || '',
+				smartphone_background_image:
+					designSettings.smartphone_background_image || '',
 				header_background_image: designSettings.header_background_image || '',
 				category_image_MOBILE: designSettings.category_image_MOBILE || '',
 				category_image_FIBER: designSettings.category_image_FIBER || '',
@@ -987,6 +1046,22 @@ function DesignPanel() {
 						/>
 						<p className="text-[#888] text-[0.75rem] mt-2 font-medium">
 							Wird für Zubuchoptionen mit &quot;MagentaTV&quot; im Namen
+							verwendet.
+						</p>
+					</div>
+
+					<div>
+						<Input
+							label="Smartphone Hintergrundbild (URL)"
+							type="text"
+							placeholder="https://test.com/smartphone-bg.png"
+							value={form.smartphone_background_image}
+							onChange={(e) =>
+								handleChange('smartphone_background_image', e.target.value)
+							}
+						/>
+						<p className="text-[#888] text-[0.75rem] mt-2 font-medium">
+							Wird für die Option &quot;Mit Smartphone buchen&quot; im Konfigurator
 							verwendet.
 						</p>
 					</div>

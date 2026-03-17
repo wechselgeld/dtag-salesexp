@@ -16,6 +16,7 @@ import {
 	Settings,
 	HelpCircle,
 	ExternalLink,
+	MessageSquare,
 } from 'lucide-react';
 
 import {
@@ -70,7 +71,7 @@ export function SidebarNav() {
 		items, clearBasket,
 	} = useBasketStore();
 	const {
-		setAvailabilityOpen, setCalculatorOpen, setBattlecardOpen,
+		setAvailabilityOpen, setCalculatorOpen, setBattlecardOpen, setFeedbackOpen,
 	} =
 		useModalStore();
 	const addNotification = useNewsNotificationStore((state) => state.addNotification);
@@ -261,6 +262,13 @@ export function SidebarNav() {
 			label: 'Admin',
 			href: '/login',
 			type: 'link',
+		},
+		{
+			id: 'feedback-button',
+			icon: MessageSquare,
+			label: 'Feedback geben',
+			onClick: () => setFeedbackOpen(true),
+			type: 'button',
 		},
 	];
 

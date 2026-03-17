@@ -19,7 +19,6 @@ import {
 import {
 	Loader2,
 	Save,
-	ArrowLeft,
 	Plus,
 	Trash2,
 	Search,
@@ -32,11 +31,13 @@ import {
 	Euro,
 	CheckCircle2,
 } from 'lucide-react';
-import Link from 'next/link';
 import clsx from 'clsx';
 import {
 	Input,
 } from '@/components/shared/ui/input';
+import {
+	Textarea,
+} from '@/components/shared/ui/textarea';
 import {
 	AdminPageHeader,
 	AdminFormSection,
@@ -325,29 +326,22 @@ export function SpecialPriceForm({
 							{...register('name')}
 						/>
 
-						<div className="flex flex-col gap-1.5 pt-2">
-							<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-								Beschreibung (für Verkäufer sichtbar)
-							</label>
-							<textarea
+							<Textarea
+								label="Beschreibung (für Verkäufer sichtbar)"
 								placeholder="Kurze Beschreibung der Aktion..."
 								rows={3}
-								className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:bg-white focus:outline-none focus:border-[#e20074] transition-all text-[0.9rem] font-medium resize-none"
+								error={errors.description?.message}
 								{...register('description')}
+								className="pt-2"
 							/>
-						</div>
-
-						<div className="flex flex-col gap-1.5 pt-2">
-							<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-								Interner Vermerk (nur Admin)
-							</label>
-							<textarea
+							<Textarea
+								label="Interner Vermerk (nur Admin)"
 								placeholder="Notizen zur Aktion..."
 								rows={2}
-								className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] focus:bg-white focus:outline-none focus:border-[#e20074] transition-all text-[0.9rem] font-medium resize-none opacity-80"
+								error={errors.internalNote?.message}
 								{...register('internalNote')}
+								className="pt-2 opacity-80"
 							/>
-						</div>
 					</AdminFormSection>
 
 					<AdminFormSection

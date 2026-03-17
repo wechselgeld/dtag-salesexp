@@ -36,6 +36,9 @@ import {
 import {
 	GlobalNewsNotification,
 } from '@/components/features/news/global-news-notification';
+import {
+	FeedbackModal,
+} from '@/components/features/feedback/feedback-modal';
 
 // Routes that SHOULD render WITH the sales shell (sidebar + basket)
 const SHELL_ROUTES = [
@@ -70,6 +73,8 @@ export function AppShell({
 		setCalculatorOpen,
 		battlecardOpen,
 		setBattlecardOpen,
+		feedbackOpen,
+		setFeedbackOpen,
 	} = useModalStore();
 
 	const isLoginOrAdmin = pathname.startsWith('/admin') || pathname === '/login';
@@ -118,6 +123,10 @@ export function AppShell({
 					<BattlecardModal
 						isOpen={battlecardOpen}
 						onClose={() => setBattlecardOpen(false)}
+					/>
+					<FeedbackModal
+						isOpen={feedbackOpen}
+						onClose={() => setFeedbackOpen(false)}
 					/>
 					<GlobalNewsNotification />
 				</>

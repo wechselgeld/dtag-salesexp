@@ -6,8 +6,6 @@ import {
 import {
 	Activity,
 	Loader2,
-	Search,
-	Calendar,
 	MapPin,
 	Users,
 	Globe,
@@ -50,7 +48,7 @@ export default function SessionsClient() {
 			<div className="space-y-6">
 				<AdminPageHeader
 					title="Sales Sessions"
-					subtitle="Übersicht aller aktiven und vergangenen Kunden-Verifizierungen."
+					subtitle="Übersicht aller aktiven und vergangenen Sessions."
 					backHref="/admin"
 				/>
 				<div className="bg-white rounded-3xl border border-[#eaedf0] p-6 space-y-4">
@@ -75,7 +73,7 @@ export default function SessionsClient() {
 		<div className="space-y-6 pb-20">
 			<AdminPageHeader
 				title="Sales Sessions"
-				subtitle="Übersicht aller aktiven und vergangenen Kunden-Verifizierungen."
+				subtitle="Übersicht aller aktiven und vergangenen Sessions."
 				backHref="/admin"
 			/>
 

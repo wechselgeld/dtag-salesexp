@@ -8,7 +8,7 @@ import type {
 	MagentaTVPackageKey,
 } from '@/lib/constants/pricing';
 import type {
-	Product, BusinessCase, Credit,
+	Product, BusinessCase, Credit, HardwareTier,
 } from '@/types/product';
 
 export interface BasketItem {
@@ -24,9 +24,7 @@ export interface BasketItem {
         hardwarePurchaseType?: 'RENT' | 'BUY';
         plusKartenCount?: number;
         customBasePrice?: number;
-        // Snapshotting is safer for "Quote guarantees", but referencing ensures latest price.
-        // Let's store the objects as `Credit` for now.
-        // Actually, matching `useCostCalculator`, we might just want to store what's needed.
+        hardwareTier?: HardwareTier;
     };
     addedAt: number;
 }
