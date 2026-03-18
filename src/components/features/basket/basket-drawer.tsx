@@ -134,6 +134,12 @@ export function BasketDrawer() {
 	] = useState('');
 
 	const teamEmail = session?.team?.email || 'team06@telekom.de';
+	const salesRepName = session
+		? [
+ session.firstName,
+session.lastName,
+].filter(Boolean).join(' ')
+		: '';
 
 	const params = useParams();
 	const pathname = usePathname();
@@ -475,12 +481,18 @@ export function BasketDrawer() {
 										basketCredits,
 										settings,
 										teamEmail,
+										salesRepName,
 									);
 
 									const subject = encodeURIComponent(
 										'Ihr persönliches Angebot der Telekom',
 									);
-									const bodyText = encodeURIComponent(offerTemplateText);
+									const bodyText = encodeURIComponent(
+										offerTemplateText.replace(
+											/\{\{salesRepName\}\}/g,
+											salesRepName,
+										),
+									);
 
 									window.location.href = `mailto:${teamEmail}?subject=${subject}&body=${bodyText}`;
 

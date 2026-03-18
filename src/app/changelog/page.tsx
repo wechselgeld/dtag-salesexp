@@ -24,6 +24,24 @@ const CHANGELOGS = [
 		items: [
 			{
 				q: 'Hinzugefügt',
+				a: 'Es wurde nichts hinzugefügt',
+			},
+			{
+				q: 'Geändert',
+				a: 'Der Offer Generator (PDF-Export) wurde überarbeitet und optimiert.',
+			},
+			{
+				q: 'Entfernt',
+				a: 'Es wurde nichts entfernt',
+			},
+		],
+	},
+	{
+		id: 'march-17',
+		title: '17. März 2025',
+		items: [
+			{
+				q: 'Hinzugefügt',
 				a: 'Zu Mobilfunk-Tarifen können nun Smartphones hinzugebucht werden; Es gibt nun ein Feedback-Modal; Es gibt nun einen Changelog',
 			},
 			{

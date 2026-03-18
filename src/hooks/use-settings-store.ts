@@ -27,7 +27,7 @@ export const useSettingsStore = create<SettingsState>()(
 			clearAfterExport: true,
 			reduceAnimations: false,
 			showHeroImage: true,
-			offerTemplateText: '[HERUNTERGELADENES ANGEBOT HIER HINZUFÜGEN UND TEXT LÖSCHEN - EDITIERE DIESE NACHRICHT IN DEN EINSTELLUNGEN] Guten Tag,\n\nvielen Dank für das angenehme Gespräch. Wie besprochen, erhalten Sie anbei Ihr ganz persönliches Telekom-Angebot.\n\nSie haben noch Fragen zum Angebot oder möchten bestellen? Wir rufen Sie zurück. Antworten Sie gern jederzeit mit Ihrer Rückrufnummer- und Zeit auf diese Nachricht.\n\nFreundliche Grüße aus Chemnitz\nIhre Telekom',
+			offerTemplateText: '[HERUNTERGELADENES ANGEBOT HIER HINZUFÜGEN UND TEXT LÖSCHEN - EDITIERE DIESE NACHRICHT IN DEN EINSTELLUNGEN] Hallo,\n\nwie versprochen sende ich Ihnen hier das Angebot, das wir gerade besprochen haben. Es war ein wirklich angenehmes Gespräch!\n\nSchauen Sie sich das PDF in Ruhe an. Wenn alles für Sie passt, antworten Sie mir einfach kurz auf diese Mail – ich kümmere mich dann um die ganze Abwicklung für Sie.\n\nSollten Sie noch Fragen haben oder eine Rückfrage haben: Ich bin für Sie da.\n\nBeste Grüße aus Chemnitz,\n\n{{salesRepName}}\nIhre Telekom',
 			sortOption: 'default',
 			setCompactView: (value) => set({
 				compactView: value,
