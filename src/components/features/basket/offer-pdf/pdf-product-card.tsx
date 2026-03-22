@@ -67,12 +67,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 		item.config.selectedSpecialPriceIds.includes(sp.id),
 	);
 
-	const selectedAddons: SelectedAddon[] = (item.product.compatibleAddons || [])
+	const selectedAddons: SelectedAddon[] = (item.product.compatibleAddons || [
+])
 		.flatMap(addon => {
 			const tier = addon.tiers.find(t =>
 				item.config.selectedAddonIds.includes(t.id),
 			);
-			return tier ? [{ addon, tier }] : [];
+			return tier ? [
+ {
+ addon,
+tier,
+},
+] : [
+];
 		});
 
 	const maxStepTotal = hasMultipleSteps ? Math.max(...steps.map(st => st.total)) : 0;
@@ -83,8 +90,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 			{/* ── Header ── */}
 			<View style={s.productCardHeader}>
 				<View style={s.productCardHeaderLeft}>
-					<View style={[s.categoryBadge, { backgroundColor: cat.color }]}>
-						<Text style={s.categoryBadgeText}>{cat.label}</Text>
+					<View style={[
+						s.categoryBadge,
+						item.config.customBasePrice !== undefined
+							? {
+ backgroundColor: '#64748b',
+} // Slate color for Bestand
+							: {
+ backgroundColor: cat.color,
+},
+					]}>
+						<Text style={s.categoryBadgeText}>
+							{item.config.customBasePrice !== undefined ? 'Bestand' : cat.label}
+						</Text>
 					</View>
 					<Text style={s.productName}>
 						{item.product.name}
@@ -94,15 +112,108 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 							: ''}
 					</Text>
 				</View>
-				{bcLabel && !isDevice && !isTV && (
-					<View style={s.businessCaseBadge}>
-						<Text style={s.businessCaseText}>{bcLabel}</Text>
+				{item.config.customBasePrice !== undefined ? (
+					<View style={[
+						s.businessCaseBadge,
+						{
+ backgroundColor: '#f1f5f9',
+borderColor: '#cbd5e1',
+},
+					]}>
+						<Text style={[
+							s.businessCaseText,
+							{
+ color: '#475569',
+},
+						]}>Bestandsprodukt</Text>
 					</View>
+				) : (
+					bcLabel && !isDevice && !isTV && (
+						<View style={s.businessCaseBadge}>
+							<Text style={s.businessCaseText}>{bcLabel}</Text>
+						</View>
+					)
 				)}
 			</View>
 
-			{/* ── Body ── */}
-			<View style={s.productCardBody}>
+			{item.config.customBasePrice !== undefined ? (
+				<View style={s.productCardBody}>
+					<Text style={{
+ fontSize: 9,
+color: '#64748b',
+lineHeight: 1.4,
+marginBottom: 8,
+}}>
+						Dieses Produkt ist bereits Bestandteil Ihres Vertrags. Für dieses Angebot fallen hierfür keine zusätzlichen Einmal- oder monatlichen Kosten an.
+					</Text>
+
+					{/* Info Badges – Speed / Data Volume */}
+					{isFixed && item.product.downloadSpeed && (
+						<View style={s.infoBadgeRow}>
+							<View style={[
+								s.infoBadge,
+								{
+ borderColor: '#e2e8f0',
+backgroundColor: '#f8fafc',
+},
+							]}>
+								<WifiIcon size={7} color="#64748b" />
+								<Text style={[
+ s.infoBadgeText,
+{
+ color: '#64748b',
+},
+]}>
+									bis zu {item.product.downloadSpeed} Mbit/s
+								</Text>
+							</View>
+						</View>
+					)}
+					{isMobile && item.product.dataVolume && (
+						<View style={s.infoBadgeRow}>
+							<View style={[
+								s.infoBadge,
+								{
+ borderColor: '#e2e8f0',
+backgroundColor: '#f8fafc',
+},
+							]}>
+								<Text style={[
+ s.infoBadgeText,
+{
+ color: '#64748b',
+},
+]}>{item.product.dataVolume}</Text>
+							</View>
+						</View>
+					)}
+
+					<View style={[
+						s.detailRow,
+						{
+ marginTop: 8,
+borderTopWidth: 1,
+borderTopColor: '#e2e8f0',
+paddingTop: 6,
+borderBottomWidth: 0,
+},
+					]}>
+						<Text style={[
+ s.detailLabelBold,
+{
+ color: '#475569',
+},
+]}>Monatliche Gesamtkosten (inkl. gewählter Optionen)</Text>
+						<Text style={[
+ s.detailValueBold,
+{
+ color: '#475569',
+},
+]}>{fmtPrice(calc.averageMonthlyCost)}</Text>
+					</View>
+				</View>
+			) : (
+				<View style={s.productCardBody}>
 				{/* Price Highlight (Anchoring) */}
 				<View style={s.priceHighlight}>
 					<View style={s.priceHighlightLeft}>
@@ -212,8 +323,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 										style={[
 											s.timelineValue,
 											isLowest && steps.length > 1
-												? { color: T.success }
-												: {},
+												? {
+ color: T.success,
+}
+												: {
+},
 										]}
 									>
 										{fmtPrice(step.total)}
@@ -235,7 +349,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
 					{tvPkg && (
 						<>
-							<View style={[s.detailRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+							<View style={[
+ s.detailRow,
+{
+ borderBottomWidth: 0,
+paddingBottom: 0,
+},
+]}>
 								<Text style={s.detailLabel}>{tvPkg.name}</Text>
 								<Text style={s.detailValue}>+{fmtPrice(calc.regularMagentaTVCost)}</Text>
 							</View>
@@ -255,10 +375,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 								{tvPkg.features.map((feature, idx) => (
 									<View
 										key={idx}
-										style={[s.featureTag, { backgroundColor: '#FFF7ED' }]}
+										style={[
+ s.featureTag,
+{
+ backgroundColor: '#FFF7ED',
+},
+]}
 									>
 										<CheckIcon size={6} color="#D97706" />
-										<Text style={[s.featureTagText, { color: '#D97706' }]}>
+										<Text style={[
+ s.featureTagText,
+{
+ color: '#D97706',
+},
+]}>
 											{feature}
 										</Text>
 									</View>
@@ -276,9 +406,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 						</View>
 					)}
 
-					{selectedAddons.map(({ addon, tier }) => (
+					{selectedAddons.map(({
+ addon, tier,
+}) => (
 						<View key={tier.id} style={s.detailRow}>
-							<View style={{ flex: 1 }}>
+							<View style={{
+ flex: 1,
+}}>
 								<Text style={s.detailLabel}>
 									{addon.name}{addon.tiers.length > 1 ? ` - ${tier.name}` : ''}
 								</Text>
@@ -301,7 +435,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 								}}
 							>
 								<TagIcon size={7} color={T.success} />
-								<Text style={[s.detailLabel, { color: T.success }]}>{sp.name}</Text>
+								<Text style={[
+ s.detailLabel,
+{
+ color: T.success,
+},
+]}>{sp.name}</Text>
 							</View>
 							<Text style={s.detailValueGreen}>Aktion aktiv</Text>
 						</View>
@@ -339,7 +478,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 									<Text
 										style={[
 											cost.cost < 0 ? s.detailValueGreen : s.detailValue,
-											{ fontSize: 7 },
+											{
+ fontSize: 7,
+},
 										]}
 									>
 										{cost.cost < 0
@@ -370,6 +511,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
 
 			</View>
+			)}
 		</View>
 	);
 };

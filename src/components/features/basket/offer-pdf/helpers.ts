@@ -34,9 +34,13 @@ export interface CostStep {
  * e.g. [29.95, 29.95, 49.95, 49.95] → [{start:1,end:2,total:29.95}, {start:3,end:4,total:49.95}]
  */
 export function computeSteps(monthlyCosts: CalculationResult['monthlyCosts']): CostStep[] {
-	if (monthlyCosts.length === 0) return [];
+	if (monthlyCosts.length === 0) {
+return [
+];
+}
 
-	const steps: CostStep[] = [];
+	const steps: CostStep[] = [
+];
 	let cur: CostStep = {
 		start: 1,
 		end: 1,
@@ -48,7 +52,9 @@ export function computeSteps(monthlyCosts: CalculationResult['monthlyCosts']): C
 			cur.end = i + 1;
 		}
 		else {
-			steps.push({ ...cur });
+			steps.push({
+ ...cur,
+});
 			cur = {
 				start: i + 1,
 				end: i + 1,

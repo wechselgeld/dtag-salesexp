@@ -50,9 +50,8 @@ export const OfferDocument: React.FC<OfferDocumentProps> = ({
 	logoData,
 }) => {
 	// Pre-calculate costs for every basket item
-	const itemsWithCalc = items.map(item => ({
-		item,
-		calc: calculateProductCosts({
+	const itemsWithCalc = items.map(item => {
+		const calc = calculateProductCosts({
 			product: item.product,
 			businessCase: item.config.businessCase,
 			magentaTVPackage: item.config.magentaTVPackage,
@@ -65,8 +64,14 @@ export const OfferDocument: React.FC<OfferDocumentProps> = ({
 			settings,
 			customBasePrice: item.config.customBasePrice,
 			hardwareTier: item.config.hardwareTier,
-		}),
-	}));
+		});
+
+		// One-time costs for Bestandsprodukte are already 0 from useCostCalculator
+		return {
+ item,
+calc,
+};
+	});
 
 	// Aggregate totals
 	const totalMonthlyAvg = itemsWithCalc.reduce((sum, e) => sum + e.calc.averageMonthlyCost, 0);

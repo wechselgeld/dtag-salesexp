@@ -18,6 +18,24 @@ import {
 import clsx from 'clsx';
 
 const CHANGELOGS = [
+		{
+		id: 'march-22',
+		title: '22. März 2025',
+		items: [
+			{
+				q: 'Hinzugefügt',
+				a: 'Jeder Preis kann nun auf einen eigenen historischen Zustand gesetzt werden - dies wird im PDF-Angebot als Bestandstarif widergespiegelt; Es gibt nun einen Tarif-Preisvergleich',
+			},
+			{
+				q: 'Geändert',
+				a: 'Der Server ist nun viel leistungsstärker; Es wurden viele Datenbank-Verbesserungen geschrieben; Neuerungen können ab sofort viel schneller bereitgestellt werden',
+			},
+			{
+				q: 'Entfernt',
+				a: 'Es wurde nichts entfernt',
+			},
+		],
+	},
 	{
 		id: 'march-18',
 		title: '18. März 2025',

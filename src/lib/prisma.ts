@@ -4,7 +4,9 @@ import {
 import pRetry, {
   AbortError,
 } from 'p-retry';
-import { dbLogger, formatDuration, formatQuery } from './logger';
+import {
+ dbLogger, formatDuration, formatQuery,
+} from './logger';
 
 // Transient Prisma Error Codes that are safe to retry
 const RETRYABLE_ERROR_CODES = [
@@ -38,10 +40,11 @@ const prismaClientSingleton = () => {
   client.$on('query', (e) => {
     const durationStr = formatDuration(e.duration);
     const queryStr = formatQuery(e.query);
-    
+
     if (e.duration > 500) {
       dbLogger.warn(`Slow Query (${durationStr}): ${queryStr}`);
-    } else {
+    }
+ else {
       dbLogger.debug(`Query (${durationStr}): ${queryStr}`);
     }
   });

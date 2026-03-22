@@ -174,6 +174,10 @@ export function calculateProductCosts({
 			break;
 	}
 
+	if (customBasePrice !== undefined) {
+		activationFee = 0;
+	}
+
 	if (activationFee > 0) {
 		oneTimeTotal += activationFee;
 		oneTimeBreakdown.push({

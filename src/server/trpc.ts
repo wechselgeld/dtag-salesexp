@@ -4,7 +4,9 @@ import {
 import type {
 	Context,
 } from './context';
-import { httpLogger, formatDuration } from '../lib/logger';
+import {
+ httpLogger, formatDuration,
+} from '../lib/logger';
 import pc from 'picocolors';
 
 const t = initTRPC.context<Context>().create();
@@ -12,21 +14,24 @@ const t = initTRPC.context<Context>().create();
 // Global Logger Middleware
 const loggerMiddleware = t.middleware(async (opts) => {
   const start = Date.now();
-  const { path, type } = opts;
-  
+  const {
+ path, type,
+} = opts;
+
   const result = await opts.next();
-  
+
   const duration = Date.now() - start;
   const durationStr = formatDuration(duration);
   const typeStr = pc.bold(pc.magenta(type.toUpperCase()));
-  
+
   if (result.ok) {
     httpLogger.info(`${typeStr} ${pc.white(path)} ${pc.green('200')} ${pc.gray(`in ${durationStr}`)}`);
-  } else {
+  }
+ else {
     const errorCode = result.error.code;
     httpLogger.error(`${typeStr} ${pc.white(path)} ${pc.red(errorCode)} ${pc.gray(`in ${durationStr}`)}`);
   }
-  
+
   return result;
 });
 

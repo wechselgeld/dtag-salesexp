@@ -76,9 +76,8 @@ export function useBasketLogic() {
 	]);
 
 	// Cache calculations for each item to avoid redundant expensive calls
-	const itemsWithCosts = items.map(item => ({
-		item,
-		costs: calculateProductCosts({
+	const itemsWithCosts = items.map(item => {
+		const costs = calculateProductCosts({
 			product: item.product,
 			businessCase: item.config.businessCase,
 			magentaTVPackage: item.config.magentaTVPackage,
@@ -89,8 +88,15 @@ export function useBasketLogic() {
 			plusKartenCount: item.config.plusKartenCount,
 			settings,
 			customBasePrice: item.config.customBasePrice,
-		}),
-	}));
+			hardwareTier: item.config.hardwareTier,
+		});
+
+		// One-time costs for Bestandsprodukte are already 0 from useCostCalculator
+		return {
+ item,
+costs,
+};
+	});
 
 	// Aggregated Totals
 	const totals = itemsWithCosts.reduce((acc, entry) => {

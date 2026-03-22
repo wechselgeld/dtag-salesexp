@@ -1,6 +1,10 @@
-import { Redis } from 'ioredis';
+import {
+ Redis,
+} from 'ioredis';
 import pc from 'picocolors';
-import { cacheLogger } from './logger';
+import {
+ cacheLogger,
+} from './logger';
 
 const globalForRedis = globalThis as unknown as {
   redis: Redis | undefined;

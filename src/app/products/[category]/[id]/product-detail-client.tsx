@@ -56,6 +56,7 @@ import {
 	ExternalLink,
 	Edit2,
 	AlertTriangle,
+	RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -187,6 +188,7 @@ function ProductPageContent() {
 		setMagentaTVPackage(null);
 		setSelectedAddonIds([
 		]);
+		setHardwareTier('none');
 	}, [
 		setCustomBasePrice,
 		setIsHistoryWarningAccepted,
@@ -194,6 +196,7 @@ function ProductPageContent() {
 		setSelectedSpecialPriceIds,
 		setMagentaTVPackage,
 		setSelectedAddonIds,
+		setHardwareTier,
 	]);
 
 	const existingBasketItem = basketItemId
@@ -301,9 +304,8 @@ function ProductPageContent() {
 								</div>
 								<p className="text-[0.8rem] text-amber-900/70 m-0 leading-relaxed max-w-[400px]">
 									Du hast einen{' '}
-									<span className="font-bold">historischen Preis</span>{' '}
-									ausgewählt. Sonderpreise und Optionen sind eventuell nicht
-									korrekt. Bitte überprüfe diese sorgfältig.
+									<span className="font-bold">abweichenden Preis</span>{' '}
+									gewählt. Sonderpreise und Optionen weichen eventuell ab. Bitte überprüfe dies sorgfältig.
 								</p>
 							</div>
 						</div>
@@ -365,25 +367,28 @@ function ProductPageContent() {
 					>
 						<div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-(--cat-color) to-transparent opacity-5 blur-xl pointer-events-none rounded-full" />
 
-						<div className="flex gap-4 align-start relative z-10">
+						<div className="flex gap-3 align-start relative z-10">
 							<div
-								className="shrink-0 flex items-center justify-center text-white mt-0.5 w-11 h-11 rounded-2xl shadow-lg"
+								className="shrink-0 flex items-center justify-center text-white mt-0.5 p-2 rounded-xl shadow-lg"
 								style={{
 									backgroundColor: catColor,
+									boxShadow: `0 8px 20px ${catColor}30`,
 								}}
 							>
 								<Edit2 className="w-5 h-5" />
 							</div>
 
 							<div className="flex-1">
-								<h4 className="font-bold text-[1rem] m-0 mb-1 tracking-tight">
-									Eigener Preis
-								</h4>
-								<p className="text-[0.82rem] text-[#666] m-0 mb-4 leading-relaxed font-medium">
+								<div className="flex items-center gap-2 mb-1">
+									<h4 className="font-bold text-[0.95rem] m-0 text-[#1a1a2e]">
+										Eigener Preis
+									</h4>
+								</div>
+								<p className="text-[0.8rem] text-[#666] m-0 mb-3 leading-relaxed max-w-[400px]">
 									Gib den monatlichen Grundpreis für diesen Tarif manuell ein.
 								</p>
 
-								<div className="relative group">
+								<div className="relative group max-w-[200px]">
 									<input
 										type="text"
 										autoFocus
@@ -400,16 +405,31 @@ function ProductPageContent() {
 											}
 										}}
 										placeholder="0,00"
-										className="w-full bg-telekom-gray-50 border-2 border-[#eaedf0] rounded-2xl px-5 py-3.5 pr-12 text-[1.1rem] font-extrabold outline-none focus:bg-white transition-all text-[#1a1a2e] focus:border-(--cat-color)"
+										className="w-full bg-[#f7f8fa] border rounded-lg px-3 py-2 pr-8 text-[0.95rem] font-bold outline-none focus:bg-white transition-all text-[#1a1a2e] shadow-inner shadow-black/5"
+										style={{
+											borderColor: `${catColor}40`,
+											borderWidth: '2px',
+										}}
+										onFocus={(e) => {
+											e.currentTarget.style.borderColor = catColor;
+										}}
+										onBlur={(e) => {
+											e.currentTarget.style.borderColor = `${catColor}40`;
+										}}
 									/>
-									<span className="absolute right-5 top-1/2 -translate-y-1/2 font-extrabold text-[1.1rem] text-[#ccc] group-focus-within:text-(--cat-color) transition-colors">
+									<span
+										className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-[0.95rem] transition-colors"
+										style={{
+											color: `${catColor}80`,
+										}}
+									>
 										€
 									</span>
 								</div>
 							</div>
 						</div>
 
-						<div className="flex items-center gap-2.5 mt-5 ml-[60px] relative z-10">
+						<div className="flex items-center gap-2 mt-3 ml-12 relative z-10">
 							<button
 								type="button"
 								disabled={!tempCustomPrice}
@@ -421,10 +441,10 @@ function ProductPageContent() {
 										setTempCustomPrice('');
 									}
 								}}
-								className="px-6 py-2.5 text-white text-[0.85rem] font-bold rounded-xl transition-all shadow-lg outline-none cursor-pointer border-none active:scale-95 flex items-center gap-2 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
+								className="px-4 py-2 text-white text-[0.78rem] font-bold rounded-lg transition-all shadow-lg outline-none cursor-pointer border-none active:scale-95 flex items-center gap-1.5 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
 								style={{
 									backgroundColor: catColor,
-									boxShadow: `0 8px 20px ${catColor}30`,
+									boxShadow: `0 4px 12px ${catColor}30`,
 								}}
 							>
 								<Check className="w-4 h-4" />
@@ -436,7 +456,7 @@ function ProductPageContent() {
 									setShowCustomPriceInput(false);
 									setTempCustomPrice('');
 								}}
-								className="px-5 py-2.5 text-[0.85rem] font-bold text-[#888] hover:bg-black/5 hover:text-[#555] rounded-xl transition-all outline-none cursor-pointer bg-transparent border-none active:scale-95"
+								className="px-4 py-2 text-[0.78rem] font-bold text-[#888] hover:bg-black/5 hover:text-[#555] rounded-lg transition-all outline-none cursor-pointer bg-transparent border-none active:scale-95"
 							>
 								Abbrechen
 							</button>
@@ -711,15 +731,10 @@ function ProductPageContent() {
 						<div className="relative z-50">
 							<button
 								type="button"
-								onClick={() =>
-									product.priceHistory?.length
-										? setPriceDropdownOpen(!priceDropdownOpen)
-										: undefined
-								}
+								onClick={() => setPriceDropdownOpen(!priceDropdownOpen)}
 								className={clsx(
 									'bg-[#f7f8fa] border border-[#eaedf0] rounded-xl px-4 h-[46px] flex items-center shadow-sm w-full outline-none',
-									product.priceHistory?.length &&
-										'cursor-pointer hover:bg-[#f0f2f5] transition-colors',
+									'cursor-pointer hover:bg-[#f0f2f5] transition-colors',
 								)}
 							>
 								{product.category === 'DEVICE' ? (
@@ -804,27 +819,22 @@ function ProductPageContent() {
 										<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
 											/Monat
 										</span>
-										{product.priceHistory &&
-											product.priceHistory.length > 0 && (
-											<ChevronDown
-												className={clsx(
-													'w-4 h-4 ml-1.5 transition-transform',
-													priceDropdownOpen && 'rotate-180',
-												)}
-												style={{
-													color: catColor,
-												}}
-											/>
-										)}
+										<ChevronDown
+											className={clsx(
+												'w-4 h-4 ml-1.5 transition-transform',
+												priceDropdownOpen && 'rotate-180',
+											)}
+											style={{
+												color: catColor,
+											}}
+										/>
 									</div>
 								)}
 							</button>
 
 							{/* History Popover */}
 							<AnimatePresence>
-								{priceDropdownOpen &&
-									product.priceHistory &&
-									product.priceHistory.length > 0 && (
+								{priceDropdownOpen && (
 									<>
 										<div
 											className="fixed inset-0 z-40"
@@ -857,21 +867,38 @@ function ProductPageContent() {
 											}}
 											className="absolute top-[calc(100%+12px)] w-[300px] md:w-[340px] right-0 bg-white border border-[#eaedf0] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.12)] z-1000 overflow-hidden backdrop-blur-xl"
 										>
-											<div className="px-4 py-3 border-b border-amber-100 bg-amber-50/80">
-												<div className="flex items-start gap-2.5">
-													<div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 mt-1 shadow-sm border border-amber-200/50">
-														<AlertTriangle className="w-6 h-6 text-amber-700" />
+											{product.priceHistory && product.priceHistory.length > 0 ? (
+												<div className="px-4 py-3 border-b border-amber-100 bg-amber-50/80">
+													<div className="flex items-start gap-2.5">
+														<div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 mt-1 shadow-sm border border-amber-200/50">
+															<AlertTriangle className="w-6 h-6 text-amber-700" />
+														</div>
+														<p className="text-[0.75rem] leading-snug font-bold text-amber-900 m-0">
+																Historische Preise
+															<span className="block font-medium text-amber-800/70 mt-0.6">
+																	Nicht für Neubereitstellungen empfohlen.
+																	Sonderpreise & Optionen könnten nicht dazu
+																	passen.
+															</span>
+														</p>
 													</div>
-													<p className="text-[0.75rem] leading-snug font-bold text-amber-900 m-0">
-															Historische Preise
-														<span className="block font-medium text-amber-800/70 mt-0.6">
-																Nicht für Neubereitstellungen empfohlen.
-																Sonderpreise & Optionen könnten nicht dazu
-																passen.
-														</span>
-													</p>
 												</div>
-											</div>
+											) : (
+												<div className="px-4 py-3 border-b border-[#eaedf0] bg-[#f7f8fa]/80">
+													<div className="flex items-start gap-2.5">
+														<div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 mt-1 shadow-sm border border-[#eaedf0]">
+															<Edit2 className="w-5 h-5 text-[#555]" />
+														</div>
+														<p className="text-[0.75rem] leading-snug font-bold text-[#1a1a2e] m-0 mt-0.5">
+																Preis anpassen
+															<span className="block font-medium text-[#666] mt-0.6">
+																	Nicht für Neubereitstellungen empfohlen. Sonderpreise & Optionen könnten nicht dazu
+																	passen.
+															</span>
+														</p>
+													</div>
+												</div>
+											)}
 											<div className="p-2 flex flex-col gap-1 max-h-[300px] overflow-y-auto scrollbar-none">
 												<button
 													type="button"
@@ -905,41 +932,45 @@ function ProductPageContent() {
 														{product.basePrice.toFixed(2).replace('.', ',')} €
 													</span>
 												</button>
-												<div className="h-px bg-[#f0f2f5] my-1.5 mx-3" />
-												{product.priceHistory.map((ph: any) => (
-													<button
-														key={ph.id}
-														type="button"
-														className={clsx(
-															'w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item',
-															customBasePrice === ph.price
-																? 'font-bold'
-																: 'font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]',
-														)}
-														style={{
-															color:
+												{product.priceHistory && product.priceHistory.length > 0 && (
+													<>
+														<div className="h-px bg-[#f0f2f5] my-1.5 mx-3" />
+														{product.priceHistory.map((ph: any) => (
+															<button
+																key={ph.id}
+																type="button"
+																className={clsx(
+																	'w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item',
 																	customBasePrice === ph.price
-																		? catColor
-																		: undefined,
-															...(customBasePrice === ph.price
-																? {
-																	backgroundColor: `${catColor}12`,
-																}
-																: {
-																}),
-														}}
-														onClick={() => handleSelectHistoryPrice(ph.price)}
-													>
-														<span className="tracking-tight">
-															{ph.label || 'Historischer Preis'}
-														</span>
-														<span className="font-bold opacity-90">
-															{ph.price.toFixed(2).replace('.', ',')} €
-														</span>
-													</button>
-												))}
+																		? 'font-bold'
+																		: 'font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]',
+																)}
+																style={{
+																	color:
+																			customBasePrice === ph.price
+																				? catColor
+																				: undefined,
+																	...(customBasePrice === ph.price
+																		? {
+																			backgroundColor: `${catColor}12`,
+																		}
+																		: {
+																		}),
+																}}
+																onClick={() => handleSelectHistoryPrice(ph.price)}
+															>
+																<span className="tracking-tight">
+																	{ph.label || 'Historischer Preis'}
+																</span>
+																<span className="font-bold opacity-90">
+																	{ph.price.toFixed(2).replace('.', ',')} €
+																</span>
+															</button>
+														))}
+													</>
+												)}
 
-												<div className="h-px bg-[#f0f2f5] my-1 mx-3" />
+												<div className="h-px bg-[#f0f2f5] my-1.5 mx-3" />
 
 												<button
 													type="button"
@@ -949,13 +980,11 @@ function ProductPageContent() {
 														setPriceDropdownOpen(false);
 													}}
 												>
-													<div className="flex items-center gap-2.5">
-														<div className="p-1.5 bg-[#f0f2f5] rounded-lg group-hover/item:bg-white transition-colors">
-															<Edit2 className="w-3.5 h-3.5" />
-														</div>
-														<span className="tracking-tight">
-															Eigener Preis...
-														</span>
+													<span className="tracking-tight">
+														Einen eigenen Preis festlegen
+													</span>
+													<div className="p-1.5 bg-[#f0f2f5] rounded-lg group-hover/item:bg-white transition-colors">
+														<Edit2 className="w-3.5 h-3.5" />
 													</div>
 												</button>
 											</div>
@@ -1154,18 +1183,85 @@ function ProductPageContent() {
 							catColor={catColor}
 							index={0}
 						>
-							<BusinessCaseSelector
-								product={product}
-								selectedCase={businessCase}
-								onChange={setBusinessCase}
-								accentColor={catColor}
-								highlightedCases={
-									session?.team?.highlights
-										.filter((h) => h.businessCase)
-										.map((h) => h.businessCase as BusinessCase) || [
-									]
-								}
-							/>
+							<AnimatePresence mode="wait">
+								{customBasePrice !== undefined ? (
+									<motion.div
+										key="bestandsprodukt"
+										initial={{
+											opacity: 0,
+											scale: 0.98,
+											y: 5,
+										}}
+										animate={{
+											opacity: 1,
+											scale: 1,
+											y: 0,
+										}}
+										exit={{
+											opacity: 0,
+											scale: 0.98,
+											y: -5,
+										}}
+										transition={{
+											duration: 0.2,
+										}}
+										className="relative flex flex-col items-center text-center p-6 rounded-xl border-2 transition-all duration-200 cursor-default"
+										style={{
+											borderColor: catColor,
+											backgroundColor: `${catColor}0a`,
+										}}
+									>
+										<RefreshCw
+											className="w-6 h-6 mb-3 transition-colors"
+											style={{
+												color: catColor,
+											}}
+											strokeWidth={1.8}
+										/>
+										<div className="text-[0.95rem] font-bold leading-tight text-[#1a1a2e] mb-1.5">
+											Bestandsprodukt
+										</div>
+										<div className="text-[0.8rem] text-[#666] max-w-[350px]">
+											Durch den abweichenden Preis wird dieser Tarif als Bestandsprodukt behandelt und ohne Einmalgebühren kalkuliert.
+										</div>
+									</motion.div>
+								) : (
+									<motion.div
+										key="business-case-selector"
+										initial={{
+											opacity: 0,
+											scale: 0.98,
+											y: 5,
+										}}
+										animate={{
+											opacity: 1,
+											scale: 1,
+											y: 0,
+										}}
+										exit={{
+											opacity: 0,
+											scale: 0.98,
+											y: -5,
+										}}
+										transition={{
+											duration: 0.2,
+										}}
+									>
+										<BusinessCaseSelector
+											product={product}
+											selectedCase={businessCase}
+											onChange={setBusinessCase}
+											accentColor={catColor}
+											highlightedCases={
+												session?.team?.highlights
+													.filter((h) => h.businessCase)
+													.map((h) => h.businessCase as BusinessCase) || [
+												]
+											}
+										/>
+									</motion.div>
+								)}
+							</AnimatePresence>
 						</ConfigSection>
 					)}
 
@@ -1176,16 +1272,24 @@ function ProductPageContent() {
 							catColor={catColor}
 							index={0.5}
 						>
-							<p className="text-[0.75rem] text-[#888] mb-4 -mt-3.5 leading-relaxed">
-								Beachte, dass Smartphone-Preise je nach Modell und Aktionen abweichen können! Verbindliche Preisauskünfte können <span className="font-bold">ausschließlich über T-VPP oder MagentaView</span> eingeholt werden. Aus diesem Grund sind die Endgeräte in der Sales Experience nicht buchbar.
-							</p>
-							<HardwareTierSelector
-								selected={hardwareTier}
-								onChange={setHardwareTier}
-								accentColor={catColor}
-								settings={settings}
-								designSettings={designSettings}
-							/>
+							<div
+								className={clsx(
+									customBasePrice !== undefined &&
+										!isHistoryWarningAccepted &&
+										'opacity-40 pointer-events-none transition-opacity duration-300',
+								)}
+							>
+								<p className="text-[0.75rem] text-[#888] mb-4 -mt-3.5 leading-relaxed">
+									Beachte, dass Smartphone-Preise je nach Modell und Aktionen abweichen können! Verbindliche Preisauskünfte können <span className="font-bold">ausschließlich über T-VPP oder MagentaView</span> eingeholt werden. Aus diesem Grund sind die Endgeräte in der Sales Experience nicht buchbar.
+								</p>
+								<HardwareTierSelector
+									selected={hardwareTier}
+									onChange={setHardwareTier}
+									accentColor={catColor}
+									settings={settings}
+									designSettings={designSettings}
+								/>
+							</div>
 						</ConfigSection>
 					)}
 

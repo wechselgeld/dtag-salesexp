@@ -87,7 +87,9 @@ export function CombinedTimeline({
 		aggregatedData.reduce((acc, curr) => acc + curr.total, 0) / 24;
 
 	return (
-		<div style={{ '--cat-color': catColor } as React.CSSProperties}>
+		<div style={{
+ '--cat-color': catColor,
+} as React.CSSProperties}>
 			{/* Header */}
 			<div className="flex items-baseline justify-between mb-3">
 				<span className="text-[0.72rem] font-semibold text-[#aaa] uppercase tracking-wider">

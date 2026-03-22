@@ -1,4 +1,6 @@
-import { createConsola } from 'consola';
+import {
+ createConsola,
+} from 'consola';
 import pc from 'picocolors';
 
 export const logger = createConsola({

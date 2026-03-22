@@ -27,7 +27,8 @@ export async function proxy(req: NextRequest) {
     // Redirect to login if no session
     if (!session) {
       response = NextResponse.redirect(new URL('/login', req.url));
-    } else {
+    }
+ else {
       // Role check
       const roles = [
         'ADMIN',
@@ -54,7 +55,8 @@ export async function proxy(req: NextRequest) {
     const sessionCookie = req.cookies.get('sales-session-id');
     if (!sessionCookie) {
       response = NextResponse.redirect(new URL('/setup', req.url));
-    } else {
+    }
+ else {
       // Verify signed cookie
       const {
         verifySessionId,
