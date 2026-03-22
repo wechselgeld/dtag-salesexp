@@ -13,9 +13,6 @@ import {
 import {
 	BackButton,
 } from '@/components/shared/back-button';
-import {
-	PageTracker,
-} from '@/components/shared/page-tracker';
 
 export const metadata: Metadata = {
 	title: 'Datenschutz',
@@ -24,7 +21,6 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
 	return (
 		<div className="min-h-screen py-16 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074]">
-			<PageTracker path="/privacy" />
 			<div className="max-w-3xl mx-auto">
 				{/* Header */}
 				<div className="flex flex-col items-center mb-12 text-center">
@@ -119,8 +115,7 @@ export default function PrivacyPage() {
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
 							Um die missbräuchliche Nutzung des Systems durch Unbefugte zu
 							unterbinden (Identifikation von Leaks der internen URL) und
-							statistische Auswertungen über die Systemnutzung auf Team-Ebene zu
-							fahren, werden folgende Daten in der Datenbank temporär
+							die Systemsicherheit zu gewährleisten, werden folgende Daten in der Datenbank temporär
 							gespeichert, sobald Sie die Nutzungsbedingungen akzeptieren und
 							eine Session starten:
 						</p>
@@ -138,21 +133,12 @@ export default function PrivacyPage() {
 						<p className="text-[0.95rem] text-[#555] leading-relaxed mt-2 p-4 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl">
 							Es findet{' '}
 							<strong>
-								kein Tracking Ihres spezifischen, personenbezogenen
-								Nutzungsverhaltens
+								kein serverseitiges Tracking Ihrer personenbezogenen
+								Nutzungsdaten
 							</strong>{' '}
-							statt. Das System erfasst bei der Nutzung lediglich vollständig
-							anonymisiert über eine eigens gehostete Instanz des
-							datenschutzfreundlichen Analytics-Tools umami (umami.is), welche
-							Tarife und Pfade aufgerufen (einschließlich eindeutiger
-							Seitenaufrufe pro Sitzung) bzw. in den Warenkorb gelegt wurden und
-							ordnet dies ausschließlich dem gewählten Team zu, ohne Rückschlüsse
-							auf Einzelpersonen (keine User-Agent- oder IP-Aufzeichnung bei
-							Nutzungsklicks). Dieses interne Statistik-Tracking geschieht
-							server-seitig (On-Premise). Zur Vermeidung von Mehrfachzählungen
-							in der Statistik wird eine flüchtige Information im Sitzungsspeicher
-							(Session Storage) Ihres Browsers abgelegt.
+							statt. Das System nutzt lediglich ein datenschutzfreundliches Statistik-Skript, welches anonymisiert erfasst, welche Kategorien aufgerufen werden, um die Performance des Tools allgemein zu bewerten. IP-Adressen oder individuelles Klickverhalten von Einzelpersonen werden dabei nicht mit Ihrer Identität verknüpft.
 						</p>
+
 					</section>
 
 					<section className="space-y-4">
@@ -181,13 +167,12 @@ export default function PrivacyPage() {
 						</p>
 
 						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
-							Hetzner (Hosting, Datenbank, Caching & Analytics)
+							Hetzner (Hosting, Datenbank, Caching)
 						</h3>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
 							Wir betreiben die gesamte Infrastruktur dieses Tools –
 							einschließlich der Applikation selbst,
-							der Datenbank, des Caches sowie
-							der internen Analytics-Lösung (umami) – als vollständig
+							der Datenbank sowie des Caches – als vollständig
 							selbst-gehostete Umgebung. Alle Server werden in verschiedenen
 							redundanten Rechenzentren der Hetzner Online GmbH, Industriestr.
 							25, 91710 Gunzenhausen, Deutschland, betrieben. Dadurch stellen
@@ -306,11 +291,10 @@ export default function PrivacyPage() {
 						</p>
 						<ul className="list-disc list-inside text-[0.95rem] text-[#555] space-y-1 ml-2">
 							<li>
-								<strong>tracked_unique_page:</strong> Dient der anonymisierten
-								Vermeidung von Mehrfachzählungen Ihrer Seitenaufrufe in der
-								internen Statistik für den Zeitraum Ihres Besuchs.
+								<strong>Seitenaufrufe:</strong> Es wird lediglich anonymisiert erfasst, welche Seiten aufgerufen werden, ohne Rückschluss auf Ihre Person.
 							</li>
 						</ul>
+
 					</section>
 
 					<section className="space-y-4">

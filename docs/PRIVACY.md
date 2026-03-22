@@ -10,7 +10,7 @@ Das Tool verfolgt folgende Datenschutzgrundsätze:
 
 - **Datensparsamkeit**: Es werden nur die Daten gespeichert, die für den Betrieb zwingend notwendig sind.
 - **Keine Drittanbieter mit personenbezogenen Daten**: Außer Resend (für den E-Mail-Versand) und Cloudflare (Sicherheit/CDN) werden keine Daten an externe Dienste übermittelt.
-- **Privacy-First Analytics**: Das Tool nutzt eine selbst gehostete umami-Instanz für vollständig anonymisiertes Tracking ohne externe APIs und ohne Cookies.
+- **Kein internes Tracking**: Es findet kein serverseitiges Tracking des Nutzerverhaltens statt. Es wird lediglich ein datenschutzfreundliches Statistik-Skript für anonyme Seitenaufrufe genutzt.
 - **Interner Betrieb only**: Das Tool ist ausschließlich für interne Nutzer bestimmt.
 
 ---
@@ -53,29 +53,19 @@ Bei einer Kundenberatung erstellt das System eine temporäre **Sales Session**:
 - Keine Mitarbeiterdaten langfristig (außer temporär in laufenden Sessions)
 - Keine Bankdaten oder Zahlungsinformationen
 - Keine Vertragsabschlüsse (die App dient nur zur Beratung)
-- Keine Tracking-Cookies oder Drittanbieter-Analytics (Google Analytics o.Ä.)
-- Kein personenbezogenes Nutzerverhalten (Statistiken werden rein auf Team-Ebene aggregiert)
+- Kein Tracking-Cookies oder andere Tracking-Dienste (z.B. Google)
+- Kein serverseitiges Personenbezogenes Nutzerverhalten
 
 ---
 
-## Interne Statistiken / Analytics (umami)
+## Statistiken
 
-Um die Nutzung des Tools messbar zu machen (z.B. welche Tarife am häufigsten aufgerufen werden), ist eine **vollständig anonymisierte, interne Analyselösung über umami (umami.is)** integriert.
+Um die generelle Nutzung des Tools anonymisiert zu messen, ist ein datenschutzfreundliches Statistik-Skript eingebunden.
 
-Diese Lösung erfasst:
-
-- Aufgerufene Produkte (`productId`) und deren Kategorie (`category`)
-- Genutzte Pfade (`path`)
-- Zugeordnetes Team (`teamId` – eine Zuordnung zum genauen Vertriebsorganisations-Knoten, nicht zum einzelnen Mitarbeiter)
-
-**Eigenschaften des Analytics-Systems:**
-
-- **Keine Cookies:** Es werden keinerlei Analytics-Cookies auf dem Endgerät gesetzt oder ausgelesen.
-- **Keine Personenbeziehbarkeit:** Weder IP-Adressen, noch Browser-Kennungen (User-Agent), noch Session-IDs von Mitarbeitern oder Kunden fließen in die Speicherung ein.
-- **Data-Aggregation:** Klicks und Seitenaufrufe werden anonymisiert erfasst. Es entstehen keine rückverfolgbaren Bewegungsprofile.
-- **100% On-Premise:** Die Analytics-Instanz wird vollständig selbst auf unseren Hetzner-Servern gehostet. Die Daten verlassen zu keinem Zeitpunkt den Server.
-
-Damit ist das Tracking DSGVO-konform, da es keine personenbezogenen Daten betrifft und keine Identifizierung des Kunden oder des anwendenden Verkäufers möglich ist.
+**Eigenschaften:**
+- **Keine Identifizierbarkeit:** Es werden keine IP-Adressen oder individuellen Nutzerprofile gespeichert.
+- **Nur anonyme Aufrufe:** Es werden lediglich Seitenaufrufe und Kategorien anonymisiert gezählt.
+- **Keine Verknüpfung:** Die Daten werden nicht mit den Nutzer-Sessions in der Datenbank verknüpft.
 
 ---
 

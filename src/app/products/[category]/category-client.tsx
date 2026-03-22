@@ -12,12 +12,11 @@ import {
 import {
 	ArrowLeft,
 	Star,
-	Wifi,
-	Zap,
 	Smartphone,
 	ChevronDown,
 	MessageSquareQuote,
 	Users,
+
 	GraduationCap,
 	HeartHandshake,
 	Gamepad2,
@@ -29,7 +28,6 @@ import {
 	Plus,
 	Sparkles,
 	ArrowDown,
-	TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -48,9 +46,6 @@ import {
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
-import {
-	useAnalytics,
-} from '@/hooks/use-analytics';
 
 /* --- Custom UI Icons --- */
 const SpeedTacho = ({
@@ -178,9 +173,6 @@ export default function ProductListPage() {
 	const {
 		addItem,
 	} = useBasketStore();
-	const {
-		trackPageView,
-	} = useAnalytics();
 
 	const {
 		data: session,
@@ -191,27 +183,7 @@ export default function ProductListPage() {
 	} =
 		trpc.product.getProductsByCategory.useQuery({
 			category,
-		});
-
-	// Fetch top product IDs for popularity badges
-	const {
-		data: topProductIds,
-	} = trpc.product.getTopProductIds.useQuery(
-		{
-			limit: 5,
-			days: 30,
-		},
-		{
-			staleTime: 5 * 60 * 1000,
-		},
-	);
-	const topProductSet = useMemo(
-		() => new Set(topProductIds ?? [
-		]),
-		[
-			topProductIds,
-		],
-	);
+	});
 
 	const categoryNames: Record<string, string> = {
 		MOBILE: 'Mobilfunk',
@@ -345,13 +317,6 @@ export default function ProductListPage() {
 
 	const activeSortOption = SORT_OPTIONS.find((s) => s.id === sortOption);
 
-	useEffect(() => {
-		trackPageView(`/products/${category}`, category);
-	}, [
-		category,
-		trackPageView,
-	]);
-
 	// Close sort menu on outside click
 	useEffect(() => {
 		function handleClickOutside(e: MouseEvent) {
@@ -362,7 +327,8 @@ export default function ProductListPage() {
 		document.addEventListener('mousedown', handleClickOutside);
 		return () => document.removeEventListener('mousedown', handleClickOutside);
 	}, [
-	]);
+]);
+
 
 	const filteredProducts = useMemo(() => {
 		const filtered =
@@ -370,7 +336,7 @@ export default function ProductListPage() {
 				if (!activeFilter) { return true; }
 				return activeFilter.predicate(p);
 			}) || [
-			];
+];
 
 		if (sortOption === 'default') { return filtered; }
 
@@ -786,32 +752,17 @@ export default function ProductListPage() {
 										{/* Top section */}
 										<div className="relative z-10">
 											{/* Badges row */}
-											{(isFocused || topProductSet.has(product.id)) && (
+											{isFocused && (
 												<div className="mb-2 flex items-center gap-2">
-													{isFocused && (
-														<div className="inline-flex bg-[rgba(255,213,79,0.15)] text-[#b78900] px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide leading-none uppercase items-center gap-1 whitespace-nowrap">
-															<Star className="w-3 h-3 fill-current" />
-															<span className="relative top-[1.5px]">
-																TEAM-FOKUS
-															</span>
-														</div>
-													)}
-													{topProductSet.has(product.id) && (
-														<div
-															className="inline-flex px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide leading-none uppercase items-center gap-1 whitespace-nowrap"
-															style={{
-																backgroundColor: `${catColor}15`,
-																color: catColor,
-															}}
-														>
-															<TrendingUp className="w-3 h-3" />
-															<span className="relative top-[1.5px]">
-																OFT ANGEBOTEN
-															</span>
-														</div>
-													)}
+													<div className="inline-flex bg-[rgba(255,213,79,0.15)] text-[#b78900] px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide leading-none uppercase items-center gap-1 whitespace-nowrap">
+														<Star className="w-3 h-3 fill-current" />
+														<span className="relative top-[1.5px]">
+															TEAM-FOKUS
+														</span>
+													</div>
 												</div>
 											)}
+
 
 											{/* Title + Duration + Stats indicator on same line */}
 											<div

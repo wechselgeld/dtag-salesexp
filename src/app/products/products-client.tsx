@@ -28,9 +28,6 @@ import {
 	useEffect, useState,
 } from 'react';
 import {
-	useAnalytics,
-} from '@/hooks/use-analytics';
-import {
 	useSettingsStore,
 } from '@/hooks/use-settings-store';
 
@@ -129,9 +126,6 @@ export default function ProductsPage({
 	);
 	const isLoading = sessionLoading || productsLoading;
 	const utils = trpc.useUtils();
-	const {
-		trackPageView,
-	} = useAnalytics();
 
 	const [
 		firstName,
@@ -142,11 +136,6 @@ export default function ProductsPage({
 		setIsMounted,
 	] = useState(false);
 
-	useEffect(() => {
-		trackPageView('/products');
-	}, [
-		trackPageView,
-	]);
 
 	useEffect(() => {
 		setIsMounted(true);
@@ -297,9 +286,6 @@ function CategoryCard({
 	backgroundImage?: string | null;
 }) {
 	const utils = trpc.useUtils();
-	const {
-		trackPageView,
-	} = useAnalytics(); // Added this line
 
 	const handlePrefetch = () => {
 		utils.product.getProductsByCategory.prefetch({

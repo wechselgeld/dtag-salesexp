@@ -319,18 +319,3 @@ model SystemSetting {
   value String
 }
 
-model AnalyticsEvent {
-  id        String   @id @default(cuid())
-  date      DateTime @db.Date
-  eventType String   @db.VarChar(50) // "PAGE_VIEW", "PRODUCT_VIEW", "BASKET_ADD"
-  path      String?  @db.VarChar(255)
-  productId String?  @db.VarChar(50)
-  category  String?  @db.VarChar(50)
-  teamId    String?  @db.VarChar(50)
-  count     Int      @default(1)
-
-  @@unique([date, eventType, path, productId, category, teamId], name: "analytics_unique_event")
-  @@index([date])
-  @@index([eventType])
-  @@index([productId])
-}

@@ -10,9 +10,6 @@ import {
 	trpc,
 } from '@/lib/trpc';
 import {
-	useAnalytics,
-} from '@/hooks/use-analytics';
-import {
 	motion, AnimatePresence,
 } from 'framer-motion';
 import {
@@ -122,9 +119,6 @@ export default function SetupPage({
 	initialSession?: any;
 }) {
 	const router = useRouter();
-	const {
-		trackPageView,
-	} = useAnalytics();
 
 	// Form state
 	const [
@@ -201,11 +195,6 @@ export default function SetupPage({
 		setCardHeight,
 	] = useState<number | 'auto'>('auto');
 
-	useEffect(() => {
-		trackPageView('/setup');
-	}, [
-		trackPageView,
-	]);
 
 	useEffect(() => {
 		if (!cardRef.current) { return; }

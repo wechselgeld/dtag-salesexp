@@ -11,9 +11,6 @@ import {
 import {
 	ResolutionGuard,
 } from '@/components/layout/resolution-guard';
-import {
-	SpeedInsights,
-} from '@vercel/speed-insights/next';
 
 const teleNeo = localFont({
 	src: [
@@ -111,7 +108,7 @@ export default function RootLayout({
 					/>
 				)}
 				<Script
-					src="https://umami-ij0wdwtnyij1grrxl5qvv1mm.app.flxk.nz/script.js"
+					src="https://track.flxk.nz/script.js"
 					data-website-id="fc8c2b6c-c0b2-48db-ae92-e388eeaa5725"
 					strategy="afterInteractive"
 				/>
@@ -120,7 +117,6 @@ export default function RootLayout({
 						<AppShell>{children}</AppShell>
 					</ResolutionGuard>
 				</Providers>
-				<SpeedInsights />
 			</body>
 		</html>
 	);

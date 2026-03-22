@@ -20,7 +20,6 @@ import {
 	MapPin,
 	Globe,
 	Activity,
-	BarChart3,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -164,11 +163,6 @@ export default function AdminLayout({
 					label: 'Sessions',
 					icon: Activity,
 				},
-				{
-					href: '/admin/analytics',
-					label: 'Statistiken',
-					icon: BarChart3,
-				},
 			],
 		},
 		{
@@ -206,6 +200,7 @@ export default function AdminLayout({
 			],
 		},
 	];
+
 
 	return (
 		<div className="min-h-screen bg-[#f7f8fa] flex text-[#333]">

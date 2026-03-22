@@ -69,9 +69,6 @@ import {
 	useBasketStore,
 } from '@/hooks/use-basket-store';
 import {
-	useAnalytics,
-} from '@/hooks/use-analytics';
-import {
 	SearchBar,
 } from '@/components/features/search/search-bar';
 import {
@@ -108,9 +105,6 @@ function ProductPageContent() {
 	const {
 		items, updateItem, addItem, setIsOpen,
 	} = useBasketStore();
-	const {
-		trackProductView, trackBasketAdd, trackPageView,
-	} = useAnalytics();
 
 	const catColor = CATEGORY_COLORS[category] || '#e20074';
 	const catName = CATEGORY_NAMES[category] || category;
@@ -464,20 +458,6 @@ function ProductPageContent() {
 		handleSelectHistoryPrice,
 	]);
 
-	// Track product view (deduplicated per component lifecycle)
-	// Must be before early return to follow Rules of Hooks
-	useEffect(() => {
-		if (product && id) {
-			trackProductView(id, category);
-			trackPageView(`/products/${category}/${id}`, category);
-		}
-	}, [
-		product,
-		id,
-		category,
-		trackProductView,
-		trackPageView,
-	]);
 
 	if (isLoading || !product) {
 		return (
@@ -550,8 +530,6 @@ function ProductPageContent() {
 			});
 		}
 
-		// Track basket add
-		trackBasketAdd(product.id, product.category);
 	};
 
 	// Merged product name
