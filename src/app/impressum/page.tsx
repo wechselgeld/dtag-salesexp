@@ -22,7 +22,6 @@ export const metadata: Metadata = {
 export default function ImpressumPage() {
 	return (
 		<div className="min-h-screen py-16 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074]">
-			<PageTracker path="/impressum" />
 			<div className="max-w-3xl mx-auto">
 				{/* Header */}
 				<div className="flex flex-col items-center mb-12 text-center">
