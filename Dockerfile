@@ -35,7 +35,7 @@ ENV JWT_SECRET=$JWT_SECRET
 ENV RESEND_API_KEY=$RESEND_API_KEY
 ENV EMAIL_FROM=$EMAIL_FROM
 
-# Generate Prisma client
+# Generate Prisma client.
 RUN npx prisma generate
 
 # Next.js collects completely anonymous telemetry data about general usage.
