@@ -14,9 +14,6 @@ import {
 import {
 	BackButton,
 } from '@/components/shared/back-button';
-import {
-	PageTracker,
-} from '@/components/shared/page-tracker';
 
 export const metadata: Metadata = {
 	title: 'Impressum',
