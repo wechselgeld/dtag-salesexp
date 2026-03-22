@@ -23,9 +23,6 @@ import {
 	addonRouter,
 } from './addon';
 import {
-	availabilityRouter,
-} from './availability';
-import {
 	settingsRouter,
 } from './settings';
 import {
@@ -55,7 +52,6 @@ export const appRouter = router({
 	session: sessionRouter,
 	news: newsRouter,
 	addon: addonRouter,
-	availability: availabilityRouter,
 	settings: settingsRouter,
 	adminUsers: adminUsersRouter,
 	location: locationRouter,

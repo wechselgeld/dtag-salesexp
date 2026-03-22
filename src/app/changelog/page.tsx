@@ -19,8 +19,8 @@ import clsx from 'clsx';
 
 const CHANGELOGS = [
 	{
-		id: 'march-17',
-		title: '17. März 2025',
+		id: 'march-18',
+		title: '18. März 2025',
 		items: [
 			{
 				q: 'Hinzugefügt',

@@ -3,24 +3,18 @@ import {
 } from 'zustand';
 
 interface ModalState {
-    availabilityOpen: boolean;
-    calculatorOpen: boolean;
-    battlecardOpen: boolean;
-    feedbackOpen: boolean;
-    setAvailabilityOpen: (open: boolean) => void;
-    setCalculatorOpen: (open: boolean) => void;
-    setBattlecardOpen: (open: boolean) => void;
-    setFeedbackOpen: (open: boolean) => void;
+	calculatorOpen: boolean;
+	battlecardOpen: boolean;
+	feedbackOpen: boolean;
+	setCalculatorOpen: (open: boolean) => void;
+	setBattlecardOpen: (open: boolean) => void;
+	setFeedbackOpen: (open: boolean) => void;
 }
 
 export const useModalStore = create<ModalState>((set) => ({
-	availabilityOpen: false,
 	calculatorOpen: false,
 	battlecardOpen: false,
 	feedbackOpen: false,
-	setAvailabilityOpen: (open) => set({
-		availabilityOpen: open,
-	}),
 	setCalculatorOpen: (open) => set({
 		calculatorOpen: open,
 	}),

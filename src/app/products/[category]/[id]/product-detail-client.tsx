@@ -175,8 +175,16 @@ function ProductPageContent() {
 		priceDropdownOpen,
 		setPriceDropdownOpen,
 	] = React.useState(false);
+	const [
+		showCustomPriceInput,
+		setShowCustomPriceInput,
+	] = React.useState(false);
+	const [
+		tempCustomPrice,
+		setTempCustomPrice,
+	] = React.useState<string>('');
 
-	const handleSelectHistoryPrice = (price: number) => {
+	const handleSelectHistoryPrice = React.useCallback((price: number) => {
 		setCustomBasePrice(price);
 		setIsHistoryWarningAccepted(false);
 		setPriceDropdownOpen(false);
@@ -185,7 +193,14 @@ function ProductPageContent() {
 		setMagentaTVPackage(null);
 		setSelectedAddonIds([
 		]);
-	};
+	}, [
+		setCustomBasePrice,
+		setIsHistoryWarningAccepted,
+		setPriceDropdownOpen,
+		setSelectedSpecialPriceIds,
+		setMagentaTVPackage,
+		setSelectedAddonIds,
+	]);
 
 	const existingBasketItem = basketItemId
 		? items.find((i) => i.id === basketItemId)
@@ -332,6 +347,121 @@ function ProductPageContent() {
 		removeAlert,
 		setCustomBasePrice,
 		setIsHistoryWarningAccepted,
+	]);
+
+	// Custom Price Input Alert
+	useEffect(() => {
+		const alertId = 'custom-price-input';
+		if (showCustomPriceInput) {
+			addAlert({
+				id: alertId,
+				content: (
+					<Toast
+						key={alertId}
+						duration={0}
+						color={catColor}
+						onDismiss={() => {
+							setShowCustomPriceInput(false);
+							setTempCustomPrice('');
+						}}
+						className="bg-white border-2 text-[#1a1a2e]"
+						style={{
+							borderColor: `${catColor}40`,
+						}}
+					>
+						<div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-(--cat-color) to-transparent opacity-5 blur-xl pointer-events-none rounded-full" />
+
+						<div className="flex gap-4 align-start relative z-10">
+							<div
+								className="shrink-0 flex items-center justify-center text-white mt-0.5 w-11 h-11 rounded-2xl shadow-lg"
+								style={{
+									backgroundColor: catColor,
+								}}
+							>
+								<Edit2 className="w-5 h-5" />
+							</div>
+
+							<div className="flex-1">
+								<h4 className="font-bold text-[1rem] m-0 mb-1 tracking-tight">
+									Eigener Preis
+								</h4>
+								<p className="text-[0.82rem] text-[#666] m-0 mb-4 leading-relaxed font-medium">
+									Gib den monatlichen Grundpreis für diesen Tarif manuell ein.
+								</p>
+
+								<div className="relative group">
+									<input
+										type="text"
+										autoFocus
+										value={tempCustomPrice}
+										onChange={(e) => setTempCustomPrice(e.target.value)}
+										onKeyDown={(e) => {
+											if (e.key === 'Enter' && tempCustomPrice) {
+												const price = parseFloat(tempCustomPrice.replace(',', '.'));
+												if (!isNaN(price)) {
+													handleSelectHistoryPrice(price);
+													setShowCustomPriceInput(false);
+													setTempCustomPrice('');
+												}
+											}
+										}}
+										placeholder="0,00"
+										className="w-full bg-telekom-gray-50 border-2 border-[#eaedf0] rounded-2xl px-5 py-3.5 pr-12 text-[1.1rem] font-extrabold outline-none focus:bg-white transition-all text-[#1a1a2e] focus:border-(--cat-color)"
+									/>
+									<span className="absolute right-5 top-1/2 -translate-y-1/2 font-extrabold text-[1.1rem] text-[#ccc] group-focus-within:text-(--cat-color) transition-colors">
+										€
+									</span>
+								</div>
+							</div>
+						</div>
+
+						<div className="flex items-center gap-2.5 mt-5 ml-[60px] relative z-10">
+							<button
+								type="button"
+								disabled={!tempCustomPrice}
+								onClick={() => {
+									const price = parseFloat(tempCustomPrice.replace(',', '.'));
+									if (!isNaN(price)) {
+										handleSelectHistoryPrice(price);
+										setShowCustomPriceInput(false);
+										setTempCustomPrice('');
+									}
+								}}
+								className="px-6 py-2.5 text-white text-[0.85rem] font-bold rounded-xl transition-all shadow-lg outline-none cursor-pointer border-none active:scale-95 flex items-center gap-2 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
+								style={{
+									backgroundColor: catColor,
+									boxShadow: `0 8px 20px ${catColor}30`,
+								}}
+							>
+								<Check className="w-4 h-4" />
+								Übernehmen
+							</button>
+							<button
+								type="button"
+								onClick={() => {
+									setShowCustomPriceInput(false);
+									setTempCustomPrice('');
+								}}
+								className="px-5 py-2.5 text-[0.85rem] font-bold text-[#888] hover:bg-black/5 hover:text-[#555] rounded-xl transition-all outline-none cursor-pointer bg-transparent border-none active:scale-95"
+							>
+								Abbrechen
+							</button>
+						</div>
+					</Toast>
+				),
+			});
+		}
+		else {
+			removeAlert(alertId);
+		}
+		return () => removeAlert(alertId);
+	}, [
+		showCustomPriceInput,
+		tempCustomPrice,
+		addAlert,
+		removeAlert,
+		catColor,
+		handleSelectHistoryPrice,
 	]);
 
 	// Track product view (deduplicated per component lifecycle)
@@ -830,6 +960,26 @@ function ProductPageContent() {
 														</span>
 													</button>
 												))}
+
+												<div className="h-px bg-[#f0f2f5] my-1 mx-3" />
+
+												<button
+													type="button"
+													className="w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] font-bold transition-all flex justify-between items-center outline-none hover:bg-[#f7f8fa] text-[#666] group/item active:scale-[0.98]"
+													onClick={() => {
+														setShowCustomPriceInput(true);
+														setPriceDropdownOpen(false);
+													}}
+												>
+													<div className="flex items-center gap-2.5">
+														<div className="p-1.5 bg-[#f0f2f5] rounded-lg group-hover/item:bg-white transition-colors">
+															<Edit2 className="w-3.5 h-3.5" />
+														</div>
+														<span className="tracking-tight">
+															Eigener Preis...
+														</span>
+													</div>
+												</button>
 											</div>
 										</motion.div>
 									</>

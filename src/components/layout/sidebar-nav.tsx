@@ -11,7 +11,6 @@ import {
 	LayoutGrid,
 	Settings2,
 	Calculator,
-	MapPin,
 	Swords,
 	Settings,
 	HelpCircle,
@@ -72,7 +71,7 @@ export function SidebarNav() {
 		items, clearBasket,
 	} = useBasketStore();
 	const {
-		setAvailabilityOpen, setCalculatorOpen, setBattlecardOpen, setFeedbackOpen,
+		setCalculatorOpen, setBattlecardOpen, setFeedbackOpen,
 	} =
 		useModalStore();
 	const addNotification = useNewsNotificationStore((state) => state.addNotification);
@@ -224,13 +223,6 @@ export function SidebarNav() {
 			icon: Calculator,
 			label: 'Sparvorteil-Rechner',
 			onClick: () => setCalculatorOpen(true),
-			type: 'button',
-		},
-		{
-			id: 'tour-availability',
-			icon: MapPin,
-			label: 'Verfügbarkeits-Check',
-			onClick: () => setAvailabilityOpen(true),
 			type: 'button',
 		},
 		{

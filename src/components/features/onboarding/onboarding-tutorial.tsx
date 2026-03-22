@@ -17,7 +17,6 @@ import {
 	ShieldCheck,
 	MousePointerClick,
 	Swords,
-	MapPin,
 	FileText,
 	Tag,
 	PlusCircle,
@@ -92,14 +91,6 @@ const STEPS: Step[] = [
 		icon: Calculator,
 		position: 'right',
 		hint: 'Das ist ein starkes Verkaufsargument!',
-	},
-	{
-		targetId: 'tour-availability',
-		title: 'Verfügbarkeits-Check',
-		content:
-			'Prüfe direkt im Gespräch, ob Glasfaser oder DSL an der Adresse Deines Kunden verfügbar ist – inklusive konkreter Tarif-Empfehlungen.',
-		icon: MapPin,
-		position: 'right',
 	},
 	{
 		targetId: 'tour-battlecards',

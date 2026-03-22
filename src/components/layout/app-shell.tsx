@@ -25,9 +25,6 @@ import {
 	useModalStore,
 } from '@/hooks/use-modal-store';
 import {
-	AvailabilityCheckModal,
-} from '@/components/features/availability/availability-check-modal';
-import {
 	StreamingCalculatorModal,
 } from '@/components/features/calculator/streaming-calculator-modal';
 import {
@@ -67,8 +64,6 @@ export function AppShell({
 	const isStandalone = !isShellRoute;
 
 	const {
-		availabilityOpen,
-		setAvailabilityOpen,
 		calculatorOpen,
 		setCalculatorOpen,
 		battlecardOpen,
@@ -112,10 +107,6 @@ export function AppShell({
 			{!isStandalone && (
 				<>
 					<OnboardingTutorial />
-					<AvailabilityCheckModal
-						isOpen={availabilityOpen}
-						onClose={() => setAvailabilityOpen(false)}
-					/>
 					<StreamingCalculatorModal
 						isOpen={calculatorOpen}
 						onClose={() => setCalculatorOpen(false)}
