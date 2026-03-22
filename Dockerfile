@@ -19,11 +19,24 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Install pnpm for the build step too
-RUN npm install -g pnpm
+# ARGs for Build Time (Coolify passes these)
+ARG DATABASE_URL
+ARG REDIS_URL
+ARG NEXT_PUBLIC_APP_URL
+ARG JWT_SECRET
+ARG RESEND_API_KEY
+ARG EMAIL_FROM
+
+# Set ENV from ARGs so they are available during 'next build'
+ENV DATABASE_URL=$DATABASE_URL
+ENV REDIS_URL=$REDIS_URL
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV JWT_SECRET=$JWT_SECRET
+ENV RESEND_API_KEY=$RESEND_API_KEY
+ENV EMAIL_FROM=$EMAIL_FROM
 
 # Generate Prisma client
-RUN pnpx prisma generate
+RUN npx prisma generate
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
