@@ -1,6 +1,6 @@
 # Coolify Deployment Guide
 
-This project is optimized for deployment on Coolify using a custom **Dockerfile** and Next.js **Standalone Mode**.
+This project is optimized for deployment on Coolify.
 
 ## Prerequisites
 
