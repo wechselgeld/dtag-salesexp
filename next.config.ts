@@ -3,6 +3,7 @@ import type {
 } from 'next';
 
 const nextConfig: NextConfig = {
+	output: 'standalone',
 	images: {
 		remotePatterns: [
 			{
@@ -20,7 +21,7 @@ const nextConfig: NextConfig = {
 			'lucide-react',
 		],
 	},
-	// @ts-ignore - Turbopack root config exists in this version but might not be in the types yet
+	// @ts-expect-error - Turbopack root config exists in this version but might not be in the types yet
 	turbopack: {
 		root: '.',
 	},

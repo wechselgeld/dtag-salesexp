@@ -4,7 +4,6 @@ import type {
 import {
 	ShieldCheck, Info, FileText,
 } from 'lucide-react';
-import Link from 'next/link';
 import {
 	TelekomLogo,
 } from '@/components/shared/telekom-logo';
@@ -92,7 +91,7 @@ export default function PrivacyPage() {
 							Server-Log-Dateien
 						</h3>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
-							Unsere Hosting-Anbieter (Vercel Inc. / Oracle) sowie unser
+							Unsere Hosting-Infrastruktur (Hetzner Online GmbH) sowie unser
 							vorgeschaltetes Content Delivery Network (Cloudflare) erheben und
 							speichern automatisch Informationen in so genannten
 							Server-Log-Dateien, die Ihr Browser automatisch an uns
@@ -137,20 +136,22 @@ export default function PrivacyPage() {
 							</li>
 						</ul>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed mt-2 p-4 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl">
+							Es findet{' '}
 							<strong>
 								kein Tracking Ihres spezifischen, personenbezogenen
 								Nutzungsverhaltens
 							</strong>{' '}
 							statt. Das System erfasst bei der Nutzung lediglich vollständig
-							anonymisiert, welche Tarife und Pfade aufgerufen (einschließlich
-							eindeutiger Seitenaufrufe pro Sitzung), bzw. in den Warenkorb
-							gelegt wurden und ordnet dies ausschließlich dem gewählten Team
-							zu, ohne Rückschlüsse auf Einzelpersonen (keine User-Agent- oder
-							IP-Aufzeichnung bei Nutzungsklicks). Dieses interne
-							Statistik-Tracking geschieht server-seitig (On-Premise). Zur
-							Vermeidung von Mehrfachzählungen in der Statistik wird eine
-							flüchtige Information im Sitzungsspeicher (Session Storage) Ihres
-							Browsers abgelegt.
+							anonymisiert über eine eigens gehostete Instanz des
+							datenschutzfreundlichen Analytics-Tools umami (umami.is), welche
+							Tarife und Pfade aufgerufen (einschließlich eindeutiger
+							Seitenaufrufe pro Sitzung) bzw. in den Warenkorb gelegt wurden und
+							ordnet dies ausschließlich dem gewählten Team zu, ohne Rückschlüsse
+							auf Einzelpersonen (keine User-Agent- oder IP-Aufzeichnung bei
+							Nutzungsklicks). Dieses interne Statistik-Tracking geschieht
+							server-seitig (On-Premise). Zur Vermeidung von Mehrfachzählungen
+							in der Statistik wird eine flüchtige Information im Sitzungsspeicher
+							(Session Storage) Ihres Browsers abgelegt.
 						</p>
 					</section>
 
@@ -180,39 +181,25 @@ export default function PrivacyPage() {
 						</p>
 
 						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
-							Vercel (Hosting & Applikationslogik)
+							Hetzner (Hosting, Datenbank, Caching & Analytics)
 						</h3>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
-							Die Bereitstellung der Website erfolgt über die Plattform Vercel.
-							Anbieter ist die Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA
-							91789, USA. Vercel nutzt ein globales Content Delivery Network
-							(CDN), um statische Dateien performant zur Verfügung zu stellen.
-							Die serverseitige Verarbeitung (Backend-Funktionen) findet primär
-							auf Servern innerhalb der Europäischen Union (Region: Frankfurt am
-							Main, Deutschland) statt. Eine Übertragung von Metadaten in die
-							USA kann im Rahmen der Infrastrukturnutzung erfolgen. Die Nutzung
-							erfolgt zur Erfüllung unseres berechtigten Interesses an einer
-							hochverfügbaren Bereitstellung (Art. 6 Abs. 1 lit. f DSGVO). Die
-							Vercel Inc. ist nach dem EU-U.S. Data Privacy Framework
-							zertifiziert.
-						</p>
-
-						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
-							Oracle Cloud Infrastructure (Datenbank)
-						</h3>
-						<p className="text-[0.95rem] text-[#555] leading-relaxed">
-							Die durch diese Anwendung verarbeiteten Daten (z. B.
-							Sitzungsinformationen, Verifizierungsdaten wie Name und E-Mail)
-							werden in einer Datenbank der Oracle Cloud Infrastructure (OCI)
-							gespeichert. Anbieter ist die Oracle Corporation. Die physische
-							Speicherung und Verarbeitung dieser Daten findet ausschließlich im
-							Rechenzentrum in Frankfurt am Main, Deutschland (Region:
-							eu-frankfurt-1), statt. Da durch dieses Tool keine Kundendaten
-							verarbeitet werden, sondern lediglich anonymisierte Meta-Daten
-							sowie die zur Autorisierung notwendigen Mitarbeiterdaten (Name,
-							E-Mail, Team-Zugehörigkeit) anfallen, erfolgt die Nutzung auf
-							Basis technischer Bereitstellungsinteressen und der Absicherung
-							der internen Infrastruktur.
+							Wir betreiben die gesamte Infrastruktur dieses Tools –
+							einschließlich der Applikation selbst,
+							der Datenbank, des Caches sowie
+							der internen Analytics-Lösung (umami) – als vollständig
+							selbst-gehostete Umgebung. Alle Server werden in verschiedenen
+							redundanten Rechenzentren der Hetzner Online GmbH, Industriestr.
+							25, 91710 Gunzenhausen, Deutschland, betrieben. Dadurch stellen
+							wir sicher, dass alle Daten, inklusive der in der
+							Datenbank abgelegten anonymisierten Meta-Daten oder
+							temporären Sitzungsinformationen, den Geltungsbereich der DSGVO
+							nicht verlassen. Die physische Speicherung und Verarbeitung
+							dieser Daten findet ausschließlich auf Servern in Deutschland
+							statt. Die Nutzung erfolgt auf Basis unseres berechtigten
+							Interesses an einer sicheren, hochverfügbaren und
+							datenschutzkonformen Bereitstellung der Infrastruktur (Art. 6
+							Abs. 1 lit. f DSGVO).
 						</p>
 						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
 							Resend (E-Mail-Versand)
@@ -232,8 +219,8 @@ export default function PrivacyPage() {
 							zertifiziert) oder Standardvertragsklauseln (SCC) abgesichert.
 						</p>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed mt-2 p-4 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl">
-							Wir haben mit den oben genannten Anbietern (Cloudflare, Vercel,
-							Oracle & Resend) Verträge zur Auftragsverarbeitung (AVV)
+							Wir haben mit den oben genannten Anbietern (Cloudflare, Hetzner
+							sowie Resend) Verträge zur Auftragsverarbeitung (AVV)
 							abgeschlossen. Diese garantieren, dass die Dienstleister die Daten
 							ausschließlich nach unseren Weisungen und unter Einhaltung der
 							DSGVO verarbeiten.

@@ -9,8 +9,8 @@
 Das Tool verfolgt folgende Datenschutzgrundsätze:
 
 - **Datensparsamkeit**: Es werden nur die Daten gespeichert, die für den Betrieb zwingend notwendig sind.
-- **Keine Drittanbieter mit personenbezogenen Daten**: Außer Resend (für den E-Mail-Versand) werden keine Daten an externe Dienste übermittelt.
-- **Privacy-First Analytics**: Das Tool nutzt ein selbst entwickeltes, vollständig anonymisiertes Tracking ohne externe APIs und ohne Cookies.
+- **Keine Drittanbieter mit personenbezogenen Daten**: Außer Resend (für den E-Mail-Versand) und Cloudflare (Sicherheit/CDN) werden keine Daten an externe Dienste übermittelt.
+- **Privacy-First Analytics**: Das Tool nutzt eine selbst gehostete umami-Instanz für vollständig anonymisiertes Tracking ohne externe APIs und ohne Cookies.
 - **Interner Betrieb only**: Das Tool ist ausschließlich für interne Nutzer bestimmt.
 
 ---
@@ -58,9 +58,9 @@ Bei einer Kundenberatung erstellt das System eine temporäre **Sales Session**:
 
 ---
 
-## Interne Statistiken / Analytics
+## Interne Statistiken / Analytics (umami)
 
-Um die Nutzung des Tools messbar zu machen (z.B. welche Tarife am häufigsten aufgerufen werden), ist eine **vollständig anonymisierte, interne Analyselösung** integriert.
+Um die Nutzung des Tools messbar zu machen (z.B. welche Tarife am häufigsten aufgerufen werden), ist eine **vollständig anonymisierte, interne Analyselösung über umami (umami.is)** integriert.
 
 Diese Lösung erfasst:
 
@@ -72,8 +72,8 @@ Diese Lösung erfasst:
 
 - **Keine Cookies:** Es werden keinerlei Analytics-Cookies auf dem Endgerät gesetzt oder ausgelesen.
 - **Keine Personenbeziehbarkeit:** Weder IP-Adressen, noch Browser-Kennungen (User-Agent), noch Session-IDs von Mitarbeitern oder Kunden fließen in die Speicherung ein.
-- **Data-Aggregation:** Klicks werden alle 60 Sekunden gebündelt und rein zählerbasiert (`count +1`) in die Datenbank geschrieben. Es entstehen keine Bewegungsprofile.
-- **100% On-Premise:** Die Daten verlassen zu keinem Zeitpunkt den eigenen Server.
+- **Data-Aggregation:** Klicks und Seitenaufrufe werden anonymisiert erfasst. Es entstehen keine rückverfolgbaren Bewegungsprofile.
+- **100% On-Premise:** Die Analytics-Instanz wird vollständig selbst auf unseren Hetzner-Servern gehostet. Die Daten verlassen zu keinem Zeitpunkt den Server.
 
 Damit ist das Tracking DSGVO-konform, da es keine personenbezogenen Daten betrifft und keine Identifizierung des Kunden oder des anwendenden Verkäufers möglich ist.
 
@@ -101,9 +101,9 @@ Damit ist das Tracking DSGVO-konform, da es keine personenbezogenen Daten betrif
 
 ## Verbindungssicherheit
 
-- Die Produktions-App ist ausschließlich über **HTTPS (TLS 1.2/1.3)** erreichbar (via Let's Encrypt + Nginx)
-- Die Datenbankverbindung erfolgt über eine lokale oder interne Netzwerkverbindung (kein öffentlich exponierter MySQL-Port)
-- Connection Pooling ist eingerichtet (`connection_limit=10`, `pool_timeout=20`)
+- Die Produktions-App ist ausschließlich über **HTTPS (TLS 1.2/1.3)** erreichbar (abgesichert via Cloudflare und Traefik/Coolify)
+- Die Datenbankverbindung erfolgt über eine interne Docker-Netzwerkverbindung (kein öffentlich exponierter PostgreSQL-Port)
+- Connection Pooling ist für die PostgreSQL-Datenbank eingerichtet
 
 ---
 

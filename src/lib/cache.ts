@@ -1,50 +1,68 @@
-interface CacheEntry<T> {
-    value: T;
-    expiry: number;
-}
-
-const cache = new Map<string, CacheEntry<any>>();
+import pc from 'picocolors';
+import { redis } from './redis';
+import { cacheLogger } from './logger';
 
 const MISSING = Symbol('MISSING');
 
-export function getCache<T>(key: string): T | typeof MISSING {
-    const entry = cache.get(key);
-    if (!entry) {
-        return MISSING;
+export async function getCache<T>(key: string): Promise<T | typeof MISSING> {
+  try {
+    const cached = await redis.get(key);
+    if (cached !== null) {
+      return JSON.parse(cached) as T;
     }
-    if (Date.now() > entry.expiry) {
-        cache.delete(key);
-        return MISSING;
-    }
-    return entry.value as T;
+  } catch (error) {
+    // Error is already logged by redis.on('error') in redis.ts
+  }
+  return MISSING;
 }
 
-export function setCache<T>(key: string, value: T, ttlMs: number): void {
-    cache.set(key, {
-        value,
-        expiry: Date.now() + ttlMs,
-    });
+export async function setCache<T>(key: string, value: T, ttlMs: number): Promise<void> {
+  try {
+    if (value !== undefined && value !== null) {
+      // Redis expects TTL in milliseconds if using PX
+      await redis.set(key, JSON.stringify(value), 'PX', ttlMs);
+    }
+  } catch (error) {
+    // Error is already logged by redis.on('error') in redis.ts
+  }
 }
 
 export async function getCached<T>(
-    key: string,
-    ttlMs: number,
-    fetcher: () => Promise<T>,
+  key: string,
+  ttlMs: number,
+  fetcher: () => Promise<T>,
 ): Promise<T> {
-    const cached = getCache<T>(key);
-    if (cached !== MISSING) {
-        return cached;
-    }
+  const start = Date.now();
+  const cached = await getCache<T>(key);
+  
+  if (cached !== MISSING) {
+    const duration = Date.now() - start;
+    cacheLogger.success(`${pc.bold(pc.green('HIT'))} ${pc.dim(key)} ${pc.gray(`(${duration}ms)`)}`);
+    return cached;
+  }
 
-    const value = await fetcher();
-    setCache(key, value, ttlMs);
-    return value;
+  const value = await fetcher();
+  const totalDuration = Date.now() - start;
+  
+  cacheLogger.info(`${pc.bold(pc.yellow('MISS'))} ${pc.dim(key)} ${pc.gray(`(Total: ${totalDuration}ms)`)}`);
+  
+  // Fire and forget: do not block the request for the cache write
+  setCache(key, value, ttlMs).catch(() => {});
+  
+  return value;
 }
 
 export function invalidateCache(keyPrefix: string): void {
-    for (const key of cache.keys()) {
-        if (key.startsWith(keyPrefix)) {
-            cache.delete(key);
-        }
+  const start = Date.now();
+  // Fire and forget to match the original synchronous API
+  redis.keys(`${keyPrefix}*`).then(keys => {
+    if (keys.length > 0) {
+      redis.del(...keys).then(() => {
+        const duration = Date.now() - start;
+        cacheLogger.info(`${pc.bold(pc.magenta('INVALIDATE'))} ${pc.dim(keyPrefix)}* ${pc.gray(`(${keys.length} keys, ${duration}ms)`)}`);
+      }).catch(err => cacheLogger.error(`Invalidate DEL failed: ${err.message}`));
     }
+  }).catch(error => {
+    cacheLogger.error(`Invalidate KEYS failed: ${error.message}`);
+  });
 }

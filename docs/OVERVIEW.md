@@ -39,7 +39,7 @@ Konkret ermöglicht das Tool:
 | **API-Layer**        | tRPC v11                        | ^11.10.0 |
 | **State Management** | TanStack Query + Zustand        | v5       |
 | **ORM**              | Prisma                          | 6.1.0    |
-| **Datenbank**        | MySQL 8                         | —        |
+| **Datenbank**        | PostgreSQL                      | —        |
 | **Auth**             | JWT via `jose`, HttpOnly Cookie | —        |
 | **Passwort-Hashing** | bcryptjs                        | —        |
 | **E-Mail-Versand**   | Resend                          | —        |

@@ -22,8 +22,8 @@ Willkommen in der technischen Dokumentation der **Sales Experience** – einem i
 ### Produktionsserver
 
 - **URL**: `https://sales-exp.prod.flxk.nz/`
-- **Server**: Oracle Cloud ARM (Always Free)
-- **DB**: MySQL 8 (Self-Hosted)
+- **Server**: Hetzner (Coolify Self-Hosted)
+- **DB**: PostgreSQL (Self-Hosted)
 - **E-Mail**: Resend (Free Plan)
 
 ### Wichtige Befehle

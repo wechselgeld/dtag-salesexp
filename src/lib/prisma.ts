@@ -4,9 +4,9 @@ import {
 import pRetry, {
   AbortError,
 } from 'p-retry';
+import { dbLogger, formatDuration, formatQuery } from './logger';
 
 // Transient Prisma Error Codes that are safe to retry
-// https://www.prisma.io/docs/reference/api-reference/error-reference#prisma-client-query-engine
 const RETRYABLE_ERROR_CODES = [
   'P1001', // Can't reach database server
   'P1002', // The database server was reached but timed out
@@ -29,19 +29,20 @@ const prismaClientSingleton = () => {
       },
       {
         emit: 'stdout',
-        level: 'info',
-      },
-      {
-        emit: 'stdout',
         level: 'warn',
       },
     ],
   });
 
-  // Listen for queries and log warnings if they take more than 500ms
+  // Pretty log for all queries
   client.$on('query', (e) => {
+    const durationStr = formatDuration(e.duration);
+    const queryStr = formatQuery(e.query);
+    
     if (e.duration > 500) {
-      console.warn(`[Slow Query Warning] Query took ${e.duration}ms: ${e.query}`);
+      dbLogger.warn(`Slow Query (${durationStr}): ${queryStr}`);
+    } else {
+      dbLogger.debug(`Query (${durationStr}): ${queryStr}`);
     }
   });
 
@@ -70,8 +71,6 @@ const prismaClientSingleton = () => {
                   throw error; // Rethrow to be caught and retried by pRetry
                 }
                 else {
-                  // If it's not a retryable error, abort immediately.
-                  // p-retry will unwrap AbortError and throw the original error.
                   throw new AbortError(error as Error);
                 }
               }
@@ -80,7 +79,7 @@ const prismaClientSingleton = () => {
               retries: 3,
               minTimeout: 100,
               maxTimeout: 1000,
-              randomize: true, // adds jitter
+              randomize: true,
               onFailedAttempt: (error) => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const err = error as any;
@@ -91,8 +90,8 @@ const prismaClientSingleton = () => {
                   typeof err.code === 'string' &&
                   RETRYABLE_ERROR_CODES.includes(err.code)
                 ) {
-                  console.warn(
-                    `[Prisma Retry Warning] ${model}.${operation} failed with code ${err.code}. Retrying... (Attempt ${error.attemptNumber} of 4)`,
+                  dbLogger.error(
+                    `Retry failed for ${model}.${operation} (Code: ${err.code}). Attempt ${error.attemptNumber}/4`,
                   );
                 }
               },
