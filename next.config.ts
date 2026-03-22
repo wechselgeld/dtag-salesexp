@@ -21,7 +21,6 @@ const nextConfig: NextConfig = {
 			'lucide-react',
 		],
 	},
-	// @ts-expect-error - Turbopack root config exists in this version but might not be in the types yet
 	turbopack: {
 		root: '.',
 	},
