@@ -1,5 +1,3 @@
-Test
-
 # Coolify Deployment Guide
 
 This project is optimized for deployment on Coolify.
