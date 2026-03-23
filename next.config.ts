@@ -15,13 +15,14 @@ const nextConfig: NextConfig = {
 			},
 		],
 	},
+	output: 'standalone',
 	experimental: {
 		optimizePackageImports: [
 			'lucide-react',
 		],
 	},
 	turbopack: {
-		root: '.',
+		root: process.cwd(),
 	},
 };
 
