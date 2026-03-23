@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "node .next/standalone/server.js",
+    "start": "next start",
     "lint": "eslint",
     "manage-admins": "tsx scripts/manage-admins.ts",
     "postinstall": "prisma generate",

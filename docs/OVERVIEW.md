@@ -81,7 +81,7 @@ Die App wird im **Self-Hosted-Betrieb** auf einem eigenen Linux-Server betrieben
 | Production  | `https://sales-exp.prod.flxk.nz/` | `dtag_sales-exp_prod` |
 | Development | `http://localhost:3000`           | `dtag_sales-exp_dev`  |
 
-Der Development-Server läuft lokal per `pnpm run dev`. Die Produktionsumgebung wird per `next build && next start` (o.Ä. via PM2 / systemd) betrieben.
+Der Development-Server läuft lokal per `pnpm run dev`. Die Produktionsumgebung wird per `pnpm run build && pnpm run start` (o.Ä. via PM2 / Docker) betrieben.
 
 ---
 
