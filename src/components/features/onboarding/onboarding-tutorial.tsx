@@ -603,10 +603,10 @@ export function OnboardingTutorial() {
 				exit={{
 					opacity: 0,
 				}}
-				className={`absolute inset-0 pointer-events-auto transition-all duration-300 ${
+				className={`absolute inset-0 transition-all duration-300 ${
 					isWelcome || (currentStep > 0 && coords.w === 0)
-						? 'bg-black/60 backdrop-blur-[3px]'
-						: 'bg-transparent'
+						? 'bg-black/60 backdrop-blur-[3px] pointer-events-auto'
+						: 'bg-transparent pointer-events-none'
 				}`}
 			/>
 

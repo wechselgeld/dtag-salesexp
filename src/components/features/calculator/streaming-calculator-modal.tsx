@@ -19,7 +19,7 @@ import {
 } from './streaming-comparison';
 import {
 	TarifComparison,
-} from './tarif-comparison';
+} from './TarifComparison';
 
 interface SavingsCalculatorModalProps {
 	isOpen: boolean;
@@ -56,7 +56,7 @@ setMounted,
 	const content = (
 		<AnimatePresence>
 			{isOpen && (
-				<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8">
+				<div className="fixed inset-0 z-9999 flex items-center justify-center p-4 md:p-8">
 					<motion.div
 						initial={{
  opacity: 0,
