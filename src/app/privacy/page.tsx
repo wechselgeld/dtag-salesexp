@@ -136,7 +136,23 @@ export default function PrivacyPage() {
 								kein serverseitiges Tracking Ihrer personenbezogenen
 								Nutzungsdaten
 							</strong>{' '}
-							statt. Das System nutzt lediglich ein datenschutzfreundliches Statistik-Skript, welches anonymisiert erfasst, welche Kategorien aufgerufen werden, um die Performance des Tools allgemein zu bewerten. IP-Adressen oder individuelles Klickverhalten von Einzelpersonen werden dabei nicht mit Ihrer Identität verknüpft.
+							statt. In unserem Tool kommt ergänzend ausschließlich das datenschutzfreundliche Statistik-Werkzeug <strong>Rybbit Analytics</strong> zum Einsatz.
+						</p>
+
+						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
+							Webanalyse mit Rybbit Analytics
+						</h3>
+						<p className="text-[0.95rem] text-[#555] leading-relaxed">
+							Zur Auswertung der Nutzung und stetigen Optimierung unseres Tools verwenden wir die Analyse-Software Rybbit Analytics.
+							Rybbit wird <strong>vollständig selbst von uns gehostet</strong> (betrieben auf unseren eigenen Hetzner-Servern in Deutschland). Dadurch verlassen die erfassten Analysedaten zu keinem Zeitpunkt unseren Kontrollbereich; ein Datentransfer an externe Analysedienste (wie z. B. an US-Anbieter) findet nicht statt.
+						</p>
+						<ul className="list-disc list-inside text-[0.95rem] text-[#555] space-y-1 ml-2">
+							<li><strong>Kein IP-Tracking:</strong> Die Erfassung und Speicherung Ihrer IP-Adresse ist für die Webanalyse vollständig deaktiviert.</li>
+							<li><strong>Anonymisierte User-IDs ("Salting"):</strong> Soweit Nutzer-Kennungen generiert werden, werden diese durch einen kryptografisch generierten, täglich rotierenden Schlüssel gesichert und anonymisiert. Eine Wiedererkennung Ihrer Person über Tage hinweg ist somit ausgeschlossen.</li>
+							<li><strong>Erfasste Metriken:</strong> Wir werten lediglich aggregierte und anonymisierte Seitenaufrufe, Parameter (wie aufgerufene Features) und Klicks auf externe Links aus. Tiefgreifende Auswertungen wie "Session Replays" (Aufzeichnung Ihrer Mausbewegungen) sind strikt deaktiviert.</li>
+						</ul>
+						<p className="text-[0.95rem] text-[#555] leading-relaxed mt-2">
+							Die Datenerfassung durch Rybbit Analytics erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der rein statistischen Auswertung des Nutzerverhaltens zur Fehlerbehebung und nutzerorientierten Optimierung der Applikation, unter strenger Wahrung Ihrer Privatsphäre und DSGVO-Konformität.
 						</p>
 
 					</section>

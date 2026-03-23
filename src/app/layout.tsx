@@ -108,8 +108,8 @@ export default function RootLayout({
 					/>
 				)}
 				<Script
-					src="https://track.flxk.nz/script.js"
-					data-website-id="fc8c2b6c-c0b2-48db-ae92-e388eeaa5725"
+					src="https://analytics.buffinteractive.net/api/script.js"
+					data-site-id="2c42a2b44317"
 					strategy="afterInteractive"
 				/>
 				<Providers>

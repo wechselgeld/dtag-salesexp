@@ -10,7 +10,7 @@ Das Tool verfolgt folgende Datenschutzgrundsätze:
 
 - **Datensparsamkeit**: Es werden nur die Daten gespeichert, die für den Betrieb zwingend notwendig sind.
 - **Keine Drittanbieter mit personenbezogenen Daten**: Außer Resend (für den E-Mail-Versand) und Cloudflare (Sicherheit/CDN) werden keine Daten an externe Dienste übermittelt.
-- **Kein internes Tracking**: Es findet kein serverseitiges Tracking des Nutzerverhaltens statt. Es wird lediglich ein datenschutzfreundliches Statistik-Skript für anonyme Seitenaufrufe genutzt.
+- **Kein internes Tracking**: Es findet kein serverseitiges Tracking personenbezogener Nutzungsdaten statt. Für anonymisierte Webanalysen kommt ausschließlich das selbst-gehostete Tool Rybbit Analytics zum Einsatz.
 - **Interner Betrieb only**: Das Tool ist ausschließlich für interne Nutzer bestimmt.
 
 ---
@@ -58,14 +58,17 @@ Bei einer Kundenberatung erstellt das System eine temporäre **Sales Session**:
 
 ---
 
-## Statistiken
+## Webanalyse mit Rybbit Analytics
 
-Um die generelle Nutzung des Tools anonymisiert zu messen, ist ein datenschutzfreundliches Statistik-Skript eingebunden.
+Um die generelle Nutzung des Tools zur Fehlerbehebung und Optimierung anonymisiert auszuwerten, nutzen wir **Rybbit Analytics**.
 
 **Eigenschaften:**
-- **Keine Identifizierbarkeit:** Es werden keine IP-Adressen oder individuellen Nutzerprofile gespeichert.
-- **Nur anonyme Aufrufe:** Es werden lediglich Seitenaufrufe und Kategorien anonymisiert gezählt.
-- **Keine Verknüpfung:** Die Daten werden nicht mit den Nutzer-Sessions in der Datenbank verknüpft.
+
+- **Vollständig Self-Hosted**: Das Tool wird von uns auf eigenen Servern in Deutschland betrieben, sodass zu keinem Zeitpunkt Analysedaten an externe Dienste (z. B. US-Anbieter) abfließen.
+- **Kein IP-Tracking**: IP-Adressen werden für die Webanalyse nicht erfasst oder gespeichert.
+- **Anonymisierte User-IDs ("Salting")**: Etwaige Nutzer-Kennungen werden kryptografisch mit einem täglich wechselnden Schlüssel versehen ("Salting"). Eine Wiedererkennung über Tage hinweg ist ausgeschlossen.
+- **Kein Session Replay**: Tiefgreifende Analysen wie Aufzeichnungen von Mausbewegungen sind strengstens deaktiviert.
+- **Nur anonyme Aggregation**: Es werden lediglich aggregierte Seitenaufrufe, Interaktionen mit Links und URL-Parameter erfasst, ohne Verknüpfung zu Ihren Nutzer-Sessions in der Datenbank.
 
 ---
 
