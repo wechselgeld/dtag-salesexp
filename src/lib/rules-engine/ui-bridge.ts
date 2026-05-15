@@ -1,6 +1,3 @@
-import type { specialPrices } from '@/lib/db/schema';
-type SpecialPrice = typeof specialPrices.$inferSelect;
-
 /**
  * Converts the legacy boolean-based conditions into a json-rules-engine compatible rule.
  */
