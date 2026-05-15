@@ -68,7 +68,7 @@ export function GlobalFooter({
 				)}
 			>
 				<span>
-					&copy; {new Date().getFullYear()} Felix Kinze für Deutsche Telekom
+					&copy; {new Date().getFullYear()} buffinteractive.net für Deutsche Telekom
 					Service GmbH
 				</span>
 				<span className="hidden sm:inline opacity-50">|</span>

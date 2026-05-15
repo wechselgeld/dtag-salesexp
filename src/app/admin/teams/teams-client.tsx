@@ -19,8 +19,12 @@ import {
 	Check,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { useDebounce } from '@/hooks/use-debounce';
-import { showErrorToast } from '@/components/shared/error-toast';
+import {
+ useDebounce,
+} from '@/hooks/use-debounce';
+import {
+ showErrorToast,
+} from '@/components/shared/error-toast';
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
@@ -36,37 +40,89 @@ import {
 } from '@/components/shared/ui/tooltip';
 
 const CATEGORIES = [
-	{ id: 'MOBILE', label: 'Mobilfunk' },
-	{ id: 'FIBER', label: 'Glasfaser' },
-	{ id: 'DSL', label: 'Festnetz' },
-	{ id: 'MAGENTA_TV_OTT', label: 'MagentaTV' },
-	{ id: 'DEVICE', label: 'Gerät' },
-	{ id: 'ADDON', label: 'Option' },
+	{
+ id: 'MOBILE',
+label: 'Mobilfunk',
+},
+	{
+ id: 'FIBER',
+label: 'Glasfaser',
+},
+	{
+ id: 'DSL',
+label: 'Festnetz',
+},
+	{
+ id: 'MAGENTA_TV_OTT',
+label: 'MagentaTV',
+},
+	{
+ id: 'DEVICE',
+label: 'Gerät',
+},
+	{
+ id: 'ADDON',
+label: 'Option',
+},
 ];
 
 const BUSINESS_CASES = [
-	{ id: 'NEW_ACTIVATION', label: 'Neubereitstellung' },
-	{ id: 'MOVE', label: 'Umzug' },
-	{ id: 'PLAN_CHANGE', label: 'Tarifwechsel' },
-	{ id: 'SPEED_UP', label: 'SpeedUp' },
+	{
+ id: 'NEW_ACTIVATION',
+label: 'Neubereitstellung',
+},
+	{
+ id: 'MOVE',
+label: 'Umzug',
+},
+	{
+ id: 'PLAN_CHANGE',
+label: 'Tarifwechsel',
+},
+	{
+ id: 'SPEED_UP',
+label: 'SpeedUp',
+},
 ];
 
 export default function TeamsPage() {
 	const utils = trpc.useUtils();
-	const [selectedLocationId, setSelectedLocationId] = useState<string>('all');
-	const [teamSearchQuery, setTeamSearchQuery] = useState('');
-	const [searchQuery, setSearchQuery] = useState('');
-	const [managingFocusTeamId, setManagingFocusTeamId] = useState<string | null>(null);
-	const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'businessCases'>('products');
-	const [showSelectedOnly, setShowSelectedOnly] = useState(false);
+	const [
+ selectedLocationId,
+setSelectedLocationId,
+] = useState<string>('all');
+	const [
+ teamSearchQuery,
+setTeamSearchQuery,
+] = useState('');
+	const [
+ searchQuery,
+setSearchQuery,
+] = useState('');
+	const [
+ managingFocusTeamId,
+setManagingFocusTeamId,
+] = useState<string | null>(null);
+	const [
+ activeTab,
+setActiveTab,
+] = useState<'products' | 'categories' | 'businessCases'>('products');
+	const [
+ showSelectedOnly,
+setShowSelectedOnly,
+] = useState(false);
 
 	const debouncedTeamSearch = useDebounce(teamSearchQuery, 300);
 	const debouncedProductSearch = useDebounce(searchQuery, 300);
 
-	const { data: me } = trpc.auth.me.useQuery();
+	const {
+ data: me,
+} = trpc.auth.me.useQuery();
 	const isRestrictedUser = me?.role === 'LOCATION_MANAGER' || me?.role === 'TEAM_LEADER';
 
-	const { data: locations, isLoading: isLocationsLoading } = trpc.location.list.useQuery();
+	const {
+ data: locations, isLoading: isLocationsLoading,
+} = trpc.location.list.useQuery();
 
 	const {
 		data: teamsData,
@@ -80,7 +136,9 @@ export default function TeamsPage() {
 			search: debouncedTeamSearch || undefined,
 			locationId: selectedLocationId !== 'all' ? selectedLocationId : undefined,
 		},
-		{ getNextPageParam: (lastPage) => lastPage.nextCursor }
+		{
+ getNextPageParam: (lastPage) => lastPage.nextCursor,
+},
 	);
 
 	const {
@@ -94,7 +152,7 @@ export default function TeamsPage() {
 		{
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
 			enabled: managingFocusTeamId !== null && activeTab === 'products',
-		}
+		},
 	);
 
 	const deleteTeam = trpc.team.delete.useMutation({
@@ -107,10 +165,13 @@ export default function TeamsPage() {
 		onError: (error) => showErrorToast('Fehler beim Speichern', error.message),
 	});
 
-	const teams = teamsData?.pages.flatMap((page) => page.items) || [];
-	const products = productsData?.pages.flatMap((page) => page.items) || [];
+	const teams = teamsData?.pages.flatMap((page) => page.items) || [
+];
+	const products = productsData?.pages.flatMap((page) => page.items) || [
+];
 	const currentTeam = teams.find((t) => t.id === managingFocusTeamId);
-	const activeHighlights = currentTeam?.highlights || [];
+	const activeHighlights = currentTeam?.highlights || [
+];
 
 	const filteredProducts = showSelectedOnly
 		? products.filter((p) => activeHighlights.some((h: any) => h.productId === p.id))
@@ -182,7 +243,13 @@ export default function TeamsPage() {
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
 				{isLoading && teams.length === 0 ? (
 					<div className="p-5 space-y-3">
-						{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
+						{[
+ 1,
+2,
+3,
+4,
+5,
+].map((i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
 					</div>
 				) : teams.length === 0 ? (
 					<div className="p-20 text-center">
@@ -234,7 +301,13 @@ export default function TeamsPage() {
 											<div className="flex items-center justify-end gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
 												<Link href={`/admin/teams/${team.id}`} className="p-2 text-[#ccc] hover:text-[#0090d0] hover:bg-[#0090d0]/10 rounded-lg transition-all"><Pencil className="w-4 h-4" /></Link>
 												<button onClick={() => setManagingFocusTeamId(team.id)} className="p-2 text-[#ccc] hover:text-[#ff6b00] hover:bg-[#ff6b00]/10 rounded-lg transition-all border-none bg-transparent cursor-pointer"><Star className="w-4 h-4" /></button>
-												<button onClick={() => confirmDelete({ id: team.id, name: team.name, onConfirm: () => deleteTeam.mutate({ id: team.id }) })} className="p-2 text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all border-none bg-transparent cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+												<button onClick={() => confirmDelete({
+ id: team.id,
+name: team.name,
+onConfirm: () => deleteTeam.mutate({
+ id: team.id,
+}),
+})} className="p-2 text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all border-none bg-transparent cursor-pointer"><Trash2 className="w-4 h-4" /></button>
 											</div>
 										</td>
 									</tr>
@@ -258,7 +331,7 @@ export default function TeamsPage() {
 			{managingFocusTeamId && (
 				<div className="fixed inset-0 bg-[#1a1a2e]/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
 					<div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/20 w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-						
+
 						{/* Header */}
 						<div className="px-8 py-6 border-b border-[#f0f2f5] flex justify-between items-center bg-white shrink-0">
 							<div className="flex items-center gap-4">
@@ -279,7 +352,7 @@ export default function TeamsPage() {
 
 						{/* Modal Body: Grid Top, Summary Bottom */}
 						<div className="flex-1 flex flex-col min-h-0">
-							
+
 							{/* Content Area (Top) */}
 							<div className="flex-1 flex flex-col min-h-0 bg-white">
 								{/* Integrated Controls */}
@@ -287,9 +360,18 @@ export default function TeamsPage() {
 									<div className="flex flex-wrap items-center justify-between gap-4">
 										<div className="flex bg-[#f1f5f9] p-1.5 rounded-2xl">
 											{[
-												{ id: 'products', label: 'Tarife' },
-												{ id: 'categories', label: 'Kategorien' },
-												{ id: 'businessCases', label: 'Vertragsarten' },
+												{
+ id: 'products',
+label: 'Tarife',
+},
+												{
+ id: 'categories',
+label: 'Kategorien',
+},
+												{
+ id: 'businessCases',
+label: 'Vertragsarten',
+},
 											].map((tab) => (
 												<button
 													key={tab.id}
@@ -308,10 +390,10 @@ export default function TeamsPage() {
 											onClick={() => setShowSelectedOnly(!showSelectedOnly)}
 											className={clsx(
 												'flex items-center gap-2.5 px-6 py-3.5 rounded-2xl text-[0.85rem] font-bold transition-all cursor-pointer border-2',
-												showSelectedOnly ? 'bg-[#ff6b00] border-[#ff6b00] text-white shadow-lg shadow-[#ff6b00]/20' : 'bg-white border-[#e2e8f0] text-[#64748b] hover:border-[#cbd5e1]'
+												showSelectedOnly ? 'bg-[#ff6b00] border-[#ff6b00] text-white shadow-lg shadow-[#ff6b00]/20' : 'bg-white border-[#e2e8f0] text-[#64748b] hover:border-[#cbd5e1]',
 											)}
 										>
-											<Star className={clsx("w-4.5 h-4.5", showSelectedOnly && "fill-current")} />
+											<Star className={clsx('w-4.5 h-4.5', showSelectedOnly && 'fill-current')} />
 											Nur Auswahl
 										</button>
 									</div>
@@ -342,10 +424,13 @@ export default function TeamsPage() {
 												<button
 													key={p.id}
 													disabled={toggleFocus.isPending}
-													onClick={() => toggleFocus.mutate({ teamId: managingFocusTeamId!, productId: p.id })}
+													onClick={() => toggleFocus.mutate({
+ teamId: managingFocusTeamId!,
+productId: p.id,
+})}
 													className={clsx(
 														'p-5 rounded-3xl border-2 text-left transition-all flex items-center gap-4 cursor-pointer bg-white',
-														isFocused ? 'border-[#e20074] bg-[#fff0f7] shadow-sm' : 'border-[#f1f5f9] hover:border-[#e2e8f0]'
+														isFocused ? 'border-[#e20074] bg-[#fff0f7] shadow-sm' : 'border-[#f1f5f9] hover:border-[#e2e8f0]',
 													)}
 												>
 													<div className={clsx('w-8 h-8 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all', isFocused ? 'bg-[#e20074] border-[#e20074] text-white' : 'bg-[#f8fafc] border-[#e2e8f0] text-[#cbd5e1]')}>
@@ -365,10 +450,13 @@ export default function TeamsPage() {
 												<button
 													key={cat.id}
 													disabled={toggleFocus.isPending}
-													onClick={() => toggleFocus.mutate({ teamId: managingFocusTeamId!, category: cat.id as any })}
+													onClick={() => toggleFocus.mutate({
+ teamId: managingFocusTeamId!,
+category: cat.id as any,
+})}
 													className={clsx(
 														'p-5 rounded-3xl border-2 text-left transition-all flex items-center gap-4 cursor-pointer bg-white',
-														isFocused ? 'border-[#e20074] bg-[#fff0f7]' : 'border-[#f1f5f9] hover:border-[#e2e8f0]'
+														isFocused ? 'border-[#e20074] bg-[#fff0f7]' : 'border-[#f1f5f9] hover:border-[#e2e8f0]',
 													)}
 												>
 													<div className={clsx('w-8 h-8 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all', isFocused ? 'bg-[#e20074] border-[#e20074] text-white' : 'bg-[#f8fafc] border-[#e2e8f0] text-[#cbd5e1]')}>
@@ -388,10 +476,13 @@ export default function TeamsPage() {
 												<button
 													key={bc.id}
 													disabled={toggleFocus.isPending}
-													onClick={() => toggleFocus.mutate({ teamId: managingFocusTeamId!, businessCase: bc.id as any })}
+													onClick={() => toggleFocus.mutate({
+ teamId: managingFocusTeamId!,
+businessCase: bc.id as any,
+})}
 													className={clsx(
 														'p-5 rounded-3xl border-2 text-left transition-all flex items-center gap-4 cursor-pointer bg-white',
-														isFocused ? 'border-[#e20074] bg-[#fff0f7]' : 'border-[#f1f5f9] hover:border-[#e2e8f0]'
+														isFocused ? 'border-[#e20074] bg-[#fff0f7]' : 'border-[#f1f5f9] hover:border-[#e2e8f0]',
 													)}
 												>
 													<div className={clsx('w-8 h-8 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all', isFocused ? 'bg-[#e20074] border-[#e20074] text-white' : 'bg-[#f8fafc] border-[#e2e8f0] text-[#cbd5e1]')}>
@@ -418,7 +509,7 @@ export default function TeamsPage() {
 										</span>
 									</h4>
 								</div>
-								
+
 								<div className="flex-1 overflow-x-auto p-6 flex items-start gap-4 custom-scrollbar">
 									{activeHighlights.length === 0 ? (
 										<div className="w-full flex flex-col items-center justify-center text-[#94a3b8] opacity-50 py-10">
@@ -430,7 +521,7 @@ export default function TeamsPage() {
 											<div key={h.id} className="min-w-[200px] max-w-[240px] p-4 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm flex items-center justify-between group animate-in fade-in slide-in-from-bottom-2 duration-300">
 												<div className="min-w-0 pr-3">
 													<div className="text-[0.8rem] font-bold text-[#1a1a2e] truncate">
-														{h.productId ? (h.product?.name || 'Tarif') : 
+														{h.productId ? (h.product?.name || 'Tarif') :
 														 h.category ? (CATEGORIES.find(c => c.id === h.category)?.label || h.category) :
 														 (BUSINESS_CASES.find(bc => bc.id === h.businessCase)?.label || h.businessCase)}
 													</div>
@@ -438,8 +529,13 @@ export default function TeamsPage() {
 														{h.productId ? 'Tarif' : h.category ? 'Kategorie' : 'Vertragsart'}
 													</div>
 												</div>
-												<button 
-													onClick={() => toggleFocus.mutate({ teamId: managingFocusTeamId!, productId: h.productId, category: h.category, businessCase: h.businessCase })}
+												<button
+													onClick={() => toggleFocus.mutate({
+ teamId: managingFocusTeamId!,
+productId: h.productId,
+category: h.category,
+businessCase: h.businessCase,
+})}
 													className="p-1.5 text-[#cbd5e1] hover:text-[#dc2626] hover:bg-[#fff1f2] rounded-lg transition-all border-none bg-transparent cursor-pointer"
 												>
 													<Trash2 className="w-3.5 h-3.5" />

@@ -257,7 +257,7 @@ export const WelcomeEmail = ({
 						...footer,
 						marginTop: '8px',
 					}}>
-						&copy; {new Date().getFullYear()} Felix Kinze für Deutsche Telekom
+						&copy; {new Date().getFullYear()} buffinteractive.net für Deutsche Telekom
 						Service GmbH |{' '}
 						<span style={{
 							color: '#e20074',

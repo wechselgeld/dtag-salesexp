@@ -67,7 +67,9 @@ export const authRouter = router({
             });
 
             const passkeyCount = await prisma.passkey.count({
-                where: { email: user.email },
+                where: {
+                    email: user.email,
+                },
             });
 
             return {

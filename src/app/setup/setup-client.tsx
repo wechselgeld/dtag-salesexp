@@ -9,7 +9,9 @@ import {
 import {
 	trpc,
 } from '@/lib/trpc';
-import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+import {
+ startRegistration, startAuthentication,
+} from '@simplewebauthn/browser';
 import {
 	motion, AnimatePresence,
 } from 'framer-motion';
@@ -313,10 +315,19 @@ export default function SetupPage({
 		onSuccess: async (data) => {
 			if (data.requiresVerification && !data.success && 'sessionId' in data) {
 				try {
-					const { options } = await getAuthOptions.mutateAsync({ email });
-					const authResp = await startAuthentication({ optionsJSON: options });
-					const verifyResp = await verifyAuth.mutateAsync({ email, response: authResp });
-					
+					const {
+ options,
+} = await getAuthOptions.mutateAsync({
+ email,
+});
+					const authResp = await startAuthentication({
+ optionsJSON: options,
+});
+					const verifyResp = await verifyAuth.mutateAsync({
+ email,
+response: authResp,
+});
+
 					if (verifyResp.success) {
 						if ('isAdmin' in verifyResp && verifyResp.isAdmin) {
 							router.push('/admin');
@@ -335,10 +346,11 @@ export default function SetupPage({
 						});
 						return;
 					}
-				} catch (err) {
+				}
+ catch (err) {
 					console.log('Passkey auth failed or unavailable, falling back to magic link', err);
 				}
-				
+
 				setPendingSessionId(data.sessionId as string);
 				return;
 			}
@@ -958,13 +970,21 @@ export default function SetupPage({
 									try {
 										const targetEmail = email || existingSession?.email || '';
 										if (!targetEmail) return;
-										const options = await getRegOptions.mutateAsync({ email: targetEmail });
-										const resp = await startRegistration({ optionsJSON: options });
-										await verifyReg.mutateAsync({ email: targetEmail, response: resp });
+										const options = await getRegOptions.mutateAsync({
+ email: targetEmail,
+});
+										const resp = await startRegistration({
+ optionsJSON: options,
+});
+										await verifyReg.mutateAsync({
+ email: targetEmail,
+response: resp,
+});
 										alert('Passkey erfolgreich eingerichtet!');
-									} catch (e: any) {
+									}
+ catch (e: any) {
 										console.error('Passkey failed', e);
-										alert('Fehler bei der Passkey-Einrichtung: ' + e.message);
+										alert(`Fehler bei der Passkey-Einrichtung: ${ e.message}`);
 									}
 								}}
 								hasActiveSession={!!existingSession}

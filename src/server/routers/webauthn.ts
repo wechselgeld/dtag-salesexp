@@ -1,6 +1,12 @@
-import { router, publicProcedure, protectedProcedure } from '../trpc';
-import { z } from 'zod';
-import { TRPCError } from '@trpc/server';
+import {
+    router, publicProcedure, protectedProcedure,
+} from '../trpc';
+import {
+    z,
+} from 'zod';
+import {
+    TRPCError,
+} from '@trpc/server';
 import {
     generateRegistrationOptions,
     verifyRegistrationResponse,
@@ -11,14 +17,16 @@ import type {
     RegistrationResponseJSON,
     AuthenticationResponseJSON,
 } from '@simplewebauthn/server';
-import { cookies } from 'next/headers';
+import {
+    cookies,
+} from 'next/headers';
 import crypto from 'crypto';
 
-const rpName = 'Sales Experience Platform';
+const rpName = 'Sales Experience-Plattform';
 
 function getRpIdAndOrigin(req?: Request | null) {
     let appUrl = process.env.NEXT_PUBLIC_APP_URL;
-    
+
     if (req) {
         const host = req.headers.get('host');
         const proto = req.headers.get('x-forwarded-proto') || 'https';
@@ -37,7 +45,8 @@ function getRpIdAndOrigin(req?: Request | null) {
             rpID: url.hostname,
             origin: url.origin,
         };
-    } catch (e) {
+    }
+    catch (e) {
         return {
             rpID: 'localhost',
             origin: 'http://localhost:3000',
@@ -52,18 +61,24 @@ function getRpIdAndOrigin(req?: Request | null) {
 // So we can use the user's current session or cookies.
 // Wait, we can't easily store challenges on the stateless edge without DB or Redis. 
 // We will use Redis or Prisma since the project uses Redis for cache.
-import { redis } from '@/lib/redis';
+import {
+    redis,
+} from '@/lib/redis';
 
 export const webauthnRouter = router({
     generateRegistrationOptions: publicProcedure
         .input(z.object({
             email: z.string().email(),
         }))
-        .mutation(async ({ ctx, input }) => {
+        .mutation(async ({
+            ctx, input,
+        }) => {
             // Must have a verified session OR we verify the user is logged in
             // Check for Sales Session OR Admin Session
             const cookieStore = await cookies();
-            const { verifySessionId, getSession } = await import('@/lib/auth');
+            const {
+                verifySessionId, getSession,
+            } = await import('@/lib/auth');
             const salesToken = cookieStore.get('sales-session-id')?.value;
             const adminSession = await getSession();
 
@@ -74,7 +89,9 @@ export const webauthnRouter = router({
                 const sessionId = await verifySessionId(salesToken);
                 if (sessionId) {
                     const session = await ctx.prisma.salesSession.findUnique({
-                        where: { id: sessionId },
+                        where: {
+                            id: sessionId,
+                        },
                     });
                     if (session && session.isVerified && session.email === input.email) {
                         sessionEmail = session.email;
@@ -85,7 +102,9 @@ export const webauthnRouter = router({
 
             if (!sessionEmail && adminSession && adminSession.sub) {
                 const user = await ctx.prisma.user.findUnique({
-                    where: { id: adminSession.sub as string },
+                    where: {
+                        id: adminSession.sub as string,
+                    },
                 });
                 if (user && user.email === input.email) {
                     sessionEmail = user.email;
@@ -94,14 +113,21 @@ export const webauthnRouter = router({
             }
 
             if (!sessionEmail) {
-                throw new TRPCError({ code: 'UNAUTHORIZED', message: 'You must be logged in to register a passkey.' });
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                    message: 'You must be logged in to register a passkey.',
+                });
             }
 
             const userPasskeys = await ctx.prisma.passkey.findMany({
-                where: { email: input.email },
+                where: {
+                    email: input.email,
+                },
             });
 
-            const { rpID, origin } = getRpIdAndOrigin(ctx.req);
+            const {
+                rpID, origin,
+            } = getRpIdAndOrigin(ctx.req);
 
             // We need a stable user ID for the authenticator. 
             // Since we don't have a SalesUser model, we'll hash the email.
@@ -136,13 +162,20 @@ export const webauthnRouter = router({
             email: z.string().email(),
             response: z.any(), // RegistrationResponseJSON
         }))
-        .mutation(async ({ ctx, input }) => {
+        .mutation(async ({
+            ctx, input,
+        }) => {
             const expectedChallenge = await redis.get(`webauthn_challenge:reg:${input.email}`);
             if (!expectedChallenge) {
-                throw new TRPCError({ code: 'BAD_REQUEST', message: 'Challenge expired or invalid' });
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Challenge expired or invalid',
+                });
             }
 
-            const { rpID, origin } = getRpIdAndOrigin(ctx.req);
+            const {
+                rpID, origin,
+            } = getRpIdAndOrigin(ctx.req);
 
             let verification;
             try {
@@ -152,15 +185,23 @@ export const webauthnRouter = router({
                     expectedOrigin: origin,
                     expectedRPID: rpID,
                 });
-            } catch (error: any) {
+            }
+            catch (error: any) {
                 console.error('Registration verification failed:', error);
-                throw new TRPCError({ code: 'BAD_REQUEST', message: error.message });
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: error.message,
+                });
             }
 
-            const { verified, registrationInfo } = verification;
+            const {
+                verified, registrationInfo,
+            } = verification;
 
             if (verified && registrationInfo) {
-                const { credential, credentialDeviceType, credentialBackedUp } = registrationInfo;
+                const {
+                    credential, credentialDeviceType, credentialBackedUp,
+                } = registrationInfo;
 
                 await ctx.prisma.passkey.create({
                     data: {
@@ -175,28 +216,43 @@ export const webauthnRouter = router({
                 // Clear challenge
                 await redis.del(`webauthn_challenge:reg:${input.email}`);
 
-                return { success: true };
+                return {
+                    success: true,
+                };
             }
 
-            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Failed to verify registration' });
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Failed to verify registration',
+            });
         }),
 
     generateAuthenticationOptions: publicProcedure
         .input(z.object({
             email: z.string().email().optional(),
         }))
-        .mutation(async ({ ctx, input }) => {
-            let userPasskeys: any[] = [];
+        .mutation(async ({
+            ctx, input,
+        }) => {
+            let userPasskeys: any[] = [
+            ];
             if (input.email) {
                 userPasskeys = await ctx.prisma.passkey.findMany({
-                    where: { email: input.email },
+                    where: {
+                        email: input.email,
+                    },
                 });
                 if (userPasskeys.length === 0) {
-                    throw new TRPCError({ code: 'NOT_FOUND', message: 'No passkeys registered for this email' });
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'No passkeys registered for this email',
+                    });
                 }
             }
 
-            const { rpID } = getRpIdAndOrigin(ctx.req);
+            const {
+                rpID,
+            } = getRpIdAndOrigin(ctx.req);
 
             const options = await generateAuthenticationOptions({
                 rpID,
@@ -204,7 +260,8 @@ export const webauthnRouter = router({
                     id: passkey.id,
                     type: 'public-key',
                     transports: passkey.transports ? passkey.transports.split(',') as any[] : undefined,
-                })) : [],
+                })) : [
+                ],
                 userVerification: 'preferred',
             });
 
@@ -215,7 +272,10 @@ export const webauthnRouter = router({
                 await redis.set(`webauthn_challenge:auth:${input.email}`, options.challenge, 'EX', 300);
             }
 
-            return { options, challengeId };
+            return {
+                options,
+                challengeId,
+            };
         }),
 
     verifyAuthentication: publicProcedure
@@ -224,29 +284,45 @@ export const webauthnRouter = router({
             challengeId: z.string().optional(),
             response: z.any(), // AuthenticationResponseJSON
         }))
-        .mutation(async ({ ctx, input }) => {
+        .mutation(async ({
+            ctx, input,
+        }) => {
             let expectedChallenge: string | null = null;
             if (input.challengeId) {
                 expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.challengeId}`);
-            } else if (input.email) {
+            }
+            else if (input.email) {
                 expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.email}`);
             }
 
             if (!expectedChallenge) {
-                throw new TRPCError({ code: 'BAD_REQUEST', message: 'Challenge expired or invalid' });
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Challenge expired or invalid',
+                });
             }
 
-            const { rpID, origin } = getRpIdAndOrigin(ctx.req);
+            const {
+                rpID, origin,
+            } = getRpIdAndOrigin(ctx.req);
 
             const passkey = await ctx.prisma.passkey.findUnique({
-                where: { id: input.response.id },
+                where: {
+                    id: input.response.id,
+                },
             });
 
             if (!passkey) {
-                throw new TRPCError({ code: 'NOT_FOUND', message: 'Passkey not found' });
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Passkey not found',
+                });
             }
             if (input.email && passkey.email !== input.email) {
-                throw new TRPCError({ code: 'NOT_FOUND', message: 'Passkey does not match email' });
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Passkey does not match email',
+                });
             }
 
             const userEmail = passkey.email;
@@ -265,17 +341,25 @@ export const webauthnRouter = router({
                         transports: passkey.transports ? passkey.transports.split(',') as any[] : undefined,
                     },
                 });
-            } catch (error: any) {
+            }
+            catch (error: any) {
                 console.error('Authentication verification failed:', error);
-                throw new TRPCError({ code: 'BAD_REQUEST', message: error.message });
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: error.message,
+                });
             }
 
-            const { verified, authenticationInfo } = verification;
+            const {
+                verified, authenticationInfo,
+            } = verification;
 
             if (verified && authenticationInfo) {
                 // Update counter
                 await ctx.prisma.passkey.update({
-                    where: { id: passkey.id },
+                    where: {
+                        id: passkey.id,
+                    },
                     data: {
                         counter: BigInt(authenticationInfo.newCounter),
                         lastUsedAt: new Date(),
@@ -292,11 +376,18 @@ export const webauthnRouter = router({
 
                 // Check if user is an Admin
                 const adminUser = await ctx.prisma.user.findFirst({
-                    where: { email: { equals: userEmail, mode: 'insensitive' } },
+                    where: {
+                        email: {
+                            equals: userEmail,
+                            mode: 'insensitive',
+                        },
+                    },
                 });
 
                 if (adminUser) {
-                    const { login: adminLogin } = await import('@/lib/auth');
+                    const {
+                        login: adminLogin,
+                    } = await import('@/lib/auth');
                     await adminLogin({
                         id: adminUser.id,
                         email: adminUser.email,
@@ -317,19 +408,29 @@ export const webauthnRouter = router({
                 // If not admin, fall back to Sales Session login
                 // Fetch last session details to clone team details
                 const lastSession = await ctx.prisma.salesSession.findFirst({
-                    where: { email: userEmail, isVerified: true },
-                    orderBy: { createdAt: 'desc' },
+                    where: {
+                        email: userEmail,
+                        isVerified: true,
+                    },
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
                 });
 
                 if (!lastSession) {
-                    throw new TRPCError({ code: 'NOT_FOUND', message: 'No prior session found to clone.' });
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'No prior session found to clone.',
+                    });
                 }
 
                 let deviceId = crypto.randomBytes(16).toString('hex');
                 const cookieStore = await cookies();
                 const deviceToken = cookieStore.get('sales-device-id')?.value;
                 if (deviceToken) {
-                    const { verifyDeviceId } = await import('@/lib/auth');
+                    const {
+                        verifyDeviceId,
+                    } = await import('@/lib/auth');
                     const verifiedDeviceId = await verifyDeviceId(deviceToken);
                     if (verifiedDeviceId) {
                         deviceId = verifiedDeviceId;
@@ -350,7 +451,9 @@ export const webauthnRouter = router({
                     },
                 });
 
-                const { signSessionId, signDeviceId } = await import('@/lib/auth');
+                const {
+                    signSessionId, signDeviceId,
+                } = await import('@/lib/auth');
                 const signedToken = await signSessionId(newSession.id);
 
                 cookieStore.set('sales-session-id', signedToken, {
@@ -378,6 +481,9 @@ export const webauthnRouter = router({
                 };
             }
 
-            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Failed to verify authentication' });
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Failed to verify authentication',
+            });
         }),
 });

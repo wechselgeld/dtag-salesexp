@@ -31,8 +31,12 @@ export const DEFAULT_PRICING: PricingSettings = {
 	mobile_tier_premium_plus: 40,
 };
 
-export type { BusinessCase, HardwareTier, CalculationInput };
-export type { MagentaTVPackageKey };
+export type {
+	BusinessCase, HardwareTier, CalculationInput,
+};
+export type {
+	MagentaTVPackageKey,
+};
 
 export function calculateProductCosts({
 	product,

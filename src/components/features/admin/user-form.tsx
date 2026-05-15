@@ -21,6 +21,9 @@ import {
 	Shield,
 	Key,
 	Share2,
+	Eye,
+	EyeOff,
+	RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
@@ -75,6 +78,10 @@ export function UserForm({
 		errorMsg,
 		setErrorMsg,
 	] = useState('');
+	const [
+		showPassword,
+		setShowPassword,
+	] = useState(false);
 
 	const {
 		data: currentUser,
@@ -145,6 +152,16 @@ export function UserForm({
 		setValue,
 	]);
 
+	const generatePassword = () => {
+		const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
+		let retVal = '';
+		for (let i = 0, n = charset.length; i < 12; ++i) {
+			retVal += charset.charAt(Math.floor(Math.random() * n));
+		}
+		setValue('password', retVal, { shouldValidate: true });
+		setShowPassword(true); // Show it so they can see what was generated
+	};
+
 	const createMutation = trpc.adminUsers.create.useMutation({
 		onSuccess: () => {
 			utils.adminUsers.list.invalidate();
@@ -169,12 +186,36 @@ export function UserForm({
 
 	const onSubmit = (data: any) => {
 		setErrorMsg('');
+		
+		// Infer parent hierarchy IDs based on selected role
+		let finalData = { ...data };
+		if (data.role === 'TEAM_LEADER' && data.teamId) {
+			const team = teams?.find(t => t.id === data.teamId);
+			if (team) {
+				finalData.locationId = team.locationId;
+				finalData.odRegionId = team.location?.odRegionId || null;
+			}
+		} else if (data.role === 'LOCATION_MANAGER' && data.locationId) {
+			const loc = locations?.find(l => l.id === data.locationId);
+			if (loc) {
+				finalData.odRegionId = loc.odRegionId;
+				finalData.teamId = null;
+			}
+		} else if (data.role === 'OD_MANAGER') {
+			finalData.locationId = null;
+			finalData.teamId = null;
+		} else if (data.role === 'ADMIN') {
+			finalData.odRegionId = null;
+			finalData.locationId = null;
+			finalData.teamId = null;
+		}
+
 		if (mode === 'create') {
 			if (data.password.length < 6) {
 				setErrorMsg('Passwort muss mindestens 6 Zeichen lang sein');
 				return;
 			}
-			createMutation.mutate(data);
+			createMutation.mutate(finalData);
 		}
 		else if (mode === 'edit' && userId) {
 			if (data.password && data.password.length < 6) {
@@ -183,13 +224,13 @@ export function UserForm({
 			}
 			updateMutation.mutate({
 				id: userId,
-				email: data.email,
-				role: data.role,
-				password: data.password || undefined,
-				isEditor: data.isEditor,
-				odRegionId: data.odRegionId || null,
-				locationId: data.locationId || null,
-				teamId: data.teamId || null,
+				email: finalData.email,
+				role: finalData.role,
+				password: finalData.password || undefined,
+				isEditor: finalData.isEditor,
+				odRegionId: finalData.odRegionId || null,
+				locationId: finalData.locationId || null,
+				teamId: finalData.teamId || null,
 			});
 		}
 	};
@@ -255,24 +296,43 @@ export function UserForm({
 						/>
 
 						<div className="flex flex-col gap-1.5">
-							<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-								Passwort{' '}
-								{mode === 'edit' && (
-									<span className="text-[#888] font-normal">
-										(leer lassen, um nicht zu ändern)
-									</span>
-								)}
+							<label className="text-[0.8rem] font-bold text-[#1a1a2e] flex justify-between items-center">
+								<span>
+									Passwort{' '}
+									{mode === 'edit' && (
+										<span className="text-[#888] font-normal">
+											(leer lassen, um nicht zu ändern)
+										</span>
+									)}
+								</span>
+								<button
+									type="button"
+									onClick={generatePassword}
+									className="text-[0.7rem] font-bold text-[#e20074] hover:underline flex items-center gap-1 cursor-pointer"
+								>
+									<RefreshCw className="w-3 h-3" />
+									Passwort generieren
+								</button>
 							</label>
-							<input
-								type="password"
-								className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all"
-								placeholder={
-									mode === 'edit'
-										? 'Neues Passwort'
-										: 'Passwort (min. 6 Zeichen)'
-								}
-								{...register('password')}
-							/>
+							<div className="relative">
+								<input
+									type={showPassword ? 'text' : 'password'}
+									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all pr-12"
+									placeholder={
+										mode === 'edit'
+											? 'Neues Passwort'
+											: 'Passwort (min. 6 Zeichen)'
+									}
+									{...register('password')}
+								/>
+								<button
+									type="button"
+									onClick={() => setShowPassword(!showPassword)}
+									className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#888] hover:text-[#1a1a2e] transition-colors"
+								>
+									{showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+								</button>
+							</div>
 						</div>
 					</AdminFormSection>
 
@@ -388,56 +448,45 @@ export function UserForm({
 							icon={Share2}
 						>
 							<div className="space-y-5">
-								<div className="flex flex-col gap-1.5">
-									<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-										OD-Bereich
-									</label>
-									<div className="relative">
-										<select
-											{...register('odRegionId')}
-											disabled={
-												isLoadingOdRegions || currentUser?.role === 'OD_MANAGER'
-											}
-											className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all disabled:opacity-50 appearance-none cursor-pointer"
-										>
-											<option value="">(Kein OD-Bereich)</option>
-											{odRegions
-												?.filter(
-													(r: any) =>
-														currentUser?.role === 'ADMIN' ||
-														r.id === currentUser?.odRegionId,
-												)
-												.map((r: any) => (
-													<option key={r.id} value={r.id}>
-														{r.name}
-													</option>
-												))}
-										</select>
-										<div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#bbb]">
-											<svg
-												width="12"
-												height="8"
-												viewBox="0 0 12 8"
-												fill="none"
-												xmlns="http://www.w3.org/2000/svg"
-											>
-												<path
-													d="M1.5 1.75L6 6.25L10.5 1.75"
-													stroke="currentColor"
-													strokeWidth="2"
-													strokeLinecap="round"
-													strokeLinejoin="round"
-												/>
-											</svg>
-										</div>
-									</div>
-								</div>
-
-								{(selectedRole === 'LOCATION_MANAGER' ||
-									selectedRole === 'TEAM_LEADER') && (
+								{selectedRole === 'OD_MANAGER' && (
 									<div className="flex flex-col gap-1.5">
 										<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-											Standort
+											OD-Bereich
+										</label>
+										<div className="relative">
+											<select
+												{...register('odRegionId')}
+												disabled={
+													isLoadingOdRegions || currentUser?.role === 'OD_MANAGER'
+												}
+												className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all disabled:opacity-50 appearance-none cursor-pointer"
+											>
+												<option value="">(Kein OD-Bereich)</option>
+												{odRegions
+													?.filter(
+														(r: any) =>
+															currentUser?.role === 'ADMIN' ||
+															r.id === currentUser?.odRegionId,
+													)
+													.map((r: any) => (
+														<option key={r.id} value={r.id}>
+															{r.name}
+														</option>
+													))}
+											</select>
+											<div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#bbb]">
+												<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+													<path d="M1.5 1.75L6 6.25L10.5 1.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+												</svg>
+											</div>
+										</div>
+									</div>
+								)}
+
+								{selectedRole === 'LOCATION_MANAGER' && (
+									<div className="flex flex-col gap-1.5">
+										<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
+											Zugeordneter Standort
 										</label>
 										<div className="relative">
 											<select
@@ -454,32 +503,17 @@ export function UserForm({
 														(l: any) =>
 															(currentUser?.role === 'ADMIN' ||
 																currentUser?.role === 'OD_MANAGER' ||
-																l.id === currentUser?.locationId) &&
-															(!selectedOdRegionId ||
-																l.odRegionId === selectedOdRegionId),
+																l.id === currentUser?.locationId),
 													)
 													.map((loc: any) => (
 														<option key={loc.id} value={loc.id}>
-															{loc.name} {loc.address ? `(${loc.address})` : ''}{' '}
-															{loc.isActive ? '' : '(Inaktiv)'}
+															{loc.name} {loc.odRegion?.name ? `— ${loc.odRegion.name}` : ''}
 														</option>
 													))}
 											</select>
 											<div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#bbb]">
-												<svg
-													width="12"
-													height="8"
-													viewBox="0 0 12 8"
-													fill="none"
-													xmlns="http://www.w3.org/2000/svg"
-												>
-													<path
-														d="M1.5 1.75L6 6.25L10.5 1.75"
-														stroke="currentColor"
-														strokeWidth="2"
-														strokeLinecap="round"
-														strokeLinejoin="round"
-													/>
+												<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+													<path d="M1.5 1.75L6 6.25L10.5 1.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 												</svg>
 											</div>
 										</div>
@@ -489,7 +523,7 @@ export function UserForm({
 								{selectedRole === 'TEAM_LEADER' && (
 									<div className="flex flex-col gap-1.5">
 										<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
-											Vertriebsteam
+											Zugeordnetes Vertriebsteam
 										</label>
 										<div className="relative">
 											<select
@@ -504,34 +538,17 @@ export function UserForm({
 													?.filter(
 														(t: any) =>
 															(currentUser?.role !== 'TEAM_LEADER' ||
-																t.id === currentUser?.teamId) &&
-															(!selectedLocationId ||
-																t.locationId === selectedLocationId),
+																t.id === currentUser?.teamId),
 													)
 													.map((team: any) => (
 														<option key={team.id} value={team.id}>
-															{team.name}{' '}
-															{team.location?.address
-																? `(${team.location.address})`
-																: ''}
+															{team.name} — {team.location?.name}
 														</option>
 													))}
 											</select>
 											<div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#bbb]">
-												<svg
-													width="12"
-													height="8"
-													viewBox="0 0 12 8"
-													fill="none"
-													xmlns="http://www.w3.org/2000/svg"
-												>
-													<path
-														d="M1.5 1.75L6 6.25L10.5 1.75"
-														stroke="currentColor"
-														strokeWidth="2"
-														strokeLinecap="round"
-														strokeLinejoin="round"
-													/>
+												<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+													<path d="M1.5 1.75L6 6.25L10.5 1.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 												</svg>
 											</div>
 										</div>

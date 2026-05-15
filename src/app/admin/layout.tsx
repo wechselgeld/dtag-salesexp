@@ -214,7 +214,7 @@ export default function AdminLayout({
 				collapsed={collapsed}
 				onToggle={() => setCollapsed(!collapsed)}
 				catColor="#e20074"
-				copyright={`© ${new Date().getFullYear()} Felix Kinze`}
+				copyright={`© ${new Date().getFullYear()} buffinteractive.net`}
 				footerActions={
 					<div className="px-3 w-full mb-6">
 						<div
