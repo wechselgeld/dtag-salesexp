@@ -29,7 +29,7 @@ export function hasRole(user: SessionUser | undefined | null, role: Role): boole
 // ------------------------------------------------------------------
 
 export function getOdRegionFilter(user: SessionUser | undefined | null) {
-    if (!user) return { id: 'UNAUTHORIZED' };
+    if (!user) return {}; // Allow public/onboarding access to list OD regions
     if (hasRole(user, 'ADMIN')) return {};
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
         return { id: user.odRegionId };
@@ -42,7 +42,7 @@ export function getOdRegionFilter(user: SessionUser | undefined | null) {
 }
 
 export function getLocationFilter(user: SessionUser | undefined | null) {
-    if (!user) return { id: 'UNAUTHORIZED' };
+    if (!user) return {}; // Allow public/onboarding access to list locations
     if (hasRole(user, 'ADMIN')) return {};
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
         return { odRegionId: user.odRegionId };
@@ -57,7 +57,7 @@ export function getLocationFilter(user: SessionUser | undefined | null) {
 }
 
 export function getTeamFilter(user: SessionUser | undefined | null) {
-    if (!user) return { id: 'UNAUTHORIZED' };
+    if (!user) return {}; // Allow public/onboarding access to list teams
     if (hasRole(user, 'ADMIN')) return {};
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
         return { location: { odRegionId: user.odRegionId } };
