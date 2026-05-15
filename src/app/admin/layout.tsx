@@ -26,6 +26,9 @@ import {
 	DeleteConfirmToast,
 } from '@/components/shared/delete-confirm-toast';
 import {
+	GlobalErrorToast,
+} from '@/components/shared/error-toast';
+import {
 	trpc,
 } from '@/lib/trpc';
 import type {
@@ -273,6 +276,7 @@ export default function AdminLayout({
 			</main>
 
 			<DeleteConfirmToast />
+			<GlobalErrorToast />
 		</div>
 	);
 }

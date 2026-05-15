@@ -9,7 +9,7 @@ import {
 } from '@trpc/server';
 
 export const locationRouter = router({
-    list: publicProcedure
+    list: protectedProcedure
         .input(z.object({
             locationId: z.string().optional(),
             odRegionId: z.string().optional(),
@@ -51,15 +51,20 @@ export const locationRouter = router({
 
             const where: any = {
                 ...securityFilter,
-                ...(input?.locationId ? {
-                    id: input.locationId,
-                } : {
-                }),
-                ...(input?.odRegionId ? {
-                    odRegionId: input.odRegionId,
-                } : {
-                }),
             };
+
+            // Apply optional filters, but don't allow bypassing security restrictions
+            if (input?.locationId) {
+                if (!securityFilter.id || securityFilter.id === input.locationId) {
+                    where.id = input.locationId;
+                }
+            }
+
+            if (input?.odRegionId) {
+                if (!securityFilter.odRegionId || securityFilter.odRegionId === input.odRegionId) {
+                    where.odRegionId = input.odRegionId;
+                }
+            }
 
             if (search) {
                 where.OR = [

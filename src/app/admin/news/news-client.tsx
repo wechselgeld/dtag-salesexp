@@ -7,9 +7,11 @@ import {
 	trpc,
 } from '@/lib/trpc';
 import {
-	Plus, Trash2, Megaphone, Loader2, Search, Layers,
+	Plus, Trash2, Megaphone, Loader2, Search, Layers, X,
 } from 'lucide-react';
 import clsx from 'clsx';
+import { useDebounce } from '@/hooks/use-debounce';
+import { showErrorToast } from '@/components/shared/error-toast';
 import {
 	format,
 } from 'date-fns';
@@ -48,13 +50,15 @@ export default function AdminNewsPage() {
 		setSearchQuery,
 	] = useState('');
 
+	const debouncedSearch = useDebounce(searchQuery, 300);
+
 	const {
 		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
 	} =
 		trpc.admin.news.list.useInfiniteQuery(
 			{
 				limit: 20,
-				search: searchQuery || undefined,
+				search: debouncedSearch || undefined,
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -65,6 +69,7 @@ export default function AdminNewsPage() {
 		onSuccess: () => {
 			utils.admin.news.list.invalidate();
 		},
+		onError: (error) => showErrorToast('Fehler beim Löschen', error.message),
 	});
 
 	const newsItems = data?.pages.flatMap((page) => page.items) || [
@@ -94,8 +99,16 @@ export default function AdminNewsPage() {
 					placeholder="Neuigkeiten suchen..."
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
-					className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
+					className="w-full pl-11 pr-11 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
 				/>
+				{searchQuery && (
+					<button
+						onClick={() => setSearchQuery('')}
+						className="absolute right-4 top-1/2 -translate-y-1/2 text-[#bbb] hover:text-[#1a1a2e] bg-transparent border-none cursor-pointer"
+					>
+						<X className="w-4 h-4" />
+					</button>
+				)}
 			</div>
 
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
@@ -119,9 +132,25 @@ export default function AdminNewsPage() {
 						<h3 className="text-[1.1rem] font-bold text-[#1a1a2e] mb-1">
 							Keine Neuigkeiten
 						</h3>
-						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0">
-							Es wurden keine Neuigkeiten für deine Suche gefunden.
+						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0 mb-4">
+							Es wurden keine Neuigkeiten {searchQuery ? 'für deine Suche' : ''} gefunden.
 						</p>
+						<div className="flex gap-3 mt-2">
+							{searchQuery && (
+								<button
+									onClick={() => setSearchQuery('')}
+									className="text-[#1a1a2e] text-[0.85rem] font-semibold bg-white border border-[#eaedf0] px-4 py-2 rounded-xl hover:bg-[#f7f8fa] transition-colors cursor-pointer"
+								>
+									Suche zurücksetzen
+								</button>
+							)}
+							<Link
+								href="/admin/news/new"
+								className="text-white text-[0.85rem] font-semibold bg-[#e20074] border-none px-4 py-2 rounded-xl hover:bg-[#c70066] transition-colors cursor-pointer no-underline flex items-center gap-2"
+							>
+								<Plus className="w-4 h-4" /> Neue Info
+							</Link>
+						</div>
 					</div>
 				) : (
 					<div className="flex flex-col">

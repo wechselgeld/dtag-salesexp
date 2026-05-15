@@ -18,6 +18,8 @@ import {
 	Search,
 } from 'lucide-react';
 import clsx from 'clsx';
+import { useDebounce } from '@/hooks/use-debounce';
+import { showErrorToast } from '@/components/shared/error-toast';
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
@@ -106,6 +108,15 @@ export default function TeamsPage() {
 		'products' | 'categories' | 'businessCases'
 	>('products');
 
+	const debouncedTeamSearch = useDebounce(teamSearchQuery, 300);
+	const debouncedProductSearch = useDebounce(searchQuery, 300);
+
+	const {
+		data: me,
+	} = trpc.auth.me.useQuery();
+
+	const isRestrictedUser = me?.role === 'LOCATION_MANAGER' || me?.role === 'TEAM_LEADER';
+
 	const {
 		data: locations, isLoading: isLocationsLoading,
 	} =
@@ -120,7 +131,7 @@ export default function TeamsPage() {
 	} = trpc.team.list.useInfiniteQuery(
 		{
 			limit: 20,
-			search: teamSearchQuery || undefined,
+			search: debouncedTeamSearch || undefined,
 			locationId: selectedLocationId !== 'all' ? selectedLocationId : undefined,
 		},
 		{
@@ -137,7 +148,7 @@ export default function TeamsPage() {
 	} = trpc.product.getAllProducts.useInfiniteQuery(
 		{
 			limit: 20,
-			search: searchQuery || undefined,
+			search: debouncedProductSearch || undefined,
 		},
 		{
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -147,9 +158,11 @@ export default function TeamsPage() {
 
 	const deleteTeam = trpc.team.delete.useMutation({
 		onSuccess: () => utils.team.list.invalidate(),
+		onError: (error) => showErrorToast('Fehler beim Löschen', error.message),
 	});
 	const toggleFocus = trpc.team.toggleFocus.useMutation({
 		onSuccess: () => utils.team.list.invalidate(),
+		onError: (error) => showErrorToast('Fehler beim Speichern', error.message),
 	});
 
 	const teams = teamsData?.pages.flatMap((page) => page.items) || [
@@ -182,39 +195,49 @@ export default function TeamsPage() {
 						placeholder="Team suchen..."
 						value={teamSearchQuery}
 						onChange={(e) => setTeamSearchQuery(e.target.value)}
-						className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
+						className="w-full pl-11 pr-11 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
 					/>
+					{teamSearchQuery && (
+						<button
+							onClick={() => setTeamSearchQuery('')}
+							className="absolute right-4 top-1/2 -translate-y-1/2 text-[#bbb] hover:text-[#1a1a2e] bg-transparent border-none cursor-pointer"
+						>
+							<X className="w-4 h-4" />
+						</button>
+					)}
 				</div>
-				<div className="w-full md:w-[250px] relative">
-					<select
-						value={selectedLocationId}
-						onChange={(e) => setSelectedLocationId(e.target.value)}
-						disabled={isLocationsLoading}
-						className="w-full pl-4 pr-10 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem] appearance-none disabled:opacity-50"
-					>
-						<option value="all">Alle Standorte</option>
-						{locations?.items?.map((loc: any) => (
-							<option
-								key={loc.id}
-								value={loc.id}
-								title={loc.address || undefined}
-							>
-								{loc.name}
-							</option>
-						))}
-					</select>
-					<div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-						<svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-							<path
-								d="M1.5 1.75L6 6.25L10.5 1.75"
-								stroke="#bbb"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-						</svg>
+				{!isRestrictedUser && (
+					<div className="w-full md:w-[250px] relative">
+						<select
+							value={selectedLocationId}
+							onChange={(e) => setSelectedLocationId(e.target.value)}
+							disabled={isLocationsLoading}
+							className="w-full pl-4 pr-10 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem] appearance-none disabled:opacity-50"
+						>
+							<option value="all">Alle Standorte</option>
+							{locations?.items?.map((loc: any) => (
+								<option
+									key={loc.id}
+									value={loc.id}
+									title={loc.address || undefined}
+								>
+									{loc.name}
+								</option>
+							))}
+						</select>
+						<div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+							<svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+								<path
+									d="M1.5 1.75L6 6.25L10.5 1.75"
+									stroke="#bbb"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+							</svg>
+						</div>
 					</div>
-				</div>
+				)}
 			</div>
 
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
@@ -238,9 +261,25 @@ export default function TeamsPage() {
 						<h3 className="text-[1.1rem] font-bold text-[#1a1a2e] mb-1">
 							Keine Teams
 						</h3>
-						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0">
-							Es wurden keine Teams für deine Suche gefunden.
+						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0 mb-4">
+							Es wurden keine Teams {teamSearchQuery ? 'für deine Suche' : ''} gefunden.
 						</p>
+						<div className="flex gap-3 mt-2">
+							{teamSearchQuery && (
+								<button
+									onClick={() => setTeamSearchQuery('')}
+									className="text-[#1a1a2e] text-[0.85rem] font-semibold bg-white border border-[#eaedf0] px-4 py-2 rounded-xl hover:bg-[#f7f8fa] transition-colors cursor-pointer"
+								>
+									Suche zurücksetzen
+								</button>
+							)}
+							<Link
+								href="/admin/teams/new"
+								className="text-white text-[0.85rem] font-semibold bg-[#e20074] border-none px-4 py-2 rounded-xl hover:bg-[#c70066] transition-colors cursor-pointer no-underline flex items-center gap-2"
+							>
+								<Plus className="w-4 h-4" /> Neues Team
+							</Link>
+						</div>
 					</div>
 				) : (
 					<div className="overflow-x-auto">
@@ -421,8 +460,16 @@ export default function TeamsPage() {
 												placeholder="Tarife suchen..."
 												value={searchQuery}
 												onChange={(e) => setSearchQuery(e.target.value)}
-												className="w-full pl-11 pr-4 py-3 bg-white border border-[#eaedf0] rounded-2xl focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_4px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
+												className="w-full pl-11 pr-11 py-3 bg-white border border-[#eaedf0] rounded-2xl focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_4px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
 											/>
+											{searchQuery && (
+												<button
+													onClick={() => setSearchQuery('')}
+													className="absolute right-4 top-1/2 -translate-y-1/2 text-[#bbb] hover:text-[#1a1a2e] bg-transparent border-none cursor-pointer"
+												>
+													<X className="w-4 h-4" />
+												</button>
+											)}
 										</div>
 										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 											{products.map((product) => {
