@@ -7,39 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Models
-
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  password String
-  role     String  @default("TEAM_LEADER") // "ADMIN", "OD_MANAGER", "LOCATION_MANAGER", "TEAM_LEADER"
-  isEditor Boolean @default(false)
-
+  id         String    @id @default(cuid())
+  email      String    @unique
+  password   String
+  role       String    @default("TEAM_LEADER")
+  isEditor   Boolean   @default(false)
   odRegionId String?
-  odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: SetNull)
-
   locationId String?
-  location   Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
-
-  teamId String?
-  team   Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  teamId     String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  location   Location? @relation(fields: [locationId], references: [id])
+  odRegion   OdRegion? @relation(fields: [odRegionId], references: [id])
+  team       Team?     @relation(fields: [teamId], references: [id])
 }
 
 model OdRegion {
-  id       String  @id @default(cuid())
-  name     String
-  isActive Boolean @default(true)
-
+  id        String     @id @default(cuid())
+  name      String
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   locations Location[]
-  users     User[]
   news      News[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  users     User[]
 }
 
 model Location {
@@ -48,274 +40,218 @@ model Location {
   address    String?
   isActive   Boolean   @default(true)
   odRegionId String?
-  odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: SetNull)
-
-  teams Team[]
-  users User[]
-  news  News[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  odRegion   OdRegion? @relation(fields: [odRegionId], references: [id])
+  news       News[]
+  teams      Team[]
+  users      User[]
 }
 
 model Product {
-  id          String  @id @default(cuid())
-  name        String
-  description String? @db.Text
-  category    String // "MOBILE", "FIBER", "DSL", "MAGENTA_TV_OTT", "DEVICE"
-  basePrice   Float
-  isActive    Boolean @default(true)
-  priority    Int     @default(0)
-
-  // Tariff Specifics
-  dataVolume       String?
-  downloadSpeed    Int?
-  uploadSpeed      Int?
-  contractDuration Int?    @default(24)
-
-  // Business Case Rules
-  allowNewActivation Boolean @default(true)
-  allowMove          Boolean @default(true)
-  allowPlanChange    Boolean @default(true)
-  allowSpeedUp       Boolean @default(false)
-
-  // Fees
+  id                      String          @id @default(cuid())
+  name                    String
+  description             String?
+  category                String
+  basePrice               Float
+  isActive                Boolean         @default(true)
+  priority                Int             @default(0)
+  dataVolume              String?
+  downloadSpeed           Int?
+  uploadSpeed             Int?
+  contractDuration        Int?            @default(24)
+  allowNewActivation      Boolean         @default(true)
+  allowMove               Boolean         @default(true)
+  allowPlanChange         Boolean         @default(true)
+  allowSpeedUp            Boolean         @default(false)
   activationFeeNew        Float?
   activationFeeMove       Float?
-  activationFeePlanChange Float? @default(0)
+  activationFeePlanChange Float?          @default(0)
   activationFeeSpeedUp    Float?
-
-  // MagentaTV Compatibility
-  allowMagentaTV       Boolean @default(false)
-  hasMagentaTVBundle   Boolean @default(false)
-  magentaTVBundleName  String?
-  magentaTVBundlePrice Float?
-
-  // Mobile Hardware Tiers
-  allowHardwareTiers Boolean @default(false)
-
-  // Device Specifics
-  deviceManufacturer String?
-  deviceContext      String?
-  purchasePrice      Float?
-  rentalPrice        Float?
-
-  features        String? @db.Text // JSON string
-  targetGroups    String? @db.Text // JSON string array of target groups e.g. ["student", "family"]
-  salesScript     String? @db.Text // Text for sales agents
-  magentaInfosUrl String? // Link to internal information platform
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  specialPrices    SpecialPrice[]  @relation("ProductSpecialPrices")
-  highlights       TeamHighlight[]
-  compatibleAddons Addon[]         @relation("ProductAddons")
-  salesArguments   SalesArgument[]
-  priceHistory     PriceHistory[]
+  allowMagentaTV          Boolean         @default(false)
+  hasMagentaTVBundle      Boolean         @default(false)
+  magentaTVBundleName     String?
+  magentaTVBundlePrice    Float?
+  allowHardwareTiers      Boolean         @default(false)
+  deviceManufacturer      String?
+  deviceContext           String?
+  purchasePrice           Float?
+  rentalPrice             Float?
+  features                String?
+  targetGroups            String?
+  salesScript             String?
+  magentaInfosUrl         String?
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+  priceHistory            PriceHistory[]
+  salesArguments          SalesArgument[]
+  highlights              TeamHighlight[]
+  compatibleAddons        Addon[]         @relation("ProductAddons")
+  specialPrices           SpecialPrice[]  @relation("ProductSpecialPrices")
 }
 
 model SalesArgument {
-  id        String  @id @default(cuid())
-  text      String  @db.Text
+  id        String   @id @default(cuid())
+  text      String
   productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  sortOrder Int     @default(0)
-  isActive  Boolean @default(true)
-
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model PriceHistory {
   id        String   @id @default(cuid())
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   price     Float
-  label     String?  // Optional label e.g., "Preis 2023"
-
+  label     String?
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model SpecialPrice {
-  id           String    @id @default(cuid())
-  name         String
-  description  String? @db.Text
-  internalNote String? @db.Text
-  products     Product[] @relation("ProductSpecialPrices")
-
-  tiers SpecialPriceTier[]
-
-  // Context Conditions
-  magentaTVRequirement String @default("NONE") // "REQUIRED", "NOT_ALLOWED", "NONE"
-  requiresSpeedUp       Boolean @default(false)
-  requiresMove          Boolean @default(false)
-  requiresNewActivation Boolean @default(false)
-
-  discountTarget String @default("BASE_PRICE") // "BASE_PRICE", "MAGENTA_TV"
-  discountType   String @default("ABSOLUTE") // "ABSOLUTE", "RELATIVE"
-
-  isActive Boolean @default(true)
-  priority Int     @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String             @id @default(cuid())
+  name                  String
+  description           String?
+  internalNote          String?
+  magentaTVRequirement  String             @default("NONE")
+  requiresSpeedUp       Boolean            @default(false)
+  requiresMove          Boolean            @default(false)
+  requiresNewActivation Boolean            @default(false)
+  discountTarget        String             @default("BASE_PRICE")
+  discountType          String             @default("ABSOLUTE")
+  isActive              Boolean            @default(true)
+  priority              Int                @default(0)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  tiers                 SpecialPriceTier[]
+  products              Product[]          @relation("ProductSpecialPrices")
 }
 
 model SpecialPriceTier {
   id             String       @id @default(cuid())
   specialPriceId String
+  price          Float
+  fromMonth      Int
+  toMonth        Int
+  discountTarget String       @default("BASE_PRICE")
+  discountType   String       @default("ABSOLUTE")
   specialPrice   SpecialPrice @relation(fields: [specialPriceId], references: [id], onDelete: Cascade)
-
-  price     Float
-  fromMonth Int
-  toMonth   Int
-
-  discountTarget String @default("BASE_PRICE") // "BASE_PRICE", "MAGENTA_TV"
-  discountType   String @default("ABSOLUTE") // "ABSOLUTE", "RELATIVE"
 }
 
 model Addon {
-  id          String  @id @default(cuid())
-  name        String
-  description String? @db.Text
-  category    String?
-
-  isGlobal            Boolean @default(false)
-  isActive            Boolean @default(true)
-  magentaTVRequirement String  @default("NONE") // "REQUIRED", "NOT_ALLOWED", "NONE"
-
-  imageUrl String?
-
-  tiers AddonTier[]
-
-  compatibleProducts Product[]       @relation("ProductAddons")
-  highlights         TeamHighlight[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                   String          @id @default(cuid())
+  name                 String
+  description          String?
+  category             String?
+  isGlobal             Boolean         @default(false)
+  isActive             Boolean         @default(true)
+  magentaTVRequirement String          @default("NONE")
+  imageUrl             String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  tiers                AddonTier[]
+  highlights           TeamHighlight[]
+  compatibleProducts   Product[]       @relation("ProductAddons")
 }
 
 model AddonTier {
   id      String @id @default(cuid())
   addonId String
+  name    String
+  price   Float
   addon   Addon  @relation(fields: [addonId], references: [id], onDelete: Cascade)
-
-  name  String
-  price Float
 }
 
 model TeamHighlight {
-  id     String @id @default(cuid())
-  teamId String
-  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-
-  productId String?
-  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  addonId String?
-  addon   Addon?  @relation(fields: [addonId], references: [id], onDelete: Cascade)
-
+  id           String   @id @default(cuid())
+  teamId       String
+  productId    String?
+  addonId      String?
   category     String?
   businessCase String?
-
-  reason String?
-  active Boolean @default(true)
-
-  createdAt DateTime @default(now())
+  reason       String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  addon        Addon?   @relation(fields: [addonId], references: [id], onDelete: Cascade)
+  product      Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  team         Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }
 
 model MaintenanceAnnouncement {
-  id       String  @id @default(cuid())
-  title    String
-  message  String  @db.Text
-  priority String // "LOW", "MEDIUM", "HIGH", "CRITICAL"
-  isActive Boolean @default(true)
-
+  id         String    @id @default(cuid())
+  title      String
+  message    String
+  priority   String
+  isActive   Boolean   @default(true)
   validFrom  DateTime?
   validUntil DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model OneTimeCredit {
-  id       String  @id @default(cuid())
-  name     String
-  value    Float
-  isActive Boolean @default(true)
-
+  id        String   @id @default(cuid())
+  name      String
+  value     Float
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Team {
-  id    String @id @default(cuid())
-  name  String
-  email String @default("team06@telekom.de")
-
+  id         String          @id @default(cuid())
+  name       String
+  email      String          @default("team06@telekom.de")
   locationId String?
-  location   Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
-
-  users User[]
-
-  sessions   SalesSession[]
-  highlights TeamHighlight[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
   news       News[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  sessions   SalesSession[]
+  location   Location?       @relation(fields: [locationId], references: [id])
+  highlights TeamHighlight[]
+  users      User[]
 
   @@index([locationId])
 }
 
 model SalesSession {
-  id     String @id @default(cuid())
-  teamId String
-  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-
-  acceptedTerms Boolean @default(false)
-
-  userAgent String?
-  ip        String?
-
-  isActive  Boolean   @default(true)
-  expiresAt DateTime?
-
-  // Nutzerinformationen / Verifizierung
+  id                    String    @id @default(cuid())
+  teamId                String
+  acceptedTerms         Boolean   @default(false)
+  userAgent             String?
+  ip                    String?
+  isActive              Boolean   @default(true)
+  expiresAt             DateTime?
   email                 String?
   firstName             String?
   lastName              String?
   isVerified            Boolean   @default(false)
   verificationToken     String?   @unique
   verificationExpiresAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  team                  Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }
 
 model News {
-  id       String  @id @default(cuid())
-  title    String
-  content  String  @db.Text
-  priority String  @default("INFO") // "INFO", "UPDATE", "IMPORTANT", "CRITICAL"
-  isActive Boolean @default(true)
-
+  id         String    @id @default(cuid())
+  title      String
+  content    String
+  priority   String    @default("INFO")
+  isActive   Boolean   @default(true)
   odRegionId String?
-  odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: Cascade)
-
   locationId String?
+  teamId     String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   location   Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
-
-  teamId String?
-  team   Team?   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: Cascade)
+  team       Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }
 
 model SystemSetting {
   key   String @id
   value String
 }
-

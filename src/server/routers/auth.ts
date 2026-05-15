@@ -19,33 +19,27 @@ export const authRouter = router({
     me: protectedProcedure.query(({
         ctx,
     }) => {
-        return ctx.session as any;
+        return ctx.session;
     }),
 
     login: publicProcedure
         .input(z.object({
-            email: z.string().email(),
+            email: z.string().email().trim().toLowerCase(),
             password: z.string(),
         }))
         .mutation(async ({
             input,
         }) => {
-            const user = await prisma.user.findUnique({
+            const user = await prisma.user.findFirst({
                 where: {
-                    email: input.email,
+                    email: {
+                        equals: input.email,
+                        mode: 'insensitive',
+                    },
                 },
             });
 
             if (!user) {
-                // Mock default user if none exists (for dev simplicity)
-                // In reality, we should seed this.
-                if (input.email === 'admin@telekom.de' && input.password === 'admin123') {
-                    // We allow this hardcoded login if no user is in DB yet for bootstrapping
-                    // But better: Checking if DB is empty?
-                    // Let's stick to standard flow: User must exist.
-                    // Actually, let's create a seed user if not exists? No, security risk.
-                    // We will rely on seeding.
-                }
                 throw new TRPCError({
                     code: 'UNAUTHORIZED',
                     message: 'Deine Zugangsdaten sind ungültig. Wende Dich an den Entwickler, um Zugangsdaten zu bestellen.',

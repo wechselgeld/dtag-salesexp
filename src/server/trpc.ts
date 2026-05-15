@@ -7,6 +7,9 @@ import type {
 import {
  httpLogger, formatDuration,
 } from '../lib/logger';
+import {
+	prisma,
+} from '@/lib/prisma';
 import pc from 'picocolors';
 
 const t = initTRPC.context<Context>().create();
@@ -38,7 +41,7 @@ const loggerMiddleware = t.middleware(async (opts) => {
 export const router = t.router;
 export const publicProcedure = t.procedure.use(loggerMiddleware); // Apply to all public procedures
 
-const isAuthed = t.middleware(({
+const isAuthed = t.middleware(async ({
 	ctx, next,
 }) => {
 	if (!ctx.session || !ctx.session.sub) {
@@ -47,11 +50,25 @@ const isAuthed = t.middleware(({
 		});
 	}
 
+	const user = await prisma.user.findUnique({
+		where: { id: ctx.session.sub as string },
+		select: { id: true, role: true, isEditor: true }
+	});
+
+	if (!user) {
+		throw new TRPCError({
+			code: 'UNAUTHORIZED',
+			message: 'Session revoked or user deleted.'
+		});
+	}
+
 	return next({
 		ctx: {
 			session: {
 				...ctx.session,
-				id: ctx.session.sub as string,
+				id: user.id,
+				role: user.role,
+				isEditor: user.isEditor,
 			},
 		},
 	});

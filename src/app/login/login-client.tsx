@@ -13,7 +13,7 @@ import {
 	motion,
 } from 'framer-motion';
 import {
-	ArrowRight, Loader2, AlertTriangle,
+	ArrowRight, Loader2, AlertTriangle, Eye, EyeOff,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -46,6 +46,7 @@ export default function LoginPage() {
 		error,
 		setError,
 	] = useState('');
+	const [showPassword, setShowPassword] = useState(false);
 
 	const {
 		register,
@@ -148,7 +149,7 @@ export default function LoginPage() {
 									? 'border-red-300 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]'
 									: 'border-[#eaedf0] focus:border-[#e20074]/30 focus:shadow-[0_0_0_4px_rgba(226,0,116,0.06)]',
 							)}
-							placeholder="admin@telekom.de"
+							placeholder="max.mustermann@telekom.de"
 						/>
 					</div>
 
@@ -173,17 +174,26 @@ export default function LoginPage() {
 								</motion.span>
 							)}
 						</div>
-						<input
-							type="password"
-							{...register('password')}
-							className={clsx(
-								'w-full px-5 py-4 rounded-2xl border bg-[#f7f8fa] text-[#1a1a2e] focus:outline-none focus:bg-white transition-all font-mono tracking-widest text-[1rem] placeholder:text-[#ccc]',
-								errors.password
-									? 'border-red-300 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]'
-									: 'border-[#eaedf0] focus:border-[#e20074]/30 focus:shadow-[0_0_0_4px_rgba(226,0,116,0.06)]',
-							)}
-							placeholder="••••••••"
-						/>
+						<div className="relative w-full">
+							<input
+								type={showPassword ? "text" : "password"}
+								{...register('password')}
+								className={clsx(
+									'w-full pl-5 pr-12 py-4 rounded-2xl border bg-[#f7f8fa] text-[#1a1a2e] focus:outline-none focus:bg-white transition-all font-mono tracking-widest text-[1rem] placeholder:text-[#ccc]',
+									errors.password
+										? 'border-red-300 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]'
+										: 'border-[#eaedf0] focus:border-[#e20074]/30 focus:shadow-[0_0_0_4px_rgba(226,0,116,0.06)]',
+								)}
+								placeholder="••••••••"
+							/>
+							<button
+								type="button"
+								onClick={() => setShowPassword(!showPassword)}
+								className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888] hover:text-[#1a1a2e] transition-colors focus:outline-none"
+							>
+								{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+							</button>
+						</div>
 					</div>
 
 					{error && (
