@@ -109,7 +109,7 @@ export default function RootLayout({
 				)}
 				<Script
 					src="https://analytics.buffinteractive.net/api/script.js"
-					data-website-id="2c42a2b44317"
+					data-site-id="2c42a2b44317"
 					strategy="afterInteractive"
 				/>
 				<Providers>
