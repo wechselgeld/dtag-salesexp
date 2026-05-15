@@ -16,8 +16,21 @@ import crypto from 'crypto';
 
 const rpName = 'Sales Experience Platform';
 
-function getRpIdAndOrigin() {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+function getRpIdAndOrigin(req?: Request | null) {
+    let appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    
+    if (!appUrl && req) {
+        const host = req.headers.get('host');
+        const proto = req.headers.get('x-forwarded-proto') || 'https';
+        if (host) {
+            appUrl = `${proto}://${host}`;
+        }
+    }
+
+    if (!appUrl) {
+        appUrl = 'http://localhost:3000';
+    }
+
     try {
         const url = new URL(appUrl);
         return {
@@ -88,7 +101,7 @@ export const webauthnRouter = router({
                 where: { email: input.email },
             });
 
-            const { rpID, origin } = getRpIdAndOrigin();
+            const { rpID, origin } = getRpIdAndOrigin(ctx.req);
 
             // We need a stable user ID for the authenticator. 
             // Since we don't have a SalesUser model, we'll hash the email.
@@ -129,7 +142,7 @@ export const webauthnRouter = router({
                 throw new TRPCError({ code: 'BAD_REQUEST', message: 'Challenge expired or invalid' });
             }
 
-            const { rpID, origin } = getRpIdAndOrigin();
+            const { rpID, origin } = getRpIdAndOrigin(ctx.req);
 
             let verification;
             try {
@@ -181,7 +194,7 @@ export const webauthnRouter = router({
                 throw new TRPCError({ code: 'NOT_FOUND', message: 'No passkeys registered for this email' });
             }
 
-            const { rpID } = getRpIdAndOrigin();
+            const { rpID } = getRpIdAndOrigin(ctx.req);
 
             const options = await generateAuthenticationOptions({
                 rpID,
@@ -209,7 +222,7 @@ export const webauthnRouter = router({
                 throw new TRPCError({ code: 'BAD_REQUEST', message: 'Challenge expired or invalid' });
             }
 
-            const { rpID, origin } = getRpIdAndOrigin();
+            const { rpID, origin } = getRpIdAndOrigin(ctx.req);
 
             const passkey = await ctx.prisma.passkey.findUnique({
                 where: { id: input.response.id },

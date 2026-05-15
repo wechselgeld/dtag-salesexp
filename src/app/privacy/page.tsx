@@ -58,13 +58,13 @@ export default function PrivacyPage() {
 							Die verantwortliche Stelle für die Datenverarbeitung auf dieser
 							Website ist die:
 							<br />
-							Deutsche Telekom Service GmbH
+							Buff Germany UG (haftungsbeschränkt)
 							<br />
-							Service-Standort Chemnitz
+							Eulitzstr. 1
 							<br />
-							Reichenhainer Str. 68 A
-							<br />
-							09126 Chemnitz
+							09112 Chemnitz
+							<br/><br/>
+							Besuch Buff Interactive gern auf Ihrer Website unter <a href="https://buffinteractive.net">buffinteractive.net</a>.
 						</p>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
 							Dieses Tool ist <strong>strikt vertraulich</strong> und
