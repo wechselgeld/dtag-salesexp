@@ -52,7 +52,14 @@ const isAuthed = t.middleware(async ({
 
 	const user = await prisma.user.findUnique({
 		where: { id: ctx.session.sub as string },
-		select: { id: true, role: true, isEditor: true }
+		select: { 
+			id: true, 
+			role: true, 
+			isEditor: true,
+			odRegionId: true,
+			locationId: true,
+			teamId: true,
+		}
 	});
 
 	if (!user) {
@@ -69,6 +76,9 @@ const isAuthed = t.middleware(async ({
 				id: user.id,
 				role: user.role,
 				isEditor: user.isEditor,
+				odRegionId: user.odRegionId,
+				locationId: user.locationId,
+				teamId: user.teamId,
 			},
 		},
 	});

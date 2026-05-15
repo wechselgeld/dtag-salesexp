@@ -21,9 +21,6 @@ const nextConfig: NextConfig = {
 			'lucide-react',
 		],
 	},
-	turbopack: {
-		root: process.cwd(),
-	},
 };
 
 export default nextConfig;

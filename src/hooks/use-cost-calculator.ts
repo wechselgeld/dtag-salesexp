@@ -15,6 +15,7 @@ import type {
 	Credit,
 	PricingSettings,
 	HardwareTier,
+	CalculationInput,
 } from '@/types/product';
 
 export const DEFAULT_PRICING: PricingSettings = {
@@ -30,27 +31,8 @@ export const DEFAULT_PRICING: PricingSettings = {
 	mobile_tier_premium_plus: 40,
 };
 
-export type {
-	BusinessCase,
-};
-export type {
-	MagentaTVPackageKey,
-};
-
-export interface CalculationInput {
-	product: Product;
-	businessCase: BusinessCase;
-	magentaTVPackage: MagentaTVPackageKey | null;
-	selectedSpecialPriceIds: string[];
-	selectedAddonIds: string[];
-	vouchers: number[];
-	credits?: Credit[];
-	hardwarePurchaseType?: 'RENT' | 'BUY';
-	plusKartenCount?: number;
-	settings?: PricingSettings;
-	customBasePrice?: number;
-	hardwareTier?: HardwareTier;
-}
+export type { BusinessCase, HardwareTier, CalculationInput };
+export type { MagentaTVPackageKey };
 
 export function calculateProductCosts({
 	product,
