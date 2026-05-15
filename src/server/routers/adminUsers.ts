@@ -46,47 +46,10 @@ export const adminUsersRouter = router({
             } = input;
             const session = ctx.session as any;
 
-            let where: any = {
-            };
-            if (session.role === 'OD_MANAGER' && session.odRegionId) {
-                where = {
-                    OR: [
-                        {
-                            odRegionId: session.odRegionId,
-                        },
-                        {
-                            location: {
-                                odRegionId: session.odRegionId,
-                            },
-                        },
-                        {
-                            team: {
-                                location: {
-                                    odRegionId: session.odRegionId,
-                                },
-                            },
-                        },
-                    ],
-                };
-            }
-            else if (session.role === 'LOCATION_MANAGER' && session.locationId) {
-                where = {
-                    OR: [
-                        {
-                            locationId: session.locationId,
-                        },
-                        {
-                            team: {
-                                locationId: session.locationId,
-                            },
-                        },
-                    ],
-                };
-            }
-            else if (session.role === 'TEAM_LEADER' && session.teamId) {
-                where = {
-                    teamId: session.teamId,
-                };
+            const { getUserFilter } = await import('@/lib/rbac');
+            const where: any = getUserFilter(session);
+            if (where.id === 'UNAUTHORIZED') {
+                return { items: [], nextCursor: undefined };
             }
 
             if (input.search) {
@@ -171,30 +134,12 @@ export const adminUsersRouter = router({
         }) => {
             const session = ctx.session as any;
 
-            // Permission hierarchy checks
-            if (session.role === 'OD_MANAGER' && input.role === 'ADMIN') {
+            const { canManageUser } = await import('@/lib/rbac');
+
+            if (!canManageUser(session, input.role, input.odRegionId, input.locationId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
-                    message: 'Du kannst keine Admins erstellen.',
-                });
-            }
-            if (session.role === 'LOCATION_MANAGER' && [
-                'ADMIN',
-                'OD_MANAGER',
-            ].includes(input.role)) {
-                throw new TRPCError({
-                    code: 'FORBIDDEN',
-                    message: 'Hierfür fehlen dir die Rechte.',
-                });
-            }
-            if (session.role === 'TEAM_LEADER' && [
-                'ADMIN',
-                'OD_MANAGER',
-                'LOCATION_MANAGER',
-            ].includes(input.role)) {
-                throw new TRPCError({
-                    code: 'FORBIDDEN',
-                    message: 'Hierfür fehlen dir die Rechte.',
+                    message: 'Du hast keine Berechtigung, diesen Nutzer zu erstellen.',
                 });
             }
 
@@ -285,23 +230,18 @@ export const adminUsersRouter = router({
                 });
             }
 
-            // Ensure hierarchy permissions for non-admins
-            if (session.role !== 'ADMIN') {
-                if (session.role === 'OD_MANAGER' && targetUser.odRegionId !== session.odRegionId && targetUser.role !== 'OD_MANAGER') {
-                    // Check if it's in a location within the OD
-                    const loc = targetUser.locationId ? await prisma.location.findUnique({
-                        where: {
-                            id: targetUser.locationId,
-                        },
-                    }) : null;
-                    if (loc?.odRegionId !== session.odRegionId) {
-                        throw new TRPCError({
-                            code: 'FORBIDDEN',
-                            message: 'Dieser Nutzer gehört nicht zu deinem Bereich.',
-                        });
-                    }
-                }
-                // ... more complex checks could be added here for LOCATION_MANAGER etc.
+            const { canManageUser } = await import('@/lib/rbac');
+            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, targetUser.odRegionId, targetUser.locationId)) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Dieser Nutzer gehört nicht zu deinem Bereich.',
+                });
+            }
+            if (input.role && !canManageUser(session, input.role, targetUser.odRegionId, targetUser.locationId)) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Du kannst diese Rolle nicht vergeben.',
+                });
             }
 
             const updateProps: Record<string, any> = {
@@ -397,6 +337,13 @@ export const adminUsersRouter = router({
             if (!target) {
                 throw new TRPCError({
                     code: 'NOT_FOUND',
+                });
+            }
+            const { canManageUser } = await import('@/lib/rbac');
+            if (!canManageUser(ctx.session as any, target.role, target.odRegionId, target.locationId)) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Du hast keine Berechtigung, diesen Account zu löschen.',
                 });
             }
 

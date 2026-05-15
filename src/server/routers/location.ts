@@ -24,61 +24,42 @@ export const locationRouter = router({
             const cursor = input?.cursor;
             const search = input?.search;
             const session = ctx.session as any;
-            let securityFilter: any = {
-            };
-            if (session?.role) {
-                if (session.role === 'OD_MANAGER' && session.odRegionId) {
-                    securityFilter = {
-                        odRegionId: session.odRegionId,
-                    };
-                }
-                else if (session.role === 'LOCATION_MANAGER' && session.locationId) {
-                    securityFilter = {
-                        id: session.locationId,
-                    };
-                }
-                else if (session.role === 'TEAM_LEADER' && session.teamId) {
-                    // For team leader we could restrict to their location
-                    securityFilter = {
-                        teams: {
-                            some: {
-                                id: session.teamId,
-                            },
-                        },
-                    };
-                }
+            const { getLocationFilter } = await import('@/lib/rbac');
+            const securityFilter = getLocationFilter(session);
+
+            if (securityFilter.id === 'UNAUTHORIZED') {
+                throw new TRPCError({ code: 'UNAUTHORIZED' });
             }
 
             const where: any = {
-                ...securityFilter,
+                AND: [
+                    securityFilter,
+                ],
             };
 
-            // Apply optional filters, but don't allow bypassing security restrictions
             if (input?.locationId) {
-                if (!securityFilter.id || securityFilter.id === input.locationId) {
-                    where.id = input.locationId;
-                }
+                where.AND.push({ id: input.locationId });
             }
 
             if (input?.odRegionId) {
-                if (!securityFilter.odRegionId || securityFilter.odRegionId === input.odRegionId) {
-                    where.odRegionId = input.odRegionId;
-                }
+                where.AND.push({ odRegionId: input.odRegionId });
             }
 
             if (search) {
-                where.OR = [
-                    {
-                        name: {
-                            contains: search,
+                where.AND.push({
+                    OR: [
+                        {
+                            name: {
+                                contains: search,
+                            },
                         },
-                    },
-                    {
-                        address: {
-                            contains: search,
+                        {
+                            address: {
+                                contains: search,
+                            },
                         },
-                    },
-                ];
+                    ],
+                });
             }
 
             const items = await ctx.prisma.location.findMany({
@@ -133,21 +114,29 @@ export const locationRouter = router({
                 odRegionId: z.string().optional().nullable(),
             }),
         )
-        .mutation(({
+        .mutation(async ({
             ctx, input,
         }) => {
-            const role = (ctx.session as any)?.role;
-            if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER')) {
+            const { hasRole, canManageLocation } = await import('@/lib/rbac');
+            const session = ctx.session as any;
+
+            if (!hasRole(session, 'OD_MANAGER')) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Keine Berechtigung zum Erstellen von Standorten',
                 });
             }
 
-            // OD_MANAGER enforcing
+            if (!canManageLocation(session, input.odRegionId)) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Dieser OD-Bereich gehört nicht zu dir.',
+                });
+            }
+
             let assignedOdRegion = input.odRegionId;
-            if (role === 'OD_MANAGER') {
-                assignedOdRegion = (ctx.session as any).odRegionId;
+            if (session.role === 'OD_MANAGER') {
+                assignedOdRegion = session.odRegionId;
             }
 
             return ctx.prisma.location.create({
@@ -171,8 +160,10 @@ export const locationRouter = router({
         .mutation(async ({
             ctx, input,
         }) => {
-            const role = (ctx.session as any)?.role;
-            if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER')) {
+            const { hasRole, canManageLocation } = await import('@/lib/rbac');
+            const session = ctx.session as any;
+
+            if (!hasRole(session, 'LOCATION_MANAGER')) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Keine Berechtigung zum Bearbeiten von Standorten.',
@@ -190,17 +181,15 @@ export const locationRouter = router({
                 });
             }
 
-            if (role === 'OD_MANAGER' && existing.odRegionId !== (ctx.session as any).odRegionId) {
-                throw new TRPCError({
-                    code: 'FORBIDDEN',
-                    message: 'Dieser Standort gehört nicht zu deinem OD-Bereich.',
-                });
-            }
-            if (role === 'LOCATION_MANAGER' && input.id !== (ctx.session as any).locationId) {
-                throw new TRPCError({
-                    code: 'FORBIDDEN',
-                    message: 'Du kannst nur deinen zugewiesenen Standort bearbeiten.',
-                });
+            if (!canManageLocation(session, existing.odRegionId)) {
+                if (session.role === 'LOCATION_MANAGER' && input.id === session.locationId) {
+                    // Allowed
+                } else {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Keine Berechtigung für diesen Standort.',
+                    });
+                }
             }
 
             const {
@@ -208,11 +197,11 @@ export const locationRouter = router({
             } = input;
 
             // Re-enforce OD_MANAGER boundary
-            if (role === 'OD_MANAGER' && input.odRegionId !== undefined) {
-                dataToUpdate.odRegionId = (ctx.session as any).odRegionId;
+            if (session.role === 'OD_MANAGER' && input.odRegionId !== undefined) {
+                dataToUpdate.odRegionId = session.odRegionId;
             }
             // Block LOCATION_MANAGER from moving their location
-            if (role === 'LOCATION_MANAGER' && input.odRegionId !== undefined) {
+            if (session.role === 'LOCATION_MANAGER' && input.odRegionId !== undefined) {
                 delete dataToUpdate.odRegionId;
             }
 
@@ -238,8 +227,10 @@ export const locationRouter = router({
         .mutation(async ({
             ctx, input,
         }) => {
-            const role = (ctx.session as any)?.role;
-            if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER')) {
+            const { hasRole, canManageLocation } = await import('@/lib/rbac');
+            const session = ctx.session as any;
+
+            if (!hasRole(session, 'OD_MANAGER')) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Keine Berechtigung zum Löschen.',
@@ -257,7 +248,7 @@ export const locationRouter = router({
                 });
             }
 
-            if (role === 'OD_MANAGER' && existing.odRegionId !== (ctx.session as any).odRegionId) {
+            if (!canManageLocation(session, existing.odRegionId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Dieser Standort gehört nicht zu deinem OD-Bereich.',

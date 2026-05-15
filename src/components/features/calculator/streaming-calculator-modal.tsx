@@ -17,9 +17,6 @@ import clsx from 'clsx';
 import {
 	StreamingComparison,
 } from './streaming-comparison';
-import {
-	TarifComparison,
-} from './TarifComparison';
 
 interface SavingsCalculatorModalProps {
 	isOpen: boolean;
@@ -31,24 +28,11 @@ export function StreamingCalculatorModal({
 	onClose,
 }: SavingsCalculatorModalProps) {
 	const [
- activeTab,
-setActiveTab,
-] = useState<'streaming' | 'tarif'>('streaming');
-	const [
- mounted,
-setMounted,
-] = useState(false);
+		mounted,
+		setMounted,
+	] = useState(false);
 
 	useEffect(() => setMounted(true), [
-]);
-
-	// Reset tab to default when closed
-	useEffect(() => {
-		if (!isOpen) {
-			setActiveTab('streaming');
-		}
-	}, [
- isOpen,
 ]);
 
 	if (!mounted) { return null; }
@@ -112,30 +96,11 @@ stiffness: 300,
 							</div>
 
 							<div className="flex items-center gap-6">
-								{/* Tab Switcher */}
+								{/* Tab Switcher - Removed Tarif-Check */}
 								<div className="flex bg-telekom-gray-50 p-1 rounded-xl">
-									<button
-										onClick={() => setActiveTab('streaming')}
-										className={clsx(
-											'flex-1 md:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all',
-											activeTab === 'streaming'
-												? 'bg-white text-[#e20074] shadow-sm'
-												: 'text-[#888] hover:text-[#1a1a2e]',
-										)}
-									>
+									<div className="px-6 py-2 rounded-lg text-sm font-bold bg-white text-[#e20074] shadow-sm">
 										Streaming-Check
-									</button>
-									<button
-										onClick={() => setActiveTab('tarif')}
-										className={clsx(
-											'flex-1 md:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all',
-											activeTab === 'tarif'
-												? 'bg-white text-[#e20074] shadow-sm'
-												: 'text-[#888] hover:text-[#1a1a2e]',
-										)}
-									>
-										Tarif-Check
-									</button>
+									</div>
 								</div>
 
 								<button
@@ -149,35 +114,10 @@ stiffness: 300,
 
 						{/* Content Area */}
 						<div className="flex-1 flex flex-col min-h-0 relative">
-						<AnimatePresence mode="wait">
-							{activeTab === 'streaming' && (
-								<motion.div
-									layout="position"
-									key="streaming"
-									initial={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
-									animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-									exit={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
-									transition={{ duration: 0.3, ease: 'easeInOut' }}
-									className="w-full h-full flex flex-col"
-								>
-									<StreamingComparison isVisible={true} />
-								</motion.div>
-							)}
-							{activeTab === 'tarif' && (
-								<motion.div
-									layout="position"
-									key="tarif"
-									initial={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
-									animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-									exit={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
-									transition={{ duration: 0.3, ease: 'easeInOut' }}
-									className="w-full h-full flex flex-col"
-								>
-									<TarifComparison isVisible={true} onClose={onClose} />
-								</motion.div>
-							)}
-						</AnimatePresence>
-					</div>
+							<div className="w-full h-full flex flex-col">
+								<StreamingComparison isVisible={true} />
+							</div>
+						</div>
 					</motion.div>
 				</div>
 			)}

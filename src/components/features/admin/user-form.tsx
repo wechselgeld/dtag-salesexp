@@ -295,22 +295,24 @@ export function UserForm({
 											Zentraler Administrator (Full Access)
 										</option>
 									)}
-									{(currentUser?.role === 'ADMIN' ||
-										currentUser?.role === 'OD_MANAGER') && (
+									{(currentUser?.role === 'ADMIN') && (
 										<option value="OD_MANAGER">
 											OD-Leiter (Bereichszugriff)
 										</option>
 									)}
 									{(currentUser?.role === 'ADMIN' ||
-										currentUser?.role === 'OD_MANAGER' ||
-										currentUser?.role === 'LOCATION_MANAGER') && (
+										currentUser?.role === 'OD_MANAGER') && (
 										<option value="LOCATION_MANAGER">
 											Standortleiter (Regional-Fokus)
 										</option>
 									)}
+									{(currentUser?.role === 'ADMIN' ||
+										currentUser?.role === 'OD_MANAGER' ||
+										currentUser?.role === 'LOCATION_MANAGER') && (
 									<option value="TEAM_LEADER">
 										Teamleiter (Eingeschränkt)
 									</option>
+									)}
 								</select>
 								<div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#bbb]">
 									<svg

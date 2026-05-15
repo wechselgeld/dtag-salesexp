@@ -835,115 +835,14 @@ export const adminRouter = router({
                 input, ctx,
             }) => {
                 const session = ctx.session as any;
+                const { odRegionId, locationId, teamId, ...data } = input;
 
-                // Ensure user has an admin-like role
-                if (![
-                    'ADMIN',
-                    'OD_MANAGER',
-                    'LOCATION_MANAGER',
-                    'TEAM_LEADER',
-                ].includes(session.role)) {
+                const { canCreateNews } = await import('@/lib/rbac');
+                if (!canCreateNews(session, { odRegionId, locationId, teamId })) {
                     throw new TRPCError({
                         code: 'FORBIDDEN',
-                        message: 'Keine Berechtigung.',
+                        message: 'Du hast nicht die erforderlichen Rechte für diesen Bereich.',
                     });
-                }
-
-
-                let {
-                    // eslint-disable-next-line prefer-const
-                    odRegionId, locationId, teamId, ...data
-                } = input;
-
-                if (session.role !== 'ADMIN') {
-                    if (!odRegionId && !locationId && !teamId) {
-                        throw new TRPCError({
-                            code: 'FORBIDDEN',
-                            message: 'Du kannst keine globalen Neuigkeiten erstellen.',
-                        });
-                    }
-
-                    if (session.role === 'OD_MANAGER') {
-                        if (odRegionId && odRegionId !== session.odRegionId) {
-                            throw new TRPCError({
-                                code: 'FORBIDDEN',
-                                message: 'Falscher OD-Bereich.',
-                            });
-                        }
-                        if (locationId) {
-                            const loc = await prisma.location.findUnique({
-                                where: {
-                                    id: locationId,
-                                },
-                            });
-                            if (loc?.odRegionId !== session.odRegionId) {
-                                throw new TRPCError({
-                                    code: 'FORBIDDEN',
-                                    message: 'Falscher OD-Bereich.',
-                                });
-                            }
-                        }
-                        if (teamId) {
-                            const team = await prisma.team.findUnique({
-                                where: {
-                                    id: teamId,
-                                },
-                                include: {
-                                    location: true,
-                                },
-                            });
-                            if (team?.location?.odRegionId !== session.odRegionId) {
-                                throw new TRPCError({
-                                    code: 'FORBIDDEN',
-                                    message: 'Falscher OD-Bereich.',
-                                });
-                            }
-                        }
-                        if (odRegionId) { odRegionId = session.odRegionId; }
-                    }
-                    else if (session.role === 'LOCATION_MANAGER') {
-                        if (odRegionId) {
-                            throw new TRPCError({
-                                code: 'FORBIDDEN',
-                                message: 'Du kannst keine News für den ganzen OD-Bereich erstellen.',
-                            });
-                        }
-                        if (locationId && locationId !== session.locationId) {
-                            throw new TRPCError({
-                                code: 'FORBIDDEN',
-                                message: 'Falscher Standort.',
-                            });
-                        }
-                        if (teamId) {
-                            const team = await prisma.team.findUnique({
-                                where: {
-                                    id: teamId,
-                                },
-                            });
-                            if (team?.locationId !== session.locationId) {
-                                throw new TRPCError({
-                                    code: 'FORBIDDEN',
-                                    message: 'Falscher Standort.',
-                                });
-                            }
-                        }
-                        if (locationId) { locationId = session.locationId; }
-                    }
-                    else if (session.role === 'TEAM_LEADER') {
-                        if (odRegionId || locationId) {
-                            throw new TRPCError({
-                                code: 'FORBIDDEN',
-                                message: 'Du kannst nur News für dein Team erstellen.',
-                            });
-                        }
-                        if (teamId && teamId !== session.teamId) {
-                            throw new TRPCError({
-                                code: 'FORBIDDEN',
-                                message: 'Falsches Team.',
-                            });
-                        }
-                        if (teamId) { teamId = session.teamId; }
-                    }
                 }
 
                 const news = await (prisma.news as any).create({
@@ -1001,78 +900,9 @@ export const adminRouter = router({
                     });
                 }
 
-                if (session.role !== 'ADMIN') {
-                    if (session.role === 'OD_MANAGER') {
-                        if (news.odRegionId !== session.odRegionId) {
-                            // Also check if news is for a location/team within this OD
-                            if (news.locationId) {
-                                const loc = await (prisma.location as any).findUnique({
-                                    where: {
-                                        id: news.locationId,
-                                    },
-                                });
-                                if (loc?.odRegionId !== session.odRegionId) {
-                                    throw new TRPCError({
-                                        code: 'FORBIDDEN',
-                                    });
-                                }
-                            }
-                            else if (news.teamId) {
-                                const team = await (prisma.team as any).findUnique({
-                                    where: {
-                                        id: news.teamId,
-                                    },
-                                    include: {
-                                        location: true,
-                                    },
-                                });
-                                if (team?.location?.odRegionId !== session.odRegionId) {
-                                    throw new TRPCError({
-                                        code: 'FORBIDDEN',
-                                    });
-                                }
-                            }
-                            else if (!news.odRegionId) {
-                                throw new TRPCError({
-                                    code: 'FORBIDDEN',
-                                    message: 'Du kannst keine globalen News löschen.',
-                                });
-                            }
-                        }
-                    }
-                    else if (session.role === 'LOCATION_MANAGER') {
-                        if (news.locationId !== session.locationId) {
-                            if (news.teamId) {
-                                const team = await (prisma.team as any).findUnique({
-                                    where: {
-                                        id: news.teamId,
-                                    },
-                                });
-                                if (team?.locationId !== session.locationId) {
-                                    throw new TRPCError({
-                                        code: 'FORBIDDEN',
-                                    });
-                                }
-                            }
-                            else {
-                                throw new TRPCError({
-                                    code: 'FORBIDDEN',
-                                });
-                            }
-                        }
-                    }
-                    else if (session.role === 'TEAM_LEADER') {
-                        if (news.teamId !== session.teamId) {
-                            throw new TRPCError({
-                                code: 'FORBIDDEN',
-                            });
-                        }
-                    }
-                    else {
-                        throw new TRPCError({
-                            code: 'FORBIDDEN',
-                        });
-                    }
+                const { canCreateNews } = await import('@/lib/rbac');
+                if (!canCreateNews(session, { odRegionId: news.odRegionId, locationId: news.locationId, teamId: news.teamId })) {
+                    throw new TRPCError({ code: 'FORBIDDEN', message: 'Du hast keine Berechtigung, diese News zu löschen.' });
                 }
 
                 return (prisma.news as any).delete({

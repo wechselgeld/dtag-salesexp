@@ -149,7 +149,7 @@ export default function AdminLayout({
 					]
 					: [
 					]),
-				...(role === 'ADMIN' || role === 'OD_MANAGER'
+				...(role === 'ADMIN' || role === 'OD_MANAGER' || role === 'LOCATION_MANAGER'
 					? [
 						{
 							href: '/admin/locations',

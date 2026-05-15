@@ -61,6 +61,10 @@ export function LocationForm({
 	const utils = trpc.useUtils();
 
 	const {
+		data: currentUser,
+	} = trpc.auth.me.useQuery();
+
+	const {
 		data: odRegionsData, isLoading: isLoadingOdRegions,
 	} =
 		trpc.odRegion.list.useQuery();
@@ -69,6 +73,7 @@ export function LocationForm({
 	const {
 		register,
 		handleSubmit,
+		setValue,
 		formState: {
 			errors,
 		},
@@ -81,6 +86,15 @@ export function LocationForm({
 			isActive: initialData?.isActive ?? true,
 			odRegionId: initialData?.odRegionId || '',
 		},
+	});
+
+	// Lock the OD Region if the user is an OD Manager
+	import('react').then(({ useEffect }) => {
+		useEffect(() => {
+			if (mode === 'create' && currentUser && currentUser.role === 'OD_MANAGER' && currentUser.odRegionId) {
+				setValue('odRegionId', currentUser.odRegionId);
+			}
+		}, [currentUser, mode, setValue]);
 	});
 
 	const createMutation = trpc.location.create.useMutation({
@@ -182,11 +196,11 @@ export function LocationForm({
 							<div className="relative">
 								<select
 									{...register('odRegionId')}
-									disabled={isLoadingOdRegions}
+									disabled={isLoadingOdRegions || currentUser?.role === 'OD_MANAGER'}
 									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all disabled:opacity-50 appearance-none cursor-pointer"
 								>
 									<option value="">(Wähle einen Bereich)</option>
-									{odRegions?.map((r: any) => (
+									{odRegions?.filter((r: any) => currentUser?.role === 'ADMIN' || r.id === currentUser?.odRegionId).map((r: any) => (
 										<option key={r.id} value={r.id}>
 											{r.name}
 										</option>

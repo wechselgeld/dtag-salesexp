@@ -56,6 +56,10 @@ export function TeamForm({
 	const utils = trpc.useUtils();
 
 	const {
+		data: currentUser,
+	} = trpc.auth.me.useQuery();
+
+	const {
 		data: locationsData, isLoading: isLoadingLocations,
 	} =
 		trpc.location.list.useQuery();
@@ -64,6 +68,7 @@ export function TeamForm({
 	const {
 		register,
 		handleSubmit,
+		setValue,
 		formState: {
 			errors,
 		},
@@ -75,6 +80,14 @@ export function TeamForm({
 			email: initialData?.email || '',
 			locationId: initialData?.locationId || '',
 		},
+	});
+
+	import('react').then(({ useEffect }) => {
+		useEffect(() => {
+			if (mode === 'create' && currentUser && currentUser.role === 'LOCATION_MANAGER' && currentUser.locationId) {
+				setValue('locationId', currentUser.locationId);
+			}
+		}, [currentUser, mode, setValue]);
 	});
 
 	const createMutation = trpc.team.create.useMutation({
@@ -179,7 +192,7 @@ export function TeamForm({
 							<div className="relative">
 								<select
 									{...register('locationId')}
-									disabled={isLoadingLocations}
+									disabled={isLoadingLocations || currentUser?.role === 'LOCATION_MANAGER'}
 									className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all disabled:opacity-50 appearance-none cursor-pointer"
 								>
 									<option value="">(Kein Standort zugewiesen)</option>

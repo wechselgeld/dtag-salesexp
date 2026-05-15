@@ -22,7 +22,15 @@ export const odRegionRouter = router({
             const cursor = input?.cursor;
             const search = input?.search;
 
+            const { getOdRegionFilter } = await import('@/lib/rbac');
+            const securityFilter = getOdRegionFilter(ctx.session as any);
+
+            if (securityFilter.id === 'UNAUTHORIZED') {
+                throw new TRPCError({ code: 'UNAUTHORIZED' });
+            }
+
             const where: any = {
+                ...securityFilter,
             };
             if (search) {
                 where.name = {
@@ -79,10 +87,11 @@ export const odRegionRouter = router({
             name: z.string().min(1),
             isActive: z.boolean().optional(),
         }))
-        .mutation(({
+        .mutation(async ({
             ctx, input,
         }) => {
-            if (!ctx.session || (ctx.session as any).role !== 'ADMIN') {
+            const { hasRole } = await import('@/lib/rbac');
+            if (!hasRole(ctx.session as any, 'ADMIN')) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Keine Berechtigung',
@@ -103,17 +112,19 @@ export const odRegionRouter = router({
             name: z.string().min(1).optional(),
             isActive: z.boolean().optional(),
         }))
-        .mutation(({
+        .mutation(async ({
             ctx, input,
         }) => {
-            const role = (ctx.session as any)?.role;
-            if (!ctx.session || (role !== 'ADMIN' && role !== 'OD_MANAGER')) {
+            const { hasRole } = await import('@/lib/rbac');
+            const session = ctx.session as any;
+
+            if (!hasRole(session, 'OD_MANAGER')) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                 });
             }
 
-            if (role === 'OD_MANAGER' && (ctx.session as any).odRegionId !== input.id) {
+            if (session.role === 'OD_MANAGER' && session.odRegionId !== input.id) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Nur deinen eigenen OD-Bereich kannst du bearbeiten.',
@@ -145,7 +156,8 @@ export const odRegionRouter = router({
         .mutation(async ({
             ctx, input,
         }) => {
-            if (!ctx.session || (ctx.session as any).role !== 'ADMIN') {
+            const { hasRole } = await import('@/lib/rbac');
+            if (!hasRole(ctx.session as any, 'ADMIN')) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                 });

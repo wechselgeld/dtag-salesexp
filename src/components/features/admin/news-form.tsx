@@ -212,18 +212,31 @@ export function NewsForm({
 	]);
 
 	useEffect(() => {
-		if (currentUser && mode === 'create' && targetType === 'GLOBAL' && currentUser.role !== 'ADMIN') {
-			if (currentUser.role === 'OD_MANAGER') {
-				setValue('targetType', 'OD_REGION' as any);
-				if (currentUser.odRegionId) { setValue('odRegionId', currentUser.odRegionId); }
-			}
-			else if (currentUser.role === 'LOCATION_MANAGER') {
-				setValue('targetType', 'LOCATION' as any);
-				if (currentUser.locationId) { setValue('locationId', currentUser.locationId); }
-			}
-			else if (currentUser.role === 'TEAM_LEADER') {
-				setValue('targetType', 'TEAM' as any);
-				if (currentUser.teamId) { setValue('teamId', currentUser.teamId); }
+		if (currentUser && mode === 'create') {
+			if (targetType === 'GLOBAL' && currentUser.role !== 'ADMIN') {
+				if (currentUser.role === 'OD_MANAGER') {
+					setValue('targetType', 'OD_REGION' as any);
+					if (currentUser.odRegionId) { setValue('odRegionId', currentUser.odRegionId); }
+				}
+				else if (currentUser.role === 'LOCATION_MANAGER') {
+					setValue('targetType', 'LOCATION' as any);
+					if (currentUser.locationId) { setValue('locationId', currentUser.locationId); }
+				}
+				else if (currentUser.role === 'TEAM_LEADER') {
+					setValue('targetType', 'TEAM' as any);
+					if (currentUser.teamId) { setValue('teamId', currentUser.teamId); }
+				}
+			} else {
+				// Always ensure the relevant ID is prefilled if they navigate to a target type they are locked to
+				if (targetType === 'OD_REGION' && currentUser.role === 'OD_MANAGER' && currentUser.odRegionId) {
+					setValue('odRegionId', currentUser.odRegionId);
+				}
+				if (targetType === 'LOCATION' && currentUser.role === 'LOCATION_MANAGER' && currentUser.locationId) {
+					setValue('locationId', currentUser.locationId);
+				}
+				if (targetType === 'TEAM' && currentUser.role === 'TEAM_LEADER' && currentUser.teamId) {
+					setValue('teamId', currentUser.teamId);
+				}
 			}
 		}
 	}, [
@@ -330,7 +343,6 @@ export function NewsForm({
 										>
 											<option value="">(Bitte OD-Bereich wählen)</option>
 											{regionsData?.items
-												.filter(r => currentUser?.role === 'ADMIN' || r.id === currentUser?.odRegionId)
 												.map((region) => (
 													<option key={region.id} value={region.id}>
 														{region.name}
@@ -352,22 +364,11 @@ export function NewsForm({
 									<div className="relative">
 										<select
 											{...register('locationId')}
-											disabled={isLoadingLocations}
+											disabled={isLoadingLocations || currentUser?.role === 'LOCATION_MANAGER'}
 											className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all cursor-pointer appearance-none disabled:opacity-50"
 										>
 											<option value="">(Bitte Standort wählen)</option>
 											{locationsData?.items
-												.filter(l => {
-													if (currentUser?.role === 'ADMIN') { return true; }
-													if (currentUser?.role === 'OD_MANAGER') {
-														// Backup filter in case trpc list returns more (it shouldn't, but let's be safe)
-														return !currentUser.odRegionId || l.odRegionId === currentUser.odRegionId;
-													}
-													if (currentUser?.role === 'LOCATION_MANAGER') {
-														return l.id === currentUser.locationId;
-													}
-													return true;
-												})
 												.map((location) => (
 													<option key={location.id} value={location.id}>
 														{location.name} {location.address ? `(${location.address})` : ''}
@@ -398,17 +399,11 @@ export function NewsForm({
 										</div>
 										<select
 											{...register('teamId')}
-											disabled={isLoadingTeams}
+											disabled={isLoadingTeams || currentUser?.role === 'TEAM_LEADER'}
 											className="w-full px-4 py-3 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] text-[0.9rem] focus:outline-none focus:border-[#e20074] focus:ring-1 focus:ring-[#e20074]/30 transition-all cursor-pointer appearance-none disabled:opacity-50"
 										>
 											<option value="">(Bitte Team wählen)</option>
 											{teamsData?.items
-												.filter(t => {
-													if (currentUser?.role === 'ADMIN') { return true; }
-													if (currentUser?.role === 'OD_MANAGER') { return t.location?.odRegionId === currentUser.odRegionId; }
-													if (currentUser?.role === 'LOCATION_MANAGER') { return t.locationId === currentUser.locationId; }
-													return t.id === currentUser?.teamId;
-												})
 												.filter(t => {
 													if (!teamSearch) { return true; }
 													const label = `${t.name} ${t.location?.name || ''} ${t.location?.address || ''}`.toLowerCase();

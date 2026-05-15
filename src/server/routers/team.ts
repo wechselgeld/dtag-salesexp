@@ -24,64 +24,49 @@ export const teamRouter = router({
 			const cursor = input?.cursor;
 			const search = input?.search;
 			const session = ctx.session as any;
-
-			let securityFilter: any = {
-			};
-			if (session?.role) {
-				if (session.role === 'OD_MANAGER' && session.odRegionId) {
-					securityFilter = {
-						location: {
-							odRegionId: session.odRegionId,
-						},
-					};
-				}
-				else if (session.role === 'LOCATION_MANAGER' && session.locationId) {
-					securityFilter = {
-						locationId: session.locationId,
-					};
-				}
-				else if (session.role === 'TEAM_LEADER' && session.teamId) {
-					securityFilter = {
-						id: session.teamId,
-					};
-				}
+			const { getTeamFilter, hasRole } = await import('@/lib/rbac');
+			const securityFilter = getTeamFilter(session);
+			
+			// Unauthorized check
+			if (securityFilter.id === 'UNAUTHORIZED') {
+				throw new TRPCError({ code: 'UNAUTHORIZED' });
 			}
 
 			const where: any = {
-				...securityFilter,
+				AND: [
+					securityFilter,
+				],
 			};
 
-			// Apply optional filters, but don't allow bypassing security restrictions
 			if (input?.locationId) {
-				if (!securityFilter.locationId || securityFilter.locationId === input.locationId) {
-					where.locationId = input.locationId;
-				}
+				where.AND.push({ locationId: input.locationId });
 			}
 
 			if (input?.odRegionId) {
-				if (!securityFilter.location?.odRegionId || securityFilter.location.odRegionId === input.odRegionId) {
-					where.location = {
-						...where.location,
+				where.AND.push({
+					location: {
 						odRegionId: input.odRegionId,
-					};
-				}
+					},
+				});
 			}
 
 			if (search) {
-				where.OR = [
-					{
-						name: {
-							contains: search,
-							mode: 'insensitive',
+				where.AND.push({
+					OR: [
+						{
+							name: {
+								contains: search,
+								mode: 'insensitive',
+							},
 						},
-					},
-					{
-						internalNote: {
-							contains: search,
-							mode: 'insensitive',
+						{
+							internalNote: {
+								contains: search,
+								mode: 'insensitive',
+							},
 						},
-					},
-				];
+					],
+				});
 			}
 
 			const items = await ctx.prisma.team.findMany({
@@ -145,15 +130,27 @@ export const teamRouter = router({
 				locationId: z.string().optional().or(z.literal('')).transform(v => v === '' ? undefined : v),
 			}),
 		)
-		.mutation(({
+		.mutation(async ({
 			ctx, input,
 		}) => {
-			const role = (ctx.session as any)?.role;
-			if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER')) {
+			const { hasRole, canManageLocation } = await import('@/lib/rbac');
+			const session = ctx.session as any;
+
+			if (!hasRole(session, 'LOCATION_MANAGER')) {
 				throw new TRPCError({
 					code: 'FORBIDDEN',
 					message: 'Keine Berechtigung zum Erstellen von Teams.',
 				});
+			}
+
+			if (input.locationId && session.role !== 'ADMIN') {
+				const loc = await ctx.prisma.location.findUnique({ where: { id: input.locationId } });
+				if (!loc || (session.role === 'OD_MANAGER' && loc.odRegionId !== session.odRegionId)) {
+					throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung für diesen Standort.' });
+				}
+				if (session.role === 'LOCATION_MANAGER' && session.locationId !== input.locationId) {
+					throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung für diesen Standort.' });
+				}
 			}
 
 			return ctx.prisma.team.create({
@@ -172,14 +169,26 @@ export const teamRouter = router({
 			email: z.string().email().optional(),
 			locationId: z.string().optional().nullable(),
 		}))
-		.mutation(({
+		.mutation(async ({
 			ctx, input,
 		}) => {
-			const role = (ctx.session as any)?.role;
-			if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER' && role !== 'TEAM_LEADER')) {
-				throw new TRPCError({
-					code: 'FORBIDDEN',
-				});
+			const { canEditTeam } = await import('@/lib/rbac');
+			const session = ctx.session as any;
+
+			const targetTeam = await ctx.prisma.team.findUnique({
+				where: { id: input.id },
+				include: { location: true },
+			});
+
+			if (!targetTeam) throw new TRPCError({ code: 'NOT_FOUND' });
+
+			let isAllowed = canEditTeam(session, targetTeam.locationId, targetTeam.id);
+			if (session.role === 'OD_MANAGER' && targetTeam.location?.odRegionId === session.odRegionId) {
+				isAllowed = true;
+			}
+
+			if (!isAllowed) {
+				throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung für dieses Team.' });
 			}
 
 			const {
@@ -208,8 +217,23 @@ export const teamRouter = router({
 		.mutation(async ({
 			ctx, input,
 		}) => {
-			const role = (ctx.session as any)?.role;
-			if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER')) {
+			const { canEditTeam } = await import('@/lib/rbac');
+			const session = ctx.session as any;
+
+			const targetTeam = await ctx.prisma.team.findUnique({
+				where: { id: input.id },
+				include: { location: true },
+			});
+
+			if (!targetTeam) throw new TRPCError({ code: 'NOT_FOUND' });
+
+			let isAllowed = canEditTeam(session, targetTeam.locationId, targetTeam.id);
+			if (session.role === 'OD_MANAGER' && targetTeam.location?.odRegionId === session.odRegionId) {
+				isAllowed = true;
+			}
+			if (session.role === 'TEAM_LEADER') isAllowed = false; // Team Leaders cannot DELETE their team
+
+			if (!isAllowed) {
 				throw new TRPCError({
 					code: 'FORBIDDEN',
 					message: 'Keine Berechtigung zum Löschen dieses Teams.',
@@ -248,11 +272,23 @@ export const teamRouter = router({
 		.mutation(async ({
 			ctx, input,
 		}) => {
-			const role = (ctx.session as any)?.role;
-			if (!role || (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER' && role !== 'TEAM_LEADER')) {
-				throw new TRPCError({
-					code: 'FORBIDDEN',
-				});
+			const { canEditTeam } = await import('@/lib/rbac');
+			const session = ctx.session as any;
+
+			const targetTeam = await ctx.prisma.team.findUnique({
+				where: { id: input.teamId },
+				include: { location: true },
+			});
+
+			if (!targetTeam) throw new TRPCError({ code: 'NOT_FOUND' });
+
+			let isAllowed = canEditTeam(session, targetTeam.locationId, targetTeam.id);
+			if (session.role === 'OD_MANAGER' && targetTeam.location?.odRegionId === session.odRegionId) {
+				isAllowed = true;
+			}
+
+			if (!isAllowed) {
+				throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung.' });
 			}
 
 			// At least one target must be provided
