@@ -64,7 +64,7 @@ export default function PrivacyPage() {
 							<br />
 							09112 Chemnitz
 							<br/><br/>
-							Besuch Buff Interactive gern auf Ihrer Website unter <a href="https://buffinteractive.net">buffinteractive.net</a>.
+							Besuchen Sie Buff Interactive gern auf ihrer Website unter <a href="https://buffinteractive.net">buffinteractive.net</a>.
 						</p>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
 							Dieses Tool ist <strong>strikt vertraulich</strong> und

@@ -19,7 +19,7 @@ const rpName = 'Sales Experience Platform';
 function getRpIdAndOrigin(req?: Request | null) {
     let appUrl = process.env.NEXT_PUBLIC_APP_URL;
     
-    if (!appUrl && req) {
+    if (req) {
         const host = req.headers.get('host');
         const proto = req.headers.get('x-forwarded-proto') || 'https';
         if (host) {
