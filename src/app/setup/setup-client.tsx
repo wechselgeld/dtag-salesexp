@@ -313,7 +313,7 @@ export default function SetupPage({
 		onSuccess: async (data) => {
 			if (data.requiresVerification && !data.success && 'sessionId' in data) {
 				try {
-					const options = await getAuthOptions.mutateAsync({ email });
+					const { options } = await getAuthOptions.mutateAsync({ email });
 					const authResp = await startAuthentication({ optionsJSON: options });
 					const verifyResp = await verifyAuth.mutateAsync({ email, response: authResp });
 					

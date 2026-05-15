@@ -83,19 +83,13 @@ export default function LoginPage() {
 	const verifyAuth = trpc.webauthn.verifyAuthentication.useMutation();
 
 	const handlePasskeyLogin = async () => {
-		const email = watch('email');
-		if (!email) {
-			setError('Bitte gib zuerst Deine E-Mail-Adresse ein.');
-			return;
-		}
-
 		setError('');
 		setIsPasskeyLoading(true);
 		try {
 			const { startAuthentication } = await import('@simplewebauthn/browser');
-			const options = await getAuthOptions.mutateAsync({ email });
+			const { options, challengeId } = await getAuthOptions.mutateAsync({});
 			const authResp = await startAuthentication({ optionsJSON: options });
-			const verifyResp = await verifyAuth.mutateAsync({ email, response: authResp });
+			const verifyResp = await verifyAuth.mutateAsync({ challengeId, response: authResp });
 			
 			if (verifyResp.success) {
 				router.push('/admin/products');

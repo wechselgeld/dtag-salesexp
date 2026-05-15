@@ -183,41 +183,55 @@ export const webauthnRouter = router({
 
     generateAuthenticationOptions: publicProcedure
         .input(z.object({
-            email: z.string().email(),
+            email: z.string().email().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
-            const userPasskeys = await ctx.prisma.passkey.findMany({
-                where: { email: input.email },
-            });
-
-            if (userPasskeys.length === 0) {
-                throw new TRPCError({ code: 'NOT_FOUND', message: 'No passkeys registered for this email' });
+            let userPasskeys: any[] = [];
+            if (input.email) {
+                userPasskeys = await ctx.prisma.passkey.findMany({
+                    where: { email: input.email },
+                });
+                if (userPasskeys.length === 0) {
+                    throw new TRPCError({ code: 'NOT_FOUND', message: 'No passkeys registered for this email' });
+                }
             }
 
             const { rpID } = getRpIdAndOrigin(ctx.req);
 
             const options = await generateAuthenticationOptions({
                 rpID,
-                allowCredentials: userPasskeys.map(passkey => ({
+                allowCredentials: input.email ? userPasskeys.map(passkey => ({
                     id: passkey.id,
                     type: 'public-key',
                     transports: passkey.transports ? passkey.transports.split(',') as any[] : undefined,
-                })),
+                })) : [],
                 userVerification: 'preferred',
             });
 
-            await redis.set(`webauthn_challenge:auth:${input.email}`, options.challenge, 'EX', 300);
+            const challengeId = crypto.randomBytes(16).toString('hex');
+            await redis.set(`webauthn_challenge:auth:${challengeId}`, options.challenge, 'EX', 300);
 
-            return options;
+            if (input.email) {
+                await redis.set(`webauthn_challenge:auth:${input.email}`, options.challenge, 'EX', 300);
+            }
+
+            return { options, challengeId };
         }),
 
     verifyAuthentication: publicProcedure
         .input(z.object({
-            email: z.string().email(),
+            email: z.string().email().optional(),
+            challengeId: z.string().optional(),
             response: z.any(), // AuthenticationResponseJSON
         }))
         .mutation(async ({ ctx, input }) => {
-            const expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.email}`);
+            let expectedChallenge: string | null = null;
+            if (input.challengeId) {
+                expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.challengeId}`);
+            } else if (input.email) {
+                expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.email}`);
+            }
+
             if (!expectedChallenge) {
                 throw new TRPCError({ code: 'BAD_REQUEST', message: 'Challenge expired or invalid' });
             }
@@ -228,9 +242,14 @@ export const webauthnRouter = router({
                 where: { id: input.response.id },
             });
 
-            if (!passkey || passkey.email !== input.email) {
+            if (!passkey) {
                 throw new TRPCError({ code: 'NOT_FOUND', message: 'Passkey not found' });
             }
+            if (input.email && passkey.email !== input.email) {
+                throw new TRPCError({ code: 'NOT_FOUND', message: 'Passkey does not match email' });
+            }
+
+            const userEmail = passkey.email;
 
             let verification;
             try {
@@ -263,15 +282,17 @@ export const webauthnRouter = router({
                     },
                 });
 
-                // Clear challenge
-                await redis.del(`webauthn_challenge:auth:${input.email}`);
+                // Clear challenges
+                if (input.challengeId) await redis.del(`webauthn_challenge:auth:${input.challengeId}`);
+                if (input.email) await redis.del(`webauthn_challenge:auth:${input.email}`);
+                await redis.del(`webauthn_challenge:auth:${userEmail}`);
 
                 // Proceed to login the user via Passkey! 
                 const clientIp = ctx.ip || '127.0.0.1';
 
                 // Check if user is an Admin
                 const adminUser = await ctx.prisma.user.findFirst({
-                    where: { email: { equals: input.email, mode: 'insensitive' } },
+                    where: { email: { equals: userEmail, mode: 'insensitive' } },
                 });
 
                 if (adminUser) {
@@ -296,7 +317,7 @@ export const webauthnRouter = router({
                 // If not admin, fall back to Sales Session login
                 // Fetch last session details to clone team details
                 const lastSession = await ctx.prisma.salesSession.findFirst({
-                    where: { email: input.email, isVerified: true },
+                    where: { email: userEmail, isVerified: true },
                     orderBy: { createdAt: 'desc' },
                 });
 
