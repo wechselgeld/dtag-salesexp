@@ -9,7 +9,7 @@ import {
 } from '@trpc/server';
 
 export const teamRouter = router({
-	list: protectedProcedure
+	list: publicProcedure
 		.input(z.object({
 			locationId: z.string().optional(),
 			odRegionId: z.string().optional(),
@@ -95,7 +95,11 @@ export const teamRouter = router({
 				},
 				include: {
 					location: true,
-					highlights: true,
+					highlights: {
+						include: {
+							product: true,
+						},
+					},
 				},
 			});
 
@@ -237,9 +241,9 @@ export const teamRouter = router({
 	toggleFocus: protectedProcedure
 		.input(z.object({
 			teamId: z.string(),
-			productId: z.string().optional(),
-			category: z.string().optional(),
-			businessCase: z.string().optional(),
+			productId: z.string().nullish(),
+			category: z.string().nullish(),
+			businessCase: z.string().nullish(),
 		}))
 		.mutation(async ({
 			ctx, input,

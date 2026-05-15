@@ -222,6 +222,7 @@ model SalesSession {
   acceptedTerms         Boolean   @default(false)
   userAgent             String?
   ip                    String?
+  deviceId              String?
   isActive              Boolean   @default(true)
   expiresAt             DateTime?
   email                 String?
@@ -254,4 +255,16 @@ model News {
 model SystemSetting {
   key   String @id
   value String
+}
+
+model Passkey {
+  id             String   @id // WebAuthn Credential ID
+  email          String
+  publicKey      Bytes
+  counter        BigInt
+  transports     String?
+  createdAt      DateTime @default(now())
+  lastUsedAt     DateTime @default(now())
+
+  @@index([email])
 }

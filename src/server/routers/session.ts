@@ -106,21 +106,16 @@ export const sessionRouter = router({
         }) => {
             const clientIp = ctx.ip || '127.0.0.1';
 
-            // Fetch both settings in a single query instead of two
-            const systemSettings = await getCached('systemSettings:verifyAndEmail', SETTINGS_TTL, () => {
-                return ctx.prisma.systemSetting.findMany({
-                    where: {
-                        key: {
-                            in: [
-                                'allowed_ips',
-                                'require_email_verification',
-                            ],
-                        },
-                    },
-                });
+            // Split cache to fix invalidation footgun
+            const allowedIpsSetting = await getCached('systemSettings:allowed_ips', SETTINGS_TTL, () => {
+                return ctx.prisma.systemSetting.findUnique({ where: { key: 'allowed_ips' } });
             });
-            const allowedIpsValue = systemSettings.find(s => s.key === 'allowed_ips')?.value || '';
-            const emailVerificationValue = systemSettings.find(s => s.key === 'require_email_verification')?.value;
+            const allowedIpsValue = allowedIpsSetting?.value || '';
+
+            const emailVerificationSetting = await getCached('systemSettings:require_email_verification', SETTINGS_TTL, () => {
+                return ctx.prisma.systemSetting.findUnique({ where: { key: 'require_email_verification' } });
+            });
+            const isEmailRequiredSystemWide = emailVerificationSetting?.value !== 'false';
 
             if (!checkIpIsAllowed(clientIp, allowedIpsValue)) {
                 throw new TRPCError({
@@ -129,38 +124,55 @@ export const sessionRouter = router({
                 });
             }
 
-            // Rate-Limiting: Max 3 requests per IP in the last 15 minutes
-            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-            const recentRequests = await ctx.prisma.salesSession.count({
-                where: {
-                    ip: clientIp,
-                    createdAt: {
-                        gte: fifteenMinutesAgo,
-                    },
-                    isVerified: false,
-                },
-            });
+            // Data Bloat Fix: Lazy background cleanup of old unverified sessions (older than 2 hours)
+            const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+            ctx.prisma.salesSession.deleteMany({
+                where: { isVerified: false, createdAt: { lt: twoHoursAgo } }
+            }).catch(console.error); // Run in background
 
-            if (recentRequests >= 3) {
+            // Rate-Limiting: Max 50 per IP, Max 3 per Email in the last 15 minutes (Fixes NAT trap)
+            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+            const [recentIpRequests, recentEmailRequests] = await Promise.all([
+                ctx.prisma.salesSession.count({
+                    where: { ip: clientIp, createdAt: { gte: fifteenMinutesAgo }, isVerified: false },
+                }),
+                ctx.prisma.salesSession.count({
+                    where: { email: input.email, createdAt: { gte: fifteenMinutesAgo }, isVerified: false },
+                })
+            ]);
+
+            if (recentIpRequests >= 50 || recentEmailRequests >= 3) {
                 throw new TRPCError({
                     code: 'TOO_MANY_REQUESTS',
                     message: 'Zu viele Anfragen. Bitte versuche es später erneut.',
                 });
             }
 
-            const isEmailRequiredSystemWide = emailVerificationValue !== 'false';
-
             let bypassEmailCheck = !isEmailRequiredSystemWide;
+            let deviceId = crypto.randomBytes(16).toString('hex');
 
+            // Implement Device Fingerprinting instead of Zero-Auth
             if (!bypassEmailCheck) {
-                const previousVerifiedSession = await ctx.prisma.salesSession.findFirst({
-                    where: {
-                        email: input.email,
-                        isVerified: true,
-                    },
-                });
-                if (previousVerifiedSession) {
-                    bypassEmailCheck = true;
+                const cookieStore = await cookies();
+                const deviceToken = cookieStore.get('sales-device-id')?.value;
+                
+                if (deviceToken) {
+                    const { verifyDeviceId } = await import('@/lib/auth');
+                    const verifiedDeviceId = await verifyDeviceId(deviceToken);
+                    if (verifiedDeviceId) {
+                        // Check if this device is associated with this email
+                        const recognizedDevice = await ctx.prisma.salesSession.findFirst({
+                            where: {
+                                email: input.email,
+                                deviceId: verifiedDeviceId,
+                                isVerified: true,
+                            }
+                        });
+                        if (recognizedDevice) {
+                            bypassEmailCheck = true;
+                            deviceId = verifiedDeviceId;
+                        }
+                    }
                 }
             }
 
@@ -174,6 +186,7 @@ export const sessionRouter = router({
                     email: input.email,
                     acceptedTerms: input.acceptedTerms,
                     ip: clientIp,
+                    deviceId: deviceId,
                     userAgent: ctx.req?.headers.get('user-agent'),
                     isVerified: bypassEmailCheck,
                     verificationToken: bypassEmailCheck ? null : token,
@@ -234,7 +247,7 @@ export const sessionRouter = router({
             }
 
             const {
-                signSessionId,
+                signSessionId, signDeviceId
             } = await import('@/lib/auth');
             const signedToken = await signSessionId(session.id);
 
@@ -246,6 +259,17 @@ export const sessionRouter = router({
                 path: '/',
                 maxAge: 60 * 60 * 24 * 30, // 30 days
             });
+
+            if (session.deviceId) {
+                const signedDeviceToken = await signDeviceId(session.deviceId);
+                cookieStore.set('sales-device-id', signedDeviceToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/',
+                    maxAge: 60 * 60 * 24 * 365, // 365 days
+                });
+            }
 
             return {
                 success: true,
@@ -298,7 +322,7 @@ export const sessionRouter = router({
             }
 
             const {
-                signSessionId,
+                signSessionId, signDeviceId
             } = await import('@/lib/auth');
             const signedToken = await signSessionId(session.id);
 
@@ -310,6 +334,17 @@ export const sessionRouter = router({
                 path: '/',
                 maxAge: 60 * 60 * 24 * 30, // 30 days
             });
+
+            if (session.deviceId) {
+                const signedDeviceToken = await signDeviceId(session.deviceId);
+                cookieStore.set('sales-device-id', signedDeviceToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/',
+                    maxAge: 60 * 60 * 24 * 365, // 365 days
+                });
+            }
 
             return {
                 success: true,
@@ -398,15 +433,11 @@ export const sessionRouter = router({
             ctx, input,
         }) => {
             const clientIp = ctx.ip || '127.0.0.1';
-            const setting = await getCached('systemSettings:allowed_ips', SETTINGS_TTL, () => {
-                return ctx.prisma.systemSetting.findUnique({
-                    where: {
-                        key: 'allowed_ips',
-                    },
-                });
+            const allowedIpsSetting = await getCached('systemSettings:allowed_ips', SETTINGS_TTL, () => {
+                return ctx.prisma.systemSetting.findUnique({ where: { key: 'allowed_ips' } });
             });
 
-            if (!checkIpIsAllowed(clientIp, setting?.value || '')) {
+            if (!checkIpIsAllowed(clientIp, allowedIpsSetting?.value || '')) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'IP address not allowed',
@@ -432,6 +463,62 @@ export const sessionRouter = router({
                 });
             }
 
+            const emailVerificationSetting = await getCached('systemSettings:require_email_verification', SETTINGS_TTL, () => {
+                return ctx.prisma.systemSetting.findUnique({ where: { key: 'require_email_verification' } });
+            });
+            const isEmailRequiredSystemWide = emailVerificationSetting?.value !== 'false';
+
+            let canInstantlyRelogin = !isEmailRequiredSystemWide;
+            let deviceId = crypto.randomBytes(16).toString('hex');
+
+            // Device fingerprinting check
+            if (isEmailRequiredSystemWide) {
+                const cookieStore = await cookies();
+                const deviceToken = cookieStore.get('sales-device-id')?.value;
+                if (deviceToken) {
+                    const { verifyDeviceId } = await import('@/lib/auth');
+                    const verifiedDeviceId = await verifyDeviceId(deviceToken);
+                    if (verifiedDeviceId) {
+                        const recognizedDevice = await ctx.prisma.salesSession.findFirst({
+                            where: { email: input.email, deviceId: verifiedDeviceId, isVerified: true }
+                        });
+                        if (recognizedDevice) {
+                            canInstantlyRelogin = true;
+                            deviceId = verifiedDeviceId;
+                        }
+                    }
+                }
+            }
+
+            if (!canInstantlyRelogin) {
+                // Return requiresVerification instead of failing, and create a pending session with magic link
+                const token = crypto.randomBytes(32).toString('hex');
+                const session = await ctx.prisma.salesSession.create({
+                    data: {
+                        teamId: lastSession.teamId,
+                        firstName: lastSession.firstName,
+                        lastName: lastSession.lastName,
+                        email: lastSession.email,
+                        acceptedTerms: true,
+                        ip: clientIp,
+                        deviceId: deviceId,
+                        userAgent: ctx.req?.headers.get('user-agent'),
+                        isVerified: false,
+                        verificationToken: token,
+                        verificationExpiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+                    },
+                });
+
+                const { sendVerificationEmail } = await import('@/lib/email');
+                await sendVerificationEmail(input.email, lastSession.firstName || '', token);
+
+                return {
+                    success: false,
+                    requiresVerification: true,
+                    sessionId: session.id,
+                };
+            }
+
             const newSession = await ctx.prisma.salesSession.create({
                 data: {
                     teamId: lastSession.teamId,
@@ -440,13 +527,14 @@ export const sessionRouter = router({
                     email: lastSession.email,
                     acceptedTerms: true,
                     ip: clientIp,
+                    deviceId: deviceId,
                     userAgent: ctx.req?.headers.get('user-agent'),
                     isVerified: true,
                 },
             });
 
             const {
-                signSessionId,
+                signSessionId, signDeviceId
             } = await import('@/lib/auth');
             const signedToken = await signSessionId(newSession.id);
 
@@ -459,8 +547,20 @@ export const sessionRouter = router({
                 maxAge: 60 * 60 * 24 * 30, // 30 days
             });
 
+            if (deviceId) {
+                const signedDeviceToken = await signDeviceId(deviceId);
+                cookieStore.set('sales-device-id', signedDeviceToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/',
+                    maxAge: 60 * 60 * 24 * 365, // 365 days
+                });
+            }
+
             return {
                 success: true,
+                requiresVerification: false,
                 firstName: newSession.firstName,
                 lastName: newSession.lastName,
                 email: newSession.email,

@@ -47,9 +47,10 @@ export async function getSession() {
 	return verifyJWT(token);
 }
 
-export async function login(userData: { id: string, role: string, isEditor: boolean, odRegionId?: string | null, locationId?: string | null, teamId?: string | null }) {
+export async function login(userData: { id: string, email: string, role: string, isEditor: boolean, odRegionId?: string | null, locationId?: string | null, teamId?: string | null }) {
 	const token = await signJWT({
 		sub: userData.id,
+		email: userData.email,
 		role: userData.role,
 		isEditor: userData.isEditor,
 		odRegionId: userData.odRegionId,
@@ -86,4 +87,15 @@ export function signSessionId(id: string) {
 export async function verifySessionId(token: string) {
 	const payload = await verifyJWT(token);
 	return payload?.id as string | undefined;
+}
+
+export function signDeviceId(deviceId: string) {
+	return signJWT({
+		deviceId,
+	}, '365d'); // Device ID lasts 1 year
+}
+
+export async function verifyDeviceId(token: string) {
+	const payload = await verifyJWT(token);
+	return payload?.deviceId as string | undefined;
 }

@@ -22,6 +22,7 @@ import {
 	Save,
 	Euro,
 	Image as ImageIcon,
+	Fingerprint,
 } from 'lucide-react';
 import {
 	motion, AnimatePresence,
@@ -117,7 +118,7 @@ export default function AdminSettingsPage() {
 						{activeTab === 'pricing' && <PricingPanel key="pricing" />}
 						{activeTab === 'design' && <DesignPanel key="design" />}
 						{activeTab === 'security' && (
-							<SecurityPanel key="security" isAdmin={isAdmin} />
+							<SecurityPanel key="security" isAdmin={isAdmin} user={user} />
 						)}
 						{activeTab === 'system' && <SystemPanel key="system" />}
 					</AnimatePresence>
@@ -238,8 +239,8 @@ function ProfilePanel({
 }
 
 function SecurityPanel({
-	isAdmin,
-}: { isAdmin: boolean }) {
+	isAdmin, user,
+}: { isAdmin: boolean, user: any }) {
 	const [
 		oldPassword,
 		setOldPassword,
@@ -298,6 +299,27 @@ function SecurityPanel({
 			oldPassword,
 			newPassword,
 		});
+	};
+
+	const getRegOptions = trpc.webauthn.generateRegistrationOptions.useMutation();
+	const verifyReg = trpc.webauthn.verifyRegistration.useMutation();
+	const [isPasskeyRegistering, setIsPasskeyRegistering] = useState(false);
+
+	const handleRegisterPasskey = async () => {
+		if (!user?.email) return;
+		setIsPasskeyRegistering(true);
+		try {
+			const { startRegistration } = await import('@simplewebauthn/browser');
+			const options = await getRegOptions.mutateAsync({ email: user.email });
+			const resp = await startRegistration({ optionsJSON: options });
+			await verifyReg.mutateAsync({ email: user.email, response: resp });
+			alert('Passkey erfolgreich registriert!');
+		} catch (err: any) {
+			console.error('Passkey registration failed', err);
+			alert('Fehler bei der Passkey-Registrierung: ' + err.message);
+		} finally {
+			setIsPasskeyRegistering(false);
+		}
 	};
 
 	const {
@@ -433,6 +455,40 @@ function SecurityPanel({
 						{status === 'pending' ? 'Speichere...' : 'Passwort aktualisieren'}
 					</button>
 				</form>
+			</AdminFormSection>
+
+			<AdminFormSection
+				title="Biometrischer Login"
+				description="Verwende Dein Gesicht oder Deinen Fingerabdruck für einen schnelleren Login."
+				icon={Fingerprint}
+			>
+				<div className="p-6 bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+					<div className="flex-1">
+						<h4 className="text-[1rem] font-bold text-[#1a1a2e] m-0 mb-1">
+							Passkey (WebAuthn)
+						</h4>
+						<p className="text-[0.85rem] text-[#888] m-0 max-w-md leading-relaxed">
+							Registriere dieses Gerät als sicheren Passkey. Danach kannst Du Dich ohne Passwort anmelden.
+						</p>
+					</div>
+					<button
+						onClick={handleRegisterPasskey}
+						disabled={isPasskeyRegistering}
+						className={clsx(
+							'px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 outline-none cursor-pointer text-[0.85rem] shadow-md active:scale-95 whitespace-nowrap',
+							isPasskeyRegistering
+								? 'bg-[#ddd] text-[#999] cursor-not-allowed'
+								: 'bg-[#e20074] text-white hover:bg-[#c70066]',
+						)}
+					>
+						{isPasskeyRegistering ? (
+							<Loader2 className="w-4 h-4 animate-spin" />
+						) : (
+							<Fingerprint className="w-4 h-4" />
+						)}
+						{isPasskeyRegistering ? 'Wird registriert...' : 'Gerät registrieren'}
+					</button>
+				</div>
 			</AdminFormSection>
 
 			{isAdmin && (

@@ -37,6 +37,9 @@ import {
 import {
 	feedbackRouter,
 } from './feedback';
+import {
+	webauthnRouter,
+} from './webauthn';
 
 export const appRouter = router({
 	health: publicProcedure.query(() => {
@@ -54,6 +57,7 @@ export const appRouter = router({
 	location: locationRouter,
 	odRegion: odRegionRouter,
 	feedback: feedbackRouter,
+	webauthn: webauthnRouter,
 	public: router({
 		getActiveAnnouncements: publicProcedure.query(async () => {
 			const {

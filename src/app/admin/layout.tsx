@@ -41,6 +41,9 @@ import {
 	SidebarItem,
 	SidebarGroup,
 } from '@/components/layout/sidebar/sidebar-item';
+import {
+	AdminPasskeyPrompt,
+} from '@/components/admin/passkey-prompt';
 
 interface MenuItem {
 	href: string;
@@ -277,6 +280,7 @@ export default function AdminLayout({
 
 			<DeleteConfirmToast />
 			<GlobalErrorToast />
+			<AdminPasskeyPrompt />
 		</div>
 	);
 }

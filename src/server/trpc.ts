@@ -54,6 +54,7 @@ const isAuthed = t.middleware(async ({
 		where: { id: ctx.session.sub as string },
 		select: { 
 			id: true, 
+			email: true,
 			role: true, 
 			isEditor: true,
 			odRegionId: true,
@@ -74,6 +75,7 @@ const isAuthed = t.middleware(async ({
 			session: {
 				...ctx.session,
 				id: user.id,
+				email: user.email,
 				role: user.role,
 				isEditor: user.isEditor,
 				odRegionId: user.odRegionId,

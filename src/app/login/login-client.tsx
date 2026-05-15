@@ -13,7 +13,7 @@ import {
 	motion,
 } from 'framer-motion';
 import {
-	ArrowRight, Loader2, AlertTriangle, Eye, EyeOff,
+	ArrowRight, Loader2, AlertTriangle, Eye, EyeOff, Fingerprint,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -54,6 +54,7 @@ export default function LoginPage() {
 		formState: {
 			errors, isValid,
 		},
+		watch,
 	} = useForm<LoginFormData>({
 		resolver: zodResolver(loginSchema),
 		mode: 'onChange',
@@ -64,14 +65,53 @@ export default function LoginPage() {
 	});
 
 	const loginMutation = trpc.auth.login.useMutation({
-		onSuccess: () => {
-			router.push('/admin/products');
-			router.refresh(); // Refresh to update server components/middleware state
+		onSuccess: (data) => {
+			if (data.suggestPasskey) {
+				router.push('/admin/products?setupPasskey=true');
+			} else {
+				router.push('/admin/products');
+			}
+			router.refresh();
 		},
 		onError: (err) => {
 			setError(err.message);
 		},
 	});
+
+	const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
+	const getAuthOptions = trpc.webauthn.generateAuthenticationOptions.useMutation();
+	const verifyAuth = trpc.webauthn.verifyAuthentication.useMutation();
+
+	const handlePasskeyLogin = async () => {
+		const email = watch('email');
+		if (!email) {
+			setError('Bitte gib zuerst Deine E-Mail-Adresse ein.');
+			return;
+		}
+
+		setError('');
+		setIsPasskeyLoading(true);
+		try {
+			const { startAuthentication } = await import('@simplewebauthn/browser');
+			const options = await getAuthOptions.mutateAsync({ email });
+			const authResp = await startAuthentication({ optionsJSON: options });
+			const verifyResp = await verifyAuth.mutateAsync({ email, response: authResp });
+			
+			if (verifyResp.success) {
+				router.push('/admin/products');
+				router.refresh();
+			}
+		} catch (err: any) {
+			console.error('Passkey login failed', err);
+			if (err.message?.includes('No passkeys registered')) {
+				setError('Für diese E-Mail ist noch kein Passkey registriert.');
+			} else {
+				setError('Passkey-Login fehlgeschlagen. Bitte verwende Dein Passwort.');
+			}
+		} finally {
+			setIsPasskeyLoading(false);
+		}
+	};
 
 	const onSubmit = (data: LoginFormData) => {
 		setError('');
@@ -215,10 +255,10 @@ export default function LoginPage() {
 
 					<button
 						type="submit"
-						disabled={loginMutation.isPending || !isValid}
+						disabled={loginMutation.isPending || isPasskeyLoading || !isValid}
 						className={clsx(
 							'w-full h-[56px] rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 mt-4 outline-none',
-							!loginMutation.isPending && isValid
+							!loginMutation.isPending && !isPasskeyLoading && isValid
 								? 'bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_8px_20px_-6px_rgba(226,0,116,0.35)] cursor-pointer'
 								: 'bg-[#f7f8fa] text-[#bbb] border border-[#eaedf0] cursor-not-allowed',
 						)}
@@ -230,6 +270,30 @@ export default function LoginPage() {
 								Anmelden{' '}
 								<ArrowRight className="w-4 h-4 ml-0.5" strokeWidth={2.5} />
 							</span>
+						)}
+					</button>
+
+					<div className="relative flex items-center gap-4 py-2">
+						<div className="h-[1px] flex-1 bg-[#eaedf0]" />
+						<span className="text-[0.7rem] font-bold text-[#bbb] uppercase tracking-widest">Oder</span>
+						<div className="h-[1px] flex-1 bg-[#eaedf0]" />
+					</div>
+
+					<button
+						type="button"
+						onClick={handlePasskeyLogin}
+						disabled={loginMutation.isPending || isPasskeyLoading}
+						className={clsx(
+							'w-full h-[56px] rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-3 outline-none border border-[#eaedf0] bg-white text-[#1a1a2e] hover:bg-[#f7f8fa] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed',
+						)}
+					>
+						{isPasskeyLoading ? (
+							<div className="w-5 h-5 border-[2.5px] border-[#e20074]/30 border-t-[#e20074] rounded-full animate-spin" />
+						) : (
+							<>
+								<Fingerprint className="w-5 h-5 text-[#e20074]" />
+								<span>Schneller Login mit Passkey</span>
+							</>
 						)}
 					</button>
 				</form>

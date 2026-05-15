@@ -9,6 +9,7 @@ import {
 import {
 	trpc,
 } from '@/lib/trpc';
+import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import {
 	motion, AnimatePresence,
 } from 'framer-motion';
@@ -257,6 +258,11 @@ export default function SetupPage({
 			refetchOnWindowFocus: false,
 		});
 
+	const getAuthOptions = trpc.webauthn.generateAuthenticationOptions.useMutation();
+	const verifyAuth = trpc.webauthn.verifyAuthentication.useMutation();
+	const getRegOptions = trpc.webauthn.generateRegistrationOptions.useMutation();
+	const verifyReg = trpc.webauthn.verifyRegistration.useMutation();
+
 	const requestVerification = trpc.session.requestVerification.useMutation({
 		onSuccess: (data) => {
 			setIsSubmitting(false);
@@ -304,17 +310,51 @@ export default function SetupPage({
 	});
 
 	const reloginReturningUser = trpc.session.reloginReturningUser.useMutation({
-		onSuccess: (data) => {
-			persistName(
-				data.firstName?.trim() || '',
-				data.lastName?.trim() || '',
-				data.email?.trim() || '',
-			);
-			markSetupComplete();
-			refetchCurrentSession().then(() => {
-				router.push('/products');
-				router.refresh();
-			});
+		onSuccess: async (data) => {
+			if (data.requiresVerification && !data.success && 'sessionId' in data) {
+				try {
+					const options = await getAuthOptions.mutateAsync({ email });
+					const authResp = await startAuthentication({ optionsJSON: options });
+					const verifyResp = await verifyAuth.mutateAsync({ email, response: authResp });
+					
+					if (verifyResp.success) {
+						if ('isAdmin' in verifyResp && verifyResp.isAdmin) {
+							router.push('/admin');
+							return;
+						}
+						const salesData = verifyResp as { firstName?: string, lastName?: string, email?: string };
+						persistName(
+							salesData.firstName?.trim() || '',
+							salesData.lastName?.trim() || '',
+							salesData.email?.trim() || '',
+						);
+						markSetupComplete();
+						refetchCurrentSession().then(() => {
+							router.push('/products');
+							router.refresh();
+						});
+						return;
+					}
+				} catch (err) {
+					console.log('Passkey auth failed or unavailable, falling back to magic link', err);
+				}
+				
+				setPendingSessionId(data.sessionId as string);
+				return;
+			}
+
+			if (data.success && 'firstName' in data) {
+				persistName(
+					data.firstName?.trim() || '',
+					data.lastName?.trim() || '',
+					data.email?.trim() || '',
+				);
+				markSetupComplete();
+				refetchCurrentSession().then(() => {
+					router.push('/products');
+					router.refresh();
+				});
+			}
 		},
 		onError: (error) => {
 			console.error('Relogin failed:', error);
@@ -900,6 +940,7 @@ export default function SetupPage({
 							<WelcomeBackCard
 								firstName={firstName}
 								lastName={lastName}
+								email={email}
 								teamName={existingSession?.team?.name}
 								isReloggingIn={reloginReturningUser.isPending}
 								onContinue={() => {
@@ -913,6 +954,20 @@ export default function SetupPage({
 									}
 								}}
 								onReconfigure={() => setShowReconfigure(true)}
+								onRegisterPasskey={async () => {
+									try {
+										const targetEmail = email || existingSession?.email || '';
+										if (!targetEmail) return;
+										const options = await getRegOptions.mutateAsync({ email: targetEmail });
+										const resp = await startRegistration({ optionsJSON: options });
+										await verifyReg.mutateAsync({ email: targetEmail, response: resp });
+										alert('Passkey erfolgreich eingerichtet!');
+									} catch (e: any) {
+										console.error('Passkey failed', e);
+										alert('Fehler bei der Passkey-Einrichtung: ' + e.message);
+									}
+								}}
+								hasActiveSession={!!existingSession}
 							/>
 						) : pendingSessionId ? (
 							/* Waiting for Verification */
@@ -1196,17 +1251,23 @@ function IpBlockedCard({
 function WelcomeBackCard({
 	firstName,
 	lastName,
+	email,
 	teamName,
 	isReloggingIn,
 	onContinue,
 	onReconfigure,
+	onRegisterPasskey,
+	hasActiveSession,
 }: {
 	firstName: string;
 	lastName: string;
+	email: string;
 	teamName?: string;
 	isReloggingIn?: boolean;
 	onContinue: () => void;
 	onReconfigure: () => void;
+	onRegisterPasskey: () => void;
+	hasActiveSession?: boolean;
 }) {
 	return (
 		<div className="flex flex-col items-center text-center gap-6 py-4">
@@ -1272,6 +1333,15 @@ function WelcomeBackCard({
 					)}
 				</button>
 			</div>
+
+			{hasActiveSession && email !== 'no-reply@telekom.de' && (
+				<button
+					onClick={onRegisterPasskey}
+					className="mt-4 px-4 py-2 text-[0.85rem] font-medium text-[#e20074] hover:bg-[#fdf2f8] rounded-xl transition-colors cursor-pointer"
+				>
+					Gerät sicher merken (Passkey einrichten)
+				</button>
+			)}
 		</div>
 	);
 }

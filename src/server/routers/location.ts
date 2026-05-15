@@ -9,7 +9,7 @@ import {
 } from '@trpc/server';
 
 export const locationRouter = router({
-    list: protectedProcedure
+    list: publicProcedure
         .input(z.object({
             locationId: z.string().optional(),
             odRegionId: z.string().optional(),

@@ -58,6 +58,7 @@ export const authRouter = router({
             // Create session with all relevant permission data
             await login({
                 id: user.id,
+                email: user.email,
                 role: user.role,
                 isEditor: user.isEditor,
                 odRegionId: user.odRegionId,
@@ -65,8 +66,13 @@ export const authRouter = router({
                 teamId: user.teamId,
             });
 
+            const passkeyCount = await prisma.passkey.count({
+                where: { email: user.email },
+            });
+
             return {
                 success: true,
+                suggestPasskey: passkeyCount === 0,
             };
         }),
 
