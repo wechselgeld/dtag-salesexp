@@ -490,36 +490,63 @@ export const sessionRouter = router({
         .input(z.object({
             limit: z.number().min(1).max(100).default(50),
             cursor: z.string().nullish(),
+            search: z.string().optional(),
+            locationId: z.string().optional(),
         }).optional())
         .query(async ({
             ctx, input,
         }) => {
             const limit = input?.limit ?? 50;
             const cursor = input?.cursor;
+            const search = input?.search;
+            const locationId = input?.locationId;
             const session = ctx.session as any;
 
-            let where: any = {
-            };
+            const whereClause: any = {};
+
             if (session.role === 'OD_MANAGER' && session.odRegionId) {
-                where = {
-                    team: {
-                        location: {
-                            odRegionId: session.odRegionId,
-                        },
-                    },
-                };
+                if (locationId) {
+                    whereClause.team = {
+                        locationId,
+                        location: { odRegionId: session.odRegionId },
+                    };
+                } else {
+                    whereClause.team = {
+                        location: { odRegionId: session.odRegionId },
+                    };
+                }
             }
             else if (session.role === 'LOCATION_MANAGER' && session.locationId) {
-                where = {
-                    team: {
-                        locationId: session.locationId,
-                    },
+                // Location managers can only ever see their own location
+                whereClause.team = {
+                    locationId: session.locationId,
                 };
             }
             else if (session.role === 'TEAM_LEADER' && session.teamId) {
-                where = {
-                    teamId: session.teamId,
-                };
+                // Team leaders can only ever see their own team
+                whereClause.teamId = session.teamId;
+            }
+            else {
+                // ADMIN or unrestricted
+                if (locationId) {
+                    whereClause.team = {
+                        locationId,
+                    };
+                }
+            }
+
+            const where: any = { AND: [whereClause] };
+
+            if (search) {
+
+                where.AND.push({
+                    OR: [
+                        { email: { contains: search, mode: 'insensitive' } },
+                        { firstName: { contains: search, mode: 'insensitive' } },
+                        { lastName: { contains: search, mode: 'insensitive' } },
+                        { team: { name: { contains: search, mode: 'insensitive' } } },
+                    ],
+                });
             }
 
             const items = await ctx.prisma.salesSession.findMany({
@@ -556,3 +583,4 @@ export const sessionRouter = router({
             };
         }),
 });
+

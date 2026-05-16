@@ -18,6 +18,25 @@ import {
 import clsx from 'clsx';
 
 const CHANGELOGS = [
+	{
+		id: 'may-16',
+		title: '16. Mai 2026',
+		items: [
+			{
+				q: 'Hinzugefügt',
+				a: 'Du kannst Dich nun über Passkeys anmelden; Im Admin-Bereich gibt es nun eine Standort- und Team-basierte Filterung für Sales-Sessions; Vor- und Nachnamen werden bei der Registrierung nun automatisch korrekt großgeschrieben',
+			},
+			{
+				q: 'Geändert',
+				a: 'Bessere Übersicht der Einmalkosten im Warenkorb; Erhebliche Optimierungen des Systems',
+			},
+			{
+				q: 'Entfernt',
+				a: 'Es wurde nichts entfernt',
+			},
+		],
+	},
+
 		{
 		id: 'march-22',
 		title: '22. März 2025',

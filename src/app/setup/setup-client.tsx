@@ -106,6 +106,22 @@ function isSetupAlreadyDone(): boolean {
 	return !!localStorage.getItem(LS_KEY_SETUP_DONE);
 }
 
+function capitalizeWords(str: string): string {
+	return str
+		.split(/\s+/)
+		.map((word) => {
+			if (word.includes('-')) {
+				return word
+					.split('-')
+					.map((sub) => sub.charAt(0).toUpperCase() + sub.slice(1).toLowerCase())
+					.join('-');
+			}
+			return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+		})
+		.join(' ');
+}
+
+
 /* ──────────────────────────────────────────────
    Component
    ────────────────────────────────────────────── */
@@ -736,16 +752,17 @@ response: authResp,
 						label="Vorname"
 						placeholder="Max"
 						value={firstName}
-						onChange={setFirstName}
+						onChange={(val) => setFirstName(capitalizeWords(val))}
 					/>
 					<InputField
 						id="setup-last-name"
 						label="Nachname"
 						placeholder="Mustermann"
 						value={lastName}
-						onChange={setLastName}
+						onChange={(val) => setLastName(capitalizeWords(val))}
 					/>
 				</div>
+
 				{isEmailRequiredGlobally !== false && (
 					<div className="mt-4">
 						<InputField
