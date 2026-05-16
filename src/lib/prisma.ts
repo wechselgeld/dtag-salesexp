@@ -1,50 +1,40 @@
-import {
-  PrismaClient,
-} from '@prisma/client';
-import pRetry, {
-  AbortError,
-} from 'p-retry';
-import {
- dbLogger, formatDuration, formatQuery,
-} from './logger';
+import { PrismaClient, Prisma } from '@prisma/client';
+export { Prisma };
+import pRetry, { AbortError } from 'p-retry';
+import { dbLogger, formatDuration, formatQuery } from './logger';
 
-// Transient Prisma Error Codes that are safe to retry
 const RETRYABLE_ERROR_CODES = [
   'P1001', // Can't reach database server
-  'P1002', // The database server was reached but timed out
+  'P1002', // Database server timed out
   'P1008', // Operations timed out
-  'P1017', // Server has closed the connection
-  'P2024', // Timed out fetching a new connection from the connection pool
-  'P2034', // Transaction failed due to a write conflict or a deadlock
+  'P1017', // Server closed the connection
+  'P2024', // Connection pool timeout
+  'P2034', // Write conflict / deadlock
 ];
+
+// Only reads are idempotent. Retrying a write that timed out on the client but
+// succeeded in the DB causes duplicates, double-charges, or constraint violations.
+const READ_OPERATIONS = new Set([
+  'findMany', 'findUnique', 'findFirst',
+  'findUniqueOrThrow', 'findFirstOrThrow',
+  'count', 'aggregate', 'groupBy',
+]);
 
 const prismaClientSingleton = () => {
   const client = new PrismaClient({
     log: [
-      {
-        emit: 'event',
-        level: 'query',
-      },
-      {
-        emit: 'stdout',
-        level: 'error',
-      },
-      {
-        emit: 'stdout',
-        level: 'warn',
-      },
+      { emit: 'event', level: 'query' },
+      { emit: 'stdout', level: 'error' },
+      { emit: 'stdout', level: 'warn' },
     ],
   });
 
-  // Pretty log for all queries
   client.$on('query', (e) => {
     const durationStr = formatDuration(e.duration);
     const queryStr = formatQuery(e.query);
-
     if (e.duration > 500) {
       dbLogger.warn(`Slow Query (${durationStr}): ${queryStr}`);
-    }
- else {
+    } else {
       dbLogger.debug(`Query (${durationStr}): ${queryStr}`);
     }
   });
@@ -52,30 +42,30 @@ const prismaClientSingleton = () => {
   return client.$extends({
     query: {
       $allModels: {
-        $allOperations({
-          model, operation, args, query,
-        }) {
+        $allOperations({ model, operation, args, query }) {
+          // Pass writes through directly — the caller is responsible for retry
+          // semantics within explicit transactions when needed.
+          if (!READ_OPERATIONS.has(operation)) {
+            return query(args);
+          }
+
           return pRetry(
             async () => {
               try {
                 return await query(args);
-              }
-              catch (error) {
-                // Check if the error is a Prisma client known request error
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              } catch (error) {
                 const err = error as any;
-                if (
+                const isRetryable =
                   err &&
                   typeof err === 'object' &&
                   'code' in err &&
                   typeof err.code === 'string' &&
-                  RETRYABLE_ERROR_CODES.includes(err.code)
-                ) {
-                  throw error; // Rethrow to be caught and retried by pRetry
+                  RETRYABLE_ERROR_CODES.includes(err.code);
+
+                if (isRetryable) {
+                  throw error; // pRetry will retry this
                 }
-                else {
-                  throw new AbortError(error as Error);
-                }
+                throw new AbortError(error as Error); // non-retryable, surface immediately
               }
             },
             {
@@ -84,17 +74,10 @@ const prismaClientSingleton = () => {
               maxTimeout: 1000,
               randomize: true,
               onFailedAttempt: (error) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const err = error as any;
-                if (
-                  err &&
-                  typeof err === 'object' &&
-                  'code' in err &&
-                  typeof err.code === 'string' &&
-                  RETRYABLE_ERROR_CODES.includes(err.code)
-                ) {
-                  dbLogger.error(
-                    `Retry failed for ${model}.${operation} (Code: ${err.code}). Attempt ${error.attemptNumber}/4`,
+                if (err?.code && RETRYABLE_ERROR_CODES.includes(err.code)) {
+                  dbLogger.warn(
+                    `Retrying ${model}.${operation} (Code: ${err.code}) — attempt ${error.attemptNumber}/4`,
                   );
                 }
               },
@@ -106,12 +89,14 @@ const prismaClientSingleton = () => {
   });
 };
 
-type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>
+type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClientSingleton | undefined
+  prisma: PrismaClientSingleton | undefined;
 };
 
 export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
 
-if (process.env.NODE_ENV !== 'production') { globalForPrisma.prisma = prisma; }
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+}

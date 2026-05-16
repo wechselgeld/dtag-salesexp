@@ -1,33 +1,25 @@
-import {
-    router, protectedProcedure,
-} from '@/server/trpc';
-import {
-    z,
-} from 'zod';
-import {
-    prisma,
-} from '@/lib/prisma';
-import {
-    TRPCError,
-} from '@trpc/server';
+import { router, protectedProcedure } from '@/server/trpc';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+import { TRPCError } from '@trpc/server';
 import bcrypt from 'bcryptjs';
-import {
-    sendWelcomeEmail, sendGoodbyeEmail,
-} from '@/lib/email';
+import { sendWelcomeEmail, sendGoodbyeEmail } from '@/lib/email';
+import { getUserFilter, canManageUser } from '@/lib/rbac';
 
 const permissionProcedure = protectedProcedure.use(({
     ctx, next,
 }) => {
     const role = (ctx.session as any)?.role;
-    if (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER' && role !== 'TEAM_LEADER') {
+    // Minimum required role: LOCATION_MANAGER. TEAM_LEADER was previously allowed
+    // here but immediately rejected inside each handler by canManageUser — two
+    // contradictory layers. The gate now matches the actual business rule.
+    if (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER') {
         throw new TRPCError({
             code: 'FORBIDDEN',
             message: 'Du hast keine Berechtigung für diese Aktion.',
         });
     }
-    return next({
-        ctx,
-    });
+    return next({ ctx });
 });
 
 export const adminUsersRouter = router({
@@ -45,8 +37,6 @@ export const adminUsersRouter = router({
                 cursor,
             } = input;
             const session = ctx.session as any;
-
-            const { getUserFilter } = await import('@/lib/rbac');
             const where: any = getUserFilter(session);
             if (where.id === 'UNAUTHORIZED') {
                 return { items: [], nextCursor: undefined };
@@ -230,7 +220,6 @@ export const adminUsersRouter = router({
                 });
             }
 
-            const { canManageUser } = await import('@/lib/rbac');
             if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, targetUser.odRegionId, targetUser.locationId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
@@ -339,7 +328,6 @@ export const adminUsersRouter = router({
                     code: 'NOT_FOUND',
                 });
             }
-            const { canManageUser } = await import('@/lib/rbac');
             if (!canManageUser(ctx.session as any, target.role, target.odRegionId, target.locationId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',

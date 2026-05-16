@@ -86,7 +86,7 @@ const FAQ_CATEGORIES = [
 		items: [
 			{
 				q: 'Wie lange bleibt meine Sitzung aktiv?',
-				a: 'Eine aktive Session ist zeitlich begrenzt, um die Sicherheit der Daten zu gewährleisten. In der Regel bleibt sie 24 Stunden bestehen, sofern Du Dich nicht manuell abmeldest.',
+				a: 'Eine aktive Session ist zeitlich begrenzt, um die Sicherheit der Daten zu gewährleisten. In der Regel bleibt sie 4 Stunden bestehen, sofern Du Dich nicht manuell abmeldest.',
 			},
 			{
 				q: 'Wer verwaltet die Produkte und Nutzer?',

@@ -182,8 +182,8 @@ export default function SetupPage({
 		setIsSubmitting,
 	] = useState(false);
 	const [
-		pendingSessionId,
-		setPendingSessionId,
+		pendingBindingToken,
+		setPendingBindingToken,
 	] = useState<string | null>(null);
 	const [
 		formErrors,
@@ -270,11 +270,11 @@ export default function SetupPage({
 			setIsSubmitting(false);
 			if (data.bypassed) {
 				finalizeLogin.mutate({
-					sessionId: data.sessionId,
+					bindingToken: data.bindingToken,
 				});
 			}
 			else {
-				setPendingSessionId(data.sessionId);
+				setPendingBindingToken(data.bindingToken);
 			}
 		},
 		onError: (error) => {
@@ -287,11 +287,11 @@ export default function SetupPage({
 		data: verificationStatus,
 	} = trpc.session.checkVerification.useQuery(
 		{
-			sessionId: pendingSessionId as string,
+			bindingToken: pendingBindingToken as string,
 		},
 		{
-			enabled: !!pendingSessionId,
-			refetchInterval: 3000, // Poll every 3 seconds
+			enabled: !!pendingBindingToken,
+			refetchInterval: 3000,
 		},
 	);
 
@@ -351,7 +351,7 @@ response: authResp,
 					console.log('Passkey auth failed or unavailable, falling back to magic link', err);
 				}
 
-				setPendingSessionId(data.sessionId as string);
+				setPendingBindingToken(data.sessionId as string);
 				return;
 			}
 
@@ -389,17 +389,17 @@ response: authResp,
 	useEffect(() => {
 		if (
 			verificationStatus?.verified &&
-			pendingSessionId &&
+			pendingBindingToken &&
 			!finalizeLogin.isPending &&
 			!finalizeLogin.isSuccess
 		) {
 			finalizeLogin.mutate({
-				sessionId: pendingSessionId,
+				bindingToken: pendingBindingToken,
 			});
 		}
 	}, [
 		verificationStatus?.verified,
-		pendingSessionId,
+		pendingBindingToken,
 		finalizeLogin,
 	]);
 
@@ -446,7 +446,7 @@ response: authResp,
 		!acceptedTerms ||
 		!acceptedPrivacy;
 
-	const canSubmitClick = !anyFieldEmpty && !isSubmitting && !pendingSessionId;
+	const canSubmitClick = !anyFieldEmpty && !isSubmitting && !pendingBindingToken;
 
 	const handleNextStep = () => {
 		if (currentStep === 1 && selectedLocationId) {
@@ -989,7 +989,7 @@ response: resp,
 								}}
 								hasActiveSession={!!existingSession}
 							/>
-						) : pendingSessionId ? (
+						) : pendingBindingToken ? (
 							/* Waiting for Verification */
 							<div className="flex flex-col items-center text-center gap-5 py-4">
 								<div className="relative flex items-center justify-center mb-1">
@@ -1017,7 +1017,7 @@ response: resp,
 									</p>
 								</div>
 								<button
-									onClick={() => setPendingSessionId(null)}
+									onClick={() => setPendingBindingToken(null)}
 									className="mt-2 px-4 py-2 text-[0.85rem] font-medium text-[#e20074] hover:bg-[#fdf2f8] rounded-xl transition-colors cursor-pointer"
 								>
 									E-Mail korrigieren / Zurück

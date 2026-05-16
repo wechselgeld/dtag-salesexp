@@ -24,33 +24,23 @@ import crypto from 'crypto';
 
 const rpName = 'Sales Experience-Plattform';
 
-function getRpIdAndOrigin(req?: Request | null) {
-    let appUrl = process.env.NEXT_PUBLIC_APP_URL;
-
-    if (req) {
-        const host = req.headers.get('host');
-        const proto = req.headers.get('x-forwarded-proto') || 'https';
-        if (host) {
-            appUrl = `${proto}://${host}`;
-        }
+// rpID and origin must be bound to the deployment-time env var, not derived
+// from request headers. A caller behind a proxy at evil.com could set
+// Host: evil.com, causing verifyAuthenticationResponse to accept credentials
+// bound to that domain — which is the exact phishing attack WebAuthn prevents.
+function getRpIdAndOrigin() {
+    if (process.env.NODE_ENV === 'development') {
+        return { rpID: 'localhost', origin: 'http://localhost:3000' };
     }
-
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     if (!appUrl) {
-        appUrl = 'http://localhost:3000';
+        throw new Error('NEXT_PUBLIC_APP_URL must be set for WebAuthn to work in production');
     }
-
     try {
         const url = new URL(appUrl);
-        return {
-            rpID: url.hostname,
-            origin: url.origin,
-        };
-    }
-    catch (e) {
-        return {
-            rpID: 'localhost',
-            origin: 'http://localhost:3000',
-        };
+        return { rpID: url.hostname, origin: url.origin };
+    } catch {
+        throw new Error(`NEXT_PUBLIC_APP_URL is not a valid URL: "${appUrl}"`);
     }
 }
 
@@ -125,9 +115,7 @@ export const webauthnRouter = router({
                 },
             });
 
-            const {
-                rpID, origin,
-            } = getRpIdAndOrigin(ctx.req);
+            const { rpID, origin } = getRpIdAndOrigin();
 
             // We need a stable user ID for the authenticator. 
             // Since we don't have a SalesUser model, we'll hash the email.
@@ -173,9 +161,7 @@ export const webauthnRouter = router({
                 });
             }
 
-            const {
-                rpID, origin,
-            } = getRpIdAndOrigin(ctx.req);
+            const { rpID, origin } = getRpIdAndOrigin();
 
             let verification;
             try {
@@ -250,9 +236,7 @@ export const webauthnRouter = router({
                 }
             }
 
-            const {
-                rpID,
-            } = getRpIdAndOrigin(ctx.req);
+            const { rpID } = getRpIdAndOrigin();
 
             const options = await generateAuthenticationOptions({
                 rpID,
@@ -302,9 +286,7 @@ export const webauthnRouter = router({
                 });
             }
 
-            const {
-                rpID, origin,
-            } = getRpIdAndOrigin(ctx.req);
+            const { rpID, origin } = getRpIdAndOrigin();
 
             const passkey = await ctx.prisma.passkey.findUnique({
                 where: {

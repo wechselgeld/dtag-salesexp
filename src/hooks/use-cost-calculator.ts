@@ -166,8 +166,19 @@ export function calculateProductCosts({
 
 	if (activationFee > 0) {
 		oneTimeTotal += activationFee;
+		const fullName = `Bereitstellungspauschale ${product.name}`;
+		let displayName = fullName;
+		if (fullName.length > 42) {
+			let shortTariff = product.name;
+			shortTariff = shortTariff
+				.replace(/MagentaZuhause/g, 'MZ')
+				.replace(/MagentaMobil/g, 'MM')
+				.replace(/Glasfaser/g, 'GF')
+				.replace(/MagentaTV/g, 'MTV');
+			displayName = `Bereitstellungspauschale ${shortTariff}`;
+		}
 		oneTimeBreakdown.push({
-			name: 'Bereitstellungspauschale Tarif',
+			name: displayName,
 			cost: activationFee,
 		});
 	}

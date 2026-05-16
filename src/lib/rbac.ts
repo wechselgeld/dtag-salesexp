@@ -29,12 +29,14 @@ export function hasRole(user: SessionUser | undefined | null, role: Role): boole
 // ------------------------------------------------------------------
 
 export function getOdRegionFilter(user: SessionUser | undefined | null) {
-    if (!user) return {}; // Allow public/onboarding access to list OD regions
+    // Anonymous: onboarding only needs active regions. An empty filter would
+    // expose the full org tree (including inactive/sensitive records) to anyone
+    // with a network tool.
+    if (!user) return { isActive: true };
     if (hasRole(user, 'ADMIN')) return {};
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
         return { id: user.odRegionId };
     }
-    // LOWER ROLES CANNOT LIST ALL OD REGIONS BUT MIGHT SEE THEIR OWN
     if (user.odRegionId) {
         return { id: user.odRegionId };
     }
@@ -42,7 +44,7 @@ export function getOdRegionFilter(user: SessionUser | undefined | null) {
 }
 
 export function getLocationFilter(user: SessionUser | undefined | null) {
-    if (!user) return {}; // Allow public/onboarding access to list locations
+    if (!user) return { isActive: true };
     if (hasRole(user, 'ADMIN')) return {};
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
         return { odRegionId: user.odRegionId };
@@ -57,7 +59,11 @@ export function getLocationFilter(user: SessionUser | undefined | null) {
 }
 
 export function getTeamFilter(user: SessionUser | undefined | null) {
-    if (!user) return {}; // Allow public/onboarding access to list teams
+    // Team has no isActive field, so we cannot filter by it.
+    // Anonymous access is intentional for onboarding: users must pick a team
+    // before they have a session. Team only stores name/email/locationId —
+    // no sensitive fields that need hiding from an unauthenticated caller.
+    if (!user) return {};
     if (hasRole(user, 'ADMIN')) return {};
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
         return { location: { odRegionId: user.odRegionId } };

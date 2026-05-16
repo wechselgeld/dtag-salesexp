@@ -1,18 +1,8 @@
-import {
-    router, protectedProcedure, publicProcedure,
-} from '@/server/trpc';
-import {
-    z,
-} from 'zod';
-import {
-    prisma,
-} from '@/lib/prisma';
-import {
-    TRPCError,
-} from '@trpc/server';
-import {
-    getCached, invalidateCache,
-} from '@/lib/cache';
+import { router, protectedProcedure, publicProcedure } from '@/server/trpc';
+import { z } from 'zod';
+import { prisma, Prisma } from '@/lib/prisma';
+import { TRPCError } from '@trpc/server';
+import { getCached, invalidateCache } from '@/lib/cache';
 
 // Schema for product creation/update
 const priceHistorySchema = z.object({
@@ -350,29 +340,22 @@ export const adminRouter = router({
         .input(productSchema.extend({
             id: z.string(),
         }))
-        .mutation(async ({
-            input,
-        }) => {
-            const {
-                id, features, targetGroups, salesArguments, priceHistory, ...data
-            } = input;
+        .mutation(async ({ input }) => {
+            const { id, features, targetGroups, salesArguments, priceHistory, ...data } = input;
 
-            // Recreate relations to preserve order easily and cleanly update
-            await prisma.salesArgument.deleteMany({
-                where: {
-                    productId: id,
-                },
+            // Fetch the current basePrice before updating so we know whether to
+            // append a PriceHistory record. PriceHistory is an append-only audit
+            // ledger — deleting it (old behavior) destroyed compliance data.
+            const existing = await prisma.product.findUnique({
+                where: { id },
+                select: { basePrice: true },
             });
-            await prisma.priceHistory.deleteMany({
-                where: {
-                    productId: id,
-                },
-            });
+
+            await prisma.salesArgument.deleteMany({ where: { productId: id } });
+            // PriceHistory is NOT deleted here. Old entries are permanent.
 
             const result = await prisma.product.update({
-                where: {
-                    id,
-                },
+                where: { id },
                 data: {
                     ...data,
                     features: JSON.stringify(features),
@@ -384,14 +367,16 @@ export const adminRouter = router({
                             isActive: true,
                         })),
                     },
-                    priceHistory: {
-                        create: priceHistory.map(ph => ({
-                            price: ph.price,
-                            label: ph.label,
-                        })),
-                    },
                 },
             });
+
+            // Only append a history record if the price actually changed.
+            if (existing && data.basePrice !== undefined && existing.basePrice !== data.basePrice) {
+                await prisma.priceHistory.create({
+                    data: { productId: id, price: data.basePrice, label: 'Manual update' },
+                });
+            }
+
             invalidateCache('product');
             return result;
         }),
@@ -1064,18 +1049,10 @@ export const adminRouter = router({
             ]),
             value: z.number(), // positive = increase, negative = decrease
         }))
-        .mutation(async ({
-            input,
-        }) => {
+        .mutation(async ({ input }) => {
             const products = await prisma.product.findMany({
-                where: {
-                    category: input.category,
-                    isActive: true,
-                },
-                select: {
-                    id: true,
-                    basePrice: true,
-                },
+                where: { category: input.category, isActive: true },
+                select: { id: true, basePrice: true },
             });
 
             if (products.length === 0) {
@@ -1085,42 +1062,54 @@ export const adminRouter = router({
                 });
             }
 
-            // Calculate new prices
             const updates = products.map((p) => {
-                let newPrice: number;
-                if (input.mode === 'FIXED') {
-                    newPrice = p.basePrice + input.value;
-                }
-                else {
-                    newPrice = p.basePrice * (1 + input.value / 100);
-                }
-                // Ensure price is not negative and round to 2 decimals
-                newPrice = Math.max(0, Math.round(newPrice * 100) / 100);
-                return {
-                    id: p.id,
-                    basePrice: newPrice,
-                };
+                const newPrice = input.mode === 'FIXED'
+                    ? p.basePrice + input.value
+                    : p.basePrice * (1 + input.value / 100);
+                return { id: p.id, basePrice: Math.max(0, Math.round(newPrice * 100) / 100) };
             });
 
-            // Execute all updates in a transaction
-            await prisma.$transaction(
-                updates.map((u) =>
-                    prisma.product.update({
-                        where: {
-                            id: u.id,
-                        },
-                        data: {
-                            basePrice: u.basePrice,
-                        },
-                    }),
-                ),
-            );
+            // Single UPDATE statement with a CASE expression instead of N individual
+            // ORM updates in a transaction. For 1000 products this drops from
+            // 1000 round-trips to 1, eliminating lock escalation and memory bloat.
+            await prisma.$executeRaw`
+                UPDATE "Product"
+                SET "basePrice" = CASE id
+                    ${Prisma.join(
+                        updates.map((u) => Prisma.sql`WHEN ${u.id}::text THEN ${u.basePrice}::double precision`),
+                        ' ',
+                    )}
+                END,
+                "updatedAt" = now()
+                WHERE id IN (${Prisma.join(updates.map((u) => u.id))})
+            `;
+
+            // Append audit trail entries for every affected product.
+            // bulkUpdatePrices previously wrote no history at all.
+            await prisma.priceHistory.createMany({
+                data: updates.map((u) => ({
+                    productId: u.id,
+                    price: u.basePrice,
+                    label: `Bulk ${input.mode === 'FIXED' ? `+${input.value}€` : `${input.value}%`} (${input.category})`,
+                })),
+            });
 
             invalidateCache('product');
-
-            return {
-                updated: updates.length,
-                category: input.category,
-            };
+            return { updated: updates.length, category: input.category };
         }),
+
+    // Triggered manually from the admin UI or a deploy hook.
+    // Previously this ran as a fire-and-forget deleteMany on every login request,
+    // causing unindexed table-locking deletes under concurrent load.
+    cleanupSessions: protectedProcedure.mutation(async ({ ctx }) => {
+        const session = ctx.session as any;
+        if (session?.role !== 'ADMIN') {
+            throw new TRPCError({ code: 'FORBIDDEN' });
+        }
+        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+        const { count } = await prisma.salesSession.deleteMany({
+            where: { isVerified: false, createdAt: { lt: twoHoursAgo } },
+        });
+        return { deleted: count };
+    }),
 });

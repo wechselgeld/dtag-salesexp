@@ -332,7 +332,7 @@ session.lastName,
 						{/* Costs */}
 						<div className="space-y-1.5 mb-3">
 							<div className="flex justify-between items-center">
-								<span className="text-[0.75rem] text-[#aaa]">Einmalig</span>
+								<span className="text-[0.75rem] text-[#aaa]">Einmalige Kosten insg.</span>
 								<span
 									className={clsx(
 										'text-[0.8rem] font-semibold flex items-center overflow-hidden h-[1.2rem]',

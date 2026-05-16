@@ -234,6 +234,14 @@ model SalesSession {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   team                  Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  // Rate-limiting: COUNT WHERE ip/email AND isVerified=false AND createdAt >= 15min ago
+  @@index([ip, isVerified, createdAt])
+  @@index([email, isVerified, createdAt])
+  // GC cleanup procedure: DELETE WHERE isVerified=false AND createdAt < 2h ago
+  @@index([isVerified, createdAt])
+  // Device fingerprint lookup on returning-user flow
+  @@index([deviceId])
 }
 
 model News {
@@ -250,6 +258,11 @@ model News {
   location   Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
   odRegion   OdRegion? @relation(fields: [odRegionId], references: [id], onDelete: Cascade)
   team       Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  // getNewsVisibilityFilter constructs OR clauses over these three columns
+  @@index([isActive, odRegionId])
+  @@index([isActive, locationId])
+  @@index([isActive, teamId])
 }
 
 model SystemSetting {

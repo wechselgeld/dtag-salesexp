@@ -1,20 +1,15 @@
-import {
-    router, publicProcedure, protectedProcedure,
-} from '../trpc';
-import {
-    z,
-} from 'zod';
-import {
-    cookies,
-} from 'next/headers';
-import {
-    TRPCError,
-} from '@trpc/server';
+import { router, publicProcedure, protectedProcedure } from '../trpc';
+import { z } from 'zod';
+import { cookies } from 'next/headers';
+import { TRPCError } from '@trpc/server';
 import ipaddr from 'ipaddr.js';
 import crypto from 'crypto';
+import { getCached } from '@/lib/cache';
 import {
-    getCached,
-} from '@/lib/cache';
+    signSessionId, signDeviceId,
+    verifySessionId, verifyDeviceId,
+    signSessionBinding, verifySessionBinding,
+} from '@/lib/auth';
 
 const SETTINGS_TTL = 1000 * 60 * 60; // 1 hour
 
@@ -124,11 +119,9 @@ export const sessionRouter = router({
                 });
             }
 
-            // Data Bloat Fix: Lazy background cleanup of old unverified sessions (older than 2 hours)
-            const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-            ctx.prisma.salesSession.deleteMany({
-                where: { isVerified: false, createdAt: { lt: twoHoursAgo } }
-            }).catch(console.error); // Run in background
+            // The inline deleteMany that used to run here on every login fired unindexed
+            // DELETE queries under load, causing table locks and latency spikes.
+            // GC is now triggered manually via the admin.session.cleanup procedure.
 
             // Rate-Limiting: Max 50 per IP, Max 3 per Email in the last 15 minutes (Fixes NAT trap)
             const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
@@ -151,22 +144,14 @@ export const sessionRouter = router({
             let bypassEmailCheck = !isEmailRequiredSystemWide;
             let deviceId = crypto.randomBytes(16).toString('hex');
 
-            // Implement Device Fingerprinting instead of Zero-Auth
             if (!bypassEmailCheck) {
                 const cookieStore = await cookies();
                 const deviceToken = cookieStore.get('sales-device-id')?.value;
-                
                 if (deviceToken) {
-                    const { verifyDeviceId } = await import('@/lib/auth');
                     const verifiedDeviceId = await verifyDeviceId(deviceToken);
                     if (verifiedDeviceId) {
-                        // Check if this device is associated with this email
                         const recognizedDevice = await ctx.prisma.salesSession.findFirst({
-                            where: {
-                                email: input.email,
-                                deviceId: verifiedDeviceId,
-                                isVerified: true,
-                            }
+                            where: { email: input.email, deviceId: verifiedDeviceId, isVerified: true },
                         });
                         if (recognizedDevice) {
                             bypassEmailCheck = true;
@@ -190,74 +175,53 @@ export const sessionRouter = router({
                     userAgent: ctx.req?.headers.get('user-agent'),
                     isVerified: bypassEmailCheck,
                     verificationToken: bypassEmailCheck ? null : token,
-                    verificationExpiresAt: bypassEmailCheck ? null : new Date(Date.now() + 60 * 60 * 1000), // 1 hour validity
+                    verificationExpiresAt: bypassEmailCheck ? null : new Date(Date.now() + 60 * 60 * 1000),
                 },
             });
 
             if (!bypassEmailCheck) {
-                const {
-                    sendVerificationEmail,
-                } = await import('@/lib/email');
+                const { sendVerificationEmail } = await import('@/lib/email');
                 await sendVerificationEmail(input.email, input.firstName, token);
             }
 
-            return {
-                sessionId: session.id,
-                bypassed: bypassEmailCheck,
-            };
+            // A signed JWT that proves ownership of this pending session.
+            // The raw session CUID is not returned — guessing it would let anyone
+            // call finalizeLogin and steal the resulting session cookie.
+            const bindingToken = await signSessionBinding(session.id);
+
+            return { bindingToken, bypassed: bypassEmailCheck };
         }),
 
     verifyEmail: publicProcedure
-        .input(z.object({
-            token: z.string(),
-        }))
-        .mutation(async ({
-            ctx, input,
-        }) => {
+        .input(z.object({ token: z.string() }))
+        .mutation(async ({ ctx, input }) => {
             const session = await ctx.prisma.salesSession.findUnique({
-                where: {
-                    verificationToken: input.token,
-                },
+                where: { verificationToken: input.token },
             });
 
             if (!session) {
-                throw new TRPCError({
-                    code: 'NOT_FOUND',
-                    message: 'Ungültiger oder abgelaufener Link',
-                });
+                throw new TRPCError({ code: 'NOT_FOUND', message: 'Ungültiger oder abgelaufener Link' });
             }
 
             if (session.verificationExpiresAt && session.verificationExpiresAt < new Date()) {
-                throw new TRPCError({
-                    code: 'FORBIDDEN',
-                    message: 'Der Link ist abgelaufen. Bitte fordere einen neuen an.',
-                });
+                throw new TRPCError({ code: 'FORBIDDEN', message: 'Der Link ist abgelaufen. Bitte fordere einen neuen an.' });
             }
 
             if (!session.isVerified) {
                 await ctx.prisma.salesSession.update({
-                    where: {
-                        id: session.id,
-                    },
-                    data: {
-                        isVerified: true,
-                        verificationToken: null,
-                    },
+                    where: { id: session.id },
+                    data: { isVerified: true, verificationToken: null },
                 });
             }
 
-            const {
-                signSessionId, signDeviceId
-            } = await import('@/lib/auth');
             const signedToken = await signSessionId(session.id);
-
             const cookieStore = await cookies();
             cookieStore.set('sales-session-id', signedToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
                 path: '/',
-                maxAge: 60 * 60 * 24 * 30, // 30 days
+                maxAge: 60 * 60 * 24 * 30,
             });
 
             if (session.deviceId) {
@@ -267,7 +231,7 @@ export const sessionRouter = router({
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax',
                     path: '/',
-                    maxAge: 60 * 60 * 24 * 365, // 365 days
+                    maxAge: 60 * 60 * 24 * 365,
                 });
             }
 
@@ -280,59 +244,45 @@ export const sessionRouter = router({
         }),
 
     checkVerification: publicProcedure
-        .input(z.object({
-            sessionId: z.string(),
-        }))
-        .query(async ({
-            ctx, input,
-        }) => {
+        .input(z.object({ bindingToken: z.string() }))
+        .query(async ({ ctx, input }) => {
+            // Verify the signed token — rejects expired/tampered tokens before any DB call.
+            const sessionId = await verifySessionBinding(input.bindingToken);
+            if (!sessionId) return { verified: false };
+
             const session = await ctx.prisma.salesSession.findUnique({
-                where: {
-                    id: input.sessionId,
-                },
+                where: { id: sessionId },
             });
-            if (!session) {
-                return {
-                    verified: false,
-                };
-            }
-            return {
-                verified: session.isVerified,
-            };
+            return { verified: session?.isVerified ?? false };
         }),
 
     finalizeLogin: publicProcedure
-        .input(z.object({
-            sessionId: z.string(),
-        }))
-        .mutation(async ({
-            ctx, input,
-        }) => {
+        .input(z.object({ bindingToken: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            // The binding token was signed server-side at requestVerification time.
+            // Without this check, anyone who knows or guesses a session CUID can
+            // call this endpoint and receive a valid auth cookie for someone else.
+            const sessionId = await verifySessionBinding(input.bindingToken);
+            if (!sessionId) {
+                throw new TRPCError({ code: 'FORBIDDEN', message: 'Invalid or expired binding token.' });
+            }
+
             const session = await ctx.prisma.salesSession.findUnique({
-                where: {
-                    id: input.sessionId,
-                },
+                where: { id: sessionId },
             });
 
             if (!session || !session.isVerified) {
-                throw new TRPCError({
-                    code: 'FORBIDDEN',
-                    message: 'Not verified',
-                });
+                throw new TRPCError({ code: 'FORBIDDEN', message: 'Not verified' });
             }
 
-            const {
-                signSessionId, signDeviceId
-            } = await import('@/lib/auth');
             const signedToken = await signSessionId(session.id);
-
             const cookieStore = await cookies();
             cookieStore.set('sales-session-id', signedToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
                 path: '/',
-                maxAge: 60 * 60 * 24 * 30, // 30 days
+                maxAge: 60 * 60 * 24 * 30,
             });
 
             if (session.deviceId) {
@@ -342,7 +292,7 @@ export const sessionRouter = router({
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax',
                     path: '/',
-                    maxAge: 60 * 60 * 24 * 365, // 365 days
+                    maxAge: 60 * 60 * 24 * 365,
                 });
             }
 
@@ -354,75 +304,38 @@ export const sessionRouter = router({
             };
         }),
 
-    getCurrent: publicProcedure.query(async ({
-        ctx,
-    }) => {
+    getCurrent: publicProcedure.query(async ({ ctx }) => {
         const cookieStore = await cookies();
         const token = cookieStore.get('sales-session-id')?.value;
+        if (!token) return null;
 
-        if (!token) { return null; }
-
-        const {
-            verifySessionId,
-        } = await import('@/lib/auth');
         const sessionId = await verifySessionId(token);
-
-        if (!sessionId) { return null; }
+        if (!sessionId) return null;
 
         const session = await ctx.prisma.salesSession.findUnique({
-            where: {
-                id: sessionId,
-            },
-            include: {
-                team: {
-                    include: {
-                        highlights: true,
-                    },
-                },
-            },
+            where: { id: sessionId },
+            include: { team: { include: { highlights: true } } },
         });
 
-        if (!session || !session.isActive || !session.isVerified) { return null; }
-
+        if (!session || !session.isActive || !session.isVerified) return null;
         return session;
     }),
 
     updateTeam: publicProcedure
-        .input(z.object({
-            teamId: z.string(),
-        }))
-        .mutation(async ({
-            ctx, input,
-        }) => {
+        .input(z.object({ teamId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
             const cookieStore = await cookies();
             const token = cookieStore.get('sales-session-id')?.value;
-            if (!token) {
-                throw new TRPCError({
-                    code: 'UNAUTHORIZED',
-                });
-            }
+            if (!token) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-            const {
-                verifySessionId,
-            } = await import('@/lib/auth');
             const sessionId = await verifySessionId(token);
-            if (!sessionId) {
-                throw new TRPCError({
-                    code: 'UNAUTHORIZED',
-                });
-            }
+            if (!sessionId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
             await ctx.prisma.salesSession.update({
-                where: {
-                    id: sessionId,
-                },
-                data: {
-                    teamId: input.teamId,
-                },
+                where: { id: sessionId },
+                data: { teamId: input.teamId },
             });
-            return {
-                success: true,
-            };
+            return { success: true };
         }),
 
     reloginReturningUser: publicProcedure
