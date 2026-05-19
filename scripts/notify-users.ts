@@ -9,8 +9,13 @@ import path from 'path';
 import dotenv from 'dotenv';
 
 // Configure dotenv: first load standard .env as fallback, then override with .env.production
-dotenv.config({ override: true });
-dotenv.config({ path: path.resolve(process.cwd(), '.env.production'), override: true });
+dotenv.config({
+ override: true,
+});
+dotenv.config({
+ path: path.resolve(process.cwd(), '.env.production'),
+override: true,
+});
 
 const prisma = new PrismaClient();
 const rl = readline.createInterface({
@@ -76,7 +81,8 @@ async function main() {
 			const res = await sendAccountResetEmail(testEmail, 'Test-Nutzer');
 			if (res) {
 				console.log('Test email sent successfully! Response:', res);
-			} else {
+			}
+ else {
 				console.error('Failed to send test email.');
 			}
 			process.exit(0);
@@ -85,11 +91,11 @@ async function main() {
 		// 3. Handle Dry Run Mode
 		if (isDryRun) {
 			console.log('\n--- DRY RUN PREVIEW ---');
-			console.log(`Subject: Wichtige Systemaktualisierung: Sales Experience`);
+			console.log('Subject: Wichtige Systemaktualisierung: Sales Experience');
 			console.log(`Sender:  Sales Experience <${emailFrom}>`);
 			console.log('\nSample Copy (for user with first name):');
 			console.log('------------------------------------------------------');
-			console.log(`Hallo [Vorname],`);
+			console.log('Hallo [Vorname],');
 			console.log('wir haben wichtige Sicherheits- und Struktur-Updates an der Authentifizierung');
 			console.log('und der Kontoverwaltung der Sales Experience Plattform vorgenommen.');
 			console.log('\nIm Zuge dieser Umstellung müssen alle bestehenden Konten zurückgesetzt werden.');
@@ -125,14 +131,16 @@ async function main() {
 			try {
 				const res = await sendAccountResetEmail(user.email, user.firstName);
 				if (res) {
-					console.log(`  -> SUCCESS!`);
+					console.log('  -> SUCCESS!');
 					successCount++;
-				} else {
-					console.error(`  -> FAILED: sendAccountResetEmail returned falsy value`);
+				}
+ else {
+					console.error('  -> FAILED: sendAccountResetEmail returned falsy value');
 					failCount++;
 				}
-			} catch (e: any) {
-				console.error(`  -> ERROR:`, e.message || e);
+			}
+ catch (e: any) {
+				console.error('  -> ERROR:', e.message || e);
 				failCount++;
 			}
 
@@ -148,9 +156,11 @@ async function main() {
 		console.log(`   Failed:  ${failCount}`);
 		console.log('======================================================\n');
 
-	} catch (error: any) {
+	}
+ catch (error: any) {
 		console.error('An unexpected error occurred:', error.message || error);
-	} finally {
+	}
+ finally {
 		rl.close();
 		await prisma.$disconnect();
 	}

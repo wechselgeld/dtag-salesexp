@@ -27,7 +27,9 @@ import {
 import {
 	BulkUpdateDialog,
 } from '@/components/features/admin/bulk-update-dialog';
-import { AdminSearch } from '@/components/shared/admin-search';
+import {
+ AdminSearch,
+} from '@/components/shared/admin-search';
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: '#e20074',
@@ -65,7 +67,8 @@ export default function AdminProductsPage() {
 	const [
 		searchedProducts,
 		setSearchedProducts,
-	] = useState<any[]>([]);
+	] = useState<any[]>([
+]);
 	const [
 		filterCat,
 		setFilterCat,
@@ -95,8 +98,11 @@ export default function AdminProductsPage() {
 	});
 
 	const products = useMemo(() => {
-		return data?.pages.flatMap((page) => page.items) || [];
-	}, [data]);
+		return data?.pages.flatMap((page) => page.items) || [
+];
+	}, [
+ data,
+]);
 
 	const processedProducts = useMemo(() => {
 		if (filterCat === 'ALL') {

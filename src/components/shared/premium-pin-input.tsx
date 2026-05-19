@@ -30,15 +30,32 @@ export function PremiumPinInput({
 	disabled = false,
 	id = 'pin-input',
 }: PremiumPinInputProps) {
-	const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-	const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-	const [showPin, setShowPin] = useState(false);
-	const [shouldShake, setShouldShake] = useState(false);
-	const [visibleDigits, setVisibleDigits] = useState<Record<number, boolean>>({});
-	const timersRef = useRef<Record<number, NodeJS.Timeout>>({});
+	const inputRefs = useRef<(HTMLInputElement | null)[]>([
+]);
+	const [
+ focusedIndex,
+setFocusedIndex,
+] = useState<number | null>(null);
+	const [
+ showPin,
+setShowPin,
+] = useState(false);
+	const [
+ shouldShake,
+setShouldShake,
+] = useState(false);
+	const [
+ visibleDigits,
+setVisibleDigits,
+] = useState<Record<number, boolean>>({
+});
+	const timersRef = useRef<Record<number, NodeJS.Timeout>>({
+});
 
 	const digits = value.split('');
-	const paddedDigits = Array.from({ length }, (_, i) => digits[i] ?? '');
+	const paddedDigits = Array.from({
+ length,
+}, (_, i) => digits[i] ?? '');
 
 	// Shake container on error to give physical feedback
 	useEffect(() => {
@@ -47,7 +64,9 @@ export function PremiumPinInput({
 			const timer = setTimeout(() => setShouldShake(false), 500);
 			return () => clearTimeout(timer);
 		}
-	}, [error]);
+	}, [
+ error,
+]);
 
 	// Cleanup timers on unmount
 	useEffect(() => {
@@ -55,7 +74,8 @@ export function PremiumPinInput({
 		return () => {
 			Object.values(currentTimers).forEach((timer) => clearTimeout(timer));
 		};
-	}, []);
+	}, [
+]);
 
 	const updateValue = (newDigits: string[]) => {
 		const val = newDigits.join('');
@@ -72,7 +92,9 @@ export function PremiumPinInput({
 		// Use the last typed character
 		const char = inputVal.slice(-1);
 
-		const newDigits = [...paddedDigits];
+		const newDigits = [
+ ...paddedDigits,
+];
 		newDigits[index] = char;
 		updateValue(newDigits);
 
@@ -98,7 +120,9 @@ export function PremiumPinInput({
 	const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Backspace') {
 			e.preventDefault();
-			const newDigits = [...paddedDigits];
+			const newDigits = [
+ ...paddedDigits,
+];
 
 			if (paddedDigits[index]) {
 				// Clear current digit and immediately focus previous input (highly intuitive backspacing)
@@ -107,21 +131,27 @@ export function PremiumPinInput({
 				if (index > 0) {
 					inputRefs.current[index - 1]?.focus();
 				}
-			} else if (index > 0) {
+			}
+ else if (index > 0) {
 				// Current digit is empty, move to previous and clear it
 				newDigits[index - 1] = '';
 				updateValue(newDigits);
 				inputRefs.current[index - 1]?.focus();
 			}
-		} else if (e.key === 'ArrowLeft' && index > 0) {
+		}
+ else if (e.key === 'ArrowLeft' && index > 0) {
 			e.preventDefault();
 			inputRefs.current[index - 1]?.focus();
-		} else if (e.key === 'ArrowRight' && index < length - 1) {
+		}
+ else if (e.key === 'ArrowRight' && index < length - 1) {
 			e.preventDefault();
 			inputRefs.current[index + 1]?.focus();
-		} else if (e.key === 'Delete') {
+		}
+ else if (e.key === 'Delete') {
 			e.preventDefault();
-			const newDigits = [...paddedDigits];
+			const newDigits = [
+ ...paddedDigits,
+];
 			newDigits[index] = '';
 			updateValue(newDigits);
 		}
@@ -132,7 +162,9 @@ export function PremiumPinInput({
 		const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, length);
 		if (!pastedData) return;
 
-		const newDigits = [...paddedDigits];
+		const newDigits = [
+ ...paddedDigits,
+];
 		pastedData.split('').forEach((char, i) => {
 			if (i < length) newDigits[i] = char;
 		});
@@ -140,7 +172,8 @@ export function PremiumPinInput({
 		updateValue(newDigits);
 
 		// Show all pasted digits temporarily
-		const newVisible: Record<number, boolean> = {};
+		const newVisible: Record<number, boolean> = {
+};
 		pastedData.split('').forEach((_, i) => {
 			if (i < length) {
 				newVisible[i] = true;
@@ -170,8 +203,22 @@ export function PremiumPinInput({
 			id={id}
 			role="group"
 			aria-label="PIN Eingabe"
-			animate={shouldShake ? { x: [-6, 6, -6, 6, -3, 3, 0] } : { x: 0 }}
-			transition={{ duration: 0.4 }}
+			animate={shouldShake ? {
+ x: [
+ -6,
+6,
+-6,
+6,
+-3,
+3,
+0,
+],
+} : {
+ x: 0,
+}}
+			transition={{
+ duration: 0.4,
+}}
 		>
 			<div className="flex items-center gap-1.5 sm:gap-2 flex-1">
 				{paddedDigits.map((digit, index) => {
@@ -182,8 +229,14 @@ export function PremiumPinInput({
 					return (
 						<motion.div
 							key={index}
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
+							initial={{
+ opacity: 0,
+y: 8,
+}}
+							animate={{
+ opacity: 1,
+y: 0,
+}}
 							transition={{
 								delay: index * 0.03,
 								duration: 0.25,
@@ -230,13 +283,22 @@ export function PremiumPinInput({
 										(!isFocused || disabled) && (
 											<motion.div
 												key="placeholder"
-												initial={{ opacity: 0 }}
-												animate={{ opacity: 1 }}
-												exit={{ opacity: 0 }}
-												transition={{ duration: 0.12, ease: 'easeInOut' }}
+												initial={{
+ opacity: 0,
+}}
+												animate={{
+ opacity: 1,
+}}
+												exit={{
+ opacity: 0,
+}}
+												transition={{
+ duration: 0.12,
+ease: 'easeInOut',
+}}
 												className={clsx(
 													'w-2 h-2 rounded-full',
-													disabled ? 'bg-[#888]/30' : 'bg-[#1a1a2e]/30'
+													disabled ? 'bg-[#888]/30' : 'bg-[#1a1a2e]/30',
 												)}
 											/>
 										)
@@ -244,10 +306,21 @@ export function PremiumPinInput({
 										// Filled value (either digit or password dot)
 										<motion.div
 											key={isVisible ? `digit-${digit}` : 'dot'}
-											initial={isVisible ? { opacity: 1 } : { opacity: 0 }}
-											animate={{ opacity: 1 }}
-											exit={{ opacity: 0 }}
-											transition={{ duration: 0.12, ease: 'easeInOut' }}
+											initial={isVisible ? {
+ opacity: 1,
+} : {
+ opacity: 0,
+}}
+											animate={{
+ opacity: 1,
+}}
+											exit={{
+ opacity: 0,
+}}
+											transition={{
+ duration: 0.12,
+ease: 'easeInOut',
+}}
 											className="flex items-center justify-center"
 										>
 											{isVisible ? (
@@ -258,7 +331,7 @@ export function PremiumPinInput({
 												// Beautiful custom password dot
 												<div className={clsx(
 													'w-2.5 h-2.5 rounded-full transition-colors duration-200',
-													disabled ? 'bg-[#888]' : 'bg-[#1a1a2e]'
+													disabled ? 'bg-[#888]' : 'bg-[#1a1a2e]',
 												)} />
 											)}
 										</motion.div>

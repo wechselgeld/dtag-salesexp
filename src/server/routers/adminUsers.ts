@@ -11,8 +11,9 @@ import {
     TRPCError,
 } from '@trpc/server';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import {
-    sendWelcomeEmail, sendGoodbyeEmail,
+    sendGoodbyeEmail,
 } from '@/lib/email';
 import {
     getUserFilter, canManageUser,
@@ -46,16 +47,31 @@ export const adminUsersRouter = router({
             if (where.id === 'UNAUTHORIZED') {
                 return {
                     items: [
-                    ],
+],
                     nextCursor: undefined,
                 };
             }
 
             if (input.search) {
                 where.OR = [
-                    { email: { contains: input.search, mode: 'insensitive' } },
-                    { firstName: { contains: input.search, mode: 'insensitive' } },
-                    { lastName: { contains: input.search, mode: 'insensitive' } },
+                    {
+ email: {
+ contains: input.search,
+mode: 'insensitive',
+},
+},
+                    {
+ firstName: {
+ contains: input.search,
+mode: 'insensitive',
+},
+},
+                    {
+ lastName: {
+ contains: input.search,
+mode: 'insensitive',
+},
+},
                 ];
             }
 
@@ -69,8 +85,8 @@ export const adminUsersRouter = router({
             const items = await prisma.user.findMany({
                 take: limit + 1,
                 cursor: cursor ? {
-                    id: cursor,
-                } : undefined,
+ id: cursor,
+} : undefined,
                 where,
                 select: {
                     id: true,
@@ -125,8 +141,6 @@ export const adminUsersRouter = router({
             };
         }),
 
-
-
     update: protectedProcedure.use(requirePermission('users:write')).use(withHierarchicalScope('user'))
         .input(z.object({
             id: z.string(),
@@ -169,6 +183,88 @@ export const adminUsersRouter = router({
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du kannst diese Rolle nicht vergeben.',
+                });
+            }
+
+            // Inline input scope validators to enforce horizontal boundaries
+            if (session.role === 'OD_MANAGER') {
+                if (input.odRegionId && input.odRegionId !== session.odRegionId) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Du kannst keinen Nutzer außerhalb deiner OD-Region zuweisen.',
+                    });
+                }
+                if (input.locationId) {
+                    const loc = await prisma.location.findUnique({
+                        where: {
+ id: input.locationId,
+},
+                        select: {
+ odRegionId: true,
+},
+                    });
+                    if (!loc || loc.odRegionId !== session.odRegionId) {
+                        throw new TRPCError({
+                            code: 'FORBIDDEN',
+                            message: 'Dieser Standort liegt außerhalb deiner OD-Region.',
+                        });
+                    }
+                }
+                if (input.teamId) {
+                    const team = await prisma.team.findUnique({
+                        where: {
+ id: input.teamId,
+},
+                        select: {
+                            location: {
+                                select: {
+ odRegionId: true,
+},
+                            },
+                        },
+                    });
+                    if (!team || team.location?.odRegionId !== session.odRegionId) {
+                        throw new TRPCError({
+                            code: 'FORBIDDEN',
+                            message: 'Dieses Team liegt außerhalb deiner OD-Region.',
+                        });
+                    }
+                }
+            }
+ else if (session.role === 'LOCATION_MANAGER') {
+                if (input.odRegionId) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Du kannst keine OD-Region zuweisen.',
+                    });
+                }
+                if (input.locationId && input.locationId !== session.locationId) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Du kannst keinen Nutzer außerhalb deines Standorts zuweisen.',
+                    });
+                }
+                if (input.teamId) {
+                    const team = await prisma.team.findUnique({
+                        where: {
+ id: input.teamId,
+},
+                        select: {
+ locationId: true,
+},
+                    });
+                    if (!team || team.locationId !== session.locationId) {
+                        throw new TRPCError({
+                            code: 'FORBIDDEN',
+                            message: 'Dieses Team gehört nicht zu deinem Standort.',
+                        });
+                    }
+                }
+            }
+ else if (session.role === 'TEAM_LEADER') {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Du hast keine Berechtigung, Benutzer-Hierarchien zu verwalten.',
                 });
             }
 
@@ -346,59 +442,132 @@ export const adminUsersRouter = router({
         .input(z.object({
             id: z.string(),
         }))
-        .mutation(async ({ input, ctx }) => {
+        .mutation(async ({
+ input, ctx,
+}) => {
             const session = ctx.session as any;
-            
-            await prisma.userSession.deleteMany({
-                where: { userId: input.id },
+
+            const targetUser = await prisma.user.findUnique({
+                where: {
+ id: input.id,
+},
             });
-            
+            if (!targetUser) {
+                throw new TRPCError({
+ code: 'NOT_FOUND',
+});
+            }
+
+            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, targetUser.odRegionId, targetUser.locationId)) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Du hast keine Berechtigung, diesen Account zu verwalten.',
+                });
+            }
+
+            await prisma.userSession.deleteMany({
+                where: {
+ userId: input.id,
+},
+            });
+
             await prisma.user.update({
-                where: { id: input.id },
-                data: { sessionVersion: { increment: 1 } },
+                where: {
+ id: input.id,
+},
+                data: {
+ sessionVersion: {
+ increment: 1,
+},
+},
             });
 
             invalidateCache(`session:user:${input.id}`);
 
-            return { success: true };
+            return {
+ success: true,
+};
         }),
 
     removePassword: protectedProcedure.use(requirePermission('users:write')).use(withHierarchicalScope('user'))
         .input(z.object({
             id: z.string(),
         }))
-        .mutation(async ({ input, ctx }) => {
+        .mutation(async ({
+ input, ctx,
+}) => {
             const session = ctx.session as any;
-            
+
+            const targetUser = await prisma.user.findUnique({
+                where: {
+ id: input.id,
+},
+            });
+            if (!targetUser) {
+                throw new TRPCError({
+ code: 'NOT_FOUND',
+});
+            }
+
+            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, targetUser.odRegionId, targetUser.locationId)) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Du hast keine Berechtigung, diesen Account zu verwalten.',
+                });
+            }
+
             await prisma.user.update({
-                where: { id: input.id },
-                data: { 
+                where: {
+ id: input.id,
+},
+                data: {
                     password: null,
-                    sessionVersion: { increment: 1 }
+                    sessionVersion: {
+ increment: 1,
+},
                 },
             });
 
             invalidateCache(`session:user:${input.id}`);
 
-            return { success: true };
+            return {
+ success: true,
+};
         }),
 
     triggerPinReset: protectedProcedure.use(requirePermission('users:write')).use(withHierarchicalScope('user'))
         .input(z.object({
             id: z.string(),
         }))
-        .mutation(async ({ input, ctx }) => {
+        .mutation(async ({
+ input, ctx,
+}) => {
+            const session = ctx.session as any;
+
             const targetUser = await prisma.user.findUnique({
-                where: { id: input.id },
+                where: {
+ id: input.id,
+},
             });
             if (!targetUser) {
-                throw new TRPCError({ code: 'NOT_FOUND' });
+                throw new TRPCError({
+ code: 'NOT_FOUND',
+});
             }
-            
-            const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, targetUser.odRegionId, targetUser.locationId)) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Du hast keine Berechtigung, diesen Account zu verwalten.',
+                });
+            }
+
+            const otpCode = crypto.randomInt(100000, 1000000).toString();
 
             await prisma.user.update({
-                where: { id: input.id },
+                where: {
+ id: input.id,
+},
                 data: {
                     verificationToken: otpCode,
                     verificationExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
@@ -406,9 +575,13 @@ export const adminUsersRouter = router({
             });
 
             // Avoid import issues here by dynamically requiring or assume it works
-            const { sendPinResetEmail } = await import('@/lib/email');
+            const {
+ sendPinResetEmail,
+} = await import('@/lib/email');
             await sendPinResetEmail(targetUser.email, targetUser.firstName || 'Nutzer', otpCode);
 
-            return { success: true };
+            return {
+ success: true,
+};
         }),
 });

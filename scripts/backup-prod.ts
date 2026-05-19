@@ -1,10 +1,14 @@
-import { Client } from 'pg';
+import {
+ Client,
+} from 'pg';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 
 // Load environment variables
-dotenv.config({ path: path.resolve(process.cwd(), '.env.production') });
+dotenv.config({
+ path: path.resolve(process.cwd(), '.env.production'),
+});
 dotenv.config(); // fallback to .env
 
 // Construct production database URL with dtag_prod
@@ -16,7 +20,8 @@ try {
 	const urlObj = new URL(originalDbUrl);
 	urlObj.pathname = '/dtag_prod';
 	prodDbUrl = urlObj.toString();
-} catch (e) {
+}
+ catch {
 	// Fallback if URL parsing fails
 	prodDbUrl = originalDbUrl.replace(/\/dtag_dev([?&]|$)/, '/dtag_prod$1').replace(/\/dtag([?&]|$)/, '/dtag_prod$1');
 }
@@ -47,7 +52,8 @@ async function runBackup() {
 		const tables = tablesRes.rows.map(row => row.table_name);
 		console.log(`Discovered ${tables.length} tables in public schema.`);
 
-		const backupData: Record<string, any[]> = {};
+		const backupData: Record<string, any[]> = {
+};
 
 		// 2. Query each table
 		for (const table of tables) {
@@ -56,9 +62,11 @@ async function runBackup() {
 				const rowsRes = await client.query(`SELECT * FROM "${table}"`);
 				backupData[table] = rowsRes.rows;
 				console.log(`  -> OK: Saved ${rowsRes.rows.length} rows.`);
-			} catch (err: any) {
+			}
+ catch (err: any) {
 				console.error(`  -> ERROR reading table "${table}":`, err.message);
-				backupData[table] = [];
+				backupData[table] = [
+];
 			}
 		}
 
@@ -78,10 +86,12 @@ async function runBackup() {
 		console.log(`Total tables backed up: ${Object.keys(backupData).length}`);
 		console.log('=========================================\n');
 
-	} catch (error: any) {
+	}
+ catch (error: any) {
 		console.error('\nDatabase Backup FAILED:', error.message);
 		process.exit(1);
-	} finally {
+	}
+ finally {
 		await client.end();
 	}
 }

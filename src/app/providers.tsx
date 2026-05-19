@@ -1,7 +1,7 @@
 'use client';
 
 import {
-	QueryClient, QueryClientProvider, QueryCache, MutationCache
+	QueryClient, QueryClientProvider, QueryCache, MutationCache,
 } from '@tanstack/react-query';
 import {
 	httpBatchLink,
@@ -88,7 +88,7 @@ export default function Providers({
 					},
 				},
 			});
-		}
+		},
 	);
 	const [
 		trpcClient,

@@ -117,7 +117,7 @@ const pricesProcedure = protectedProcedure.use(requirePermission('prices:manage'
 const creditsProcedure = protectedProcedure.use(requirePermission('credits:manage'));
 
 export const adminRouter = router({
-    getDashboardStats: protectedProcedure.query(async () => {
+    getDashboardStats: adminProcedure.query(async () => {
         const [
             products,
             users,
@@ -174,7 +174,7 @@ export const adminRouter = router({
             });
         }),
 
-    getSecuritySettings: protectedProcedure.query(async () => {
+    getSecuritySettings: adminProcedure.query(async () => {
         const setting = await prisma.systemSetting.findUnique({
             where: {
                 key: 'allowed_ips',

@@ -5,12 +5,14 @@ import {
 } from '@/lib/trpc';
 import Link from 'next/link';
 import {
-	Plus, Pencil, Trash2, Layers, Search, X, CheckCircle, XCircle, Tv, Smartphone,
+	Plus, Pencil, Trash2, Layers, CheckCircle, XCircle, Tv, Smartphone,
 } from 'lucide-react';
 import {
  showErrorToast,
 } from '@/components/shared/error-toast';
-import { AdminSearch } from '@/components/shared/admin-search';
+import {
+ AdminSearch,
+} from '@/components/shared/admin-search';
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
@@ -44,7 +46,8 @@ export default function AddonsPage() {
 	const [
 		searchedAddons,
 		setSearchedAddons,
-	] = useState<any[]>([]);
+	] = useState<any[]>([
+]);
 
 	const {
 		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
@@ -115,11 +118,36 @@ export default function AddonsPage() {
 				{/* Filter Bubbles */}
 				<ScrollableFilterRow>
 					{[
-						{ id: 'ALL', label: 'Alle Zubuchoptionen', icon: Layers, color: '#1a1a2e' },
-						{ id: 'ACTIVE', label: 'Aktiv', icon: CheckCircle, color: '#00a878' },
-						{ id: 'INACTIVE', label: 'Inaktiv', icon: XCircle, color: '#94a3b8' },
-						{ id: 'MAGENTA_TV_REQUIRED', label: 'Mit MagentaTV', icon: Tv, color: '#e20074' },
-						{ id: 'MAGENTA_TV_NOT_ALLOWED', label: 'Ohne MagentaTV', icon: Smartphone, color: '#7b61ff' },
+						{
+ id: 'ALL',
+label: 'Alle Zubuchoptionen',
+icon: Layers,
+color: '#1a1a2e',
+},
+						{
+ id: 'ACTIVE',
+label: 'Aktiv',
+icon: CheckCircle,
+color: '#00a878',
+},
+						{
+ id: 'INACTIVE',
+label: 'Inaktiv',
+icon: XCircle,
+color: '#94a3b8',
+},
+						{
+ id: 'MAGENTA_TV_REQUIRED',
+label: 'Mit MagentaTV',
+icon: Tv,
+color: '#e20074',
+},
+						{
+ id: 'MAGENTA_TV_NOT_ALLOWED',
+label: 'Ohne MagentaTV',
+icon: Smartphone,
+color: '#7b61ff',
+},
 					].map((filter) => {
 						const isSelected = activeFilterId === filter.id;
 						const Icon = filter.icon;

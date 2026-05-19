@@ -4,7 +4,7 @@ import {
 	trpc,
 } from '@/lib/trpc';
 import {
-	Globe, Trash2, Plus, Loader2, Pencil, Search, X, CheckCircle, XCircle,
+	Globe, Trash2, Plus, Loader2, Pencil, CheckCircle, XCircle,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -26,7 +26,9 @@ import {
 import {
 	AdminPageHeader,
 } from '@/components/shared/ui/admin-ui';
-import { AdminSearch } from '@/components/shared/admin-search';
+import {
+ AdminSearch,
+} from '@/components/shared/admin-search';
 
 export default function OdRegionsClient() {
 	const utils = trpc.useUtils();
@@ -37,7 +39,8 @@ export default function OdRegionsClient() {
 	const [
 		searchedRegions,
 		setSearchedRegions,
-	] = useState<any[]>([]);
+	] = useState<any[]>([
+]);
 	const [
 		activeFilterId,
 		setActiveFilterId,
@@ -63,8 +66,11 @@ export default function OdRegionsClient() {
 	});
 
 	const regions = useMemo(() => {
-		return data?.pages.flatMap((page) => page.items) || [];
-	}, [data]);
+		return data?.pages.flatMap((page) => page.items) || [
+];
+	}, [
+ data,
+]);
 
 	const filteredRegions = useMemo(() => {
 		if (activeFilterId === 'ALL') { return searchedRegions; }
@@ -110,9 +116,24 @@ export default function OdRegionsClient() {
 				{/* Filter Bubbles */}
 				<ScrollableFilterRow>
 					{[
-						{ id: 'ALL', label: 'Alle Bereiche', icon: Globe, color: '#1a1a2e' },
-						{ id: 'ACTIVE', label: 'Aktiv', icon: CheckCircle, color: '#00a878' },
-						{ id: 'INACTIVE', label: 'Inaktiv', icon: XCircle, color: '#94a3b8' },
+						{
+ id: 'ALL',
+label: 'Alle Bereiche',
+icon: Globe,
+color: '#1a1a2e',
+},
+						{
+ id: 'ACTIVE',
+label: 'Aktiv',
+icon: CheckCircle,
+color: '#00a878',
+},
+						{
+ id: 'INACTIVE',
+label: 'Inaktiv',
+icon: XCircle,
+color: '#94a3b8',
+},
 					].map((filter) => {
 						const isSelected = activeFilterId === filter.id;
 						const Icon = filter.icon;

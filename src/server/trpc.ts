@@ -42,7 +42,7 @@ export const router = t.router;
 export const publicProcedure = t.procedure.use(loggerMiddleware);
 
 const isAuthed = t.middleware(async ({
-  ctx, next,
+  ctx, next, type,
 }) => {
   if (!ctx.session || !ctx.session.sub) {
     throw new TRPCError({
@@ -87,7 +87,7 @@ const isAuthed = t.middleware(async ({
   // re-issue it with fresh claims from the DB. This keeps an active session alive
   // across the 4h expiry window without requiring re-login during a work day.
   const iat = (ctx.session as any).iat as number | undefined;
-  if (iat && Date.now() / 1000 - iat > 2 * 60 * 60) {
+  if (type === 'mutation' && iat && Date.now() / 1000 - iat > 2 * 60 * 60) {
     // Fire-and-forget — setting the cookie is a side effect that doesn't block
     // the actual request. If it fails, the user just re-logs in at the 4h mark.
     login({

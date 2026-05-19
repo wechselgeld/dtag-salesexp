@@ -177,7 +177,7 @@ export default function ProductsPage({
 		<div className="min-h-full">
 			{/* ─── Hero Header ─── */}
 			<HeroHeader
-				firstName={isMounted ? firstName : ''}
+				firstName={session?.firstName || (isMounted ? firstName : '')}
 				teamName={session?.team?.name}
 				productsCount={allProducts?.length}
 				categories={categoryStats}

@@ -42,7 +42,9 @@ import {
 import {
 	Tooltip,
 } from '@/components/shared/ui/tooltip';
-import { AdminSearch } from '@/components/shared/admin-search';
+import {
+ AdminSearch,
+} from '@/components/shared/admin-search';
 
 const CATEGORIES = [
 	{
@@ -103,7 +105,8 @@ setTeamSearchQuery,
 	const [
 		searchedTeams,
 		setSearchedTeams,
-	] = useState<any[]>([]);
+	] = useState<any[]>([
+]);
 	const [
  searchQuery,
 setSearchQuery,
@@ -170,7 +173,8 @@ setShowSelectedOnly,
 		onError: (error) => showErrorToast('Fehler beim Speichern', error.message),
 	});
 
-	const teams = teamsData?.pages.flatMap((page) => page.items) || [];
+	const teams = teamsData?.pages.flatMap((page) => page.items) || [
+];
 	const filteredTeams = useMemo(() => {
 		if (selectedLocationId === 'all') {
 			return searchedTeams;
@@ -252,7 +256,11 @@ setShowSelectedOnly,
 
 						{isLocationsLoading ? (
 							<div className="flex gap-2">
-								{[1, 2, 3].map((i) => (
+								{[
+ 1,
+2,
+3,
+].map((i) => (
 									<Skeleton key={i} className="h-[38px] w-28 rounded-xl" />
 								))}
 							</div>

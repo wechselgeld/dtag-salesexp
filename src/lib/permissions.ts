@@ -51,12 +51,17 @@ export const ROLE_PERMISSIONS: Record<string, ReadonlySet<Permission>> = {
 export function hasPermission(
   role: string | undefined | null,
   permission: Permission,
-  isEditor?: boolean
+  isEditor?: boolean,
 ): boolean {
   if (!role) return false;
 
   // Bridge isEditor flag to catalog permissions
-  if (isEditor && ['catalog:manage', 'prices:manage', 'addons:manage', 'credits:manage'].includes(permission)) {
+  if (isEditor && [
+ 'catalog:manage',
+'prices:manage',
+'addons:manage',
+'credits:manage',
+].includes(permission)) {
     return true;
   }
 

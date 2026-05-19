@@ -10,7 +10,9 @@ import {
 } from 'lucide-react';
 
 // --- Screen Header (inline, compact: icon badge + title/subtitle) ---
-export function ScreenHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: React.ReactNode; subtitle?: React.ReactNode }) {
+export function ScreenHeader({
+ icon, title, subtitle,
+}: { icon: React.ReactNode; title: React.ReactNode; subtitle?: React.ReactNode }) {
     return (
         <div className="flex flex-col gap-5 pb-2">
             <div className="flex items-center gap-4">
@@ -75,14 +77,28 @@ y: -4,
 }
 
 // --- Error Banner (full-width block error, e.g. form-level) ---
-export function ErrorBanner({ message }: { message?: string | null }) {
+export function ErrorBanner({
+ message,
+}: { message?: string | null }) {
     return (
         <AnimatePresence>
             {message && (
                 <motion.div
-                    initial={{ opacity: 0, y: -6, scale: 0.99 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                    initial={{
+ opacity: 0,
+y: -6,
+scale: 0.99,
+}}
+                    animate={{
+ opacity: 1,
+y: 0,
+scale: 1,
+}}
+                    exit={{
+ opacity: 0,
+y: -6,
+scale: 0.99,
+}}
                     className="flex items-start gap-3 p-3.5 bg-red-50 border border-red-100 rounded-2xl text-[0.85rem] text-red-700 font-medium leading-snug"
                 >
                     <svg className="w-4 h-4 text-red-500 shrink-0 mt-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

@@ -34,7 +34,9 @@ import {
 import {
 	useState, useEffect,
 } from 'react';
-import { showErrorToast } from '@/components/shared/error-toast';
+import {
+ showErrorToast,
+} from '@/components/shared/error-toast';
 import {
 	AdminPageHeader,
 	AdminFormSection,
@@ -150,7 +152,6 @@ export function UserForm({
 		mode,
 		setValue,
 	]);
-
 
 
 	const updateMutation = trpc.adminUsers.update.useMutation({
@@ -574,7 +575,9 @@ export function UserForm({
 									</div>
 									<button
 										type="button"
-										onClick={() => revokeSessions.mutate({ id: userId as string })}
+										onClick={() => revokeSessions.mutate({
+ id: userId as string,
+})}
 										disabled={revokeSessions.isPending}
 										className="flex items-center gap-2 px-4 py-2 bg-[#fdf2f8] text-[#e20074] hover:bg-[#fce7f3] rounded-lg text-[0.8rem] font-bold transition-colors disabled:opacity-50"
 									>
@@ -582,7 +585,7 @@ export function UserForm({
 										Beenden
 									</button>
 								</div>
-								
+
 								<div className="flex items-center justify-between p-4 border border-[#eaedf0] rounded-xl bg-white">
 									<div>
 										<h4 className="text-[0.85rem] font-bold text-[#1a1a2e] m-0">Passwort entfernen</h4>
@@ -592,7 +595,9 @@ export function UserForm({
 									</div>
 									<button
 										type="button"
-										onClick={() => removePassword.mutate({ id: userId as string })}
+										onClick={() => removePassword.mutate({
+ id: userId as string,
+})}
 										disabled={removePassword.isPending}
 										className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-[0.8rem] font-bold transition-colors disabled:opacity-50"
 									>
@@ -610,7 +615,9 @@ export function UserForm({
 									</div>
 									<button
 										type="button"
-										onClick={() => triggerPinReset.mutate({ id: userId as string })}
+										onClick={() => triggerPinReset.mutate({
+ id: userId as string,
+})}
 										disabled={triggerPinReset.isPending}
 										className="flex items-center gap-2 px-4 py-2 bg-[#f0f2f5] text-[#1a1a2e] hover:bg-[#e2e8f0] rounded-lg text-[0.8rem] font-bold transition-colors disabled:opacity-50"
 									>

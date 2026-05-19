@@ -238,9 +238,9 @@ export const locationRouter = router({
                     message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
                 });
             }
-            
+
             const isPasswordValid = await bcrypt.compare(input.sudoPassword || '', session.password);
-            
+
             if (!isPasswordValid) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',

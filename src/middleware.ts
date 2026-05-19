@@ -5,14 +5,25 @@ import {
   NextResponse,
 } from 'next/server';
 import {
-  getSession,
-} from '@/lib/auth';
-import {
   httpLogger,
   formatDuration,
   formatStatus,
 } from './lib/logger';
 import pc from 'picocolors';
+
+async function getMiddlewareSession(req: NextRequest) {
+  const token = req.cookies.get('auth-token')?.value;
+  if (!token) return null;
+  try {
+    const {
+ verifyJWT,
+} = await import('@/lib/auth');
+    return await verifyJWT(token, 'auth');
+  }
+  catch {
+    return null;
+  }
+}
 
 export async function middleware(req: NextRequest) {
   const start = Date.now();
@@ -22,7 +33,7 @@ export async function middleware(req: NextRequest) {
 
   // Protect /admin routes
   if (path.startsWith('/admin')) {
-    const session = await getSession();
+    const session = await getMiddlewareSession(req);
 
     // Redirect to login if no session
     if (!session) {
@@ -45,7 +56,7 @@ export async function middleware(req: NextRequest) {
 
   // Redirect authenticated users away from login
   if (!response && path === '/login') {
-    const session = await getSession();
+    const session = await getMiddlewareSession(req);
     const adminRoles = [
       'ADMIN',
       'SUPER_ADMIN',
@@ -60,18 +71,10 @@ export async function middleware(req: NextRequest) {
 
   // Protect Sales Tool routes
   if (!response && path.startsWith('/products')) {
-    const sessionCookie = req.cookies.get('auth-token');
-    if (!sessionCookie) {
+    const session = await getMiddlewareSession(req);
+    if (!session) {
       response = NextResponse.redirect(new URL('/setup', req.url));
-    }
-    else {
-      // Verify signed cookie
-      const {
-        verifyJWT,
-      } = await import('@/lib/auth');
-      const payload = await verifyJWT(sessionCookie.value, 'auth');
-      if (!payload) {
-        // Invalid or tampered cookie
+      if (req.cookies.has('auth-token')) {
         response = NextResponse.redirect(new URL('/setup', req.url));
         response.cookies.delete('auth-token');
       }

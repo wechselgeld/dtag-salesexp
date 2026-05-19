@@ -283,7 +283,7 @@ export const sessionRouter = router({
             }
 
             const clientIp = ctx.ip || '127.0.0.1';
-            
+
             if (user.deviceId) {
                 await ctx.prisma.userSession.deleteMany({
                     where: {
@@ -501,7 +501,7 @@ export const sessionRouter = router({
     reloginReturningUser: publicProcedure
         .input(z.object({
             email: z.string().email().trim().toLowerCase(),
-            pin: z.string().length(6).optional(),
+            pin: z.string().length(6),
         }))
         .mutation(async ({
             ctx, input,
@@ -535,20 +535,18 @@ export const sessionRouter = router({
                 });
             }
 
-            if (input.pin) {
-                if (!user.pin) {
-                    throw new TRPCError({
-                        code: 'UNAUTHORIZED',
-                        message: 'Es wurde noch keine PIN für dieses Konto eingerichtet.',
-                    });
-                }
-                const isPinValid = await verifyPin(input.pin, user.pin);
-                if (!isPinValid) {
-                    throw new TRPCError({
-                        code: 'UNAUTHORIZED',
-                        message: 'Die eingegebene PIN ist falsch.',
-                    });
-                }
+            if (!user.pin) {
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                    message: 'Es wurde noch keine PIN für dieses Konto eingerichtet.',
+                });
+            }
+            const isPinValid = await verifyPin(input.pin, user.pin);
+            if (!isPinValid) {
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                    message: 'Die eingegebene PIN ist falsch.',
+                });
             }
 
             const emailVerificationSetting = await getCached('systemSettings:require_email_verification', SETTINGS_TTL, () => {
@@ -689,7 +687,7 @@ export const sessionRouter = router({
             }
 
             // Generate 6-digit PIN reset code
-            const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+            const otpCode = crypto.randomInt(100000, 1000000).toString();
 
             await ctx.prisma.user.update({
                 where: {

@@ -29,7 +29,9 @@ import {
 import {
 	AdminPageHeader,
 } from '@/components/shared/ui/admin-ui';
-import { AdminSearch } from '@/components/shared/admin-search';
+import {
+ AdminSearch,
+} from '@/components/shared/admin-search';
 
 const PRIORITY_COLORS: Record<string, string> = {
 	INFO: '#00a878', // Green
@@ -77,7 +79,8 @@ export default function AdminNewsPage() {
 	const [
 		searchedNews,
 		setSearchedNews,
-	] = useState<typeof newsItems>([]);
+	] = useState<typeof newsItems>([
+]);
 
 	return (
 		<div className="space-y-6 pb-20">

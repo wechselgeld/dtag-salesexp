@@ -116,9 +116,9 @@ setCardHeight,
 
 	// First time admin password setup state
 	const [
- isSettingUpPassword,
-setIsSettingUpPassword,
-] = useState(false);
+		isSettingUpPassword,
+		setIsSettingUpPassword,
+	] = useState(false);
 	const [
  setupEmail,
 setSetupEmail,
@@ -144,16 +144,25 @@ setSetupError,
 setShowSetupPassword,
 ] = useState(false);
 
+	// Passkey setup state
+	const [showPasskeyStep, setShowPasskeyStep] = useState(false);
+	const [passkeyEmail, setPasskeyEmail] = useState('');
+	const [isEnrollingPasskey, setIsEnrollingPasskey] = useState(false);
+
+	// tRPC WebAuthn mutations
+	const getRegOptions = trpc.webauthn.generateRegistrationOptions.useMutation();
+	const verifyReg = trpc.webauthn.verifyRegistration.useMutation();
+
 	const setupMutation = trpc.auth.setupAdminPassword.useMutation({
 		onSuccess: async (data) => {
 			await utils.auth.me.refetch();
 			if (data.suggestPasskey) {
-				router.push('/admin/products?setupPasskey=true');
-			}
- else {
+				setPasskeyEmail(setupEmail || '');
+				setShowPasskeyStep(true);
+			} else {
 				router.push('/admin/products');
+				router.refresh();
 			}
-			router.refresh();
 		},
 		onError: (err) => {
 			setSetupError(err.message);
@@ -190,12 +199,12 @@ setShowSetupPassword,
 		onSuccess: async (data) => {
 			await utils.auth.me.refetch();
 			if (data.suggestPasskey) {
-				router.push('/admin/products?setupPasskey=true');
-			}
- else {
+				setPasskeyEmail(watch('email') || '');
+				setShowPasskeyStep(true);
+			} else {
 				router.push('/admin/products');
+				router.refresh();
 			}
-			router.refresh();
 		},
 		onError: (err) => {
 			setError(err.message);
@@ -205,6 +214,41 @@ setShowSetupPassword,
 			}
 		},
 	});
+
+	const handlePasskeyEnrollment = async () => {
+		const targetEmail = passkeyEmail || currentUser?.email || setupEmail || watch('email');
+		if (!targetEmail) {
+			setError('E-Mail-Adresse fehlt.');
+			return;
+		}
+		setIsEnrollingPasskey(true);
+		try {
+			const { startRegistration } = await import('@simplewebauthn/browser');
+			const options = await getRegOptions.mutateAsync({
+				email: targetEmail,
+			});
+			const resp = await startRegistration({
+				optionsJSON: options,
+			});
+			await verifyReg.mutateAsync({
+				email: targetEmail,
+				response: resp,
+			});
+			alert('Passkey erfolgreich eingerichtet!');
+			router.push('/admin/products');
+			router.refresh();
+		} catch (err: any) {
+			console.error('Passkey failed', err);
+			alert(`Fehler bei der Passkey-Einrichtung: ${err.message}`);
+		} finally {
+			setIsEnrollingPasskey(false);
+		}
+	};
+
+	const handleSkipPasskey = () => {
+		router.push('/admin/products');
+		router.refresh();
+	};
 
 	const [
  isPasskeyLoading,
@@ -354,8 +398,72 @@ setIsPasskeyLoading,
 					className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] overflow-hidden relative"
 				>
 					<div ref={cardRef} className="p-8 sm:p-12">
+						<div className="flex justify-center gap-2 mb-8">
+							{[1, 2].map((step) => {
+								const isCurrent = (showPasskeyStep ? 2 : 1) === step;
+								const isCompleted = (showPasskeyStep ? 2 : 1) > step;
+								return (
+									<div
+										key={step}
+										className={`h-1.5 rounded-full transition-all duration-300 ${
+											isCurrent
+												? 'w-8 bg-[#e20074]'
+												: isCompleted
+												? 'w-8 bg-[#e20074]/30'
+												: 'w-2 bg-[#eaedf0]'
+										}`}
+									/>
+								);
+							})}
+						</div>
 						<AnimatePresence mode="wait" initial={false}>
-							{isSettingUpPassword ? (
+							{showPasskeyStep ? (
+								<motion.div
+									key="passkey-setup"
+									initial={{
+										opacity: 0,
+										x: 15,
+									}}
+									animate={{
+										opacity: 1,
+										x: 0,
+									}}
+									exit={{
+										opacity: 0,
+										x: -15,
+									}}
+									className="space-y-6 w-full text-left"
+								>
+									<ScreenHeader
+										icon={<Key className="w-5 h-5 text-[#e20074]" />}
+										title="Gerät sicher merken (Passkey)"
+										subtitle="Melde Dich in Zukunft blitzschnell per Fingerabdruck, FaceID oder Windows Hello an – ganz ohne PIN oder Passwort!"
+									/>
+
+									<div className="flex flex-col gap-3 w-full mt-4">
+										<PremiumButton
+											type="button"
+											onClick={handlePasskeyEnrollment}
+											loading={isEnrollingPasskey}
+											disabled={isEnrollingPasskey}
+											icon={<Key className="w-4 h-4 mr-2" />}
+											className="w-full"
+										>
+											Passkey einrichten
+										</PremiumButton>
+										<PremiumButton
+											type="button"
+											onClick={handleSkipPasskey}
+											disabled={isEnrollingPasskey}
+											variant="secondary"
+											icon={<ArrowRight className="w-3.5 h-3.5 ml-1" />}
+											className="w-full"
+										>
+											Überspringen
+										</PremiumButton>
+									</div>
+								</motion.div>
+							) : isSettingUpPassword ? (
 								<motion.div
 									key="setup-form"
 									initial={{

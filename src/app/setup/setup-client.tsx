@@ -16,7 +16,7 @@ import {
  motion, AnimatePresence,
 } from 'framer-motion';
 import {
-    Check, ShieldAlert, ArrowRight, Users, User, Mail,
+    ShieldAlert, ArrowRight, Users, User, Mail,
     CheckCircle2, RotateCcw, MapPin, ArrowLeft, Search, Key, Lock, LogIn, Fingerprint,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -34,7 +34,7 @@ import {
  PremiumPinInput,
 } from '@/components/shared/premium-pin-input';
 import {
-    PremiumInput, PremiumButton, ScreenHeader, SelectionTile, CheckboxRow,
+    PremiumInput, PremiumButton, ScreenHeader, SelectionTile, CheckboxRow, ErrorBanner,
 } from '@/components/shared/form/form-suite';
 import {
  z,
@@ -405,7 +405,7 @@ refetchOnWindowFocus: false,
         },
     });
 
-    const handleLoginSubmit = async (e?: React.FormEvent, overridePin?: string) => {
+    const handleLoginSubmit = (e?: React.FormEvent, overridePin?: string) => {
         if (e) e.preventDefault();
         setLoginError(null);
         if (!loginEmail) {
@@ -940,11 +940,7 @@ x: -15,
                             Setup abschließen
                         </PremiumButton>
                     </div>
-                    {Object.keys(formErrors).length > 0 && (
-                        <div className="text-center">
-                            {Object.values(formErrors).map((err, i) => <p key={i} className="text-[#dc2626] text-[0.75rem] font-medium m-0">{err}</p>)}
-                        </div>
-                    )}
+                    <ErrorBanner message={Object.keys(formErrors).length > 0 ? Object.values(formErrors).join(' • ') : null} />
                 </div>
             </section>
         </motion.div>
@@ -1205,14 +1201,7 @@ x: -15,
                                                 disabled={updatePinMutation.isPending}
                                             />
                                         </div>
-                                        {newPinError && (
-                                            <p className="text-[#dc2626] text-[0.75rem] font-medium m-0 mt-0.5 flex items-center gap-1.5">
-                                                <span className="inline-block w-3.5 h-3.5 shrink-0">
-                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-full h-full text-[#dc2626]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374l7.303-12.748c.866-1.5 3.032-1.5 3.898 0l7.303 12.748z" /></svg>
-                                                </span>
-                                                {newPinError}
-                                            </p>
-                                        )}
+                                        <ErrorBanner message={newPinError} />
                                         <PremiumButton type="submit" disabled={updatePinMutation.isPending || newPin.length !== 6 || newPin !== newPinConfirm} loading={updatePinMutation.isPending} variant="primary" className="w-full">
                                             PIN speichern & Anmelden
                                         </PremiumButton>
@@ -1257,14 +1246,7 @@ x: -15,
                                                     }
                                                 }}
                                             />
-                                            {pinResetError && (
-                                                <p className="text-[#dc2626] text-[0.75rem] font-medium m-0 mt-0.5 flex items-center gap-1.5">
-                                                    <span className="inline-block w-3.5 h-3.5 shrink-0">
-                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-full h-full text-[#dc2626]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374l7.303-12.748c.866-1.5 3.032-1.5 3.898 0l7.303 12.748z" /></svg>
-                                                    </span>
-                                                    {pinResetError}
-                                                </p>
-                                            )}
+                                            <ErrorBanner message={pinResetError} />
                                         </div>
                                         <div className="flex gap-3">
                                             <PremiumButton onClick={() => { setIsPinResetFlow(false); setPinResetError(null); }} variant="secondary" className="flex-1">
@@ -1314,14 +1296,7 @@ x: -15,
                                                     }
                                                 }}
                                             />
-                                            {loginError && (
-                                                <p className="text-[#dc2626] text-[0.75rem] font-medium m-0 mt-0.5 flex items-center gap-1.5">
-                                                    <span className="inline-block w-3.5 h-3.5 shrink-0">
-                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-full h-full text-[#dc2626]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374l7.303-12.748c.866-1.5 3.032-1.5 3.898 0l7.303 12.748z" /></svg>
-                                                    </span>
-                                                    {loginError}
-                                                </p>
-                                            )}
+                                            <ErrorBanner message={loginError} />
                                         </div>
                                         <div className="flex flex-col gap-3 mt-2">
                                             <PremiumButton type="submit" disabled={isLoggingIn || !loginEmail || loginPin.length !== 6 || isSilentSuccess} loading={isLoggingIn || isSilentSuccess} variant="primary" className="w-full" icon={<ArrowRight className="w-4 h-4 ml-0.5" strokeWidth={2.5} />}>
@@ -1445,14 +1420,7 @@ function WelcomeBackCard({
                             }
                         }}
                     />
-                    {reloginError && (
-                        <p className="text-[#dc2626] text-[0.75rem] font-medium m-0 mt-0.5 flex items-center gap-1.5">
-                            <span className="inline-block w-3.5 h-3.5 shrink-0">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-full h-full text-[#dc2626]"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374l7.303-12.748c.866-1.5 3.032-1.5 3.898 0l7.303 12.748z" /></svg>
-                            </span>
-                            {reloginError}
-                        </p>
-                    )}
+                    <ErrorBanner message={reloginError} />
                 </div>
                 <PremiumButton onClick={() => onReloginWithPin()} disabled={isReloggingIn || reloginPin.length !== 6} loading={isReloggingIn} variant="primary" className="w-full" icon={<ArrowRight className="w-4 h-4 ml-0.5" strokeWidth={2.5} />}>
                     Mit PIN anmelden

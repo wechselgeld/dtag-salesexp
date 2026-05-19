@@ -53,11 +53,15 @@ export function AdminSearch<T>({
 
 	useEffect(() => {
 		onResultsChangeRef.current = onResultsChange;
-	}, [onResultsChange]);
+	}, [
+ onResultsChange,
+]);
 
 	useEffect(() => {
 		getSearchableTextRef.current = getSearchableText;
-	}, [getSearchableText]);
+	}, [
+ getSearchableText,
+]);
 
 	const lastResultsRef = useRef<T[] | null>(null);
 	const lastItemsRef = useRef<T[] | null>(null);
@@ -78,7 +82,8 @@ export function AdminSearch<T>({
 		let newResults: T[];
 		if (!activeQuery.trim()) {
 			newResults = items;
-		} else {
+		}
+ else {
 			const fuzzyResults = fuzzySearch(items, activeQuery, getSearchableTextRef.current, 0.48); // Premium fuzzy tolerance threshold
 			newResults = fuzzyResults.map((r) => r.item);
 		}
@@ -89,7 +94,10 @@ export function AdminSearch<T>({
 
 		lastResultsRef.current = newResults;
 		onResultsChangeRef.current(newResults);
-	}, [items, activeQuery]);
+	}, [
+ items,
+activeQuery,
+]);
 
 	// Global hotkey to focus the search box when pressing '/'
 	useEffect(() => {
@@ -101,7 +109,8 @@ export function AdminSearch<T>({
 		};
 		window.addEventListener('keydown', handleKeyDown);
 		return () => window.removeEventListener('keydown', handleKeyDown);
-	}, []);
+	}, [
+]);
 
 	return (
 		<div className={clsx('relative flex-1 group', className)}>

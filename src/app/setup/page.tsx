@@ -29,9 +29,12 @@ export default async function Page() {
 	let currentSession = null;
 	try {
 		currentSession = await caller.session.getCurrent();
-	} catch (error: any) {
+	}
+ catch (error: any) {
 		if (error?.code === 'UNAUTHORIZED') {
-			const { redirect } = await import('next/navigation');
+			const {
+ redirect,
+} = await import('next/navigation');
 			redirect('/api/auth/logout');
 		}
 	}

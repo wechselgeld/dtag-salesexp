@@ -1,7 +1,11 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, {
+ useRef, useState, useEffect,
+} from 'react';
+import {
+ ChevronLeft, ChevronRight,
+} from 'lucide-react';
 import clsx from 'clsx';
 
 interface ScrollableFilterRowProps {
@@ -16,13 +20,21 @@ export function ScrollableFilterRow({
 	gradientFromClass = 'from-[#f7f8fa]',
 }: ScrollableFilterRowProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const [showLeftArrow, setShowLeftArrow] = useState(false);
-	const [showRightArrow, setShowRightArrow] = useState(false);
+	const [
+ showLeftArrow,
+setShowLeftArrow,
+] = useState(false);
+	const [
+ showRightArrow,
+setShowRightArrow,
+] = useState(false);
 
 	const checkScroll = () => {
 		const container = containerRef.current;
 		if (container) {
-			const { scrollLeft, scrollWidth, clientWidth } = container;
+			const {
+ scrollLeft, scrollWidth, clientWidth,
+} = container;
 			// Small tolerance of 2px for browser zoom and sub-pixel rendering rounding errors
 			setShowLeftArrow(scrollLeft > 2);
 			setShowRightArrow(scrollWidth - clientWidth - scrollLeft > 2);
@@ -54,7 +66,9 @@ export function ScrollableFilterRow({
 			resizeObserver.disconnect();
 			clearTimeout(timer);
 		};
-	}, [children]);
+	}, [
+ children,
+]);
 
 	const scroll = (direction: 'left' | 'right') => {
 		const container = containerRef.current;
@@ -75,7 +89,7 @@ export function ScrollableFilterRow({
 				className={clsx(
 					'absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r via-80% to-transparent z-10 flex items-center justify-start pl-1 transition-all duration-300 pointer-events-none',
 					gradientFromClass,
-					showLeftArrow ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
+					showLeftArrow ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2',
 				)}
 			>
 				<button
@@ -93,7 +107,7 @@ export function ScrollableFilterRow({
 				ref={containerRef}
 				className={clsx(
 					'overflow-x-auto scrollbar-none flex gap-2 items-center py-1.5 px-0.5 scroll-smooth',
-					className
+					className,
 				)}
 			>
 				{children}
@@ -104,7 +118,7 @@ export function ScrollableFilterRow({
 				className={clsx(
 					'absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l via-80% to-transparent z-10 flex items-center justify-end pr-1 transition-all duration-300 pointer-events-none',
 					gradientFromClass,
-					showRightArrow ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
+					showRightArrow ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2',
 				)}
 			>
 				<button

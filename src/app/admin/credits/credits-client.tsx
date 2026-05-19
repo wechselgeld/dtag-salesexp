@@ -5,7 +5,7 @@ import {
 } from '@/lib/trpc';
 import Link from 'next/link';
 import {
-	Plus, Pencil, Trash2, Gift, Search, Loader2, X, CheckCircle, XCircle,
+	Plus, Pencil, Trash2, Gift, Loader2, CheckCircle, XCircle,
 } from 'lucide-react';
 import {
 	showErrorToast,
@@ -32,7 +32,9 @@ import {
 	AdminPageHeader,
 } from '@/components/shared/ui/admin-ui';
 import clsx from 'clsx';
-import { AdminSearch } from '@/components/shared/admin-search';
+import {
+ AdminSearch,
+} from '@/components/shared/admin-search';
 
 export default function CreditsPage() {
 	const utils = trpc.useUtils();
@@ -43,7 +45,8 @@ export default function CreditsPage() {
 	const [
 		searchedCredits,
 		setSearchedCredits,
-	] = useState<any[]>([]);
+	] = useState<any[]>([
+]);
 	const [
 		activeFilterId,
 		setActiveFilterId,
@@ -67,8 +70,11 @@ export default function CreditsPage() {
 	});
 
 	const credits = useMemo(() => {
-		return data?.pages.flatMap((page) => page.items) || [];
-	}, [data]);
+		return data?.pages.flatMap((page) => page.items) || [
+];
+	}, [
+ data,
+]);
 
 	const filteredCredits = useMemo(() => {
 		if (activeFilterId === 'ALL') { return searchedCredits; }
@@ -115,9 +121,24 @@ export default function CreditsPage() {
 				{/* Filter Bubbles */}
 				<ScrollableFilterRow>
 					{[
-						{ id: 'ALL', label: 'Alle Gutschriften', icon: Gift, color: '#1a1a2e' },
-						{ id: 'ACTIVE', label: 'Aktiv', icon: CheckCircle, color: '#00a878' },
-						{ id: 'INACTIVE', label: 'Inaktiv', icon: XCircle, color: '#94a3b8' },
+						{
+ id: 'ALL',
+label: 'Alle Gutschriften',
+icon: Gift,
+color: '#1a1a2e',
+},
+						{
+ id: 'ACTIVE',
+label: 'Aktiv',
+icon: CheckCircle,
+color: '#00a878',
+},
+						{
+ id: 'INACTIVE',
+label: 'Inaktiv',
+icon: XCircle,
+color: '#94a3b8',
+},
 					].map((filter) => {
 						const isSelected = activeFilterId === filter.id;
 						const Icon = filter.icon;

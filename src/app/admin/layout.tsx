@@ -10,7 +10,6 @@ import {
 	Box,
 	Tag,
 	Settings,
-	LogOut,
 	Wallet,
 	Users,
 	ArrowLeft,
@@ -20,6 +19,9 @@ import {
 	MapPin,
 	Globe,
 } from 'lucide-react';
+import type {
+	LucideIcon,
+} from 'lucide-react';
 import clsx from 'clsx';
 import {
 	DeleteConfirmToast,
@@ -28,14 +30,8 @@ import {
 	GlobalErrorToast,
 } from '@/components/shared/error-toast';
 import {
-	trpc,
-} from '@/lib/trpc';
-import {
 	usePermissions,
 } from '@/hooks/use-permissions';
-import type {
-	LucideIcon,
-} from 'lucide-react';
 import {
 	SidebarLayout,
 } from '@/components/layout/sidebar/sidebar-layout';
@@ -70,29 +66,20 @@ export default function AdminLayout({
 	const pathname = usePathname();
 	const router = useRouter();
 
-	const logoutMutation = trpc.auth.logout.useMutation({
-		onSuccess: () => {
-			router.push('/login');
-			router.refresh();
-		},
-	});
-
 	const {
-		data: currentUser,
-	} = trpc.auth.me.useQuery();
-
-	const { can, role, isAuthenticated } = usePermissions();
+		can, role, isAuthenticated,
+	} = usePermissions();
 
 	useEffect(() => {
 		if (!isAuthenticated) return;
 		if (role === 'USER') {
 			router.push('/');
 		}
-	}, [isAuthenticated, role, router]);
-
-	const handleLogout = () => {
-		logoutMutation.mutate();
-	};
+	}, [
+		isAuthenticated,
+		role,
+		router,
+	]);
 
 	const [
 		collapsed,
@@ -128,38 +115,107 @@ export default function AdminLayout({
 			title: 'Katalog & Konditionen',
 			show: can('catalog:manage') || can('prices:manage') || can('addons:manage') || can('credits:manage'),
 			items: [
-				...(can('catalog:manage') ? [{ href: '/admin/products', label: 'Produkte', icon: Box }] : []),
-				...(can('prices:manage') ? [{ href: '/admin/special-prices', label: 'Aktionen', icon: Tag }] : []),
-				...(can('addons:manage') ? [{ href: '/admin/addons', label: 'Optionen', icon: Layers }] : []),
-				...(can('credits:manage') ? [{ href: '/admin/credits', label: 'Gutschriften', icon: Wallet }] : []),
+				...(can('catalog:manage') ? [
+					{
+						href: '/admin/products',
+						label: 'Produkte',
+						icon: Box,
+					},
+				] : [
+				]),
+				...(can('prices:manage') ? [
+					{
+						href: '/admin/special-prices',
+						label: 'Aktionen',
+						icon: Tag,
+					},
+				] : [
+				]),
+				...(can('addons:manage') ? [
+					{
+						href: '/admin/addons',
+						label: 'Optionen',
+						icon: Layers,
+					},
+				] : [
+				]),
+				...(can('credits:manage') ? [
+					{
+						href: '/admin/credits',
+						label: 'Gutschriften',
+						icon: Wallet,
+					},
+				] : [
+				]),
 			],
 		},
 		{
 			title: 'Organisation',
 			show: can('od:manage') || can('locations:manage') || can('teams:manage'),
 			items: [
-				...(can('od:manage') ? [{ href: '/admin/od-regions', label: 'OD-Bereiche', icon: Globe }] : []),
-				...(can('locations:manage') ? [{ href: '/admin/locations', label: 'Standorte', icon: MapPin }] : []),
-				...(can('teams:manage') ? [{ href: '/admin/teams', label: 'Teams', icon: Users }] : []),
+				...(can('od:manage') ? [
+					{
+						href: '/admin/od-regions',
+						label: 'OD-Bereiche',
+						icon: Globe,
+					},
+				] : [
+				]),
+				...(can('locations:manage') ? [
+					{
+						href: '/admin/locations',
+						label: 'Standorte',
+						icon: MapPin,
+					},
+				] : [
+				]),
+				...(can('teams:manage') ? [
+					{
+						href: '/admin/teams',
+						label: 'Teams',
+						icon: Users,
+					},
+				] : [
+				]),
 			],
 		},
 		{
 			title: 'Inhalte',
 			show: can('news:create'),
 			items: [
-				...(can('news:create') ? [{ href: '/admin/news', label: 'Neuigkeiten', icon: Megaphone }] : []),
+				...(can('news:create') ? [
+					{
+						href: '/admin/news',
+						label: 'Neuigkeiten',
+						icon: Megaphone,
+					},
+				] : [
+				]),
 			],
 		},
 		{
 			title: 'System',
 			show: can('users:read') || can('settings:manage'),
 			items: [
-				...(can('users:read') ? [{ href: '/admin/users', label: 'Benutzer', icon: Shield }] : []),
-				...(can('settings:manage') ? [{ href: '/admin/settings', label: 'Einstellungen', icon: Settings }] : []),
+				...(can('users:read') ? [
+					{
+						href: '/admin/users',
+						label: 'Benutzer',
+						icon: Shield,
+					},
+				] : [
+				]),
+				...(can('settings:manage') ? [
+					{
+						href: '/admin/settings',
+						label: 'Einstellungen',
+						icon: Settings,
+					},
+				] : [
+				]),
 			],
 		},
 	];
-
 
 	return (
 		<div className="min-h-screen bg-[#f7f8fa] flex text-[#333]">

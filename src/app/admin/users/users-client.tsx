@@ -13,8 +13,6 @@ import {
 	Loader2,
 	Pencil,
 	MapPin,
-	Search,
-	X,
 	Users,
 	CheckCircle,
 	AlertTriangle,
@@ -23,8 +21,12 @@ import {
 	UserCheck,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { showErrorToast } from '@/components/shared/error-toast';
-import { AdminSearch } from '@/components/shared/admin-search';
+import {
+ showErrorToast,
+} from '@/components/shared/error-toast';
+import {
+ AdminSearch,
+} from '@/components/shared/admin-search';
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
@@ -76,7 +78,8 @@ export default function UsersClient() {
 	const [
 		searchedUsers,
 		setSearchedUsers,
-	] = useState<UserResponse[]>([]);
+	] = useState<UserResponse[]>([
+]);
 
 	const {
 		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
@@ -95,7 +98,6 @@ export default function UsersClient() {
 		currentUser?.role === 'OD_MANAGER' ||
 		currentUser?.role === 'LOCATION_MANAGER';
 
-	const canCreateUser = isAdmin || isManager;
 	const canDeleteUser = isAdmin || isManager;
 
 	const deleteUser = trpc.adminUsers.delete.useMutation({
@@ -162,15 +164,60 @@ export default function UsersClient() {
 				{/* Filter Bubbles */}
 				<ScrollableFilterRow>
 					{[
-						{ id: 'ALL', label: 'Alle', icon: Users, color: '#1a1a2e' },
-						{ id: 'ADMIN', label: 'Admins', icon: Shield, color: '#e20074' },
-						{ id: 'OD_MANAGER', label: 'OD-Leiter', icon: Globe, color: '#7b61ff' },
-						{ id: 'LOCATION_MANAGER', label: 'Standortleiter', icon: MapPin, color: '#ff6b00' },
-						{ id: 'TEAM_LEADER', label: 'Teamleiter', icon: UserCheck, color: '#e67e22' },
-						{ id: 'USER', label: 'Verkäufer', icon: User, color: '#64748b' },
-						{ id: 'EDITOR', label: 'Editoren', icon: Pencil, color: '#0090d0' },
-						{ id: 'ACTIVE', label: 'Aktiv', icon: CheckCircle, color: '#00a878' },
-						{ id: 'INACTIVE', label: 'Gesperrt', icon: AlertTriangle, color: '#dc2626' },
+						{
+ id: 'ALL',
+label: 'Alle',
+icon: Users,
+color: '#1a1a2e',
+},
+						{
+ id: 'ADMIN',
+label: 'Admins',
+icon: Shield,
+color: '#e20074',
+},
+						{
+ id: 'OD_MANAGER',
+label: 'OD-Leiter',
+icon: Globe,
+color: '#7b61ff',
+},
+						{
+ id: 'LOCATION_MANAGER',
+label: 'Standortleiter',
+icon: MapPin,
+color: '#ff6b00',
+},
+						{
+ id: 'TEAM_LEADER',
+label: 'Teamleiter',
+icon: UserCheck,
+color: '#e67e22',
+},
+						{
+ id: 'USER',
+label: 'Verkäufer',
+icon: User,
+color: '#64748b',
+},
+						{
+ id: 'EDITOR',
+label: 'Editoren',
+icon: Pencil,
+color: '#0090d0',
+},
+						{
+ id: 'ACTIVE',
+label: 'Aktiv',
+icon: CheckCircle,
+color: '#00a878',
+},
+						{
+ id: 'INACTIVE',
+label: 'Gesperrt',
+icon: AlertTriangle,
+color: '#dc2626',
+},
 					].map((filter) => {
 						const isSelected = activeFilterId === filter.id;
 						const Icon = filter.icon;
@@ -275,13 +322,13 @@ export default function UsersClient() {
 												<div className="flex flex-col gap-1">
 													<span className={clsx(
 														'text-[0.65rem] font-bold px-2 py-0.5 rounded-md inline-block w-fit uppercase',
-														user.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+														user.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700',
 													)}>
 														{user.isActive ? 'Aktiv' : 'Gesperrt'}
 													</span>
 													<span className={clsx(
 														'text-[0.65rem] font-bold px-2 py-0.5 rounded-md inline-block w-fit uppercase',
-														user.isVerified ? 'bg-[#0090d0]/10 text-[#0090d0]' : 'bg-orange-100 text-orange-700'
+														user.isVerified ? 'bg-[#0090d0]/10 text-[#0090d0]' : 'bg-orange-100 text-orange-700',
 													)}>
 														{user.isVerified ? 'Verifiziert' : 'Unverifiziert'}
 													</span>

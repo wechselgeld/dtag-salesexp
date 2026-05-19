@@ -4,7 +4,7 @@ import {
 	trpc,
 } from '@/lib/trpc';
 import {
-	Plus, Edit, Trash2, Search, Tag, MessageSquare, Loader2, Tv, Smartphone, ArrowUpCircle, X,
+	Plus, Edit, Trash2, Tag, MessageSquare, Loader2, Tv, Smartphone, ArrowUpCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -24,7 +24,9 @@ import {
 } from '@/components/shared/ui/admin-ui';
 import clsx from 'clsx';
 
-import { AdminSearch } from '@/components/shared/admin-search';
+import {
+ AdminSearch,
+} from '@/components/shared/admin-search';
 
 export default function AdminSpecialPricesPage() {
 	const [
@@ -34,7 +36,8 @@ export default function AdminSpecialPricesPage() {
 	const [
 		searchedPrices,
 		setSearchedPrices,
-	] = useState<any[]>([]);
+	] = useState<any[]>([
+]);
 	const [
 		activeFilterId,
 		setActiveFilterId,
@@ -60,8 +63,11 @@ export default function AdminSpecialPricesPage() {
 	});
 
 	const specialPrices = useMemo(() => {
-		return data?.pages.flatMap((page) => page.items) || [];
-	}, [data]);
+		return data?.pages.flatMap((page) => page.items) || [
+];
+	}, [
+ data,
+]);
 
 	const filteredPrices = useMemo(() => {
 		if (activeFilterId === 'ALL') { return searchedPrices; }
@@ -100,7 +106,8 @@ export default function AdminSpecialPricesPage() {
 					getSearchableText={(sp: any) => [
 						sp.name || '',
 						sp.internalNote || '',
-						...(sp.products?.map((p: any) => p.name) || []),
+						...(sp.products?.map((p: any) => p.name) || [
+]),
 					]}
 					value={searchQuery}
 					onChange={setSearchQuery}
@@ -110,10 +117,30 @@ export default function AdminSpecialPricesPage() {
 				{/* Filter Bubbles */}
 				<ScrollableFilterRow>
 					{[
-						{ id: 'ALL', label: 'Alle Aktionen', icon: Tag, color: '#1a1a2e' },
-						{ id: 'MAGENTA_TV_REQUIRED', label: 'MagentaTV erforderlich', icon: Tv, color: '#e20074' },
-						{ id: 'MAGENTA_TV_NOT_ALLOWED', label: 'Nur ohne MagentaTV', icon: Smartphone, color: '#7b61ff' },
-						{ id: 'HIGH_PRIO', label: 'Hohe Priorität (Prio ≥ 5)', icon: ArrowUpCircle, color: '#ff6b00' },
+						{
+ id: 'ALL',
+label: 'Alle Aktionen',
+icon: Tag,
+color: '#1a1a2e',
+},
+						{
+ id: 'MAGENTA_TV_REQUIRED',
+label: 'MagentaTV erforderlich',
+icon: Tv,
+color: '#e20074',
+},
+						{
+ id: 'MAGENTA_TV_NOT_ALLOWED',
+label: 'Nur ohne MagentaTV',
+icon: Smartphone,
+color: '#7b61ff',
+},
+						{
+ id: 'HIGH_PRIO',
+label: 'Hohe Priorität (Prio ≥ 5)',
+icon: ArrowUpCircle,
+color: '#ff6b00',
+},
 					].map((filter) => {
 						const isSelected = activeFilterId === filter.id;
 						const Icon = filter.icon;

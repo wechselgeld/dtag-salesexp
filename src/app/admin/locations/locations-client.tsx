@@ -4,13 +4,15 @@ import {
 	trpc,
 } from '@/lib/trpc';
 import {
-	MapPin, Trash2, Plus, Loader2, Pencil, Search, X, CheckCircle, XCircle,
+	MapPin, Trash2, Plus, Loader2, Pencil, CheckCircle, XCircle,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
 	showErrorToast,
 } from '@/components/shared/error-toast';
-import { AdminSearch } from '@/components/shared/admin-search';
+import {
+ AdminSearch,
+} from '@/components/shared/admin-search';
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
@@ -44,7 +46,8 @@ export default function LocationsClient() {
 	const [
 		searchedLocations,
 		setSearchedLocations,
-	] = useState<any[]>([]);
+	] = useState<any[]>([
+]);
 
 	const {
 		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
@@ -114,9 +117,24 @@ export default function LocationsClient() {
 				{/* Filter Bubbles */}
 				<ScrollableFilterRow>
 					{[
-						{ id: 'ALL', label: 'Alle Standorte', icon: MapPin, color: '#1a1a2e' },
-						{ id: 'ACTIVE', label: 'Aktiv', icon: CheckCircle, color: '#00a878' },
-						{ id: 'INACTIVE', label: 'Inaktiv', icon: XCircle, color: '#94a3b8' },
+						{
+ id: 'ALL',
+label: 'Alle Standorte',
+icon: MapPin,
+color: '#1a1a2e',
+},
+						{
+ id: 'ACTIVE',
+label: 'Aktiv',
+icon: CheckCircle,
+color: '#00a878',
+},
+						{
+ id: 'INACTIVE',
+label: 'Inaktiv',
+icon: XCircle,
+color: '#94a3b8',
+},
 					].map((filter) => {
 						const isSelected = activeFilterId === filter.id;
 						const Icon = filter.icon;

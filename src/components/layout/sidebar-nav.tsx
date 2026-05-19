@@ -4,7 +4,7 @@ import {
 	useState, useEffect, useCallback, useRef,
 } from 'react';
 import {
-	usePathname, useRouter,
+	usePathname,
 } from 'next/navigation';
 import {
 	Home,
@@ -69,9 +69,8 @@ const CATEGORY_NAMES: Record<string, string> = {
 
 export function SidebarNav() {
 	const pathname = usePathname();
-	const router = useRouter();
 	const {
-		items, clearBasket,
+		items,
 	} = useBasketStore();
 	const {
 		setCalculatorOpen, setBattlecardOpen, setFeedbackOpen,
@@ -82,10 +81,6 @@ export function SidebarNav() {
 	const [
 		collapsed,
 		setCollapsed,
-	] = useState(false);
-	const [
-		resetConfirm,
-		setResetConfirm,
 	] = useState(false);
 	const [
 		npsChecked,
@@ -205,19 +200,6 @@ export function SidebarNav() {
 	}, [
 		handleKeyDown,
 	]);
-
-	const handleReset = () => {
-		if (!resetConfirm) {
-			setResetConfirm(true);
-			setTimeout(() => setResetConfirm(false), 3000);
-			return;
-		}
-		clearBasket();
-		router.push('/');
-		setResetConfirm(false);
-		setNpsChecked(false);
-		if (npsTimerRef.current) { clearTimeout(npsTimerRef.current); }
-	};
 
 	// Grouped utilities
 	const group1: UtilityLink[] = [

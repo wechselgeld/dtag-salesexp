@@ -14,7 +14,7 @@ import {
   TRPCError,
 } from '@trpc/server';
 import bcrypt from 'bcryptjs';
-import { cookies } from 'next/headers';
+
 import crypto from 'crypto';
 import {
   invalidateCache,
@@ -87,7 +87,7 @@ export const authRouter = router({
 
       const clientIp = ctx.ip || '127.0.0.1';
       let deviceId = user.deviceId;
-      
+
       if (!deviceId) {
         deviceId = crypto.randomBytes(16).toString('hex');
       }
@@ -250,7 +250,7 @@ export const authRouter = router({
 
       const clientIp = ctx.ip || '127.0.0.1';
       let deviceId = updatedUser.deviceId;
-      
+
       if (!deviceId) {
         deviceId = crypto.randomBytes(16).toString('hex');
       }

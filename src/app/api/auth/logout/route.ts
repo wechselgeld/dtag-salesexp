@@ -1,5 +1,9 @@
-import { NextResponse } from 'next/server';
-import { logout } from '@/lib/auth';
+import {
+ NextResponse,
+} from 'next/server';
+import {
+ logout,
+} from '@/lib/auth';
 
 export async function GET(request: Request) {
     await logout();

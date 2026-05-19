@@ -133,7 +133,9 @@ function ProfilePanel({
 }: { user: any }) {
 	const {
 		data: stats,
-	} = trpc.admin.getDashboardStats.useQuery();
+	} = trpc.admin.getDashboardStats.useQuery(undefined, {
+		enabled: user?.role === 'ADMIN',
+	});
 
 	return (
 		<motion.div
@@ -339,7 +341,9 @@ response: resp,
 	const {
 		data: securitySettingsData, refetch: refetchSecurity,
 	} =
-		trpc.admin.getSecuritySettings.useQuery();
+		trpc.admin.getSecuritySettings.useQuery(undefined, {
+			enabled: isAdmin,
+		});
 	const updateSecurityMutation = trpc.admin.updateSecuritySettings.useMutation({
 		onSuccess: () => refetchSecurity(),
 	});

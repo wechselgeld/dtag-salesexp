@@ -24,7 +24,7 @@ export function SidebarAccount({
 	const router = useRouter();
 	const {
 		data: currentUser,
-	} = trpc.auth.me.useQuery();
+	} = trpc.session.getCurrent.useQuery();
 
 	const logoutMutation = trpc.auth.logout.useMutation({
 		onSuccess: () => {

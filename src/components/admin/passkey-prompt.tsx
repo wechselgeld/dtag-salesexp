@@ -58,7 +58,9 @@ setIsPending,
             const {
  startRegistration,
 } = await import('@simplewebauthn/browser');
-            const options = await getRegOptions.mutateAsync({ email: user.email as string });
+            const options = await getRegOptions.mutateAsync({
+ email: user.email as string,
+});
             const resp = await startRegistration({
  optionsJSON: options,
 });
