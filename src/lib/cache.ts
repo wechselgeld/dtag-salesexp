@@ -1,6 +1,10 @@
 import pc from 'picocolors';
-import { redis } from './redis';
-import { cacheLogger } from './logger';
+import {
+  redis,
+} from './redis';
+import {
+  cacheLogger,
+} from './logger';
 
 const MISSING = Symbol('MISSING');
 
@@ -13,7 +17,8 @@ export async function getCache<T>(key: string): Promise<T | typeof MISSING> {
   try {
     const cached = await redis.get(key);
     if (cached !== null) return JSON.parse(cached) as T;
-  } catch (error) {
+  }
+  catch (error) {
     // redis.on('error') handles socket-level errors. This catches command-level
     // failures (serialization, wrong type, etc.) that the event handler misses.
     cacheLogger.error(`Cache GET failed for "${key}": ${(error as Error).message}`);
@@ -26,7 +31,8 @@ export async function setCache<T>(key: string, value: T, ttlMs: number): Promise
     if (value !== undefined && value !== null) {
       await redis.set(key, JSON.stringify(value), 'PX', ttlMs);
     }
-  } catch (error) {
+  }
+  catch (error) {
     // Catches OOM, type mismatch, serialization failures — all silently dropped
     // before this fix and invisible to operators.
     cacheLogger.error(`Cache SET failed for "${key}": ${(error as Error).message}`);
@@ -68,10 +74,14 @@ export async function getCached<T>(
 // KEYS is O(N) and blocks Redis's single thread for the entire scan duration.
 // SCAN is O(1) per call and yields control between iterations.
 async function scanKeys(pattern: string): Promise<string[]> {
-  const keys: string[] = [];
+  const keys: string[] = [
+  ];
   let cursor = '0';
   do {
-    const [nextCursor, batch] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+    const [
+      nextCursor,
+      batch,
+    ] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
     keys.push(...batch);
     cursor = nextCursor;
   } while (cursor !== '0');

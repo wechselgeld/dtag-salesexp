@@ -26,12 +26,21 @@ export default async function Page() {
 		}),
 	);
 
+	let currentSession = null;
+	try {
+		currentSession = await caller.session.getCurrent();
+	} catch (error: any) {
+		if (error?.code === 'UNAUTHORIZED') {
+			const { redirect } = await import('next/navigation');
+			redirect('/api/auth/logout');
+		}
+	}
+
 	// Prefetch the data the client components immediately need
 	const [
 		locations,
 		isEmailRequired,
 		ipCheck,
-		currentSession,
 	] = await Promise.all([
 		caller.location.list({
 			search: undefined,
@@ -41,7 +50,6 @@ export default async function Page() {
 		caller.session.verifyIp().catch((err) => ({
 			error: err.message,
 		})),
-		caller.session.getCurrent().catch(() => null),
 	]);
 
 	const ipError = ipCheck && 'error' in ipCheck ? String(ipCheck.error) : null;

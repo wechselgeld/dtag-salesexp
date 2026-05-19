@@ -1,7 +1,7 @@
 'use client';
 
 import {
-	useState,
+	useState, useMemo,
 } from 'react';
 import {
 	trpc,
@@ -15,13 +15,22 @@ import {
 	MapPin,
 	Search,
 	X,
+	Users,
+	CheckCircle,
+	AlertTriangle,
+	Globe,
+	User,
+	UserCheck,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { useDebounce } from '@/hooks/use-debounce';
 import { showErrorToast } from '@/components/shared/error-toast';
+import { AdminSearch } from '@/components/shared/admin-search';
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
+import {
+	ScrollableFilterRow,
+} from '@/components/shared/scrollable-filter-row';
 import {
 	confirmDelete,
 } from '@/components/shared/delete-confirm-toast';
@@ -36,9 +45,13 @@ import {
 interface UserResponse {
 	id: string;
 	email: string;
+	firstName: string | null;
+	lastName: string | null;
 	role: string;
 	createdAt: string | Date;
 	isEditor: boolean;
+	isActive: boolean;
+	isVerified: boolean;
 	team?: {
 		name: string;
 		location: { name: string; address: string | null } | null;
@@ -56,16 +69,21 @@ export default function UsersClient() {
 		searchQuery,
 		setSearchQuery,
 	] = useState('');
-
-	const debouncedSearch = useDebounce(searchQuery, 300);
+	const [
+		activeFilterId,
+		setActiveFilterId,
+	] = useState<string>('ALL');
+	const [
+		searchedUsers,
+		setSearchedUsers,
+	] = useState<UserResponse[]>([]);
 
 	const {
 		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
 	} =
 		trpc.adminUsers.list.useInfiniteQuery(
 			{
-				limit: 20,
-				search: debouncedSearch || undefined,
+				limit: 250, // Fetch everything for instant client-side full fuzzy search
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -88,6 +106,24 @@ export default function UsersClient() {
 	const users = data?.pages.flatMap((page) => page.items) || [
 	];
 
+	const filteredUsers = useMemo(() => {
+		if (activeFilterId === 'ALL') { return searchedUsers; }
+		return searchedUsers.filter((user) => {
+			if (activeFilterId === 'ADMIN') { return user.role === 'ADMIN'; }
+			if (activeFilterId === 'OD_MANAGER') { return user.role === 'OD_MANAGER'; }
+			if (activeFilterId === 'LOCATION_MANAGER') { return user.role === 'LOCATION_MANAGER'; }
+			if (activeFilterId === 'TEAM_LEADER') { return user.role === 'TEAM_LEADER'; }
+			if (activeFilterId === 'USER') { return user.role === 'USER'; }
+			if (activeFilterId === 'EDITOR') { return user.isEditor; }
+			if (activeFilterId === 'ACTIVE') { return user.isActive; }
+			if (activeFilterId === 'INACTIVE') { return !user.isActive; }
+			return true;
+		});
+	}, [
+		searchedUsers,
+		activeFilterId,
+	]);
+
 	return (
 		<div className="space-y-6 pb-20">
 			<div className="flex justify-between items-center">
@@ -96,34 +132,69 @@ export default function UsersClient() {
 					subtitle="Verwalte die Zugänge zum Dashboard."
 					backHref="/admin"
 				/>
-				{canCreateUser && (
-					<Link
-						href="/admin/users/new"
-						className="flex items-center gap-2 bg-[#e20074] hover:bg-[#c70066] text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-[0_4px_14px_rgba(226,0,116,0.25)] hover:shadow-[0_6px_20px_rgba(226,0,116,0.3)] hover:-translate-y-0.5 active:scale-95 text-[0.82rem] no-underline border-none cursor-pointer"
-					>
-						<Plus className="w-4 h-4" />
-						Benutzer erstellen
-					</Link>
-				)}
 			</div>
 
-			<div className="relative">
-				<Search className="w-4 h-4 text-[#bbb] absolute left-4 top-1/2 -translate-y-1/2" />
-				<input
-					type="text"
-					placeholder="Suchen nach E-Mail..."
+			<div className="bg-[#f7f8fa] border border-[#eaedf0] p-4 rounded-2xl flex items-center justify-between shadow-sm">
+				<p className="text-[0.85rem] text-[#666] m-0">
+					<strong>Hinweis:</strong> Neue Benutzer können hier nicht mehr manuell erstellt werden. Mitarbeiter müssen sich auf der Startseite selbst registrieren und können anschließend hier verwaltet und befördert werden.
+				</p>
+			</div>
+
+			<div className="flex flex-col gap-4">
+				<AdminSearch
+					items={users}
+					onResultsChange={setSearchedUsers}
+					getSearchableText={(user) => [
+						user.firstName || '',
+						user.lastName || '',
+						user.email,
+						user.role,
+						user.isEditor ? 'Editor' : '',
+						user.team?.name || '',
+						user.location?.name || '',
+						user.odRegion?.name || '',
+					]}
 					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
-					className="w-full pl-11 pr-11 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
+					onChange={setSearchQuery}
+					placeholder="Benutzer suchen nach Name, E-Mail, Rolle, Team oder Standort..."
 				/>
-				{searchQuery && (
-					<button
-						onClick={() => setSearchQuery('')}
-						className="absolute right-4 top-1/2 -translate-y-1/2 text-[#bbb] hover:text-[#1a1a2e] bg-transparent border-none cursor-pointer"
-					>
-						<X className="w-4 h-4" />
-					</button>
-				)}
+
+				{/* Filter Bubbles */}
+				<ScrollableFilterRow>
+					{[
+						{ id: 'ALL', label: 'Alle', icon: Users, color: '#1a1a2e' },
+						{ id: 'ADMIN', label: 'Admins', icon: Shield, color: '#e20074' },
+						{ id: 'OD_MANAGER', label: 'OD-Leiter', icon: Globe, color: '#7b61ff' },
+						{ id: 'LOCATION_MANAGER', label: 'Standortleiter', icon: MapPin, color: '#ff6b00' },
+						{ id: 'TEAM_LEADER', label: 'Teamleiter', icon: UserCheck, color: '#e67e22' },
+						{ id: 'USER', label: 'Verkäufer', icon: User, color: '#64748b' },
+						{ id: 'EDITOR', label: 'Editoren', icon: Pencil, color: '#0090d0' },
+						{ id: 'ACTIVE', label: 'Aktiv', icon: CheckCircle, color: '#00a878' },
+						{ id: 'INACTIVE', label: 'Gesperrt', icon: AlertTriangle, color: '#dc2626' },
+					].map((filter) => {
+						const isSelected = activeFilterId === filter.id;
+						const Icon = filter.icon;
+						return (
+							<button
+								key={filter.id}
+								onClick={() => setActiveFilterId(filter.id)}
+								className={clsx(
+									'flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border whitespace-nowrap transition-all duration-200 cursor-pointer outline-none font-semibold text-[0.8rem] active:scale-95',
+									isSelected
+										? 'text-white shadow-md'
+										: 'bg-linear-to-br from-white to-[#fcfafc] border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]',
+								)}
+								style={{
+									backgroundColor: isSelected ? filter.color : undefined,
+									borderColor: isSelected ? filter.color : undefined,
+								}}
+							>
+								<Icon className={clsx('w-4 h-4', isSelected ? 'opacity-100' : 'opacity-60')} />
+								<span>{filter.label}</span>
+							</button>
+						);
+					})}
+				</ScrollableFilterRow>
 			</div>
 
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
@@ -139,7 +210,7 @@ export default function UsersClient() {
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
-				) : users.length === 0 ? (
+				) : filteredUsers.length === 0 ? (
 					<div className="p-20 flex flex-col items-center justify-center text-center">
 						<div className="w-16 h-16 bg-[#f7f8fa] rounded-2xl flex items-center justify-center mb-4 border border-[#eaedf0]">
 							<Shield className="w-6 h-6 text-[#ccc]" />
@@ -148,24 +219,16 @@ export default function UsersClient() {
 							Keine Benutzer
 						</h3>
 						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0 mb-4">
-							Es wurden keine Benutzer {searchQuery ? 'für deine Suche' : ''} gefunden.
+							Es wurden keine Benutzer {searchQuery || activeFilterId !== 'ALL' ? 'für deine Suche/Filter' : ''} gefunden.
 						</p>
 						<div className="flex gap-3 mt-2">
-							{searchQuery && (
+							{(searchQuery || activeFilterId !== 'ALL') && (
 								<button
-									onClick={() => setSearchQuery('')}
+									onClick={() => { setSearchQuery(''); setActiveFilterId('ALL'); }}
 									className="text-[#1a1a2e] text-[0.85rem] font-semibold bg-white border border-[#eaedf0] px-4 py-2 rounded-xl hover:bg-[#f7f8fa] transition-colors cursor-pointer"
 								>
-									Suche zurücksetzen
+									Filter zurücksetzen
 								</button>
-							)}
-							{canCreateUser && (
-								<Link
-									href="/admin/users/new"
-									className="text-white text-[0.85rem] font-semibold bg-[#e20074] border-none px-4 py-2 rounded-xl hover:bg-[#c70066] transition-colors cursor-pointer no-underline flex items-center gap-2"
-								>
-									<Plus className="w-4 h-4" /> Neues Konto
-								</Link>
 							)}
 						</div>
 					</div>
@@ -175,7 +238,10 @@ export default function UsersClient() {
 							<thead>
 								<tr className="border-b border-[#eaedf0] bg-[#fcfcfd]">
 									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
-										Email
+										Benutzer
+									</th>
+									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
+										Status
 									</th>
 									<th className="px-6 py-4 font-bold text-[#aaa] text-[0.72rem] uppercase tracking-wider">
 										Rolle
@@ -191,25 +257,35 @@ export default function UsersClient() {
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-[#f0f0f0]">
-								{users.map(
-									(user: {
-										id: string;
-										email: string;
-										role: string;
-										isEditor: boolean;
-										team: {
-											name: string;
-											location: { name: string; address: string | null } | null;
-										} | null;
-										location: { name: string; address: string | null } | null;
-										odRegion: { name: string } | null;
-									}) => (
+								{filteredUsers.map(
+									(user: UserResponse) => (
 										<tr
 											key={user.id}
 											className="group hover:bg-[#fcfcfd] transition-colors"
 										>
-											<td className="py-4 px-6 text-[0.95rem] font-bold text-[#1a1a2e]">
-												{user.email}
+											<td className="py-4 px-6">
+												<div className="flex flex-col">
+													<span className="text-[0.95rem] font-bold text-[#1a1a2e]">
+														{user.firstName || user.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Unbekannt'}
+													</span>
+													<span className="text-[0.8rem] text-[#666]">{user.email}</span>
+												</div>
+											</td>
+											<td className="py-4 px-6">
+												<div className="flex flex-col gap-1">
+													<span className={clsx(
+														'text-[0.65rem] font-bold px-2 py-0.5 rounded-md inline-block w-fit uppercase',
+														user.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+													)}>
+														{user.isActive ? 'Aktiv' : 'Gesperrt'}
+													</span>
+													<span className={clsx(
+														'text-[0.65rem] font-bold px-2 py-0.5 rounded-md inline-block w-fit uppercase',
+														user.isVerified ? 'bg-[#0090d0]/10 text-[#0090d0]' : 'bg-orange-100 text-orange-700'
+													)}>
+														{user.isVerified ? 'Verifiziert' : 'Unverifiziert'}
+													</span>
+												</div>
 											</td>
 											<td className="py-4 px-6">
 												<div className="flex flex-wrap gap-2">
@@ -283,15 +359,16 @@ export default function UsersClient() {
 														>
 															<Pencil className="w-4 h-4" />
 														</Link>
-														{currentUser?.id !== user.id && canDeleteUser && (
+														{currentUser?.sub !== user.id && canDeleteUser && (
 															<button
 																onClick={() => {
 																	confirmDelete({
 																		id: user.id,
 																		name: user.email,
-																		onConfirm: () =>
-																			deleteUser.mutate({
+																		onConfirm: (sudoPassword) =>
+																			deleteUser.mutateAsync({
 																				id: user.id,
+																				sudoPassword,
 																			}),
 																	});
 																}}

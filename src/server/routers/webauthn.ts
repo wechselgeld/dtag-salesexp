@@ -1,5 +1,5 @@
 import {
-    router, publicProcedure, protectedProcedure,
+    router, publicProcedure,
 } from '../trpc';
 import {
     z,
@@ -21,16 +21,21 @@ import {
     cookies,
 } from 'next/headers';
 import crypto from 'crypto';
+import {
+    redis,
+} from '@/lib/redis';
+import {
+    getSession, login, signDeviceId, verifyDeviceId,
+} from '@/lib/auth';
 
 const rpName = 'Sales Experience-Plattform';
 
-// rpID and origin must be bound to the deployment-time env var, not derived
-// from request headers. A caller behind a proxy at evil.com could set
-// Host: evil.com, causing verifyAuthenticationResponse to accept credentials
-// bound to that domain — which is the exact phishing attack WebAuthn prevents.
 function getRpIdAndOrigin() {
     if (process.env.NODE_ENV === 'development') {
-        return { rpID: 'localhost', origin: 'http://localhost:3000' };
+        return {
+            rpID: 'localhost',
+            origin: 'http://localhost:3000',
+        };
     }
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     if (!appUrl) {
@@ -38,22 +43,15 @@ function getRpIdAndOrigin() {
     }
     try {
         const url = new URL(appUrl);
-        return { rpID: url.hostname, origin: url.origin };
-    } catch {
+        return {
+            rpID: url.hostname,
+            origin: url.origin,
+        };
+    }
+    catch {
         throw new Error(`NEXT_PUBLIC_APP_URL is not a valid URL: "${appUrl}"`);
     }
 }
-
-// Store challenges temporarily in DB or a dedicated memory store. 
-// For simplicity in serverless, we can use a temporary model, but since we don't have it,
-// we will store it in the SalesSession itself if we are updating it, but actually, 
-// a registration challenge is created BEFORE the session is verified? No, they must be logged in to register.
-// So we can use the user's current session or cookies.
-// Wait, we can't easily store challenges on the stateless edge without DB or Redis. 
-// We will use Redis or Prisma since the project uses Redis for cache.
-import {
-    redis,
-} from '@/lib/redis';
 
 export const webauthnRouter = router({
     generateRegistrationOptions: publicProcedure
@@ -63,50 +61,37 @@ export const webauthnRouter = router({
         .mutation(async ({
             ctx, input,
         }) => {
-            // Must have a verified session OR we verify the user is logged in
-            // Check for Sales Session OR Admin Session
-            const cookieStore = await cookies();
-            const {
-                verifySessionId, getSession,
-            } = await import('@/lib/auth');
-            const salesToken = cookieStore.get('sales-session-id')?.value;
-            const adminSession = await getSession();
-
+            const session = await getSession();
             let sessionEmail = '';
             let displayName = '';
 
-            if (salesToken) {
-                const sessionId = await verifySessionId(salesToken);
-                if (sessionId) {
-                    const session = await ctx.prisma.salesSession.findUnique({
-                        where: {
-                            id: sessionId,
-                        },
-                    });
-                    if (session && session.isVerified && session.email === input.email) {
-                        sessionEmail = session.email;
-                        displayName = `${session.firstName} ${session.lastName}`;
-                    }
-                }
-            }
-
-            if (!sessionEmail && adminSession && adminSession.sub) {
+            if (session && session.sub) {
                 const user = await ctx.prisma.user.findUnique({
                     where: {
-                        id: adminSession.sub as string,
+                        id: session.sub as string,
                     },
                 });
-                if (user && user.email === input.email) {
+                if (user && user.email.toLowerCase() === input.email.toLowerCase()) {
                     sessionEmail = user.email;
-                    displayName = user.email; // Admins don't have first/last name in schema
+                    displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
                 }
             }
 
             if (!sessionEmail) {
-                throw new TRPCError({
-                    code: 'UNAUTHORIZED',
-                    message: 'You must be logged in to register a passkey.',
+                const user = await ctx.prisma.user.findUnique({
+                    where: {
+                        email: input.email,
+                    },
                 });
+                if (user) {
+                    displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+                }
+                else {
+                    throw new TRPCError({
+                        code: 'UNAUTHORIZED',
+                        message: 'Benutzer nicht gefunden. Bitte registriere Dich zuerst.',
+                    });
+                }
             }
 
             const userPasskeys = await ctx.prisma.passkey.findMany({
@@ -115,10 +100,9 @@ export const webauthnRouter = router({
                 },
             });
 
-            const { rpID, origin } = getRpIdAndOrigin();
-
-            // We need a stable user ID for the authenticator. 
-            // Since we don't have a SalesUser model, we'll hash the email.
+            const {
+                rpID,
+            } = getRpIdAndOrigin();
             const userIdent = crypto.createHash('sha256').update(input.email).digest();
 
             const options = await generateRegistrationOptions({
@@ -139,7 +123,6 @@ export const webauthnRouter = router({
                 },
             });
 
-            // Store the challenge in Redis for 5 minutes
             await redis.set(`webauthn_challenge:reg:${input.email}`, options.challenge, 'EX', 300);
 
             return options;
@@ -148,7 +131,7 @@ export const webauthnRouter = router({
     verifyRegistration: publicProcedure
         .input(z.object({
             email: z.string().email(),
-            response: z.any(), // RegistrationResponseJSON
+            response: z.any(),
         }))
         .mutation(async ({
             ctx, input,
@@ -161,7 +144,9 @@ export const webauthnRouter = router({
                 });
             }
 
-            const { rpID, origin } = getRpIdAndOrigin();
+            const {
+                rpID, origin,
+            } = getRpIdAndOrigin();
 
             let verification;
             try {
@@ -186,7 +171,7 @@ export const webauthnRouter = router({
 
             if (verified && registrationInfo) {
                 const {
-                    credential, credentialDeviceType, credentialBackedUp,
+                    credential,
                 } = registrationInfo;
 
                 await ctx.prisma.passkey.create({
@@ -199,7 +184,6 @@ export const webauthnRouter = router({
                     },
                 });
 
-                // Clear challenge
                 await redis.del(`webauthn_challenge:reg:${input.email}`);
 
                 return {
@@ -236,7 +220,9 @@ export const webauthnRouter = router({
                 }
             }
 
-            const { rpID } = getRpIdAndOrigin();
+            const {
+                rpID,
+            } = getRpIdAndOrigin();
 
             const options = await generateAuthenticationOptions({
                 rpID,
@@ -266,7 +252,7 @@ export const webauthnRouter = router({
         .input(z.object({
             email: z.string().email().optional(),
             challengeId: z.string().optional(),
-            response: z.any(), // AuthenticationResponseJSON
+            response: z.any(),
         }))
         .mutation(async ({
             ctx, input,
@@ -286,7 +272,9 @@ export const webauthnRouter = router({
                 });
             }
 
-            const { rpID, origin } = getRpIdAndOrigin();
+            const {
+                rpID, origin,
+            } = getRpIdAndOrigin();
 
             const passkey = await ctx.prisma.passkey.findUnique({
                 where: {
@@ -300,7 +288,7 @@ export const webauthnRouter = router({
                     message: 'Passkey not found',
                 });
             }
-            if (input.email && passkey.email !== input.email) {
+            if (input.email && passkey.email.toLowerCase() !== input.email.toLowerCase()) {
                 throw new TRPCError({
                     code: 'NOT_FOUND',
                     message: 'Passkey does not match email',
@@ -337,7 +325,6 @@ export const webauthnRouter = router({
             } = verification;
 
             if (verified && authenticationInfo) {
-                // Update counter
                 await ctx.prisma.passkey.update({
                     where: {
                         id: passkey.id,
@@ -348,102 +335,59 @@ export const webauthnRouter = router({
                     },
                 });
 
-                // Clear challenges
                 if (input.challengeId) await redis.del(`webauthn_challenge:auth:${input.challengeId}`);
                 if (input.email) await redis.del(`webauthn_challenge:auth:${input.email}`);
                 await redis.del(`webauthn_challenge:auth:${userEmail}`);
 
-                // Proceed to login the user via Passkey! 
-                const clientIp = ctx.ip || '127.0.0.1';
-
-                // Check if user is an Admin
-                const adminUser = await ctx.prisma.user.findFirst({
-                    where: {
-                        email: {
-                            equals: userEmail,
-                            mode: 'insensitive',
-                        },
-                    },
-                });
-
-                if (adminUser) {
-                    const {
-                        login: adminLogin,
-                    } = await import('@/lib/auth');
-                    await adminLogin({
-                        id: adminUser.id,
-                        email: adminUser.email,
-                        role: adminUser.role,
-                        isEditor: adminUser.isEditor,
-                        odRegionId: adminUser.odRegionId,
-                        locationId: adminUser.locationId,
-                        teamId: adminUser.teamId,
-                    });
-
-                    return {
-                        success: true,
-                        isAdmin: true,
-                        email: adminUser.email,
-                    };
-                }
-
-                // If not admin, fall back to Sales Session login
-                // Fetch last session details to clone team details
-                const lastSession = await ctx.prisma.salesSession.findFirst({
+                const user = await ctx.prisma.user.findUnique({
                     where: {
                         email: userEmail,
-                        isVerified: true,
-                    },
-                    orderBy: {
-                        createdAt: 'desc',
                     },
                 });
 
-                if (!lastSession) {
+                if (!user) {
                     throw new TRPCError({
                         code: 'NOT_FOUND',
-                        message: 'No prior session found to clone.',
+                        message: 'Benutzerkonto nicht gefunden.',
                     });
                 }
 
+                if (user.role === 'USER') {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Deine Rolle hat keine Berechtigung für administrative Aktionen.',
+                    });
+                }
+
+                const clientIp = ctx.ip || '127.0.0.1';
                 let deviceId = crypto.randomBytes(16).toString('hex');
                 const cookieStore = await cookies();
                 const deviceToken = cookieStore.get('sales-device-id')?.value;
                 if (deviceToken) {
-                    const {
-                        verifyDeviceId,
-                    } = await import('@/lib/auth');
                     const verifiedDeviceId = await verifyDeviceId(deviceToken);
                     if (verifiedDeviceId) {
                         deviceId = verifiedDeviceId;
                     }
                 }
 
-                const newSession = await ctx.prisma.salesSession.create({
+                await ctx.prisma.userSession.create({
                     data: {
-                        teamId: lastSession.teamId,
-                        firstName: lastSession.firstName,
-                        lastName: lastSession.lastName,
-                        email: lastSession.email,
-                        acceptedTerms: true,
-                        ip: clientIp,
+                        userId: user.id,
                         deviceId: deviceId,
+                        ip: clientIp,
                         userAgent: ctx.req?.headers.get('user-agent'),
-                        isVerified: true,
+                        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
                     },
                 });
 
-                const {
-                    signSessionId, signDeviceId,
-                } = await import('@/lib/auth');
-                const signedToken = await signSessionId(newSession.id);
-
-                cookieStore.set('sales-session-id', signedToken, {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'lax',
-                    path: '/',
-                    maxAge: 60 * 60 * 24 * 30, // 30 days
+                await login({
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                    isEditor: user.isEditor,
+                    odRegionId: user.odRegionId,
+                    locationId: user.locationId,
+                    teamId: user.teamId,
                 });
 
                 const signedDeviceToken = await signDeviceId(deviceId);
@@ -452,14 +396,15 @@ export const webauthnRouter = router({
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax',
                     path: '/',
-                    maxAge: 60 * 60 * 24 * 365, // 365 days
+                    maxAge: 60 * 60 * 24 * 365,
                 });
 
                 return {
                     success: true,
-                    firstName: newSession.firstName,
-                    lastName: newSession.lastName,
-                    email: newSession.email,
+                    isAdmin: user.role !== 'USER',
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
                 };
             }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import {
-	QueryClient, QueryClientProvider,
+	QueryClient, QueryClientProvider, QueryCache, MutationCache
 } from '@tanstack/react-query';
 import {
 	httpBatchLink,
@@ -59,8 +59,26 @@ export default function Providers({
 	const [
 		queryClient,
 	] = useState(
-		() =>
-			new QueryClient({
+		() => {
+			const handleUnauthorized = (error: any) => {
+				if (
+					error?.data?.code === 'UNAUTHORIZED' ||
+					error?.message === 'UNAUTHORIZED' ||
+					error?.message?.includes('UNAUTHORIZED')
+				) {
+					if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+						window.location.href = '/api/auth/logout';
+					}
+				}
+			};
+
+			return new QueryClient({
+				queryCache: new QueryCache({
+					onError: handleUnauthorized,
+				}),
+				mutationCache: new MutationCache({
+					onError: handleUnauthorized,
+				}),
 				defaultOptions: {
 					queries: {
 						staleTime: 5 * 60 * 1000, // 5 minutes caching before refetch
@@ -69,7 +87,8 @@ export default function Providers({
 						retry: 1,
 					},
 				},
-			}),
+			});
+		}
 	);
 	const [
 		trpcClient,

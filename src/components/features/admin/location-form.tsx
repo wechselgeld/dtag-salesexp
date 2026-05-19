@@ -1,6 +1,10 @@
 'use client';
 
 import {
+	useEffect,
+} from 'react';
+
+import {
 	useForm,
 } from 'react-hook-form';
 import {
@@ -16,12 +20,12 @@ import {
 import {
 	Save,
 	Loader2,
-	ArrowLeft,
+
 	MapPin,
 	Globe,
 	ToggleLeft,
 } from 'lucide-react';
-import Link from 'next/link';
+
 import clsx from 'clsx';
 import {
 	Input,
@@ -89,13 +93,18 @@ export function LocationForm({
 	});
 
 	// Lock the OD Region if the user is an OD Manager
-	import('react').then(({ useEffect }) => {
-		useEffect(() => {
-			if (mode === 'create' && currentUser && currentUser.role === 'OD_MANAGER' && currentUser.odRegionId) {
-				setValue('odRegionId', currentUser.odRegionId);
-			}
-		}, [currentUser, mode, setValue]);
-	});
+
+
+	useEffect(() => {
+		if (mode === 'create' && currentUser && currentUser.role === 'OD_MANAGER' && currentUser.odRegionId) {
+			setValue('odRegionId', currentUser.odRegionId as string);
+		}
+	}, [
+		currentUser,
+mode,
+setValue,
+	]);
+
 
 	const createMutation = trpc.location.create.useMutation({
 		onSuccess: () => {

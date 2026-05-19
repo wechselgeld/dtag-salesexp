@@ -1,9 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { AlertCircle } from 'lucide-react';
-import { Toast } from './ui/toast';
+import {
+ useState, useEffect,
+} from 'react';
+import {
+ AnimatePresence,
+} from 'framer-motion';
+import {
+ AlertCircle,
+} from 'lucide-react';
+import {
+ Toast,
+} from './ui/toast';
 
 interface ErrorToastState {
 	title: string;
@@ -13,11 +21,17 @@ interface ErrorToastState {
 let showErrorGlobal: ((state: ErrorToastState) => void) | null = null;
 
 export function showErrorToast(title: string, message: string) {
-	showErrorGlobal?.({ title, message });
+	showErrorGlobal?.({
+ title,
+message,
+});
 }
 
 export function GlobalErrorToast() {
-	const [error, setError] = useState<ErrorToastState | null>(null);
+	const [
+ error,
+setError,
+] = useState<ErrorToastState | null>(null);
 
 	useEffect(() => {
 		showErrorGlobal = (state) => {
@@ -26,7 +40,8 @@ export function GlobalErrorToast() {
 		return () => {
 			showErrorGlobal = null;
 		};
-	}, []);
+	}, [
+]);
 
 	return (
 		<div className="fixed bottom-10 right-10 z-[100] flex flex-col gap-4 w-[400px] pointer-events-none">
@@ -37,7 +52,9 @@ export function GlobalErrorToast() {
 						color="#ef4444"
 						onDismiss={() => setError(null)}
 						className="border-[2px] bg-white text-[#1a1a2e]"
-						style={{ borderColor: '#ef4444' }}
+						style={{
+ borderColor: '#ef4444',
+}}
 					>
 						<div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-red-500/10 to-transparent blur-xl pointer-events-none rounded-full" />
 						<div className="flex gap-3 align-start">

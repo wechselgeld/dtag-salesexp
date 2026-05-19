@@ -303,21 +303,35 @@ function SecurityPanel({
 
 	const getRegOptions = trpc.webauthn.generateRegistrationOptions.useMutation();
 	const verifyReg = trpc.webauthn.verifyRegistration.useMutation();
-	const [isPasskeyRegistering, setIsPasskeyRegistering] = useState(false);
+	const [
+ isPasskeyRegistering,
+setIsPasskeyRegistering,
+] = useState(false);
 
 	const handleRegisterPasskey = async () => {
 		if (!user?.email) return;
 		setIsPasskeyRegistering(true);
 		try {
-			const { startRegistration } = await import('@simplewebauthn/browser');
-			const options = await getRegOptions.mutateAsync({ email: user.email });
-			const resp = await startRegistration({ optionsJSON: options });
-			await verifyReg.mutateAsync({ email: user.email, response: resp });
+			const {
+ startRegistration,
+} = await import('@simplewebauthn/browser');
+			const options = await getRegOptions.mutateAsync({
+ email: user.email,
+});
+			const resp = await startRegistration({
+ optionsJSON: options,
+});
+			await verifyReg.mutateAsync({
+ email: user.email,
+response: resp,
+});
 			alert('Passkey erfolgreich registriert!');
-		} catch (err: any) {
+		}
+ catch (err: any) {
 			console.error('Passkey registration failed', err);
-			alert('Fehler bei der Passkey-Registrierung: ' + err.message);
-		} finally {
+			alert(`Fehler bei der Passkey-Registrierung: ${ err.message}`);
+		}
+ finally {
 			setIsPasskeyRegistering(false);
 		}
 	};

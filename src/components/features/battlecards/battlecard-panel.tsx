@@ -13,7 +13,7 @@ import {
 	Swords,
 	Search,
 	X,
-	ChevronRight,
+
 	ChevronDown,
 	Shield,
 	Trophy,
@@ -24,7 +24,7 @@ import {
 	Signal,
 	SignalZero,
 	Star,
-	ArrowLeft,
+
 	CheckCircle2,
 	AlertTriangle,
 	Clock,
@@ -42,8 +42,8 @@ import {
 	Building2,
 	Ban,
 	Check,
-	SignalLow,
-	SignalLowIcon,
+
+
 	SignalIcon,
 } from 'lucide-react';
 import clsx from 'clsx';

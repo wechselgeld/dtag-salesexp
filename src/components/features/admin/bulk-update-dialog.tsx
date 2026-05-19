@@ -59,7 +59,7 @@ export function BulkUpdateDialog({
 	] = useState('');
 
 	const mutation = trpc.admin.bulkUpdatePrices.useMutation({
-		onSuccess: (data) => {
+		onSuccess: () => {
 			onSuccess();
 			onClose();
 			setValue('');

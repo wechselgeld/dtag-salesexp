@@ -5,18 +5,23 @@ import {
 } from '@/lib/trpc';
 import Link from 'next/link';
 import {
-	Plus, Pencil, Trash2, Layers, Search, X,
+	Plus, Pencil, Trash2, Layers, Search, X, CheckCircle, XCircle, Tv, Smartphone,
 } from 'lucide-react';
-import { useDebounce } from '@/hooks/use-debounce';
-import { showErrorToast } from '@/components/shared/error-toast';
+import {
+ showErrorToast,
+} from '@/components/shared/error-toast';
+import { AdminSearch } from '@/components/shared/admin-search';
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
 import {
+	ScrollableFilterRow,
+} from '@/components/shared/scrollable-filter-row';
+import {
 	confirmDelete,
 } from '@/components/shared/delete-confirm-toast';
 import {
-	useState,
+	useState, useMemo,
 } from 'react';
 import {
 	AdminPageHeader,
@@ -24,6 +29,7 @@ import {
 import {
 	Loader2, MessageSquare,
 } from 'lucide-react';
+import clsx from 'clsx';
 
 export default function AddonsPage() {
 	const utils = trpc.useUtils();
@@ -31,16 +37,21 @@ export default function AddonsPage() {
 		searchQuery,
 		setSearchQuery,
 	] = useState('');
-
-	const debouncedSearch = useDebounce(searchQuery, 300);
+	const [
+		activeFilterId,
+		setActiveFilterId,
+	] = useState<string>('ALL');
+	const [
+		searchedAddons,
+		setSearchedAddons,
+	] = useState<any[]>([]);
 
 	const {
 		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
 	} =
 		trpc.addon.list.useInfiniteQuery(
 			{
-				limit: 20,
-				search: debouncedSearch || undefined,
+				limit: 250, // Fetch everything for seamless client-side search
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -54,6 +65,20 @@ export default function AddonsPage() {
 
 	const addons = data?.pages.flatMap((page) => page.items) || [
 	];
+
+	const filteredAddons = useMemo(() => {
+		if (activeFilterId === 'ALL') { return searchedAddons; }
+		return searchedAddons.filter((addon: any) => {
+			if (activeFilterId === 'ACTIVE') { return addon.isActive; }
+			if (activeFilterId === 'INACTIVE') { return !addon.isActive; }
+			if (activeFilterId === 'MAGENTA_TV_REQUIRED') { return addon.magentaTVRequirement === 'REQUIRED'; }
+			if (activeFilterId === 'MAGENTA_TV_NOT_ALLOWED') { return addon.magentaTVRequirement === 'NOT_ALLOWED'; }
+			return true;
+		});
+	}, [
+		searchedAddons,
+		activeFilterId,
+	]);
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -72,23 +97,53 @@ export default function AddonsPage() {
 				</Link>
 			</div>
 
-			<div className="relative">
-				<Search className="w-4 h-4 text-[#bbb] absolute left-4 top-1/2 -translate-y-1/2" />
-				<input
-					type="text"
-					placeholder="Zubuchoption suchen..."
+			<div className="flex flex-col gap-4">
+				<AdminSearch
+					items={addons}
+					onResultsChange={setSearchedAddons}
+					getSearchableText={(addon: any) => [
+						addon.name,
+						addon.description || '',
+						addon.category || '',
+						addon.compatibleProducts?.map((p: any) => p.name).join(' ') || '',
+					]}
 					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
-					className="w-full pl-11 pr-11 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
+					onChange={setSearchQuery}
+					placeholder="Zubuchoption suchen nach Name, Beschreibung, kompatiblen Tarifen..."
 				/>
-				{searchQuery && (
-					<button
-						onClick={() => setSearchQuery('')}
-						className="absolute right-4 top-1/2 -translate-y-1/2 text-[#bbb] hover:text-[#1a1a2e] bg-transparent border-none cursor-pointer"
-					>
-						<X className="w-4 h-4" />
-					</button>
-				)}
+
+				{/* Filter Bubbles */}
+				<ScrollableFilterRow>
+					{[
+						{ id: 'ALL', label: 'Alle Zubuchoptionen', icon: Layers, color: '#1a1a2e' },
+						{ id: 'ACTIVE', label: 'Aktiv', icon: CheckCircle, color: '#00a878' },
+						{ id: 'INACTIVE', label: 'Inaktiv', icon: XCircle, color: '#94a3b8' },
+						{ id: 'MAGENTA_TV_REQUIRED', label: 'Mit MagentaTV', icon: Tv, color: '#e20074' },
+						{ id: 'MAGENTA_TV_NOT_ALLOWED', label: 'Ohne MagentaTV', icon: Smartphone, color: '#7b61ff' },
+					].map((filter) => {
+						const isSelected = activeFilterId === filter.id;
+						const Icon = filter.icon;
+						return (
+							<button
+								key={filter.id}
+								onClick={() => setActiveFilterId(filter.id)}
+								className={clsx(
+									'flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border whitespace-nowrap transition-all duration-200 cursor-pointer outline-none font-semibold text-[0.8rem] active:scale-95',
+									isSelected
+										? 'text-white shadow-md'
+										: 'bg-linear-to-br from-white to-[#fcfafc] border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]',
+								)}
+								style={{
+									backgroundColor: isSelected ? filter.color : undefined,
+									borderColor: isSelected ? filter.color : undefined,
+								}}
+							>
+								<Icon className={clsx('w-4 h-4', isSelected ? 'opacity-100' : 'opacity-60')} />
+								<span>{filter.label}</span>
+							</button>
+						);
+					})}
+				</ScrollableFilterRow>
 			</div>
 
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
@@ -104,7 +159,7 @@ export default function AddonsPage() {
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
-				) : addons.length === 0 ? (
+				) : filteredAddons.length === 0 ? (
 					<div className="p-20 flex flex-col items-center justify-center text-center">
 						<div className="w-16 h-16 bg-[#f7f8fa] rounded-2xl flex items-center justify-center mb-4 border border-[#eaedf0]">
 							<Layers className="w-6 h-6 text-[#ccc]" />
@@ -113,15 +168,15 @@ export default function AddonsPage() {
 							Keine Zubuchoptionen
 						</h3>
 						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0 mb-4">
-							Es wurden keine Zubuchoptionen {searchQuery ? 'für deine Suche' : ''} gefunden.
+							Es wurden keine Zubuchoptionen {searchQuery || activeFilterId !== 'ALL' ? 'für deine Suche/Filter' : ''} gefunden.
 						</p>
 						<div className="flex gap-3 mt-2">
-							{searchQuery && (
+							{(searchQuery || activeFilterId !== 'ALL') && (
 								<button
-									onClick={() => setSearchQuery('')}
+									onClick={() => { setSearchQuery(''); setActiveFilterId('ALL'); }}
 									className="text-[#1a1a2e] text-[0.85rem] font-semibold bg-white border border-[#eaedf0] px-4 py-2 rounded-xl hover:bg-[#f7f8fa] transition-colors cursor-pointer"
 								>
-									Suche zurücksetzen
+									Filter zurücksetzen
 								</button>
 							)}
 							<Link
@@ -152,7 +207,7 @@ export default function AddonsPage() {
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-[#f0f0f0]">
-								{addons.map((addon: any) => (
+								{filteredAddons.map((addon: any) => (
 										<tr
 											key={addon.id}
 											className="hover:bg-[#fcfcfd] transition-colors group"
@@ -223,9 +278,10 @@ export default function AddonsPage() {
 															confirmDelete({
 																id: addon.id,
 																name: addon.name,
-																onConfirm: () =>
-																	deleteMutation.mutate({
+																onConfirm: (sudoPassword) =>
+																	deleteMutation.mutateAsync({
 																		id: addon.id,
+																		sudoPassword,
 																	}),
 															})
 														}

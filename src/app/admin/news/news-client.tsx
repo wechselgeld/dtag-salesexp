@@ -7,11 +7,12 @@ import {
 	trpc,
 } from '@/lib/trpc';
 import {
-	Plus, Trash2, Megaphone, Loader2, Search, Layers, X,
+	Plus, Trash2, Megaphone, Loader2,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { useDebounce } from '@/hooks/use-debounce';
-import { showErrorToast } from '@/components/shared/error-toast';
+import {
+	showErrorToast,
+} from '@/components/shared/error-toast';
 import {
 	format,
 } from 'date-fns';
@@ -28,6 +29,7 @@ import {
 import {
 	AdminPageHeader,
 } from '@/components/shared/ui/admin-ui';
+import { AdminSearch } from '@/components/shared/admin-search';
 
 const PRIORITY_COLORS: Record<string, string> = {
 	INFO: '#00a878', // Green
@@ -50,15 +52,12 @@ export default function AdminNewsPage() {
 		setSearchQuery,
 	] = useState('');
 
-	const debouncedSearch = useDebounce(searchQuery, 300);
-
 	const {
 		data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage,
 	} =
 		trpc.admin.news.list.useInfiniteQuery(
 			{
-				limit: 20,
-				search: debouncedSearch || undefined,
+				limit: 250,
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -74,6 +73,11 @@ export default function AdminNewsPage() {
 
 	const newsItems = data?.pages.flatMap((page) => page.items) || [
 	];
+
+	const [
+		searchedNews,
+		setSearchedNews,
+	] = useState<typeof newsItems>([]);
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -92,27 +96,23 @@ export default function AdminNewsPage() {
 				</Link>
 			</div>
 
-			<div className="relative">
-				<Search className="w-4 h-4 text-[#bbb] absolute left-4 top-1/2 -translate-y-1/2" />
-				<input
-					type="text"
-					placeholder="Neuigkeiten suchen..."
+			<div className="flex flex-col gap-4">
+				<AdminSearch
+					items={newsItems}
+					onResultsChange={setSearchedNews}
+					getSearchableText={(item: any) => [
+						item.title || '',
+						item.content || '',
+						PRIORITY_LABELS[item.priority] || item.priority || '',
+					]}
 					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
-					className="w-full pl-11 pr-11 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
+					onChange={setSearchQuery}
+					placeholder="Mitteilung suchen nach Titel, Inhalt, Priorität..."
 				/>
-				{searchQuery && (
-					<button
-						onClick={() => setSearchQuery('')}
-						className="absolute right-4 top-1/2 -translate-y-1/2 text-[#bbb] hover:text-[#1a1a2e] bg-transparent border-none cursor-pointer"
-					>
-						<X className="w-4 h-4" />
-					</button>
-				)}
 			</div>
 
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
-				{isLoading && newsItems.length === 0 ? (
+				{isLoading && searchedNews.length === 0 ? (
 					<div className="flex flex-col gap-3 p-5">
 						{[
 							1,
@@ -124,7 +124,7 @@ export default function AdminNewsPage() {
 							<Skeleton key={i} className="h-20 w-full rounded-xl" />
 						))}
 					</div>
-				) : newsItems.length === 0 ? (
+				) : searchedNews.length === 0 ? (
 					<div className="p-20 flex flex-col items-center justify-center text-center">
 						<div className="w-16 h-16 bg-[#f7f8fa] rounded-2xl flex items-center justify-center mb-4 border border-[#eaedf0]">
 							<Megaphone className="w-6 h-6 text-[#ccc]" />
@@ -154,7 +154,7 @@ export default function AdminNewsPage() {
 					</div>
 				) : (
 					<div className="flex flex-col">
-						{newsItems.map(
+						{searchedNews.map(
 							(
 								item: {
 									id: string;
@@ -172,7 +172,7 @@ export default function AdminNewsPage() {
 										key={item.id}
 										className={clsx(
 											'px-6 py-5 flex items-start justify-between group hover:bg-[#fcfcfd] transition-colors gap-4',
-											i < newsItems.length - 1 && 'border-b border-[#f0f0f0]',
+											i < searchedNews.length - 1 && 'border-b border-[#f0f0f0]',
 										)}
 									>
 										<div className="flex-1">
@@ -212,8 +212,9 @@ export default function AdminNewsPage() {
 													confirmDelete({
 														id: item.id,
 														name: item.title,
-														onConfirm: () => deleteNews.mutate({
+														onConfirm: (sudoPassword) => deleteNews.mutateAsync({
 															id: item.id,
+															sudoPassword,
 														}),
 													});
 												}}

@@ -1,34 +1,51 @@
 'use client';
 
 import {
-	useState,
+ useState, useRef, useEffect,
 } from 'react';
 import {
-	useRouter,
+ useRouter,
 } from 'next/navigation';
 import {
-	trpc,
+ trpc,
 } from '@/lib/trpc';
 import {
-	motion,
+ motion, AnimatePresence,
 } from 'framer-motion';
 import {
-	ArrowRight, Loader2, AlertTriangle, Eye, EyeOff, Fingerprint,
+	ArrowRight,
+	AlertTriangle,
+	Eye,
+	EyeOff,
+	Fingerprint,
+	Lock,
+	UserCheck,
+	ArrowLeft,
+	Mail,
+	Key,
 } from 'lucide-react';
-import clsx from 'clsx';
 import {
-	TelekomLogo,
+ TelekomLogo,
 } from '@/components/shared/telekom-logo';
 import {
-	GlobalFooter,
+ GlobalFooter,
 } from '@/components/shared/global-footer';
 import {
-	useForm,
+ useForm,
 } from 'react-hook-form';
 import {
-	zodResolver,
+ zodResolver,
 } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import {
+ PremiumPinInput,
+} from '@/components/shared/premium-pin-input';
+import {
+	PremiumInput,
+	PremiumButton,
+	ScreenHeader,
+	ErrorBanner,
+} from '@/components/shared/form/form-suite';
 
 const loginSchema = z.object({
 	email: z
@@ -42,18 +59,51 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
 	const router = useRouter();
+	const utils = trpc.useUtils();
 	const [
-		error,
-		setError,
-	] = useState('');
-	const [showPassword, setShowPassword] = useState(false);
+ error,
+setError,
+] = useState('');
+	const [
+ showPassword,
+setShowPassword,
+] = useState(false);
+
+	const cardRef = useRef<HTMLDivElement>(null);
+	const [
+ cardHeight,
+setCardHeight,
+] = useState<number | 'auto'>('auto');
+
+	useEffect(() => {
+		if (!cardRef.current) return;
+		const observer = new ResizeObserver((entries) => {
+			setCardHeight(
+				entries[0].borderBoxSize?.[0]?.blockSize ??
+					entries[0].target.getBoundingClientRect().height,
+			);
+		});
+		observer.observe(cardRef.current);
+		return () => observer.disconnect();
+	}, [
+]);
+
+	const {
+ data: currentUser,
+} = trpc.auth.me.useQuery();
+
+	const {
+		data: passwordSetupInfo,
+	} = trpc.auth.checkAdminPasswordSetup.useQuery(undefined, {
+		enabled: !!currentUser,
+	});
 
 	const {
 		register,
 		handleSubmit,
 		formState: {
-			errors, isValid,
-		},
+ errors, isValid,
+},
 		watch,
 	} = useForm<LoginFormData>({
 		resolver: zodResolver(loginSchema),
@@ -64,45 +114,187 @@ export default function LoginPage() {
 		},
 	});
 
-	const loginMutation = trpc.auth.login.useMutation({
-		onSuccess: (data) => {
+	// First time admin password setup state
+	const [
+ isSettingUpPassword,
+setIsSettingUpPassword,
+] = useState(false);
+	const [
+ setupEmail,
+setSetupEmail,
+] = useState('');
+	const [
+ setupPin,
+setSetupPin,
+] = useState('');
+	const [
+ setupPassword,
+setSetupPassword,
+] = useState('');
+	const [
+ setupPasswordConfirm,
+setSetupPasswordConfirm,
+] = useState('');
+	const [
+ setupError,
+setSetupError,
+] = useState('');
+	const [
+ showSetupPassword,
+setShowSetupPassword,
+] = useState(false);
+
+	const setupMutation = trpc.auth.setupAdminPassword.useMutation({
+		onSuccess: async (data) => {
+			await utils.auth.me.refetch();
 			if (data.suggestPasskey) {
 				router.push('/admin/products?setupPasskey=true');
-			} else {
+			}
+ else {
+				router.push('/admin/products');
+			}
+			router.refresh();
+		},
+		onError: (err) => {
+			setSetupError(err.message);
+		},
+	});
+
+	const handleSetupSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		setSetupError('');
+		if (!setupEmail) {
+			setSetupError('Bitte gib Deine E-Mail-Adresse ein.');
+			return;
+		}
+		if (setupPin.length !== 6) {
+			setSetupError('Bitte gib Deine 6-stellige PIN ein.');
+			return;
+		}
+		if (setupPassword.length < 8) {
+			setSetupError('Das Passwort muss mindestens 8 Zeichen lang sein.');
+			return;
+		}
+		if (setupPassword !== setupPasswordConfirm) {
+			setSetupError('Die Passwörter stimmen nicht überein.');
+			return;
+		}
+		setupMutation.mutate({
+			email: setupEmail,
+			pin: setupPin,
+			password: setupPassword,
+		});
+	};
+
+	const loginMutation = trpc.auth.login.useMutation({
+		onSuccess: async (data) => {
+			await utils.auth.me.refetch();
+			if (data.suggestPasskey) {
+				router.push('/admin/products?setupPasskey=true');
+			}
+ else {
 				router.push('/admin/products');
 			}
 			router.refresh();
 		},
 		onError: (err) => {
 			setError(err.message);
+			if (err.message.includes('noch kein Passwort')) {
+				const currentEmail = watch('email');
+				if (currentEmail && !setupEmail) setSetupEmail(currentEmail);
+			}
 		},
 	});
 
-	const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
-	const getAuthOptions = trpc.webauthn.generateAuthenticationOptions.useMutation();
+	const [
+ isPasskeyLoading,
+setIsPasskeyLoading,
+] = useState(false);
+	const getAuthOptions =
+		trpc.webauthn.generateAuthenticationOptions.useMutation();
 	const verifyAuth = trpc.webauthn.verifyAuthentication.useMutation();
+
+	const autofillAttemptedRef = useRef(false);
+
+	// Conditional UI (Passkey Autofill) hook
+	useEffect(() => {
+		if (autofillAttemptedRef.current) return;
+		autofillAttemptedRef.current = true;
+
+		const runConditionalAutofill = async () => {
+			if (
+				typeof window !== 'undefined' &&
+				window.PublicKeyCredential &&
+				(await window.PublicKeyCredential.isConditionalMediationAvailable?.())
+			) {
+				try {
+					const {
+ startAuthentication,
+} =
+						await import('@simplewebauthn/browser');
+					const {
+ options, challengeId,
+} = await getAuthOptions.mutateAsync({
+});
+					const authResp = await startAuthentication({
+						optionsJSON: options,
+						useBrowserAutofill: true,
+					});
+					const verifyResp = await verifyAuth.mutateAsync({
+						challengeId,
+						response: authResp,
+					});
+
+					if (verifyResp.success) {
+						await utils.auth.me.refetch();
+						router.push('/admin/products');
+						router.refresh();
+					}
+				}
+ catch (err: any) {
+					console.log('Conditional UI autofill aborted or unavailable', err);
+				}
+			}
+		};
+		runConditionalAutofill();
+	}, [
+]);
 
 	const handlePasskeyLogin = async () => {
 		setError('');
 		setIsPasskeyLoading(true);
 		try {
-			const { startAuthentication } = await import('@simplewebauthn/browser');
-			const { options, challengeId } = await getAuthOptions.mutateAsync({});
-			const authResp = await startAuthentication({ optionsJSON: options });
-			const verifyResp = await verifyAuth.mutateAsync({ challengeId, response: authResp });
-			
+			const {
+ startAuthentication,
+} = await import('@simplewebauthn/browser');
+			const {
+ options, challengeId,
+} = await getAuthOptions.mutateAsync({
+});
+			const authResp = await startAuthentication({
+				optionsJSON: options,
+			});
+			const verifyResp = await verifyAuth.mutateAsync({
+				challengeId,
+				response: authResp,
+			});
+
 			if (verifyResp.success) {
+				await utils.auth.me.refetch();
 				router.push('/admin/products');
 				router.refresh();
 			}
-		} catch (err: any) {
+		}
+ catch (err: any) {
 			console.error('Passkey login failed', err);
 			if (err.message?.includes('No passkeys registered')) {
 				setError('Für diese E-Mail ist noch kein Passkey registriert.');
-			} else {
+			}
+ else {
 				setError('Passkey-Login fehlgeschlagen. Bitte verwende Dein Passwort.');
 			}
-		} finally {
+		}
+ finally {
 			setIsPasskeyLoading(false);
 		}
 	};
@@ -116,187 +308,372 @@ export default function LoginPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 sm:p-8 font-sans selection:bg-[#e20074]/20 selection:text-[#e20074]">
-			<motion.div
-				initial={{
-					opacity: 0,
-					y: 15,
-				}}
-				animate={{
-					opacity: 1,
-					y: 0,
-				}}
-				transition={{
-					duration: 0.5,
-					ease: [
-						0.16,
-						1,
-						0.3,
-						1,
-					],
-				}}
-				className="w-full max-w-[480px] flex flex-col items-center"
-			>
-				{/* Top Branding */}
-				<div className="mb-10 flex flex-col items-center text-center">
+		<div className="h-screen w-full py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074] scrollbar-none overflow-y-auto overflow-x-hidden fixed inset-0 bg-[#f7f8fa]">
+			<div className="max-w-3xl mx-auto">
+				{/* Top Branding matching Onboarding */}
+				<motion.div
+					initial={{
+						opacity: 0,
+						y: 12,
+					}}
+					animate={{
+						opacity: 1,
+						y: 0,
+					}}
+					transition={{
+						duration: 0.5,
+					}}
+					className="flex flex-col items-center mb-10 text-center"
+				>
 					<TelekomLogo className="w-12 h-12 text-[#e20074] mb-8" />
-
-					<h1 className="text-[2.2rem] sm:text-[2.5rem] font-extrabold text-[#1a1a2e] tracking-tight mb-3 leading-none">
+					<h1 className="text-3xl sm:text-[2.5rem] font-extrabold text-[#1a1a2e] tracking-tight mb-3 leading-none">
 						System Login
 					</h1>
-					<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-[90%] mx-auto mt-2">
+					<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">
 						Bitte melde Dich an, um den Administrationsbereich zu betreten.
 					</p>
-				</div>
+				</motion.div>
 
-				<form
-					onSubmit={handleSubmit(onSubmit)}
-					className="w-full flex flex-col gap-6"
+				{/* Elevated Premium Card matching Onboarding */}
+				<motion.div
+					initial={{
+						opacity: 0,
+						y: 15,
+					}}
+					animate={{
+						opacity: 1,
+						y: 0,
+						height:
+							typeof cardHeight === 'number' && cardHeight > 0
+								? cardHeight
+								: 'auto',
+					}}
+					transition={{
+						duration: 0.4,
+					}}
+					className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] overflow-hidden relative"
 				>
-					<div className="flex flex-col gap-2.5 relative">
-						<div className="flex justify-between items-baseline mb-[-4px]">
-							<label className="text-[0.75rem] font-bold text-[#b0b0b0] uppercase tracking-wider pl-1 font-sans">
-								E-Mail Adresse
-							</label>
-							{errors.email && (
-								<motion.span
+					<div ref={cardRef} className="p-8 sm:p-12">
+						<AnimatePresence mode="wait" initial={false}>
+							{isSettingUpPassword ? (
+								<motion.div
+									key="setup-form"
 									initial={{
 										opacity: 0,
-										y: 2,
+										x: 15,
 									}}
 									animate={{
 										opacity: 1,
-										y: 0,
+										x: 0,
 									}}
-									className="text-[0.65rem] font-bold text-red-500 uppercase tracking-widest px-2"
+									exit={{
+										opacity: 0,
+										x: -15,
+									}}
+									className="space-y-6 w-full"
 								>
-									{errors.email.message}
-								</motion.span>
-							)}
-						</div>
-						<input
-							type="email"
-							{...register('email')}
-							className={clsx(
-								'w-full px-5 py-4 rounded-2xl border bg-[#f7f8fa] text-[#1a1a2e] focus:outline-none focus:bg-white transition-all text-[0.95rem] font-medium placeholder:text-[#ccc]',
-								errors.email
-									? 'border-red-300 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]'
-									: 'border-[#eaedf0] focus:border-[#e20074]/30 focus:shadow-[0_0_0_4px_rgba(226,0,116,0.06)]',
-							)}
-							placeholder="max.mustermann@telekom.de"
-						/>
-					</div>
+									<ScreenHeader
+										icon={<UserCheck className="w-5 h-5 text-[#e20074]" />}
+										title="Erst-Einrichtung des Passworts"
+										subtitle="Gib Deine E-Mail und Deine 6-stellige PIN ein, um Deine Identität zu bestätigen und Dein neues Administrator-Passwort festzulegen."
+									/>
 
-					<div className="flex flex-col gap-2.5 relative">
-						<div className="flex justify-between items-baseline mb-[-4px]">
-							<label className="text-[0.75rem] font-bold text-[#b0b0b0] uppercase tracking-wider pl-1 font-sans">
-								Passwort
-							</label>
-							{errors.password && (
-								<motion.span
+									<form
+										onSubmit={handleSetupSubmit}
+										className="w-full flex flex-col gap-6"
+									>
+										{/* Mail & PIN next to each other */}
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+											<PremiumInput
+												label="E-Mail Adresse"
+												type="email"
+												value={setupEmail}
+												onChange={(e) => {
+													setSetupEmail(e.target.value);
+													if (setupError) setSetupError('');
+												}}
+												placeholder="max.mustermann@telekom.de"
+												disabled={setupMutation.isPending}
+												icon={<Mail className="w-[18px] h-[18px]" />}
+												autoComplete="username webauthn"
+											/>
+
+											<div className="flex flex-col gap-1.5 relative text-left">
+												<label className="text-[0.75rem] font-bold text-[#b0b0b0] uppercase tracking-wider pl-1 font-sans">
+													6-stellige PIN
+												</label>
+												<PremiumPinInput
+													id="admin-setup-pin"
+													value={setupPin}
+													onChange={(val) => {
+														setSetupPin(val);
+														if (setupError) setSetupError('');
+													}}
+													disabled={setupMutation.isPending}
+												/>
+											</div>
+										</div>
+
+										{/* Under that the password forms */}
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+											<PremiumInput
+												label="Neues Passwort (min. 8 Zeichen)"
+												type={showSetupPassword ? 'text' : 'password'}
+												value={setupPassword}
+												onChange={(e) => {
+													setSetupPassword(e.target.value);
+													if (setupError) setSetupError('');
+												}}
+												placeholder="••••••••"
+												disabled={setupMutation.isPending}
+												icon={<Key className="w-[18px] h-[18px]" />}
+												rightAction={
+													<button
+														type="button"
+														onClick={() =>
+															setShowSetupPassword(!showSetupPassword)
+														}
+														className="text-[#888] hover:text-[#1a1a2e] transition-colors focus:outline-none cursor-pointer"
+													>
+														{showSetupPassword ? (
+															<EyeOff className="w-5 h-5" />
+														) : (
+															<Eye className="w-5 h-5" />
+														)}
+													</button>
+												}
+											/>
+
+											<PremiumInput
+												label="Passwort wiederholen"
+												type={showSetupPassword ? 'text' : 'password'}
+												value={setupPasswordConfirm}
+												onChange={(e) => {
+													setSetupPasswordConfirm(e.target.value);
+													if (setupError) setSetupError('');
+												}}
+												placeholder="••••••••"
+												disabled={setupMutation.isPending}
+												icon={<Key className="w-[18px] h-[18px]" />}
+											/>
+										</div>
+
+										<ErrorBanner message={setupError} />
+
+										<div className="flex gap-3 mt-4">
+											<PremiumButton
+												type="button"
+												variant="secondary"
+												onClick={() => {
+													setIsSettingUpPassword(false);
+													setSetupError('');
+												}}
+												className="flex-1"
+											>
+												<ArrowLeft className="w-4 h-4" /> Zurück
+											</PremiumButton>
+											<PremiumButton
+												type="submit"
+												loading={setupMutation.isPending}
+												disabled={
+													setupMutation.isPending ||
+													!setupEmail ||
+													setupPin.length !== 6 ||
+													setupPassword.length < 8 ||
+													setupPassword !== setupPasswordConfirm
+												}
+												icon={
+													<ArrowRight
+														className="w-3.5 h-3.5 ml-1"
+														strokeWidth={2.5}
+													/>
+												}
+												className="flex-1"
+											>
+												Speichern & Anmelden
+											</PremiumButton>
+										</div>
+									</form>
+								</motion.div>
+							) : (
+								<motion.div
+									key="login-form"
 									initial={{
 										opacity: 0,
-										y: 2,
+										x: -15,
 									}}
 									animate={{
 										opacity: 1,
-										y: 0,
+										x: 0,
 									}}
-									className="text-[0.65rem] font-bold text-red-500 uppercase tracking-widest px-2"
+									exit={{
+										opacity: 0,
+										x: 15,
+									}}
+									className="space-y-6 w-full"
 								>
-									{errors.password.message}
-								</motion.span>
+									{currentUser && passwordSetupInfo && (passwordSetupInfo.role === 'USER' || !passwordSetupInfo.hasPassword) && (
+										<motion.div
+											initial={{
+												opacity: 0,
+												scale: 0.98,
+											}}
+											animate={{
+												opacity: 1,
+												scale: 1,
+											}}
+											className="p-4 bg-amber-50 text-amber-800 rounded-2xl text-[0.85rem] font-medium flex gap-3 items-center border border-amber-200 mb-6 w-full shadow-sm leading-relaxed text-left"
+										>
+											<AlertTriangle className="w-5 h-5 shrink-0 text-amber-600" />
+											<div>
+												Du bist aktuell als Sales-Agent angemeldet. Dieser
+												Bereich ist nur für Administratoren zugänglich. Bitte
+												melde Dich mit einem Administratorkonto an (oder melde
+												Dich erneut an, falls Deine Berechtigungen kürzlich
+												geändert wurden).
+											</div>
+										</motion.div>
+									)}
+
+									<ScreenHeader
+										icon={<Lock className="w-5 h-5 text-[#e20074]" />}
+										title="Administrator-Anmeldung"
+										subtitle="Bitte melde Dich mit Deinem Administrator-Konto an."
+									/>
+
+									<form
+										onSubmit={handleSubmit(onSubmit)}
+										className="w-full flex flex-col gap-6"
+									>
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+											<PremiumInput
+												label="E-Mail Adresse"
+												type="email"
+												{...register('email', {
+													onChange: () => {
+														if (error) setError('');
+													},
+												})}
+												disabled={loginMutation.isPending || isPasskeyLoading}
+												placeholder="max.mustermann@telekom.de"
+												error={errors.email?.message}
+												icon={<Mail className="w-[18px] h-[18px]" />}
+												autoComplete="username webauthn"
+											/>
+
+											<PremiumInput
+												label="Passwort"
+												type={showPassword ? 'text' : 'password'}
+												{...register('password', {
+													onChange: () => {
+														if (error) setError('');
+													},
+												})}
+												disabled={loginMutation.isPending || isPasskeyLoading}
+												placeholder="••••••••"
+												error={errors.password?.message}
+												icon={<Key className="w-[18px] h-[18px]" />}
+												rightAction={
+													<button
+														type="button"
+														onClick={() => setShowPassword(!showPassword)}
+														className="text-[#888] hover:text-[#1a1a2e] transition-colors focus:outline-none cursor-pointer"
+													>
+														{showPassword ? (
+															<EyeOff className="w-5 h-5" />
+														) : (
+															<Eye className="w-5 h-5" />
+														)}
+													</button>
+												}
+											/>
+										</div>
+
+										<ErrorBanner message={error} />
+
+										{/* Primary Submit Button */}
+										<PremiumButton
+											type="submit"
+											loading={loginMutation.isPending}
+											disabled={
+												loginMutation.isPending || isPasskeyLoading || !isValid
+											}
+											icon={
+												<ArrowRight
+													className="w-4 h-4 ml-0.5"
+													strokeWidth={2.5}
+												/>
+											}
+										>
+											Anmelden
+										</PremiumButton>
+
+										<div className="relative flex items-center gap-4 py-4 w-full">
+											<div className="h-[1px] flex-1 bg-[#eaedf0]" />
+											<span className="text-[0.75rem] font-bold text-[#bbb] uppercase tracking-widest">
+												Oder
+											</span>
+											<div className="h-[1px] flex-1 bg-[#eaedf0]" />
+										</div>
+
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+											<PremiumButton
+												type="button"
+												variant="secondary"
+												onClick={handlePasskeyLogin}
+												disabled={loginMutation.isPending || isPasskeyLoading}
+												loading={isPasskeyLoading}
+												icon={
+													<Fingerprint className="w-4 h-4 text-[#e20074]" />
+												}
+											>
+												Mit Passkey anmelden
+											</PremiumButton>
+											<PremiumButton
+												type="button"
+												variant="secondary"
+												onClick={() => {
+													const currentEmail = watch('email');
+													if (currentEmail && !setupEmail) { setSetupEmail(currentEmail); }
+													setIsSettingUpPassword(true);
+													setError('');
+												}}
+												icon={<UserCheck className="w-4 h-4 text-[#e20074]" />}
+											>
+												Passwort einrichten
+											</PremiumButton>
+										</div>
+									</form>
+								</motion.div>
 							)}
-						</div>
-						<div className="relative w-full">
-							<input
-								type={showPassword ? "text" : "password"}
-								{...register('password')}
-								className={clsx(
-									'w-full pl-5 pr-12 py-4 rounded-2xl border bg-[#f7f8fa] text-[#1a1a2e] focus:outline-none focus:bg-white transition-all font-mono tracking-widest text-[1rem] placeholder:text-[#ccc]',
-									errors.password
-										? 'border-red-300 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]'
-										: 'border-[#eaedf0] focus:border-[#e20074]/30 focus:shadow-[0_0_0_4px_rgba(226,0,116,0.06)]',
-								)}
-								placeholder="••••••••"
-							/>
-							<button
-								type="button"
-								onClick={() => setShowPassword(!showPassword)}
-								className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888] hover:text-[#1a1a2e] transition-colors focus:outline-none"
-							>
-								{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-							</button>
-						</div>
+						</AnimatePresence>
 					</div>
+				</motion.div>
 
-					{error && (
-						<motion.div
-							initial={{
-								opacity: 0,
-								scale: 0.98,
-							}}
-							animate={{
-								opacity: 1,
-								scale: 1,
-							}}
-							className="p-4 bg-red-50 text-red-600 rounded-2xl text-[0.85rem] font-semibold flex gap-3 items-center border border-red-100 mt-2"
-						>
-							<AlertTriangle className="w-5 h-5 shrink-0" />
-							{error}
-						</motion.div>
-					)}
-
-					<button
-						type="submit"
-						disabled={loginMutation.isPending || isPasskeyLoading || !isValid}
-						className={clsx(
-							'w-full h-[56px] rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 mt-4 outline-none',
-							!loginMutation.isPending && !isPasskeyLoading && isValid
-								? 'bg-[#e20074] hover:bg-[#c70066] text-white shadow-[0_8px_20px_-6px_rgba(226,0,116,0.35)] cursor-pointer'
-								: 'bg-[#f7f8fa] text-[#bbb] border border-[#eaedf0] cursor-not-allowed',
-						)}
-					>
-						{loginMutation.isPending ? (
-							<div className="w-5 h-5 border-[2.5px] border-white/30 border-t-white rounded-full animate-spin" />
-						) : (
-							<span className="flex items-center gap-2 text-[1rem]">
-								Anmelden{' '}
-								<ArrowRight className="w-4 h-4 ml-0.5" strokeWidth={2.5} />
-							</span>
-						)}
-					</button>
-
-					<div className="relative flex items-center gap-4 py-2">
-						<div className="h-[1px] flex-1 bg-[#eaedf0]" />
-						<span className="text-[0.7rem] font-bold text-[#bbb] uppercase tracking-widest">Oder</span>
-						<div className="h-[1px] flex-1 bg-[#eaedf0]" />
-					</div>
-
-					<button
-						type="button"
-						onClick={handlePasskeyLogin}
-						disabled={loginMutation.isPending || isPasskeyLoading}
-						className={clsx(
-							'w-full h-[56px] rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-3 outline-none border border-[#eaedf0] bg-white text-[#1a1a2e] hover:bg-[#f7f8fa] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed',
-						)}
-					>
-						{isPasskeyLoading ? (
-							<div className="w-5 h-5 border-[2.5px] border-[#e20074]/30 border-t-[#e20074] rounded-full animate-spin" />
-						) : (
-							<>
-								<Fingerprint className="w-5 h-5 text-[#e20074]" />
-								<span>Schneller Login mit Passkey</span>
-							</>
-						)}
-					</button>
-				</form>
-
+				{/* Bottom Footer matching Onboarding */}
+				<motion.div
+					initial={{
+						opacity: 0,
+						y: 12,
+					}}
+					animate={{
+						opacity: 1,
+						y: 0,
+					}}
+					transition={{
+						duration: 0.5,
+					}}
+					className="flex flex-col items-center mt-5 text-center"
+				>
+					<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">
+						Mit Liebe gemacht. Aus Chemnitz, für Euch alle. ❤️
+					</p>
+				</motion.div>
 				<GlobalFooter
-					className="pt-10 pb-0 mt-4 text-[#c0c0c0]"
-					linkColor="text-[#c0c0c0]"
+					className="pt-8 pb-0 mt-4 text-[#bbb]"
+					linkColor="text-[#bbb]"
 				/>
-			</motion.div>
+			</div>
 		</div>
 	);
 }

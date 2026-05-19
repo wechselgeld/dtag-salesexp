@@ -1,27 +1,47 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Fingerprint, X, ShieldCheck, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { trpc } from '@/lib/trpc';
+import {
+ useState, useEffect, Suspense,
+} from 'react';
+import {
+ useSearchParams, useRouter,
+} from 'next/navigation';
+import {
+ Fingerprint, X, ShieldCheck, ArrowRight,
+} from 'lucide-react';
+import {
+ motion, AnimatePresence,
+} from 'framer-motion';
+import {
+ trpc,
+} from '@/lib/trpc';
 import clsx from 'clsx';
 
 function PasskeyPromptInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const [isOpen, setIsOpen] = useState(false);
-    
-    const { data: user } = trpc.auth.me.useQuery();
+    const [
+ isOpen,
+setIsOpen,
+] = useState(false);
+
+    const {
+ data: user,
+} = trpc.auth.me.useQuery();
     const getRegOptions = trpc.webauthn.generateRegistrationOptions.useMutation();
     const verifyReg = trpc.webauthn.verifyRegistration.useMutation();
-    const [isPending, setIsPending] = useState(false);
+    const [
+ isPending,
+setIsPending,
+] = useState(false);
 
     useEffect(() => {
         if (searchParams.get('setupPasskey') === 'true') {
             setIsOpen(true);
         }
-    }, [searchParams]);
+    }, [
+ searchParams,
+]);
 
     const handleClose = () => {
         setIsOpen(false);
@@ -35,17 +55,25 @@ function PasskeyPromptInner() {
         if (!user?.email) return;
         setIsPending(true);
         try {
-            const { startRegistration } = await import('@simplewebauthn/browser');
-            const options = await getRegOptions.mutateAsync({ email: user.email });
-            const resp = await startRegistration({ optionsJSON: options });
-            await verifyReg.mutateAsync({ email: user.email, response: resp });
-            
+            const {
+ startRegistration,
+} = await import('@simplewebauthn/browser');
+            const options = await getRegOptions.mutateAsync({ email: user.email as string });
+            const resp = await startRegistration({
+ optionsJSON: options,
+});
+            await verifyReg.mutateAsync({
+ email: user.email as string,
+response: resp,
+});
+
             // Success! 
             handleClose();
             alert('Passkey erfolgreich registriert! Du kannst Dich nun ohne Passwort anmelden.');
-        } catch (err: any) {
+        }
+ catch (err: any) {
             console.error('Passkey registration failed', err);
-            alert('Fehler bei der Passkey-Registrierung: ' + err.message);
+            alert(`Fehler bei der Passkey-Registrierung: ${ err.message}`);
             setIsPending(false);
         }
     };
@@ -54,21 +82,39 @@ function PasskeyPromptInner() {
         <AnimatePresence>
             {isOpen && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                    <motion.div
+                        initial={{
+ opacity: 0,
+}}
+                        animate={{
+ opacity: 1,
+}}
+                        exit={{
+ opacity: 0,
+}}
                         onClick={handleClose}
                         className="absolute inset-0 bg-[#1a1a2e]/60 backdrop-blur-sm"
                     />
-                    
+
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        initial={{
+ opacity: 0,
+scale: 0.9,
+y: 20,
+}}
+                        animate={{
+ opacity: 1,
+scale: 1,
+y: 0,
+}}
+                        exit={{
+ opacity: 0,
+scale: 0.9,
+y: 20,
+}}
                         className="relative w-full max-w-[440px] bg-white rounded-[32px] shadow-2xl overflow-hidden border border-white/20"
                     >
-                        <button 
+                        <button
                             onClick={handleClose}
                             className="absolute top-6 right-6 p-2 text-[#aaa] hover:text-[#1a1a2e] hover:bg-[#f7f8fa] rounded-full transition-all"
                         >
@@ -83,7 +129,7 @@ function PasskeyPromptInner() {
                             <h3 className="text-[1.5rem] font-extrabold text-[#1a1a2e] tracking-tight leading-tight mb-4">
                                 Schneller & Sicherer anmelden
                             </h3>
-                            
+
                             <p className="text-[0.95rem] text-[#888] leading-relaxed mb-8">
                                 Möchtest Du dieses Gerät mit einem Passkey registrieren? Danach kannst Du Dich bequem per Gesichtsscan oder Fingerabdruck anmelden – ganz ohne Passwort.
                             </p>
@@ -93,10 +139,10 @@ function PasskeyPromptInner() {
                                     onClick={handleRegister}
                                     disabled={isPending}
                                     className={clsx(
-                                        "w-full h-[56px] rounded-2xl font-bold flex items-center justify-center gap-3 transition-all active:scale-[0.98]",
-                                        isPending 
-                                            ? "bg-[#f7f8fa] text-[#bbb] cursor-not-allowed" 
-                                            : "bg-[#e20074] text-white hover:bg-[#c70066] shadow-[0_8px_20px_-6px_rgba(226,0,116,0.3)]"
+                                        'w-full h-[56px] rounded-2xl font-bold flex items-center justify-center gap-3 transition-all active:scale-[0.98]',
+                                        isPending
+                                            ? 'bg-[#f7f8fa] text-[#bbb] cursor-not-allowed'
+                                            : 'bg-[#e20074] text-white hover:bg-[#c70066] shadow-[0_8px_20px_-6px_rgba(226,0,116,0.3)]',
                                     )}
                                 >
                                     {isPending ? (
@@ -109,7 +155,7 @@ function PasskeyPromptInner() {
                                         </>
                                     )}
                                 </button>
-                                
+
                                 <button
                                     onClick={handleClose}
                                     disabled={isPending}

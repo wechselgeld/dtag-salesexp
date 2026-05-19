@@ -1,21 +1,23 @@
-import type { MagentaTVPackageKey } from '@/lib/constants/pricing';
+import type {
+    MagentaTVPackageKey,
+} from '@/lib/constants/pricing';
 
 export type BusinessCase = 'NEW_ACTIVATION' | 'MOVE' | 'PLAN_CHANGE' | 'SPEED_UP';
 export type HardwareTier = 'none' | 'smartphone' | 'top' | 'premium' | 'premium_plus';
 
 export interface CalculationInput {
-	product: Product;
-	businessCase: BusinessCase;
-	magentaTVPackage: MagentaTVPackageKey | null;
-	selectedSpecialPriceIds: string[];
-	selectedAddonIds: string[];
-	vouchers: number[];
-	credits?: Credit[];
-	hardwarePurchaseType?: 'RENT' | 'BUY';
-	plusKartenCount?: number;
-	settings?: PricingSettings;
-	customBasePrice?: number;
-	hardwareTier?: HardwareTier;
+    product: Product;
+    businessCase: BusinessCase;
+    magentaTVPackage: MagentaTVPackageKey | null;
+    selectedSpecialPriceIds: string[];
+    selectedAddonIds: string[];
+    vouchers: number[];
+    credits?: Credit[];
+    hardwarePurchaseType?: 'RENT' | 'BUY';
+    plusKartenCount?: number;
+    settings?: PricingSettings;
+    customBasePrice?: number;
+    hardwareTier?: HardwareTier;
 }
 
 export interface PriceHistory {
@@ -144,14 +146,14 @@ export interface PricingSettings {
 }
 
 export const DEFAULT_PRICING: PricingSettings = {
-	magentatv_smart_price: 10,
-	magentatv_smartstream_price: 17,
-	magentatv_megastream_price: 30,
-	shipping_hardware_fee: 6.95,
-	plus_karte_first_price: 19.95,
-	plus_karte_following_price: 9.95,
-	mobile_tier_smartphone: 10,
-	mobile_tier_top: 20,
-	mobile_tier_premium: 30,
-	mobile_tier_premium_plus: 40,
+    magentatv_smart_price: 10,
+    magentatv_smartstream_price: 17,
+    magentatv_megastream_price: 30,
+    shipping_hardware_fee: 6.95,
+    plus_karte_first_price: 19.95,
+    plus_karte_following_price: 9.95,
+    mobile_tier_smartphone: 10,
+    mobile_tier_top: 20,
+    mobile_tier_premium: 30,
+    mobile_tier_premium_plus: 40,
 };

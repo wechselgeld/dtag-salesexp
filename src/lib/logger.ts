@@ -1,5 +1,5 @@
 import {
- createConsola,
+  createConsola,
 } from 'consola';
 import pc from 'picocolors';
 

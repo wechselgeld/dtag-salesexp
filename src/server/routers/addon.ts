@@ -1,5 +1,5 @@
 import {
-    router, protectedProcedure,
+    router, protectedProcedure, requirePermission,
 } from '@/server/trpc';
 import {
     z,
@@ -34,25 +34,13 @@ const tierSchema = z.object({
     price: z.number().min(0),
 });
 
-const editorProcedure = protectedProcedure.use(({
-    ctx, next,
-}) => {
-    const session = ctx.session as { role?: string; isEditor?: boolean };
-    if (session?.role !== 'ADMIN' && !session?.isEditor) {
-        throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: 'Du benötigst Editor-Rechte für diese Aktion.',
-        });
-    }
-    return next({
-        ctx,
-    });
-});
+const editorProcedure = protectedProcedure.use(requirePermission('addons:manage'));
+
 
 export const addonRouter = router({
     list: protectedProcedure
         .input(z.object({
-            limit: z.number().min(1).max(100).default(50),
+            limit: z.number().min(1).max(1000).default(50),
             cursor: z.string().nullish(),
             search: z.string().optional(),
         }).optional())
@@ -218,10 +206,26 @@ export const addonRouter = router({
     delete: editorProcedure
         .input(z.object({
             id: z.string(),
+            sudoPassword: z.string().optional(),
         }))
-        .mutation(({
-            input,
+        .mutation(async ({
+            input, ctx,
         }) => {
+            const bcrypt = await import('bcryptjs');
+            const session = ctx.session as any;
+            if (!session.password) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+            if (!isSudoValid) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
             return prisma.addon.delete({
                 where: {
                     id: input.id,

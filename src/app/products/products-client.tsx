@@ -125,7 +125,7 @@ export default function ProductsPage({
 		},
 	);
 	const isLoading = sessionLoading || productsLoading;
-	const utils = trpc.useUtils();
+
 
 	const [
 		firstName,

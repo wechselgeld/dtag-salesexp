@@ -12,34 +12,34 @@ import type {
 } from '@/types/product';
 
 export interface BasketItem {
-    id: string; // UUID
-    product: Product;
-    config: {
-        businessCase: BusinessCase;
-        selectedSpecialPriceIds: string[];
-        magentaTVPackage: MagentaTVPackageKey | null;
-        selectedAddonIds: string[];
-        vouchers: number[];
-        credits: Credit[];
-        hardwarePurchaseType?: 'RENT' | 'BUY';
-        plusKartenCount?: number;
-        customBasePrice?: number;
-        hardwareTier?: HardwareTier;
-    };
-    addedAt: number;
+	id: string; // UUID
+	product: Product;
+	config: {
+		businessCase: BusinessCase;
+		selectedSpecialPriceIds: string[];
+		magentaTVPackage: MagentaTVPackageKey | null;
+		selectedAddonIds: string[];
+		vouchers: number[];
+		credits: Credit[];
+		hardwarePurchaseType?: 'RENT' | 'BUY';
+		plusKartenCount?: number;
+		customBasePrice?: number;
+		hardwareTier?: HardwareTier;
+	};
+	addedAt: number;
 }
 
 interface BasketState {
-    items: BasketItem[];
-    isOpen: boolean;
-    basketCredits: Credit[];
-    addItem: (product: Product, config: BasketItem['config']) => string;
-    removeItem: (id: string) => void;
-    restoreItem: (item: BasketItem) => void;
-    updateItem: (id: string, config: Partial<BasketItem['config']>) => void;
-    setBasketCredits: (credits: Credit[]) => void;
-    clearBasket: () => void;
-    setIsOpen: (isOpen: boolean) => void;
+	items: BasketItem[];
+	isOpen: boolean;
+	basketCredits: Credit[];
+	addItem: (product: Product, config: BasketItem['config']) => string;
+	removeItem: (id: string) => void;
+	restoreItem: (item: BasketItem) => void;
+	updateItem: (id: string, config: Partial<BasketItem['config']>) => void;
+	setBasketCredits: (credits: Credit[]) => void;
+	clearBasket: () => void;
+	setIsOpen: (isOpen: boolean) => void;
 }
 
 export const useBasketStore = create<BasketState>()(

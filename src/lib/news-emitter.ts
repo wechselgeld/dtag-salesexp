@@ -6,7 +6,7 @@ import {
 const globalForNewsEmitter = global as unknown as { newsEmitter: EventEmitter };
 
 export const newsEmitter =
-    globalForNewsEmitter.newsEmitter || new EventEmitter();
+	globalForNewsEmitter.newsEmitter || new EventEmitter();
 
 // Allow multiple clients to connect without throwing warning
 newsEmitter.setMaxListeners(2000);

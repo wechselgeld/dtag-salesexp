@@ -29,5 +29,6 @@ export async function generateMetadata({
 export default async function Page({
 	params,
 }: Props) {
+	await params;
 	return <CategoryClient />;
 }

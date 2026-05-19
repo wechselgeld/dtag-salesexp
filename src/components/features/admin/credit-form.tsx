@@ -19,12 +19,10 @@ import clsx from 'clsx';
 import {
 	Save,
 	Loader2,
-	ArrowLeft,
 	Euro,
 	ToggleLeft,
 	FileText,
 } from 'lucide-react';
-import Link from 'next/link';
 import {
 	Input,
 } from '@/components/shared/ui/input';

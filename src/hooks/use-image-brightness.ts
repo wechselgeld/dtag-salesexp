@@ -56,7 +56,7 @@ export function useImageBrightness(imageUrl?: string) {
 
 				setIsDark(luminance < 0.5);
 			}
-			catch (e) {
+			catch {
 				// Canvas tainted by CORS – fall back to dark
 				setIsDark(true);
 			}

@@ -26,14 +26,22 @@ export default async function Page() {
 		}),
 	);
 
+	let session = null;
+	try {
+		session = await caller.session.getCurrent();
+	} catch (error: any) {
+		if (error?.code === 'UNAUTHORIZED') {
+			const { redirect } = await import('next/navigation');
+			redirect('/api/auth/logout');
+		}
+	}
+
 	// Prefetch the data the client components immediately need
 	const [
-		session,
 		allProducts,
 		designSettings,
 		news,
 	] = await Promise.all([
-		caller.session.getCurrent().catch(() => null),
 		caller.product.getAllProducts().catch(() => ({
 			items: [
 			],

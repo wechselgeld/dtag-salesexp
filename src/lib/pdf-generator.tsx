@@ -1,9 +1,19 @@
-import { pdf } from '@react-pdf/renderer';
+import {
+ pdf,
+} from '@react-pdf/renderer';
 import React from 'react';
-import type { BasketItem } from '@/hooks/use-basket-store';
-import { DEFAULT_PRICING } from '@/hooks/use-cost-calculator';
-import type { Credit, PricingSettings } from '@/types/product';
-import { OfferDocument } from '@/components/features/basket/offer-pdf/index';
+import type {
+ BasketItem,
+} from '@/hooks/use-basket-store';
+import {
+ DEFAULT_PRICING,
+} from '@/hooks/use-cost-calculator';
+import type {
+ Credit, PricingSettings,
+} from '@/types/product';
+import {
+ OfferDocument,
+} from '@/components/features/basket/offer-pdf/index';
 
 export const getSvgAsPngBase64 = (url: string): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -55,7 +65,8 @@ export async function buildPdfBlob(
     let logoData: string | undefined;
     try {
         logoData = await getSvgAsPngBase64('/Deutsche_Telekom.svg');
-    } catch {
+    }
+ catch {
         // Logo is decorative — PDF generation continues without it.
     }
 

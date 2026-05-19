@@ -13,7 +13,7 @@ import {
 import {
 	createPortal,
 } from 'react-dom';
-import clsx from 'clsx';
+
 import {
 	StreamingComparison,
 } from './streaming-comparison';

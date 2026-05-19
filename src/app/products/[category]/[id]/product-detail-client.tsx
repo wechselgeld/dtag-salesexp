@@ -34,9 +34,7 @@ import {
 import {
 	useSystemAlertStore,
 } from '@/lib/store/system-alert-store';
-import {
-	type Product,
-} from '@/types/product';
+
 import {
 	ArrowLeft,
 	Check,

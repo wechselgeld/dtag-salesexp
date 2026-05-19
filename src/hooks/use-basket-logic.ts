@@ -2,7 +2,7 @@ import {
 	useEffect, useRef,
 } from 'react';
 import {
-	useBasketStore, BasketItem,
+	useBasketStore,
 } from '@/hooks/use-basket-store';
 import {
 	useNewsNotificationStore,
@@ -13,9 +13,6 @@ import {
 import {
 	trpc,
 } from '@/lib/trpc';
-import {
-	PricingSettings,
-} from '@/types/product';
 
 export function useBasketLogic() {
 	const {
@@ -93,9 +90,9 @@ export function useBasketLogic() {
 
 		// One-time costs for Bestandsprodukte are already 0 from useCostCalculator
 		return {
- item,
-costs,
-};
+			item,
+			costs,
+		};
 	});
 
 	// Aggregated Totals

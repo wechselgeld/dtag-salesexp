@@ -5,12 +5,6 @@ import {
 	router, publicProcedure,
 } from '@/server/trpc';
 import {
-	cookies,
-} from 'next/headers';
-import {
-	verifySessionId,
-} from '@/lib/auth';
-import {
 	sendFeedbackEmail,
 } from '@/lib/email';
 import {
@@ -37,26 +31,6 @@ export const feedbackRouter = router({
 				const adminUser = ctx.session as { firstName?: string; lastName?: string; email?: string };
 				userName = `${adminUser.firstName || ''} ${adminUser.lastName || ''}`.trim() || adminUser.email || 'Admin';
 				userEmail = adminUser.email || 'Admin';
-			}
-			else {
-				// 2. Try Sales Session
-				const cookieStore = await cookies();
-				const token = cookieStore.get('sales-session-id')?.value;
-
-				if (token) {
-					const sessionId = await verifySessionId(token);
-					if (sessionId) {
-						const salesSession = await ctx.prisma.salesSession.findUnique({
-							where: {
-								id: sessionId,
-							},
-						});
-						if (salesSession) {
-							userName = `${salesSession.firstName || ''} ${salesSession.lastName || ''}`.trim() || 'Unbekannt';
-							userEmail = salesSession.email || 'Keine E-Mail';
-						}
-					}
-				}
 			}
 
 			try {

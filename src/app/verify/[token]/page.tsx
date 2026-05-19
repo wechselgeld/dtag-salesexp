@@ -4,7 +4,7 @@ import {
 	useEffect, useState,
 } from 'react';
 import {
-	useParams, useRouter,
+	useParams,
 } from 'next/navigation';
 import {
 	trpc,
@@ -19,14 +19,13 @@ import {
 	GlobalFooter,
 } from '@/components/shared/global-footer';
 import {
-	Loader2, CheckCircle2, ShieldAlert, ArrowRight,
+	Loader2, CheckCircle2, ShieldAlert,
 } from 'lucide-react';
 import Link from 'next/link';
-import clsx from 'clsx';
+
 
 export default function VerifyPage() {
 	const params = useParams();
-	const router = useRouter();
 	const token = params.token as string;
 
 	const [

@@ -42,6 +42,7 @@ async function main() {
 	case '5':
 		console.log('Exiting...');
 		process.exit(0);
+		break;
 	default:
 		console.log('Invalid option.');
 	}

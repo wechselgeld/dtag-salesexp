@@ -1,14 +1,23 @@
-import { router, publicProcedure, protectedProcedure } from '../trpc';
-import { z } from 'zod';
-import { TRPCError } from '@trpc/server';
-import { getTeamFilter, hasRole, canEditTeam } from '@/lib/rbac';
+import {
+	router, publicProcedure, protectedProcedure, requirePermission, withHierarchicalScope,
+} from '../trpc';
+import {
+	z,
+} from 'zod';
+import {
+	TRPCError,
+} from '@trpc/server';
+import bcrypt from 'bcryptjs';
+import {
+	getTeamFilter, hasRole,
+} from '@/lib/rbac';
 
 export const teamRouter = router({
 	list: publicProcedure
 		.input(z.object({
 			locationId: z.string().optional(),
 			odRegionId: z.string().optional(),
-			limit: z.number().min(1).max(100).default(50),
+			limit: z.number().min(1).max(1000).default(50),
 			cursor: z.string().nullish(),
 			search: z.string().optional(),
 		}).optional())
@@ -19,12 +28,12 @@ export const teamRouter = router({
 			const cursor = input?.cursor;
 			const search = input?.search;
 			const session = ctx.session as any;
-			const { getTeamFilter, hasRole } = await import('@/lib/rbac');
 			const securityFilter = getTeamFilter(session);
-			
-			// Unauthorized check
+
 			if (securityFilter.id === 'UNAUTHORIZED') {
-				throw new TRPCError({ code: 'UNAUTHORIZED' });
+				throw new TRPCError({
+					code: 'UNAUTHORIZED',
+				});
 			}
 
 			const where: any = {
@@ -34,7 +43,9 @@ export const teamRouter = router({
 			};
 
 			if (input?.locationId) {
-				where.AND.push({ locationId: input.locationId });
+				where.AND.push({
+					locationId: input.locationId,
+				});
 			}
 
 			if (input?.odRegionId) {
@@ -55,9 +66,21 @@ export const teamRouter = router({
 							},
 						},
 						{
-							internalNote: {
-								contains: search,
-								mode: 'insensitive',
+							location: {
+								name: {
+									contains: search,
+									mode: 'insensitive',
+								},
+							},
+						},
+						{
+							location: {
+								odRegion: {
+									name: {
+										contains: search,
+										mode: 'insensitive',
+									},
+								},
 							},
 						},
 					],
@@ -70,20 +93,35 @@ export const teamRouter = router({
 					id: cursor,
 				} : undefined,
 				where,
-				orderBy: {
-					name: 'asc',
-				},
-				include: {
-					location: true,
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					locationId: true,
+					location: {
+						select: {
+							name: true,
+							address: true,
+							odRegionId: true,
+							odRegion: {
+								select: {
+									name: true,
+								},
+							},
+						},
+					},
 					highlights: {
 						include: {
 							product: true,
 						},
 					},
 				},
+				orderBy: {
+					name: 'asc',
+				},
 			});
 
-			let nextCursor: typeof cursor | undefined = undefined;
+			let nextCursor: typeof cursor | undefined;
 			if (items.length > limit) {
 				const nextItem = items.pop();
 				nextCursor = nextItem!.id;
@@ -118,17 +156,15 @@ export const teamRouter = router({
 		}),
 
 	create: protectedProcedure
-		.input(
-			z.object({
-				name: z.string().min(1),
-				email: z.string().email().optional().or(z.literal('')).transform(v => v === '' ? undefined : v),
-				locationId: z.string().optional().or(z.literal('')).transform(v => v === '' ? undefined : v),
-			}),
-		)
+		.use(requirePermission('teams:manage'))
+		.input(z.object({
+			name: z.string().min(1),
+			email: z.string().email().optional().or(z.literal('')).transform(v => v === '' ? undefined : v),
+			locationId: z.string().optional().or(z.literal('')).transform(v => v === '' ? undefined : v),
+		}))
 		.mutation(async ({
 			ctx, input,
 		}) => {
-			const { hasRole, canManageLocation } = await import('@/lib/rbac');
 			const session = ctx.session as any;
 
 			if (!hasRole(session, 'LOCATION_MANAGER')) {
@@ -139,12 +175,22 @@ export const teamRouter = router({
 			}
 
 			if (input.locationId && session.role !== 'ADMIN') {
-				const loc = await ctx.prisma.location.findUnique({ where: { id: input.locationId } });
+				const loc = await ctx.prisma.location.findUnique({
+					where: {
+						id: input.locationId,
+					},
+				});
 				if (!loc || (session.role === 'OD_MANAGER' && loc.odRegionId !== session.odRegionId)) {
-					throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung für diesen Standort.' });
+					throw new TRPCError({
+						code: 'FORBIDDEN',
+						message: 'Keine Berechtigung für diesen Standort.',
+					});
 				}
 				if (session.role === 'LOCATION_MANAGER' && session.locationId !== input.locationId) {
-					throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung für diesen Standort.' });
+					throw new TRPCError({
+						code: 'FORBIDDEN',
+						message: 'Keine Berechtigung für diesen Standort.',
+					});
 				}
 			}
 
@@ -158,34 +204,17 @@ export const teamRouter = router({
 		}),
 
 	update: protectedProcedure
+		.use(requirePermission('teams:manage'))
+		.use(withHierarchicalScope('team'))
 		.input(z.object({
 			id: z.string(),
 			name: z.string().min(1).optional(),
 			email: z.string().email().optional(),
 			locationId: z.string().optional().nullable(),
 		}))
-		.mutation(async ({
+		.mutation(({
 			ctx, input,
 		}) => {
-			const { canEditTeam } = await import('@/lib/rbac');
-			const session = ctx.session as any;
-
-			const targetTeam = await ctx.prisma.team.findUnique({
-				where: { id: input.id },
-				include: { location: true },
-			});
-
-			if (!targetTeam) throw new TRPCError({ code: 'NOT_FOUND' });
-
-			let isAllowed = canEditTeam(session, targetTeam.locationId, targetTeam.id);
-			if (session.role === 'OD_MANAGER' && targetTeam.location?.odRegionId === session.odRegionId) {
-				isAllowed = true;
-			}
-
-			if (!isAllowed) {
-				throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung für dieses Team.' });
-			}
-
 			const {
 				id, ...dataToUpdate
 			} = input;
@@ -206,32 +235,28 @@ export const teamRouter = router({
 		}),
 
 	delete: protectedProcedure
+		.use(requirePermission('teams:delete'))
+		.use(withHierarchicalScope('team'))
 		.input(z.object({
 			id: z.string(),
+			sudoPassword: z.string().optional(),
 		}))
 		.mutation(async ({
 			ctx, input,
 		}) => {
-			const { canEditTeam } = await import('@/lib/rbac');
 			const session = ctx.session as any;
 
-			const targetTeam = await ctx.prisma.team.findUnique({
-				where: { id: input.id },
-				include: { location: true },
-			});
-
-			if (!targetTeam) throw new TRPCError({ code: 'NOT_FOUND' });
-
-			let isAllowed = canEditTeam(session, targetTeam.locationId, targetTeam.id);
-			if (session.role === 'OD_MANAGER' && targetTeam.location?.odRegionId === session.odRegionId) {
-				isAllowed = true;
-			}
-			if (session.role === 'TEAM_LEADER') isAllowed = false; // Team Leaders cannot DELETE their team
-
-			if (!isAllowed) {
+			if (!session.password) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+            if (!isSudoValid) {
 				throw new TRPCError({
 					code: 'FORBIDDEN',
-					message: 'Keine Berechtigung zum Löschen dieses Teams.',
+					message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
 				});
 			}
 
@@ -243,11 +268,10 @@ export const teamRouter = router({
 				});
 			}
 			catch (error: any) {
-				// Check for P2003 (Foreign key constraint failed) or P2025 (Record not found)
 				if (error.code === 'P2003') {
 					throw new TRPCError({
 						code: 'CONFLICT',
-						message: 'Dieses Team kann nicht gelöscht werden, da noch Verknüpfungen (z.B. Sessions) existieren. Bitte stelle sicher, dass alle Cascade-Regeln in der Datenbank aktiv sind.',
+						message: 'Dieses Team kann nicht gelöscht werden, da noch Verknüpfungen (z.B. Sessions) existieren.',
 					});
 				}
 				throw new TRPCError({
@@ -258,6 +282,8 @@ export const teamRouter = router({
 		}),
 
 	toggleFocus: protectedProcedure
+		.use(requirePermission('teams:manage'))
+		.use(withHierarchicalScope('team'))
 		.input(z.object({
 			teamId: z.string(),
 			productId: z.string().nullish(),
@@ -267,26 +293,6 @@ export const teamRouter = router({
 		.mutation(async ({
 			ctx, input,
 		}) => {
-			const { canEditTeam } = await import('@/lib/rbac');
-			const session = ctx.session as any;
-
-			const targetTeam = await ctx.prisma.team.findUnique({
-				where: { id: input.teamId },
-				include: { location: true },
-			});
-
-			if (!targetTeam) throw new TRPCError({ code: 'NOT_FOUND' });
-
-			let isAllowed = canEditTeam(session, targetTeam.locationId, targetTeam.id);
-			if (session.role === 'OD_MANAGER' && targetTeam.location?.odRegionId === session.odRegionId) {
-				isAllowed = true;
-			}
-
-			if (!isAllowed) {
-				throw new TRPCError({ code: 'FORBIDDEN', message: 'Keine Berechtigung.' });
-			}
-
-			// At least one target must be provided
 			if (!input.productId && !input.category && !input.businessCase) {
 				throw new TRPCError({
 					code: 'BAD_REQUEST',

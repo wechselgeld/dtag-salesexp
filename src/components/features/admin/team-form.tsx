@@ -1,6 +1,9 @@
 'use client';
 
 import {
+	useEffect,
+} from 'react';
+import {
 	useForm,
 } from 'react-hook-form';
 import {
@@ -14,9 +17,9 @@ import {
 	trpc,
 } from '@/lib/trpc';
 import {
-	Save, Loader2, ArrowLeft, Users, Mail, MapPin,
+	Save, Loader2, Users, MapPin,
 } from 'lucide-react';
-import Link from 'next/link';
+
 import clsx from 'clsx';
 import {
 	Input,
@@ -82,13 +85,15 @@ export function TeamForm({
 		},
 	});
 
-	import('react').then(({ useEffect }) => {
 		useEffect(() => {
-			if (mode === 'create' && currentUser && currentUser.role === 'LOCATION_MANAGER' && currentUser.locationId) {
-				setValue('locationId', currentUser.locationId);
-			}
-		}, [currentUser, mode, setValue]);
-	});
+		if (mode === 'create' && currentUser && currentUser.role === 'LOCATION_MANAGER' && currentUser.locationId) {
+			setValue('locationId', currentUser.locationId);
+		}
+	}, [
+		currentUser,
+		mode,
+		setValue,
+	]);
 
 	const createMutation = trpc.team.create.useMutation({
 		onSuccess: () => {
@@ -109,14 +114,19 @@ export function TeamForm({
 		},
 	});
 
-	const onSubmit = (data: any) => {
+	const onSubmit = (data: TeamFormData) => {
+		const formattedData = {
+			name: data.name,
+			email: data.email || undefined,
+			locationId: data.locationId || undefined,
+		};
 		if (mode === 'create') {
-			createMutation.mutate(data);
+			createMutation.mutate(formattedData);
 		}
 		else if (mode === 'edit' && teamId) {
 			updateMutation.mutate({
 				id: teamId,
-				...data,
+				...formattedData,
 			});
 		}
 	};

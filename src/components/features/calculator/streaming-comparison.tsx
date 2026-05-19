@@ -12,7 +12,7 @@ import {
 	Coffee,
 } from 'lucide-react';
 import {
-	useState, useMemo, useEffect, useRef,
+	useState, useMemo, useEffect, useRef, useCallback,
 } from 'react';
 
 import clsx from 'clsx';
@@ -465,14 +465,15 @@ export function StreamingComparison({
 	}, [
 		isVisible,
 	]);
-
-	const getPrice = (id: string) => {
+	const getPrice = useCallback((id: string) => {
 		if (customPrices[id] !== undefined) {
 			const val = parseFloat(customPrices[id].replace(',', '.'));
 			return isNaN(val) ? 0 : val;
 		}
 		return STREAMING_SERVICES.find((s) => s.id === id)?.price || 0;
-	};
+	}, [
+		customPrices,
+	]);
 
 	const {
 		data: pricingSettings,
@@ -559,6 +560,7 @@ export function StreamingComparison({
 	}, [
 		selectedServices,
 		customPrices,
+		getPrice,
 	]);
 
 	const targetPlan = useMemo(() => {
@@ -594,6 +596,7 @@ export function StreamingComparison({
 		selectedServices,
 		targetPlan,
 		customPrices,
+		getPrice,
 	]);
 
 	const savings = coveredValue - (targetPlan?.price || 0);

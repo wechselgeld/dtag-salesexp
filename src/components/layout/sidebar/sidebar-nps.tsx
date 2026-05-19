@@ -150,11 +150,11 @@ export function SidebarNps({
 							}
 					}
 					className={clsx(
-						'w-full flex items-center justify-between gap-3 rounded-[20px] cursor-pointer border overflow-hidden whitespace-nowrap relative z-10 shrink-0 shadow-sm transition-shadow duration-300',
+						'w-full flex items-center justify-between gap-3 rounded-[20px] cursor-pointer border overflow-hidden whitespace-nowrap relative z-10 shrink-0 transition-shadow duration-300',
 						collapsed
 							? 'w-9 h-9 justify-center mx-auto p-0 hover:border-[#ea580c]/30'
 							: 'px-4 py-3 w-full',
-						!npsChecked && 'hover:shadow-md hover:border-[#ea580c]/30',
+						!npsChecked && 'hover:border-[#ea580c]/30',
 					)}
 				>
 					<div className="flex items-center gap-3 relative z-10">

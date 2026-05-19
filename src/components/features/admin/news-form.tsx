@@ -16,7 +16,7 @@ import {
 import {
 	Save, Loader2, ArrowLeft, Megaphone, Flag, Target,
 } from 'lucide-react';
-import Link from 'next/link';
+
 import clsx from 'clsx';
 import {
 	Input,
@@ -67,7 +67,6 @@ const newsSchema = z.object({
 	teamId: z.string().optional().nullable(),
 });
 
-type NewsFormData = z.infer<typeof newsSchema>;
 
 interface NewsFormProps {
 	mode: 'create' | 'edit';
@@ -89,7 +88,7 @@ export function NewsForm({
 	const {
 		data: locationsData, isLoading: isLoadingLocations,
 	} = trpc.location.list.useQuery(
-		(currentUser?.role === 'OD_MANAGER' && currentUser.odRegionId)
+		((currentUser?.role === 'OD_MANAGER' && currentUser.odRegionId)
 			? {
 				odRegionId: currentUser.odRegionId,
 			}
@@ -97,12 +96,12 @@ export function NewsForm({
 				? {
 					locationId: currentUser.locationId,
 				}
-				: undefined,
+				: undefined) as any,
 	);
 	const {
 		data: teamsData, isLoading: isLoadingTeams,
 	} = trpc.team.list.useQuery(
-		(currentUser?.role === 'OD_MANAGER' && currentUser.odRegionId)
+		((currentUser?.role === 'OD_MANAGER' && currentUser.odRegionId)
 			? {
 				odRegionId: currentUser.odRegionId,
 			}
@@ -110,7 +109,7 @@ export function NewsForm({
 				? {
 					locationId: currentUser.locationId,
 				}
-				: undefined,
+				: undefined) as any,
 	);
 
 	const [
@@ -206,7 +205,7 @@ export function NewsForm({
 					'TEAM_LEADER',
 				],
 			},
-		].filter(t => t.roles.includes(currentUser.role));
+		].filter(t => t.roles.includes(currentUser.role as string));
 	}, [
 		currentUser,
 	]);
@@ -216,26 +215,27 @@ export function NewsForm({
 			if (targetType === 'GLOBAL' && currentUser.role !== 'ADMIN') {
 				if (currentUser.role === 'OD_MANAGER') {
 					setValue('targetType', 'OD_REGION' as any);
-					if (currentUser.odRegionId) { setValue('odRegionId', currentUser.odRegionId); }
+					if (currentUser.odRegionId) { setValue('odRegionId', currentUser.odRegionId as string); }
 				}
 				else if (currentUser.role === 'LOCATION_MANAGER') {
 					setValue('targetType', 'LOCATION' as any);
-					if (currentUser.locationId) { setValue('locationId', currentUser.locationId); }
+					if (currentUser.locationId) { setValue('locationId', currentUser.locationId as string); }
 				}
 				else if (currentUser.role === 'TEAM_LEADER') {
 					setValue('targetType', 'TEAM' as any);
-					if (currentUser.teamId) { setValue('teamId', currentUser.teamId); }
+					if (currentUser.teamId) { setValue('teamId', currentUser.teamId as string); }
 				}
-			} else {
+			}
+ else {
 				// Always ensure the relevant ID is prefilled if they navigate to a target type they are locked to
 				if (targetType === 'OD_REGION' && currentUser.role === 'OD_MANAGER' && currentUser.odRegionId) {
-					setValue('odRegionId', currentUser.odRegionId);
+					setValue('odRegionId', currentUser.odRegionId as string);
 				}
 				if (targetType === 'LOCATION' && currentUser.role === 'LOCATION_MANAGER' && currentUser.locationId) {
-					setValue('locationId', currentUser.locationId);
+					setValue('locationId', currentUser.locationId as string);
 				}
 				if (targetType === 'TEAM' && currentUser.role === 'TEAM_LEADER' && currentUser.teamId) {
-					setValue('teamId', currentUser.teamId);
+					setValue('teamId', currentUser.teamId as string);
 				}
 			}
 		}

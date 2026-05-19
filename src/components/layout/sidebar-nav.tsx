@@ -45,6 +45,9 @@ import {
 	SidebarLayout,
 } from './sidebar/sidebar-layout';
 import {
+	SidebarAccount,
+} from './sidebar/sidebar-account';
+import {
 	useNewsNotificationStore,
 } from '@/lib/store/news-notification-store';
 
@@ -298,10 +301,10 @@ export function SidebarNav() {
 						}}
 					/>
 
+					<SidebarAccount collapsed={collapsed} />
+
 					<SidebarFooter
 						collapsed={collapsed}
-						resetConfirm={resetConfirm}
-						handleReset={handleReset}
 					/>
 				</div>
 			}

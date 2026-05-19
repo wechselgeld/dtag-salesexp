@@ -1,3 +1,7 @@
+import {
+    hasPermission,
+} from './permissions';
+
 export interface SessionUser {
     id: string;
     email?: string;
@@ -29,94 +33,148 @@ export function hasRole(user: SessionUser | undefined | null, role: Role): boole
 // ------------------------------------------------------------------
 
 export function getOdRegionFilter(user: SessionUser | undefined | null) {
-    // Anonymous: onboarding only needs active regions. An empty filter would
-    // expose the full org tree (including inactive/sensitive records) to anyone
-    // with a network tool.
-    if (!user) return { isActive: true };
-    if (hasRole(user, 'ADMIN')) return {};
+    if (!user) {
+        return {
+            isActive: true,
+        };
+    }
+    if (hasPermission(user.role, 'od:manage') || hasRole(user, 'ADMIN')) {
+        return {
+        };
+    }
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
-        return { id: user.odRegionId };
+        return {
+            id: user.odRegionId,
+        };
     }
     if (user.odRegionId) {
-        return { id: user.odRegionId };
+        return {
+            id: user.odRegionId,
+        };
     }
-    return { id: 'UNAUTHORIZED' };
+    return {
+        id: 'UNAUTHORIZED',
+    };
 }
 
 export function getLocationFilter(user: SessionUser | undefined | null) {
-    if (!user) return { isActive: true };
-    if (hasRole(user, 'ADMIN')) return {};
+    if (!user) {
+        return {
+            isActive: true,
+        };
+    }
+    if (hasPermission(user.role, 'locations:manage') || hasRole(user, 'ADMIN')) {
+        return {
+        };
+    }
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
-        return { odRegionId: user.odRegionId };
+        return {
+            odRegionId: user.odRegionId,
+        };
     }
     if (user.role === 'LOCATION_MANAGER' && user.locationId) {
-        return { id: user.locationId };
+        return {
+            id: user.locationId,
+        };
     }
     if (user.locationId) {
-        return { id: user.locationId };
+        return {
+            id: user.locationId,
+        };
     }
-    return { id: 'UNAUTHORIZED' };
+    return {
+        id: 'UNAUTHORIZED',
+    };
 }
 
 export function getTeamFilter(user: SessionUser | undefined | null) {
-    // Team has no isActive field, so we cannot filter by it.
-    // Anonymous access is intentional for onboarding: users must pick a team
-    // before they have a session. Team only stores name/email/locationId —
-    // no sensitive fields that need hiding from an unauthenticated caller.
-    if (!user) return {};
-    if (hasRole(user, 'ADMIN')) return {};
+    if (!user) {
+        return {
+        };
+    }
+    if (hasPermission(user.role, 'teams:manage') || hasRole(user, 'ADMIN')) {
+        return {
+        };
+    }
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
-        return { location: { odRegionId: user.odRegionId } };
+        return {
+            location: {
+                odRegionId: user.odRegionId,
+            },
+        };
     }
     if (user.role === 'LOCATION_MANAGER' && user.locationId) {
-        return { locationId: user.locationId };
+        return {
+            locationId: user.locationId,
+        };
     }
     if (user.role === 'TEAM_LEADER' && user.teamId) {
-        return { id: user.teamId };
+        return {
+            id: user.teamId,
+        };
     }
     if (user.teamId) {
-        return { id: user.teamId };
+        return {
+            id: user.teamId,
+        };
     }
-    return { id: 'UNAUTHORIZED' };
+    return {
+        id: 'UNAUTHORIZED',
+    };
 }
 
 export function getNewsVisibilityFilter(user: SessionUser | undefined | null) {
-    if (!user) return { id: 'UNAUTHORIZED' };
-    if (hasRole(user, 'ADMIN')) return {};
+    if (!user) {
+        return {
+            id: 'UNAUTHORIZED',
+        };
+    }
+    if (hasRole(user, 'ADMIN')) {
+        return {
+        };
+    }
 
     const orConditions: any[] = [
-        { odRegionId: null, locationId: null, teamId: null }, // Global News
+        {
+            odRegionId: null,
+            locationId: null,
+            teamId: null,
+        }, // Global News
     ];
 
     if (user.odRegionId) {
-        orConditions.push({ odRegionId: user.odRegionId, locationId: null, teamId: null });
+        orConditions.push({
+            odRegionId: user.odRegionId,
+            locationId: null,
+            teamId: null,
+        });
     }
     if (user.locationId) {
-        orConditions.push({ locationId: user.locationId, teamId: null });
+        orConditions.push({
+            locationId: user.locationId,
+            teamId: null,
+        });
     }
     if (user.teamId) {
-        orConditions.push({ teamId: user.teamId });
+        orConditions.push({
+            teamId: user.teamId,
+        });
     }
 
-    return { OR: orConditions };
+    return {
+        OR: orConditions,
+    };
 }
 
-/**
- * Checks if a news item is visible to a user.
- * Used for real-time updates (SSE/Subscriptions) to mirror Prisma filtering.
- */
 export function isNewsVisible(user: SessionUser | undefined | null, news: { odRegionId?: string | null, locationId?: string | null, teamId?: string | null }): boolean {
     if (!user) return false;
     if (hasRole(user, 'ADMIN')) return true;
 
-    // Global News - explicitly check that ALL target fields are null or undefined
     const isGlobal = !news.odRegionId && !news.locationId && !news.teamId;
     if (isGlobal) return true;
 
-    // Target Check - use strict comparison and ensure IDs exist
     if (news.teamId && user.teamId && news.teamId === user.teamId) return true;
-    
-    // For location/region news, they must NOT have a more specific target (teamId/locationId)
+
     if (news.locationId && user.locationId && news.locationId === user.locationId && !news.teamId) return true;
     if (news.odRegionId && user.odRegionId && news.odRegionId === user.odRegionId && !news.locationId && !news.teamId) return true;
 
@@ -124,21 +182,37 @@ export function isNewsVisible(user: SessionUser | undefined | null, news: { odRe
 }
 
 export function getUserFilter(user: SessionUser | undefined | null) {
-    if (!user) return { id: 'UNAUTHORIZED' };
-    if (hasRole(user, 'ADMIN')) return {};
+    if (!user) {
+        return {
+            id: 'UNAUTHORIZED',
+        };
+    }
+    if (hasPermission(user.role, 'users:read') || hasRole(user, 'ADMIN')) {
+        return {
+        };
+    }
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
         return {
             OR: [
-                { odRegionId: user.odRegionId },
-                { location: { odRegionId: user.odRegionId } },
-            ]
+                {
+                    odRegionId: user.odRegionId,
+                },
+                {
+                    location: {
+                        odRegionId: user.odRegionId,
+                    },
+                },
+            ],
         };
     }
     if (user.role === 'LOCATION_MANAGER' && user.locationId) {
-        return { locationId: user.locationId };
+        return {
+            locationId: user.locationId,
+        };
     }
-    // TEAM LEADER CANNOT LIST USERS
-    return { id: user.id }; // Can only see themselves
+    return {
+        id: user.id,
+    };
 }
 
 // ------------------------------------------------------------------
@@ -148,46 +222,53 @@ export function getUserFilter(user: SessionUser | undefined | null) {
 export function canEditTeam(user: SessionUser | undefined | null, targetLocationId?: string | null, targetTeamId?: string | null): boolean {
     if (!user) return false;
     if (hasRole(user, 'ADMIN')) return true;
-    
-    // For updating an existing team where we know its ID
-    if (targetTeamId && user.role === 'TEAM_LEADER' && user.teamId === targetTeamId) return true;
-    
-    // For creating/updating where we know the location it belongs to
-    if (targetLocationId) {
-        if (user.role === 'LOCATION_MANAGER' && user.locationId === targetLocationId) return true;
-        // OD Managers check is trickier if we only have targetLocationId, because we don't know the OD of that location here.
-        // We usually need to fetch the location first to check its odRegionId, OR the caller fetches it and uses another function.
-        // For simplicity, we'll assume the caller passes the odRegionId of the location if checking OD Manager.
+    if (!hasPermission(user.role, 'teams:manage')) return false;
+
+    if (user.role === 'OD_MANAGER') {
+        return true;
     }
-    
+    if (user.role === 'LOCATION_MANAGER') {
+        if (!user.locationId) return false;
+        if (targetLocationId && targetLocationId !== user.locationId) return false;
+        return true;
+    }
+    if (user.role === 'TEAM_LEADER') {
+        if (!user.teamId) return false;
+        if (targetTeamId && targetTeamId !== user.teamId) return false;
+        return true;
+    }
     return false;
 }
 
-// A more robust async check is better done in the router where we can query DB.
-// These are synchronous checks where we already have the data.
-
 export function canManageLocation(user: SessionUser, targetLocationOdRegionId?: string | null): boolean {
     if (hasRole(user, 'ADMIN')) return true;
-    if (user.role === 'OD_MANAGER' && targetLocationOdRegionId && user.odRegionId === targetLocationOdRegionId) return true;
+    if (!hasPermission(user.role, 'locations:manage')) return false;
+
+    if (user.role === 'OD_MANAGER') {
+        if (!user.odRegionId) return false;
+        if (targetLocationOdRegionId && targetLocationOdRegionId !== user.odRegionId) return false;
+        return true;
+    }
+    if (user.role === 'LOCATION_MANAGER') {
+        return true;
+    }
     return false;
 }
 
 export function canCreateNews(user: SessionUser, scope: { odRegionId?: string | null, locationId?: string | null, teamId?: string | null }): boolean {
     if (hasRole(user, 'ADMIN')) return true;
+    if (!hasPermission(user.role, 'news:create')) return false;
 
     if (user.role === 'OD_MANAGER') {
         if (!user.odRegionId) return false;
-        // OD Manager can create news for their region, or locations/teams WITHIN their region
-        // The router will need to verify if the selected location/team actually belongs to this OD
-        if (!scope.odRegionId && !scope.locationId && !scope.teamId) return false; // Cannot create global
+        if (!scope.odRegionId && !scope.locationId && !scope.teamId) return false;
         if (scope.odRegionId && scope.odRegionId !== user.odRegionId) return false;
-        return true; 
+        return true;
     }
 
     if (user.role === 'LOCATION_MANAGER') {
         if (!user.locationId) return false;
-        // Location manager can create news for their location, or teams WITHIN their location
-        if (!scope.locationId && !scope.teamId) return false; // Cannot create global or OD news
+        if (!scope.locationId && !scope.teamId) return false;
         if (scope.odRegionId) return false;
         if (scope.locationId && scope.locationId !== user.locationId) return false;
         return true;
@@ -205,23 +286,22 @@ export function canCreateNews(user: SessionUser, scope: { odRegionId?: string | 
 
 export function canManageUser(currentUser: SessionUser, targetRole: string, targetOdRegionId?: string | null, targetLocationId?: string | null): boolean {
     if (hasRole(currentUser, 'ADMIN')) return true;
+    if (!hasPermission(currentUser.role, 'users:write')) return false;
 
-    // You cannot create/manage someone with a higher or equal role to yourself!
     const currentRank = ROLE_RANKS[currentUser.role as Role] || 0;
     const targetRank = ROLE_RANKS[targetRole as Role] || 0;
-    
+
     if (targetRank >= currentRank) return false;
 
     if (currentUser.role === 'OD_MANAGER') {
         if (!currentUser.odRegionId) return false;
         if (targetOdRegionId && targetOdRegionId !== currentUser.odRegionId) return false;
-        // We assume the router will verify that targetLocationId belongs to this OD
         return true;
     }
 
     if (currentUser.role === 'LOCATION_MANAGER') {
         if (!currentUser.locationId) return false;
-        if (targetOdRegionId) return false; // Can't assign an OD region
+        if (targetOdRegionId) return false;
         if (targetLocationId && targetLocationId !== currentUser.locationId) return false;
         return true;
     }

@@ -16,7 +16,7 @@ import {
 	FileText,
 	MonitorPlay,
 } from 'lucide-react';
-import Link from 'next/link';
+
 import {
 	TelekomLogo,
 } from '@/components/shared/telekom-logo';
@@ -75,7 +75,7 @@ export default function SettingsPage() {
 		setCopiedField,
 	] = useState<string | null>(null);
 
-	const handleReset = async () => {
+	const handleReset = () => {
 		clearBasket();
 		const keysToRemove = [
 			'splash-timestamp',
@@ -233,12 +233,12 @@ export default function SettingsPage() {
 								</span>
 								<span
 									className={`text-[0.75rem] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
-										session?.isActive
+										session?.isVerified
 											? 'text-[#00a878] bg-[#00a878]/10'
 											: 'text-[#dc2626] bg-[#dc2626]/10'
 									}`}
 								>
-									{session?.isActive ? 'Verifiziert' : 'Inaktiv'}
+									{session?.isVerified ? 'Verifiziert' : 'Inaktiv'}
 								</span>
 							</div>
 						</div>
@@ -409,17 +409,6 @@ function SectionHeader({
 			<h2 className="text-[1.2rem] font-extrabold text-[#1a1a2e] m-0 tracking-tight">
 				{title}
 			</h2>
-		</div>
-	);
-}
-
-function InfoRow({
-	label, value,
-}: { label: string; value: string }) {
-	return (
-		<div className="flex items-center gap-1.5 text-[0.8rem] text-[#999]">
-			<span className="font-medium text-[#ccc]">{label}:</span>
-			<span className="font-bold text-[#1a1a2e]">{value}</span>
 		</div>
 	);
 }

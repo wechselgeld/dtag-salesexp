@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && cp -r public .next/standalone/ && mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/",
+    "build": "next build && tsx scripts/build-utils.ts",
     "start": "node .next/standalone/server.js",
     "lint": "eslint",
     "manage-admins": "tsx scripts/manage-admins.ts",

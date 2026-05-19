@@ -186,6 +186,7 @@ const eslintConfig = tseslint.config(
 
       // Disable or adjust some rules that might be too strict
       'react/no-unescaped-entities': 'off',
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
 );

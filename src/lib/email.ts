@@ -14,6 +14,12 @@ import {
 import {
 	GoodbyeEmail,
 } from '@/emails/GoodbyeEmail';
+import {
+	PinResetEmail,
+} from '@/emails/PinResetEmail';
+import {
+	AccountResetEmail,
+} from '@/emails/AccountResetEmail';
 
 // Use a fallback if ENV is not set (so the build doesn't crash)
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -100,6 +106,46 @@ export const sendGoodbyeEmail = async (to: string) => {
 	}
 };
 
+export const sendAccountResetEmail = async (
+	to: string,
+	firstName?: string | null,
+) => {
+	if (!resend) {
+		console.warn('RESEND_API_KEY is not set. Skipping account reset email to', to);
+		return;
+	}
+
+	const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://sales-exp.buffinteractive.net';
+
+	try {
+		const element = React.createElement(AccountResetEmail, {
+			email: to,
+			firstName,
+			appUrl,
+		});
+		const htmlContent = await render(element);
+		const textContent = await render(element, {
+			plainText: true,
+		});
+
+		const data = await resend.emails.send({
+			from: `Sales Experience <${fromEmail}>`,
+			to: [
+				to,
+			],
+			subject: 'Wichtige Systemaktualisierung: Sales Experience',
+			html: htmlContent,
+			text: textContent,
+		});
+
+		console.log('Account reset email sent successfully to', to, data);
+		return data;
+	}
+	catch (error) {
+		console.error('Error sending account reset email to', to, error);
+	}
+};
+
 export const sendVerificationEmail = async (to: string, firstName: string, token: string) => {
 	if (!resend) {
 		console.warn('RESEND_API_KEY is not set. Skipping verification email to', to);
@@ -136,6 +182,44 @@ export const sendVerificationEmail = async (to: string, firstName: string, token
 	}
 	catch (error) {
 		console.error('Error sending verification email:', error);
+	}
+};
+
+export const sendPinResetEmail = async (to: string, firstName: string, code: string) => {
+	if (!resend) {
+		console.warn('RESEND_API_KEY is not set. Skipping PIN reset email to', to);
+		return;
+	}
+
+	const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+	try {
+		const element = React.createElement(PinResetEmail, {
+			firstName,
+			code,
+			appUrl,
+		});
+		const htmlContent = await render(element);
+		const textContent = await render(element, {
+			plainText: true,
+		});
+
+		const data = await resend.emails.send({
+			from: `Sales Experience <${fromEmail}>`,
+			replyTo: 'hello@flxk.nz',
+			to: [
+				to,
+			],
+			subject: 'Sales Experience Sicherheitscode',
+			html: htmlContent,
+			text: textContent,
+		});
+
+		console.log('PIN reset email sent successfully', data);
+		return data;
+	}
+	catch (error) {
+		console.error('Error sending PIN reset email:', error);
 	}
 };
 

@@ -49,8 +49,8 @@ function wordFuzzyMatch(queryWord: string, targetWords: string[]): number {
 }
 
 export interface FuzzyResult<T> {
-    item: T;
-    score: number;
+	item: T;
+	score: number;
 }
 
 /**

@@ -1,5 +1,5 @@
 import {
-    router, publicProcedure, protectedProcedure,
+    router, publicProcedure, protectedProcedure, requirePermission, withHierarchicalScope,
 } from '../trpc';
 import {
     z,
@@ -7,11 +7,15 @@ import {
 import {
     TRPCError,
 } from '@trpc/server';
+import bcrypt from 'bcryptjs';
+import {
+    getOdRegionFilter, hasRole,
+} from '@/lib/rbac';
 
 export const odRegionRouter = router({
     list: publicProcedure
         .input(z.object({
-            limit: z.number().min(1).max(100).default(50),
+            limit: z.number().min(1).max(1000).default(50),
             cursor: z.string().nullish(),
             search: z.string().optional(),
         }).optional())
@@ -22,11 +26,12 @@ export const odRegionRouter = router({
             const cursor = input?.cursor;
             const search = input?.search;
 
-            const { getOdRegionFilter } = await import('@/lib/rbac');
             const securityFilter = getOdRegionFilter(ctx.session as any);
 
             if (securityFilter.id === 'UNAUTHORIZED') {
-                throw new TRPCError({ code: 'UNAUTHORIZED' });
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                });
             }
 
             const where: any = {
@@ -53,7 +58,7 @@ export const odRegionRouter = router({
                 },
             });
 
-            let nextCursor: typeof cursor | undefined = undefined;
+            let nextCursor: typeof cursor | undefined;
             if (items.length > limit) {
                 const nextItem = items.pop();
                 nextCursor = nextItem!.id;
@@ -83,14 +88,14 @@ export const odRegionRouter = router({
         }),
 
     create: protectedProcedure
+        .use(requirePermission('od:manage'))
         .input(z.object({
             name: z.string().min(1),
             isActive: z.boolean().optional(),
         }))
-        .mutation(async ({
+        .mutation(({
             ctx, input,
         }) => {
-            const { hasRole } = await import('@/lib/rbac');
             if (!hasRole(ctx.session as any, 'ADMIN')) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
@@ -107,15 +112,16 @@ export const odRegionRouter = router({
         }),
 
     update: protectedProcedure
+        .use(requirePermission('od:manage'))
+        .use(withHierarchicalScope('odRegion'))
         .input(z.object({
             id: z.string(),
             name: z.string().min(1).optional(),
             isActive: z.boolean().optional(),
         }))
-        .mutation(async ({
+        .mutation(({
             ctx, input,
         }) => {
-            const { hasRole } = await import('@/lib/rbac');
             const session = ctx.session as any;
 
             if (!hasRole(session, 'OD_MANAGER')) {
@@ -150,14 +156,32 @@ export const odRegionRouter = router({
         }),
 
     delete: protectedProcedure
+        .use(requirePermission('od:manage'))
+        .use(withHierarchicalScope('odRegion'))
         .input(z.object({
             id: z.string(),
+            sudoPassword: z.string().optional(),
         }))
         .mutation(async ({
             ctx, input,
         }) => {
-            const { hasRole } = await import('@/lib/rbac');
-            if (!hasRole(ctx.session as any, 'ADMIN')) {
+            const session = ctx.session as any;
+
+            if (!session.password) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+            if (!isSudoValid) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+
+            if (!hasRole(session, 'ADMIN')) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                 });

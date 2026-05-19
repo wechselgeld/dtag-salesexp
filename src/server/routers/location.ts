@@ -1,5 +1,5 @@
 import {
-    router, publicProcedure, protectedProcedure,
+    router, publicProcedure, protectedProcedure, requirePermission, withHierarchicalScope,
 } from '../trpc';
 import {
     z,
@@ -7,13 +7,17 @@ import {
 import {
     TRPCError,
 } from '@trpc/server';
+import bcrypt from 'bcryptjs';
+import {
+    getLocationFilter, hasRole, canManageLocation,
+} from '@/lib/rbac';
 
 export const locationRouter = router({
     list: publicProcedure
         .input(z.object({
             locationId: z.string().optional(),
             odRegionId: z.string().optional(),
-            limit: z.number().min(1).max(100).default(50),
+            limit: z.number().min(1).max(1000).default(50),
             cursor: z.string().nullish(),
             search: z.string().optional(),
         }).optional())
@@ -24,11 +28,12 @@ export const locationRouter = router({
             const cursor = input?.cursor;
             const search = input?.search;
             const session = ctx.session as any;
-            const { getLocationFilter } = await import('@/lib/rbac');
             const securityFilter = getLocationFilter(session);
 
             if (securityFilter.id === 'UNAUTHORIZED') {
-                throw new TRPCError({ code: 'UNAUTHORIZED' });
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                });
             }
 
             const where: any = {
@@ -38,11 +43,15 @@ export const locationRouter = router({
             };
 
             if (input?.locationId) {
-                where.AND.push({ id: input.locationId });
+                where.AND.push({
+                    id: input.locationId,
+                });
             }
 
             if (input?.odRegionId) {
-                where.AND.push({ odRegionId: input.odRegionId });
+                where.AND.push({
+                    odRegionId: input.odRegionId,
+                });
             }
 
             if (search) {
@@ -51,11 +60,21 @@ export const locationRouter = router({
                         {
                             name: {
                                 contains: search,
+                                mode: 'insensitive',
                             },
                         },
                         {
                             address: {
                                 contains: search,
+                                mode: 'insensitive',
+                            },
+                        },
+                        {
+                            odRegion: {
+                                name: {
+                                    contains: search,
+                                    mode: 'insensitive',
+                                },
                             },
                         },
                     ],
@@ -68,15 +87,29 @@ export const locationRouter = router({
                     id: cursor,
                 } : undefined,
                 where,
-                include: {
-                    odRegion: true,
+                select: {
+                    id: true,
+                    name: true,
+                    address: true,
+                    isActive: true,
+                    odRegionId: true,
+                    odRegion: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                    _count: {
+                        select: {
+                            teams: true,
+                        },
+                    },
                 },
                 orderBy: {
                     name: 'asc',
                 },
             });
 
-            let nextCursor: typeof cursor | undefined = undefined;
+            let nextCursor: typeof cursor | undefined;
             if (items.length > limit) {
                 const nextItem = items.pop();
                 nextCursor = nextItem!.id;
@@ -106,18 +139,16 @@ export const locationRouter = router({
         }),
 
     create: protectedProcedure
-        .input(
-            z.object({
-                name: z.string().min(1),
-                address: z.string().optional().nullable(),
-                isActive: z.boolean().default(true),
-                odRegionId: z.string().optional().nullable(),
-            }),
-        )
-        .mutation(async ({
+        .use(requirePermission('locations:manage'))
+        .input(z.object({
+            name: z.string().min(1),
+            address: z.string().optional().nullable(),
+            isActive: z.boolean().default(true),
+            odRegionId: z.string().optional().nullable(),
+        }))
+        .mutation(({
             ctx, input,
         }) => {
-            const { hasRole, canManageLocation } = await import('@/lib/rbac');
             const session = ctx.session as any;
 
             if (!hasRole(session, 'OD_MANAGER')) {
@@ -150,6 +181,8 @@ export const locationRouter = router({
         }),
 
     update: protectedProcedure
+        .use(requirePermission('locations:manage'))
+        .use(withHierarchicalScope('location'))
         .input(z.object({
             id: z.string(),
             name: z.string().min(1).optional(),
@@ -157,50 +190,17 @@ export const locationRouter = router({
             isActive: z.boolean().optional(),
             odRegionId: z.string().optional().nullable(),
         }))
-        .mutation(async ({
+        .mutation(({
             ctx, input,
         }) => {
-            const { hasRole, canManageLocation } = await import('@/lib/rbac');
             const session = ctx.session as any;
-
-            if (!hasRole(session, 'LOCATION_MANAGER')) {
-                throw new TRPCError({
-                    code: 'FORBIDDEN',
-                    message: 'Keine Berechtigung zum Bearbeiten von Standorten.',
-                });
-            }
-
-            const existing = await ctx.prisma.location.findUnique({
-                where: {
-                    id: input.id,
-                },
-            });
-            if (!existing) {
-                throw new TRPCError({
-                    code: 'NOT_FOUND',
-                });
-            }
-
-            if (!canManageLocation(session, existing.odRegionId)) {
-                if (session.role === 'LOCATION_MANAGER' && input.id === session.locationId) {
-                    // Allowed
-                } else {
-                    throw new TRPCError({
-                        code: 'FORBIDDEN',
-                        message: 'Keine Berechtigung für diesen Standort.',
-                    });
-                }
-            }
-
             const {
                 id, ...dataToUpdate
             } = input;
 
-            // Re-enforce OD_MANAGER boundary
             if (session.role === 'OD_MANAGER' && input.odRegionId !== undefined) {
                 dataToUpdate.odRegionId = session.odRegionId;
             }
-            // Block LOCATION_MANAGER from moving their location
             if (session.role === 'LOCATION_MANAGER' && input.odRegionId !== undefined) {
                 delete dataToUpdate.odRegionId;
             }
@@ -221,37 +221,30 @@ export const locationRouter = router({
         }),
 
     delete: protectedProcedure
+        .use(requirePermission('locations:delete'))
+        .use(withHierarchicalScope('location'))
         .input(z.object({
             id: z.string(),
+            sudoPassword: z.string().optional(),
         }))
         .mutation(async ({
             ctx, input,
         }) => {
-            const { hasRole, canManageLocation } = await import('@/lib/rbac');
             const session = ctx.session as any;
 
-            if (!hasRole(session, 'OD_MANAGER')) {
+            if (!session.password) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
-                    message: 'Keine Berechtigung zum Löschen.',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
                 });
             }
-
-            const existing = await ctx.prisma.location.findUnique({
-                where: {
-                    id: input.id,
-                },
-            });
-            if (!existing) {
-                throw new TRPCError({
-                    code: 'NOT_FOUND',
-                });
-            }
-
-            if (!canManageLocation(session, existing.odRegionId)) {
+            
+            const isPasswordValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+            
+            if (!isPasswordValid) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
-                    message: 'Dieser Standort gehört nicht zu deinem OD-Bereich.',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
                 });
             }
 

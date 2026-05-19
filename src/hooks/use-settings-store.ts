@@ -6,18 +6,18 @@ import {
 } from 'zustand/middleware';
 
 interface SettingsState {
-    compactView: boolean;
-    clearAfterExport: boolean;
-    reduceAnimations: boolean;
-    showHeroImage: boolean;
-    offerTemplateText: string;
-    sortOption: string;
-    setCompactView: (value: boolean) => void;
-    setClearAfterExport: (value: boolean) => void;
-    setReduceAnimations: (value: boolean) => void;
-    setShowHeroImage: (value: boolean) => void;
-    setOfferTemplateText: (value: string) => void;
-    setSortOption: (value: string) => void;
+	compactView: boolean;
+	clearAfterExport: boolean;
+	reduceAnimations: boolean;
+	showHeroImage: boolean;
+	offerTemplateText: string;
+	sortOption: string;
+	setCompactView: (value: boolean) => void;
+	setClearAfterExport: (value: boolean) => void;
+	setReduceAnimations: (value: boolean) => void;
+	setShowHeroImage: (value: boolean) => void;
+	setOfferTemplateText: (value: string) => void;
+	setSortOption: (value: string) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(

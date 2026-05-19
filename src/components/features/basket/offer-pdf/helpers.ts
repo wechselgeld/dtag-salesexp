@@ -35,12 +35,12 @@ export interface CostStep {
  */
 export function computeSteps(monthlyCosts: CalculationResult['monthlyCosts']): CostStep[] {
 	if (monthlyCosts.length === 0) {
-return [
-];
-}
+		return [
+		];
+	}
 
 	const steps: CostStep[] = [
-];
+	];
 	let cur: CostStep = {
 		start: 1,
 		end: 1,
@@ -53,8 +53,8 @@ return [
 		}
 		else {
 			steps.push({
- ...cur,
-});
+				...cur,
+			});
 			cur = {
 				start: i + 1,
 				end: i + 1,

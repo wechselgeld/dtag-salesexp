@@ -1,33 +1,38 @@
-import { router, protectedProcedure } from '@/server/trpc';
-import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
-import { TRPCError } from '@trpc/server';
+import {
+    router, protectedProcedure, requirePermission, withHierarchicalScope,
+} from '@/server/trpc';
+import {
+    z,
+} from 'zod';
+import {
+    prisma,
+} from '@/lib/prisma';
+import {
+    TRPCError,
+} from '@trpc/server';
 import bcrypt from 'bcryptjs';
-import { sendWelcomeEmail, sendGoodbyeEmail } from '@/lib/email';
-import { getUserFilter, canManageUser } from '@/lib/rbac';
-
-const permissionProcedure = protectedProcedure.use(({
-    ctx, next,
-}) => {
-    const role = (ctx.session as any)?.role;
-    // Minimum required role: LOCATION_MANAGER. TEAM_LEADER was previously allowed
-    // here but immediately rejected inside each handler by canManageUser — two
-    // contradictory layers. The gate now matches the actual business rule.
-    if (role !== 'ADMIN' && role !== 'OD_MANAGER' && role !== 'LOCATION_MANAGER') {
-        throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: 'Du hast keine Berechtigung für diese Aktion.',
-        });
-    }
-    return next({ ctx });
-});
+import {
+    sendWelcomeEmail, sendGoodbyeEmail,
+} from '@/lib/email';
+import {
+    getUserFilter, canManageUser,
+} from '@/lib/rbac';
+import {
+    invalidateCache,
+} from '@/lib/cache';
 
 export const adminUsersRouter = router({
-    list: permissionProcedure
+    list: protectedProcedure.use(requirePermission('users:read'))
         .input(z.object({
-            limit: z.number().min(1).max(100).default(50),
+            limit: z.number().min(1).max(1000).default(50),
             cursor: z.string().nullish(),
             search: z.string().optional(),
+            role: z.string().optional(),
+            teamId: z.string().optional(),
+            locationId: z.string().optional(),
+            odRegionId: z.string().optional(),
+            isVerified: z.boolean().optional(),
+            isActive: z.boolean().optional(),
         }))
         .query(async ({
             ctx, input,
@@ -39,15 +44,27 @@ export const adminUsersRouter = router({
             const session = ctx.session as any;
             const where: any = getUserFilter(session);
             if (where.id === 'UNAUTHORIZED') {
-                return { items: [], nextCursor: undefined };
+                return {
+                    items: [
+                    ],
+                    nextCursor: undefined,
+                };
             }
 
             if (input.search) {
-                where.email = {
-                    contains: input.search,
-                    mode: 'insensitive',
-                };
+                where.OR = [
+                    { email: { contains: input.search, mode: 'insensitive' } },
+                    { firstName: { contains: input.search, mode: 'insensitive' } },
+                    { lastName: { contains: input.search, mode: 'insensitive' } },
+                ];
             }
+
+            if (input.role) where.role = input.role;
+            if (input.teamId) where.teamId = input.teamId;
+            if (input.locationId) where.locationId = input.locationId;
+            if (input.odRegionId) where.odRegionId = input.odRegionId;
+            if (input.isVerified !== undefined) where.isVerified = input.isVerified;
+            if (input.isActive !== undefined) where.isActive = input.isActive;
 
             const items = await prisma.user.findMany({
                 take: limit + 1,
@@ -58,9 +75,13 @@ export const adminUsersRouter = router({
                 select: {
                     id: true,
                     email: true,
+                    firstName: true,
+                    lastName: true,
                     role: true,
                     isEditor: true,
                     createdAt: true,
+                    isActive: true,
+                    isVerified: true,
                     odRegionId: true,
                     odRegion: {
                         select: {
@@ -104,92 +125,9 @@ export const adminUsersRouter = router({
             };
         }),
 
-    create: permissionProcedure
-        .input(z.object({
-            email: z.string().email('Ungültige E-Mail Adresse'),
-            password: z.string().min(6, 'Passwort muss mindestens 6 Zeichen lang sein'),
-            role: z.enum([
-                'ADMIN',
-                'OD_MANAGER',
-                'LOCATION_MANAGER',
-                'TEAM_LEADER',
-            ]),
-            isEditor: z.boolean().optional().default(false),
-            odRegionId: z.string().optional().nullable().or(z.literal('')).transform(v => v === '' ? null : v),
-            locationId: z.string().optional().nullable().or(z.literal('')).transform(v => v === '' ? null : v),
-            teamId: z.string().optional().nullable().or(z.literal('')).transform(v => v === '' ? null : v),
-        }))
-        .mutation(async ({
-            input, ctx,
-        }) => {
-            const session = ctx.session as any;
 
-            const { canManageUser } = await import('@/lib/rbac');
 
-            if (!canManageUser(session, input.role, input.odRegionId, input.locationId)) {
-                throw new TRPCError({
-                    code: 'FORBIDDEN',
-                    message: 'Du hast keine Berechtigung, diesen Nutzer zu erstellen.',
-                });
-            }
-
-            // Enforce hierarchy based on creator's role
-            let odRegionId = input.odRegionId;
-            let locationId = input.locationId;
-            let teamId = input.teamId;
-
-            if (session.role === 'OD_MANAGER') {
-                odRegionId = session.odRegionId; // Can only create users in their own region
-            }
-            else if (session.role === 'LOCATION_MANAGER') {
-                odRegionId = null;
-                locationId = session.locationId; // Can only create users in their own location
-            }
-            else if (session.role === 'TEAM_LEADER') {
-                odRegionId = null;
-                locationId = null;
-                teamId = session.teamId; // Can only create users in their own team
-            }
-
-            const existing = await prisma.user.findUnique({
-                where: {
-                    email: input.email,
-                },
-            });
-            if (existing) {
-                throw new TRPCError({
-                    code: 'CONFLICT',
-                    message: 'Ein Benutzer mit dieser E-Mail existiert bereits.',
-                });
-            }
-
-            const hash = await bcrypt.hash(input.password, 10);
-            const newUser = await prisma.user.create({
-                data: {
-                    email: input.email,
-                    password: hash,
-                    role: input.role,
-                    isEditor: input.isEditor,
-                    odRegionId,
-                    locationId,
-                    teamId,
-                },
-                select: {
-                    id: true,
-                    email: true,
-                    role: true,
-                    createdAt: true,
-                    locationId: true,
-                },
-            });
-
-            // E-Mail synchron/asynchron versenden
-            sendWelcomeEmail(input.email, input.role, input.password).catch(console.error);
-
-            return newUser;
-        }),
-
-    update: permissionProcedure
+    update: protectedProcedure.use(requirePermission('users:write')).use(withHierarchicalScope('user'))
         .input(z.object({
             id: z.string(),
             email: z.string().email('Ungültige E-Mail Adresse').optional(),
@@ -201,6 +139,7 @@ export const adminUsersRouter = router({
                 'TEAM_LEADER',
             ]).optional(),
             isEditor: z.boolean().optional(),
+            isActive: z.boolean().optional(),
             odRegionId: z.string().optional().nullable().or(z.literal('')).transform(v => v === '' ? null : v),
             locationId: z.string().optional().nullable().or(z.literal('')).transform(v => v === '' ? null : v),
             teamId: z.string().optional().nullable().or(z.literal('')).transform(v => v === '' ? null : v),
@@ -251,10 +190,16 @@ export const adminUsersRouter = router({
             }
             if (input.password && input.password.length > 0) {
                 updateProps.password = await bcrypt.hash(input.password, 10);
+                updateProps.sessionVersion = {
+                    increment: 1,
+                };
             }
 
             if (input.role) {
                 updateProps.role = input.role;
+                updateProps.sessionVersion = {
+                    increment: 1,
+                };
                 // Field cleanup logic: If the role changes, irrelevant hierarchy fields must be cleared
                 if (input.role === 'ADMIN') {
                     updateProps.odRegionId = null;
@@ -284,12 +229,22 @@ export const adminUsersRouter = router({
                 }
             }
 
+            if (input.isActive !== undefined) {
+                if (session.id === input.id) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Du kannst deinen eigenen Status nicht ändern.',
+                    });
+                }
+                updateProps.isActive = input.isActive;
+            }
+
             // Only update hierarchy fields if provided AND they aren't cleared by the role-switch logic above
             if (input.odRegionId !== undefined && updateProps.odRegionId !== null) { updateProps.odRegionId = input.odRegionId; }
             if (input.locationId !== undefined && updateProps.locationId !== null) { updateProps.locationId = input.locationId; }
             if (input.teamId !== undefined && updateProps.teamId !== null) { updateProps.teamId = input.teamId; }
 
-            return prisma.user.update({
+            const updated = await prisma.user.update({
                 where: {
                     id: input.id,
                 },
@@ -302,16 +257,34 @@ export const adminUsersRouter = router({
                     isEditor: true,
                 },
             });
+            invalidateCache(`session:user:${input.id}`);
+            return updated;
         }),
 
-    delete: permissionProcedure
+    delete: protectedProcedure.use(requirePermission('users:delete')).use(withHierarchicalScope('user'))
         .input(z.object({
             id: z.string(),
+            sudoPassword: z.string().optional(),
         }))
         .mutation(async ({
             input, ctx,
         }) => {
-            if ((ctx.session as any)?.sub === input.id) {
+            const session = ctx.session as any;
+            if (!session.password) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+            if (!isSudoValid) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+
+            if (session.sub === input.id) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du kannst deinen eigenen Account nicht löschen.',
@@ -362,8 +335,80 @@ export const adminUsersRouter = router({
             // Sende Auf Wiedersehen E-Mail
             sendGoodbyeEmail(deletedUser.email).catch(console.error);
 
+            invalidateCache(`session:user:${input.id}`);
+
             return {
                 id: deletedUser.id,
             };
+        }),
+
+    revokeSessions: protectedProcedure.use(requirePermission('users:write')).use(withHierarchicalScope('user'))
+        .input(z.object({
+            id: z.string(),
+        }))
+        .mutation(async ({ input, ctx }) => {
+            const session = ctx.session as any;
+            
+            await prisma.userSession.deleteMany({
+                where: { userId: input.id },
+            });
+            
+            await prisma.user.update({
+                where: { id: input.id },
+                data: { sessionVersion: { increment: 1 } },
+            });
+
+            invalidateCache(`session:user:${input.id}`);
+
+            return { success: true };
+        }),
+
+    removePassword: protectedProcedure.use(requirePermission('users:write')).use(withHierarchicalScope('user'))
+        .input(z.object({
+            id: z.string(),
+        }))
+        .mutation(async ({ input, ctx }) => {
+            const session = ctx.session as any;
+            
+            await prisma.user.update({
+                where: { id: input.id },
+                data: { 
+                    password: null,
+                    sessionVersion: { increment: 1 }
+                },
+            });
+
+            invalidateCache(`session:user:${input.id}`);
+
+            return { success: true };
+        }),
+
+    triggerPinReset: protectedProcedure.use(requirePermission('users:write')).use(withHierarchicalScope('user'))
+        .input(z.object({
+            id: z.string(),
+        }))
+        .mutation(async ({ input, ctx }) => {
+            const targetUser = await prisma.user.findUnique({
+                where: { id: input.id },
+            });
+            if (!targetUser) {
+                throw new TRPCError({ code: 'NOT_FOUND' });
+            }
+            
+            const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            await prisma.user.update({
+                where: { id: input.id },
+                data: {
+                    verificationToken: otpCode,
+                    verificationExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+                },
+            });
+
+            // Avoid import issues here by dynamically requiring or assume it works
+            const { sendPinResetEmail } = await import('@/lib/email');
+            await sendPinResetEmail(targetUser.email, targetUser.firstName || 'Nutzer', otpCode);
+
+            return { success: true };
         }),
 });

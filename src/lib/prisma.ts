@@ -1,7 +1,15 @@
-import { PrismaClient, Prisma } from '@prisma/client';
-export { Prisma };
-import pRetry, { AbortError } from 'p-retry';
-import { dbLogger, formatDuration, formatQuery } from './logger';
+import {
+  PrismaClient, Prisma,
+} from '@prisma/client';
+export {
+  Prisma,
+};
+import pRetry, {
+  AbortError,
+} from 'p-retry';
+import {
+  dbLogger, formatDuration, formatQuery,
+} from './logger';
 
 const RETRYABLE_ERROR_CODES = [
   'P1001', // Can't reach database server
@@ -15,17 +23,31 @@ const RETRYABLE_ERROR_CODES = [
 // Only reads are idempotent. Retrying a write that timed out on the client but
 // succeeded in the DB causes duplicates, double-charges, or constraint violations.
 const READ_OPERATIONS = new Set([
-  'findMany', 'findUnique', 'findFirst',
-  'findUniqueOrThrow', 'findFirstOrThrow',
-  'count', 'aggregate', 'groupBy',
+  'findMany',
+  'findUnique',
+  'findFirst',
+  'findUniqueOrThrow',
+  'findFirstOrThrow',
+  'count',
+  'aggregate',
+  'groupBy',
 ]);
 
 const prismaClientSingleton = () => {
   const client = new PrismaClient({
     log: [
-      { emit: 'event', level: 'query' },
-      { emit: 'stdout', level: 'error' },
-      { emit: 'stdout', level: 'warn' },
+      {
+        emit: 'event',
+        level: 'query',
+      },
+      {
+        emit: 'stdout',
+        level: 'error',
+      },
+      {
+        emit: 'stdout',
+        level: 'warn',
+      },
     ],
   });
 
@@ -34,7 +56,8 @@ const prismaClientSingleton = () => {
     const queryStr = formatQuery(e.query);
     if (e.duration > 500) {
       dbLogger.warn(`Slow Query (${durationStr}): ${queryStr}`);
-    } else {
+    }
+    else {
       dbLogger.debug(`Query (${durationStr}): ${queryStr}`);
     }
   });
@@ -42,7 +65,9 @@ const prismaClientSingleton = () => {
   return client.$extends({
     query: {
       $allModels: {
-        $allOperations({ model, operation, args, query }) {
+        $allOperations({
+          model, operation, args, query,
+        }) {
           // Pass writes through directly — the caller is responsible for retry
           // semantics within explicit transactions when needed.
           if (!READ_OPERATIONS.has(operation)) {
@@ -53,7 +78,8 @@ const prismaClientSingleton = () => {
             async () => {
               try {
                 return await query(args);
-              } catch (error) {
+              }
+              catch (error) {
                 const err = error as any;
                 const isRetryable =
                   err &&

@@ -80,10 +80,10 @@ export function SidebarLayout({
 			</div>
 
 			{/* Footer area */}
-			<div className="mt-auto pb-6 pt-2">
+			<div className="mt-auto pb-2 pt-2">
 				{footerActions}
 				{!collapsed && copyright && (
-					<div className="text-center text-[0.55rem] text-[#ddd] mt-4 font-medium tracking-tight">
+					<div className="text-center text-[0.55rem] text-[#ddd] mt-2 font-medium tracking-tight">
 						{copyright}
 					</div>
 				)}

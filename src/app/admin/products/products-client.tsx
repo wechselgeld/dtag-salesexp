@@ -5,6 +5,7 @@ import {
 } from '@/lib/trpc';
 import {
 	Plus, Edit, Trash2, Search, CheckCircle, Loader2, Calculator,
+	Smartphone, Zap, Wifi, Tv, Router, Layers, PlusCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -15,6 +16,9 @@ import {
 	Skeleton,
 } from '@/components/shared/skeleton';
 import {
+	ScrollableFilterRow,
+} from '@/components/shared/scrollable-filter-row';
+import {
 	confirmDelete,
 } from '@/components/shared/delete-confirm-toast';
 import {
@@ -23,6 +27,7 @@ import {
 import {
 	BulkUpdateDialog,
 } from '@/components/features/admin/bulk-update-dialog';
+import { AdminSearch } from '@/components/shared/admin-search';
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: '#e20074',
@@ -42,11 +47,25 @@ const CATEGORY_LABELS: Record<string, string> = {
 	ADDON: 'Zubuchoptionen',
 };
 
+const CATEGORY_ICONS: Record<string, any> = {
+	ALL: Layers,
+	MOBILE: Smartphone,
+	FIBER: Zap,
+	DSL: Wifi,
+	MAGENTA_TV_OTT: Tv,
+	DEVICE: Router,
+	ADDON: PlusCircle,
+};
+
 export default function AdminProductsPage() {
 	const [
-		search,
-		setSearch,
+		searchQuery,
+		setSearchQuery,
 	] = useState('');
+	const [
+		searchedProducts,
+		setSearchedProducts,
+	] = useState<any[]>([]);
 	const [
 		filterCat,
 		setFilterCat,
@@ -62,9 +81,7 @@ export default function AdminProductsPage() {
 	} =
 		trpc.product.getAllProducts.useInfiniteQuery(
 			{
-				limit: 20,
-				search: search || undefined,
-				category: filterCat === 'ALL' ? undefined : filterCat,
+				limit: 250, // Fetch all products for seamless client-side search
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -77,11 +94,18 @@ export default function AdminProductsPage() {
 		},
 	});
 
+	const products = useMemo(() => {
+		return data?.pages.flatMap((page) => page.items) || [];
+	}, [data]);
+
 	const processedProducts = useMemo(() => {
-		return data?.pages.flatMap((page) => page.items) || [
-		];
+		if (filterCat === 'ALL') {
+			return searchedProducts;
+		}
+		return searchedProducts.filter((p: any) => p.category === filterCat);
 	}, [
-		data,
+		searchedProducts,
+		filterCat,
 	]);
 
 	const allCategories = Object.keys(CATEGORY_LABELS);
@@ -114,52 +138,71 @@ export default function AdminProductsPage() {
 			</div>
 
 			{/* Search & Filters */}
-			<div className="flex flex-col md:flex-row gap-4">
-				<div className="relative flex-1">
-					<Search className="w-4 h-4 text-[#bbb] absolute left-4 top-1/2 -translate-y-1/2" />
-					<input
-						type="text"
-						placeholder="Produkt suchen..."
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
-					/>
-				</div>
-				<div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none items-center">
-					<button
-						onClick={() => setFilterCat('ALL')}
-						className={clsx(
-							'px-4 py-2.5 rounded-xl font-medium text-[0.78rem] transition-colors whitespace-nowrap cursor-pointer active:scale-95',
-							filterCat === 'ALL'
-								? 'bg-[#1a1a2e] text-white'
-								: 'bg-white border border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa]',
-						)}
-					>
-						Alle
-					</button>
+			<div className="flex flex-col gap-4">
+				<AdminSearch
+					items={products}
+					onResultsChange={setSearchedProducts}
+					getSearchableText={(p: any) => [
+						p.name || '',
+						p.description || '',
+						CATEGORY_LABELS[p.category] || p.category || '',
+						p.basePrice?.toString() || '',
+						p.dataVolume?.toString() || '',
+						p.downloadSpeed?.toString() || '',
+					]}
+					value={searchQuery}
+					onChange={setSearchQuery}
+					placeholder="Produkt suchen nach Name, Beschreibung, Kategorie..."
+				/>
+				<ScrollableFilterRow>
+					{(() => {
+						const isSelected = filterCat === 'ALL';
+						const Icon = CATEGORY_ICONS.ALL;
+						return (
+							<button
+								onClick={() => setFilterCat('ALL')}
+								className={clsx(
+									'flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border whitespace-nowrap transition-all duration-200 cursor-pointer outline-none font-semibold text-[0.8rem] active:scale-95',
+									isSelected
+										? 'text-white shadow-md'
+										: 'bg-linear-to-br from-white to-[#fcfafc] border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]',
+								)}
+								style={{
+									backgroundColor: isSelected ? '#1a1a2e' : undefined,
+									borderColor: isSelected ? '#1a1a2e' : undefined,
+								}}
+							>
+								<Icon className={clsx('w-4 h-4', isSelected ? 'opacity-100' : 'opacity-60')} />
+								<span>Alle</span>
+							</button>
+						);
+					})()}
+
 					{allCategories.map((catKey) => {
 						const isSelected = filterCat === catKey;
 						const catColor = CATEGORY_COLORS[catKey] || '#e20074';
+						const Icon = CATEGORY_ICONS[catKey] || PlusCircle;
 						return (
 							<button
 								key={catKey}
 								onClick={() => setFilterCat(catKey)}
 								className={clsx(
-									'px-4 py-2.5 rounded-xl font-medium text-[0.78rem] transition-colors whitespace-nowrap cursor-pointer active:scale-95',
+									'flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border whitespace-nowrap transition-all duration-200 cursor-pointer outline-none font-semibold text-[0.8rem] active:scale-95',
 									isSelected
-										? 'bg-[#1a1a2e] text-white border-transparent'
-										: 'bg-white border border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa]',
+										? 'text-white shadow-md'
+										: 'bg-linear-to-br from-white to-[#fcfafc] border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]',
 								)}
-								style={isSelected ? {
-									backgroundColor: catColor,
-								} : {
+								style={{
+									backgroundColor: isSelected ? catColor : undefined,
+									borderColor: isSelected ? catColor : undefined,
 								}}
 							>
-								{CATEGORY_LABELS[catKey]}
+								<Icon className={clsx('w-4 h-4', isSelected ? 'opacity-100' : 'opacity-60')} />
+								<span>{CATEGORY_LABELS[catKey]}</span>
 							</button>
 						);
 					})}
-				</div>
+				</ScrollableFilterRow>
 			</div>
 
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
@@ -270,9 +313,10 @@ export default function AdminProductsPage() {
 															confirmDelete({
 																id: p.id,
 																name: p.name,
-																onConfirm: () =>
-																	deleteMutation.mutate({
+																onConfirm: (sudoPassword) =>
+																	deleteMutation.mutateAsync({
 																		id: p.id,
+																		sudoPassword,
 																	}),
 															})
 														}

@@ -75,52 +75,52 @@ export const productRouter = router({
                     globalAddons,
                 ] = await Promise.all([
                     prisma.product.findUnique({
-                    where: {
-                        id: input.id,
-                    },
-                    include: {
-                        specialPrices: {
-                            include: {
-                                tiers: {
-                                    orderBy: {
-                                        fromMonth: 'asc',
+                        where: {
+                            id: input.id,
+                        },
+                        include: {
+                            specialPrices: {
+                                include: {
+                                    tiers: {
+                                        orderBy: {
+                                            fromMonth: 'asc',
+                                        },
                                     },
                                 },
                             },
+                            compatibleAddons: {
+                                where: {
+                                    isActive: true,
+                                },
+                                include: {
+                                    tiers: true,
+                                },
+                            },
+                            salesArguments: {
+                                where: {
+                                    isActive: true,
+                                },
+                                orderBy: {
+                                    sortOrder: 'asc',
+                                },
+                            },
+                            priceHistory: {
+                                orderBy: {
+                                    createdAt: 'desc',
+                                },
+                            },
                         },
-                        compatibleAddons: {
-                            where: {
-                                isActive: true,
-                            },
-                            include: {
-                                tiers: true,
-                            },
+                    }),
+                    prisma.addon.findMany({
+                        where: {
+                            isGlobal: true,
+                            isActive: true,
                         },
-                        salesArguments: {
-                            where: {
-                                isActive: true,
-                            },
-                            orderBy: {
-                                sortOrder: 'asc',
-                            },
+                        include: {
+                            tiers: true,
                         },
-                        priceHistory: {
-                            orderBy: {
-                                createdAt: 'desc',
-                            },
-                        },
-                    },
-                }),
-                prisma.addon.findMany({
-                    where: {
-                        isGlobal: true,
-                        isActive: true,
-                    },
-                    include: {
-                        tiers: true,
-                    },
-                }),
-            ]);
+                    }),
+                ]);
 
                 if (!product) { return null; }
 
@@ -138,7 +138,7 @@ export const productRouter = router({
 
     getAllProducts: publicProcedure
         .input(z.object({
-            limit: z.number().min(1).max(100).default(50),
+            limit: z.number().min(1).max(1000).default(50),
             cursor: z.string().nullish(),
             search: z.string().optional(),
             category: z.string().optional(),
@@ -154,38 +154,38 @@ export const productRouter = router({
             const cacheKey = `products:all:${category || 'ALL'}:${search || ''}:${cursor || ''}:${limit}`;
             return getCached(cacheKey, 60 * 1000, async () => {
                 const where: any = {
-                isActive: true,
-            };
-            if (search) {
-                where.OR = [
-                    {
-                        name: {
-                            contains: search,
-                            mode: 'insensitive',
+                    isActive: true,
+                };
+                if (search) {
+                    where.OR = [
+                        {
+                            name: {
+                                contains: search,
+                                mode: 'insensitive',
+                            },
                         },
-                    },
-                    {
-                        description: {
-                            contains: search,
-                            mode: 'insensitive',
+                        {
+                            description: {
+                                contains: search,
+                                mode: 'insensitive',
+                            },
                         },
-                    },
-                ];
-            }
+                    ];
+                }
                 if (category && category !== 'ALL') {
                     where.category = category;
                 }
 
                 const items = await prisma.product.findMany({
                     take: limit + 1,
-                cursor: cursor ? {
-                    id: cursor,
-                } : undefined,
-                where,
-                orderBy: {
-                    priority: 'desc',
-                },
-            });
+                    cursor: cursor ? {
+                        id: cursor,
+                    } : undefined,
+                    where,
+                    orderBy: {
+                        priority: 'desc',
+                    },
+                });
 
                 let nextCursor: typeof cursor | undefined = undefined;
                 if (items.length > limit) {

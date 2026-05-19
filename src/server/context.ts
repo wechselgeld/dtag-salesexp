@@ -1,5 +1,9 @@
-import { getSession } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import {
+    getSession,
+} from '@/lib/auth';
+import {
+    getScopedPrisma,
+} from '@/lib/prisma-extended';
 
 // Set TRUST_PROXY=true in .env.production only when the app runs behind a
 // verified reverse proxy (Vercel, Railway, Nginx with proxy_set_header).
@@ -16,13 +20,25 @@ function extractClientIp(req: Request): string | undefined {
     return req.headers.get('x-real-ip') || undefined;
 }
 
-export const createContext = async ({ req }: { req?: Request }) => {
+export const createContext = async ({
+    req,
+}: { req?: Request }) => {
     const session = await getSession();
     const ip = req ? extractClientIp(req) : undefined;
 
+    const sessionUser = session ? {
+        id: session.sub,
+        email: session.email as string | undefined,
+        role: session.role as string,
+        isEditor: !!session.isEditor,
+        odRegionId: session.odRegionId as string | null | undefined,
+        locationId: session.locationId as string | null | undefined,
+        teamId: session.teamId as string | null | undefined,
+    } : null;
+
     return {
         session,
-        prisma,
+        prisma: getScopedPrisma(sessionUser),
         req,
         ip,
     };

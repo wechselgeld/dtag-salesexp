@@ -4,7 +4,7 @@ import {
 	useEffect,
 } from 'react';
 import {
-	AlertCircle, RefreshCcw, Home,
+	RefreshCcw, Home,
 } from 'lucide-react';
 import Link from 'next/link';
 import {

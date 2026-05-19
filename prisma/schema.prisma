@@ -8,19 +8,34 @@ datasource db {
 }
 
 model User {
-  id         String    @id @default(cuid())
-  email      String    @unique
-  password   String
-  role       String    @default("TEAM_LEADER")
-  isEditor   Boolean   @default(false)
-  odRegionId String?
-  locationId String?
-  teamId     String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  location   Location? @relation(fields: [locationId], references: [id])
-  odRegion   OdRegion? @relation(fields: [odRegionId], references: [id])
-  team       Team?     @relation(fields: [teamId], references: [id])
+  id                    String        @id @default(cuid())
+  email                 String        @unique
+  password              String?
+  pin                   String?
+  sessionVersion        Int           @default(1)
+  firstName             String?
+  lastName              String?
+  role                  String        @default("USER")
+  isEditor              Boolean       @default(false)
+  acceptedTerms         Boolean       @default(false)
+  deviceId              String?
+  isActive              Boolean       @default(true)
+  isVerified            Boolean       @default(false)
+  verificationToken     String?       @unique
+  verificationExpiresAt DateTime?
+  odRegionId            String?
+  locationId            String?
+  teamId                String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  location              Location?     @relation(fields: [locationId], references: [id])
+  odRegion              OdRegion?     @relation(fields: [odRegionId], references: [id])
+  team                  Team?         @relation(fields: [teamId], references: [id])
+  sessions              UserSession[]
+
+  @@index([email, isVerified, createdAt])
+  @@index([isVerified, createdAt])
+  @@index([deviceId])
 }
 
 model OdRegion {
@@ -208,7 +223,6 @@ model Team {
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
   news       News[]
-  sessions   SalesSession[]
   location   Location?       @relation(fields: [locationId], references: [id])
   highlights TeamHighlight[]
   users      User[]
@@ -216,32 +230,21 @@ model Team {
   @@index([locationId])
 }
 
-model SalesSession {
-  id                    String    @id @default(cuid())
-  teamId                String
-  acceptedTerms         Boolean   @default(false)
-  userAgent             String?
-  ip                    String?
-  deviceId              String?
-  isActive              Boolean   @default(true)
-  expiresAt             DateTime?
-  email                 String?
-  firstName             String?
-  lastName              String?
-  isVerified            Boolean   @default(false)
-  verificationToken     String?   @unique
-  verificationExpiresAt DateTime?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  team                  Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String
+  deviceId  String?
+  ip        String?
+  userAgent String?
+  isActive  Boolean  @default(true)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Rate-limiting: COUNT WHERE ip/email AND isVerified=false AND createdAt >= 15min ago
-  @@index([ip, isVerified, createdAt])
-  @@index([email, isVerified, createdAt])
-  // GC cleanup procedure: DELETE WHERE isVerified=false AND createdAt < 2h ago
-  @@index([isVerified, createdAt])
-  // Device fingerprint lookup on returning-user flow
-  @@index([deviceId])
+  @@index([userId, isActive])
+  @@index([deviceId, isActive])
+  @@index([ip, createdAt])
 }
 
 model News {

@@ -1,8 +1,22 @@
-import { router, protectedProcedure, publicProcedure } from '@/server/trpc';
-import { z } from 'zod';
-import { prisma, Prisma } from '@/lib/prisma';
-import { TRPCError } from '@trpc/server';
-import { getCached, invalidateCache } from '@/lib/cache';
+import {
+    router, protectedProcedure, publicProcedure, requirePermission,
+} from '@/server/trpc';
+import {
+    z,
+} from 'zod';
+import {
+    prisma, Prisma,
+} from '@/lib/prisma';
+import {
+    TRPCError,
+} from '@trpc/server';
+import {
+    invalidateCache,
+} from '@/lib/cache';
+import bcrypt from 'bcryptjs';
+import {
+    canCreateNews,
+} from '@/lib/rbac';
 
 // Schema for product creation/update
 const priceHistorySchema = z.object({
@@ -96,34 +110,11 @@ const specialPriceSchema = z.object({
     ]).default('ABSOLUTE'),
 });
 
-const adminProcedure = protectedProcedure.use(({
-    ctx, next,
-}) => {
-    if ((ctx.session as any)?.role !== 'ADMIN') {
-        throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: 'Nur Administratoren erlaubt.',
-        });
-    }
-    return next({
-        ctx,
-    });
-});
+const adminProcedure = protectedProcedure.use(requirePermission('sudo:required'));
 
-const editorProcedure = protectedProcedure.use(({
-    ctx, next,
-}) => {
-    const session = ctx.session as any;
-    if (session?.role !== 'ADMIN' && !session?.isEditor) {
-        throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: 'Du benötigst Editor-Rechte für diese Aktion.',
-        });
-    }
-    return next({
-        ctx,
-    });
-});
+const catalogProcedure = protectedProcedure.use(requirePermission('catalog:manage'));
+const pricesProcedure = protectedProcedure.use(requirePermission('prices:manage'));
+const creditsProcedure = protectedProcedure.use(requirePermission('credits:manage'));
 
 export const adminRouter = router({
     getDashboardStats: protectedProcedure.query(async () => {
@@ -242,7 +233,7 @@ export const adminRouter = router({
     // --- Product CRUD ---
     getAllProducts: protectedProcedure
         .input(z.object({
-            limit: z.number().min(1).max(100).default(50),
+            limit: z.number().min(1).max(1000).default(50),
             cursor: z.string().nullish(),
             search: z.string().optional(),
             category: z.string().optional(),
@@ -304,7 +295,7 @@ export const adminRouter = router({
                 nextCursor,
             };
         }),
-    createProduct: editorProcedure
+    createProduct: catalogProcedure
         .input(productSchema)
         .mutation(async ({
             input,
@@ -336,26 +327,40 @@ export const adminRouter = router({
             return result;
         }),
 
-    updateProduct: editorProcedure
+    updateProduct: catalogProcedure
         .input(productSchema.extend({
             id: z.string(),
         }))
-        .mutation(async ({ input }) => {
-            const { id, features, targetGroups, salesArguments, priceHistory, ...data } = input;
+        .mutation(async ({
+            input,
+        }) => {
+            const {
+                id, features, targetGroups, salesArguments, priceHistory: _priceHistory, ...data
+            } = input;
 
             // Fetch the current basePrice before updating so we know whether to
             // append a PriceHistory record. PriceHistory is an append-only audit
             // ledger — deleting it (old behavior) destroyed compliance data.
             const existing = await prisma.product.findUnique({
-                where: { id },
-                select: { basePrice: true },
+                where: {
+                    id,
+                },
+                select: {
+                    basePrice: true,
+                },
             });
 
-            await prisma.salesArgument.deleteMany({ where: { productId: id } });
+            await prisma.salesArgument.deleteMany({
+                where: {
+                    productId: id,
+                },
+            });
             // PriceHistory is NOT deleted here. Old entries are permanent.
 
             const result = await prisma.product.update({
-                where: { id },
+                where: {
+                    id,
+                },
                 data: {
                     ...data,
                     features: JSON.stringify(features),
@@ -373,7 +378,11 @@ export const adminRouter = router({
             // Only append a history record if the price actually changed.
             if (existing && data.basePrice !== undefined && existing.basePrice !== data.basePrice) {
                 await prisma.priceHistory.create({
-                    data: { productId: id, price: data.basePrice, label: 'Manual update' },
+                    data: {
+                        productId: id,
+                        price: data.basePrice,
+                        label: 'Manual update',
+                    },
                 });
             }
 
@@ -381,13 +390,29 @@ export const adminRouter = router({
             return result;
         }),
 
-    deleteProduct: editorProcedure
+    deleteProduct: catalogProcedure
         .input(z.object({
             id: z.string(),
+            sudoPassword: z.string().optional(),
         }))
         .mutation(async ({
-            input,
+            input, ctx,
         }) => {
+            const bcrypt = await import('bcryptjs');
+            const session = ctx.session as any;
+            if (!session.password) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+            if (!isSudoValid) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
             const result = await prisma.product.delete({
                 where: {
                     id: input.id,
@@ -438,7 +463,7 @@ export const adminRouter = router({
     // --- Special Price CRUD ---
     getAllSpecialPrices: protectedProcedure
         .input(z.object({
-            limit: z.number().min(1).max(100).default(50),
+            limit: z.number().min(1).max(1000).default(50),
             cursor: z.string().nullish(),
             search: z.string().optional(),
         }))
@@ -528,7 +553,7 @@ export const adminRouter = router({
             return sp;
         }),
 
-    createSpecialPrice: editorProcedure
+    createSpecialPrice: pricesProcedure
         .input(specialPriceSchema)
         .mutation(({
             input,
@@ -555,7 +580,7 @@ export const adminRouter = router({
             });
         }),
 
-    updateSpecialPrice: editorProcedure
+    updateSpecialPrice: pricesProcedure
         .input(specialPriceSchema.extend({
             id: z.string(),
         }))
@@ -592,13 +617,29 @@ export const adminRouter = router({
             });
         }),
 
-    deleteSpecialPrice: editorProcedure
+    deleteSpecialPrice: pricesProcedure
         .input(z.object({
             id: z.string(),
+            sudoPassword: z.string().optional(),
         }))
         .mutation(async ({
-            input,
+            input, ctx,
         }) => {
+            const bcrypt = await import('bcryptjs');
+            const session = ctx.session as any;
+            if (!session.password) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+            if (!isSudoValid) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
             await prisma.specialPrice.delete({
                 where: {
                     id: input.id,
@@ -610,7 +651,7 @@ export const adminRouter = router({
     oneTimeCredit: router({
         list: protectedProcedure
             .input(z.object({
-                limit: z.number().min(1).max(100).default(50),
+                limit: z.number().min(1).max(1000).default(50),
                 cursor: z.string().nullish(),
                 search: z.string().optional(),
             }))
@@ -677,7 +718,7 @@ export const adminRouter = router({
                 return credit;
             }),
 
-        create: editorProcedure
+        create: creditsProcedure
             .input(z.object({
                 name: z.string().min(1, 'Name is required'),
                 value: z.number().min(0, 'Value must be positive'),
@@ -691,7 +732,7 @@ export const adminRouter = router({
                 });
             }),
 
-        update: editorProcedure
+        update: creditsProcedure
             .input(z.object({
                 id: z.string(),
                 name: z.string().min(1, 'Name is required'),
@@ -712,13 +753,29 @@ export const adminRouter = router({
                 });
             }),
 
-        delete: editorProcedure
+        delete: creditsProcedure
             .input(z.object({
                 id: z.string(),
+                sudoPassword: z.string().optional(),
             }))
-            .mutation(({
-                input,
+            .mutation(async ({
+                input, ctx,
             }) => {
+                const bcrypt = await import('bcryptjs');
+                const session = ctx.session as any;
+                if (!session.password) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+            if (!isSudoValid) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                    });
+                }
                 return prisma.oneTimeCredit.delete({
                     where: {
                         id: input.id,
@@ -731,7 +788,7 @@ export const adminRouter = router({
     news: router({
         list: protectedProcedure
             .input(z.object({
-                limit: z.number().min(1).max(100).default(50),
+                limit: z.number().min(1).max(1000).default(50),
                 cursor: z.string().nullish(),
                 search: z.string().optional(),
             }))
@@ -816,14 +873,20 @@ export const adminRouter = router({
                 locationId: z.string().optional().nullable(),
                 teamId: z.string().optional().nullable(),
             }))
+            .use(requirePermission('news:create'))
             .mutation(async ({
                 input, ctx,
             }) => {
                 const session = ctx.session as any;
-                const { odRegionId, locationId, teamId, ...data } = input;
+                const {
+                    odRegionId, locationId, teamId, ...data
+                } = input;
 
-                const { canCreateNews } = await import('@/lib/rbac');
-                if (!canCreateNews(session, { odRegionId, locationId, teamId })) {
+                if (!canCreateNews(session, {
+                    odRegionId,
+                    locationId,
+                    teamId,
+                })) {
                     throw new TRPCError({
                         code: 'FORBIDDEN',
                         message: 'Du hast nicht die erforderlichen Rechte für diesen Bereich.',
@@ -867,13 +930,28 @@ export const adminRouter = router({
             }),
 
         delete: protectedProcedure
+            .use(requirePermission('news:delete'))
             .input(z.object({
                 id: z.string(),
+                sudoPassword: z.string().optional(),
             }))
             .mutation(async ({
                 input, ctx,
             }) => {
                 const session = ctx.session as any;
+                if (!session.password) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+            if (!isSudoValid) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                    });
+                }
                 const news = await (prisma.news as any).findUnique({
                     where: {
                         id: input.id,
@@ -885,9 +963,15 @@ export const adminRouter = router({
                     });
                 }
 
-                const { canCreateNews } = await import('@/lib/rbac');
-                if (!canCreateNews(session, { odRegionId: news.odRegionId, locationId: news.locationId, teamId: news.teamId })) {
-                    throw new TRPCError({ code: 'FORBIDDEN', message: 'Du hast keine Berechtigung, diese News zu löschen.' });
+                if (!canCreateNews(session, {
+                    odRegionId: news.odRegionId,
+                    locationId: news.locationId,
+                    teamId: news.teamId,
+                })) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Du hast keine Berechtigung, diese News zu löschen.',
+                    });
                 }
 
                 return (prisma.news as any).delete({
@@ -940,7 +1024,7 @@ export const adminRouter = router({
                 });
             }),
 
-        create: editorProcedure
+        create: catalogProcedure
             .input(z.object({
                 text: z.string().min(1),
                 productId: z.string(),
@@ -954,7 +1038,7 @@ export const adminRouter = router({
                 });
             }),
 
-        update: editorProcedure
+        update: catalogProcedure
             .input(z.object({
                 id: z.string(),
                 text: z.string().min(1),
@@ -975,13 +1059,29 @@ export const adminRouter = router({
                 });
             }),
 
-        delete: editorProcedure
+        delete: catalogProcedure
             .input(z.object({
                 id: z.string(),
+                sudoPassword: z.string().optional(),
             }))
-            .mutation(({
-                input,
+            .mutation(async ({
+                input, ctx,
             }) => {
+                const bcrypt = await import('bcryptjs');
+                const session = ctx.session as any;
+                if (!session.password) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                });
+            }
+            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+            if (!isSudoValid) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                    });
+                }
                 return prisma.salesArgument.delete({
                     where: {
                         id: input.id,
@@ -1014,13 +1114,15 @@ export const adminRouter = router({
                 }
 
                 const bcrypt = await import('bcryptjs');
-                const isValid = await bcrypt.compare(input.oldPassword, user.password);
+                if (user.password) {
+                    const isValid = await bcrypt.compare(input.oldPassword, user.password);
 
-                if (!isValid) {
-                    throw new TRPCError({
-                        code: 'UNAUTHORIZED',
-                        message: 'Das alte Passwort ist nicht korrekt.',
-                    });
+                    if (!isValid) {
+                        throw new TRPCError({
+                            code: 'UNAUTHORIZED',
+                            message: 'Das alte Passwort ist nicht korrekt.',
+                        });
+                    }
                 }
 
                 const hashedPassword = await bcrypt.hash(input.newPassword, 10);
@@ -1030,6 +1132,9 @@ export const adminRouter = router({
                     },
                     data: {
                         password: hashedPassword,
+                        sessionVersion: {
+                            increment: 1,
+                        },
                     },
                 });
 
@@ -1049,10 +1154,18 @@ export const adminRouter = router({
             ]),
             value: z.number(), // positive = increase, negative = decrease
         }))
-        .mutation(async ({ input }) => {
+        .mutation(async ({
+            input,
+        }) => {
             const products = await prisma.product.findMany({
-                where: { category: input.category, isActive: true },
-                select: { id: true, basePrice: true },
+                where: {
+                    category: input.category,
+                    isActive: true,
+                },
+                select: {
+                    id: true,
+                    basePrice: true,
+                },
             });
 
             if (products.length === 0) {
@@ -1066,7 +1179,10 @@ export const adminRouter = router({
                 const newPrice = input.mode === 'FIXED'
                     ? p.basePrice + input.value
                     : p.basePrice * (1 + input.value / 100);
-                return { id: p.id, basePrice: Math.max(0, Math.round(newPrice * 100) / 100) };
+                return {
+                    id: p.id,
+                    basePrice: Math.max(0, Math.round(newPrice * 100) / 100),
+                };
             });
 
             // Single UPDATE statement with a CASE expression instead of N individual
@@ -1076,9 +1192,9 @@ export const adminRouter = router({
                 UPDATE "Product"
                 SET "basePrice" = CASE id
                     ${Prisma.join(
-                        updates.map((u) => Prisma.sql`WHEN ${u.id}::text THEN ${u.basePrice}::double precision`),
-                        ' ',
-                    )}
+                updates.map((u) => Prisma.sql`WHEN ${u.id}::text THEN ${u.basePrice}::double precision`),
+                ' ',
+            )}
                 END,
                 "updatedAt" = now()
                 WHERE id IN (${Prisma.join(updates.map((u) => u.id))})
@@ -1095,21 +1211,48 @@ export const adminRouter = router({
             });
 
             invalidateCache('product');
-            return { updated: updates.length, category: input.category };
+            return {
+                updated: updates.length,
+                category: input.category,
+            };
         }),
 
     // Triggered manually from the admin UI or a deploy hook.
     // Previously this ran as a fire-and-forget deleteMany on every login request,
     // causing unindexed table-locking deletes under concurrent load.
-    cleanupSessions: protectedProcedure.mutation(async ({ ctx }) => {
+    cleanupSessions: protectedProcedure.mutation(async ({
+        ctx,
+    }) => {
         const session = ctx.session as any;
         if (session?.role !== 'ADMIN') {
-            throw new TRPCError({ code: 'FORBIDDEN' });
+            throw new TRPCError({
+                code: 'FORBIDDEN',
+            });
         }
         const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-        const { count } = await prisma.salesSession.deleteMany({
-            where: { isVerified: false, createdAt: { lt: twoHoursAgo } },
-        });
-        return { deleted: count };
+        const [
+            users,
+            sessions,
+        ] = await Promise.all([
+            prisma.user.deleteMany({
+                where: {
+                    isVerified: false,
+                    createdAt: {
+                        lt: twoHoursAgo,
+                    },
+                },
+            }),
+            prisma.userSession.deleteMany({
+                where: {
+                    expiresAt: {
+                        lt: new Date(),
+                    },
+                },
+            }),
+        ]);
+        return {
+            deletedUsers: users.count,
+            deletedSessions: sessions.count,
+        };
     }),
 });

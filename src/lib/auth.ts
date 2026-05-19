@@ -1,6 +1,13 @@
-import { SignJWT, jwtVerify, errors as JoseErrors } from 'jose';
-import { cookies } from 'next/headers';
-import { logger } from './logger';
+import {
+  SignJWT, jwtVerify, errors as JoseErrors,
+} from 'jose';
+import {
+  cookies,
+} from 'next/headers';
+import {
+  logger,
+} from './logger';
+import bcrypt from 'bcryptjs';
 
 const secretKey = process.env.JWT_SECRET;
 if (!secretKey) throw new Error('JWT_SECRET environment variable is not set');
@@ -8,27 +15,47 @@ const key = new TextEncoder().encode(secretKey);
 
 const ALG = 'HS256';
 
-// typ claim prevents a token issued for one purpose from being accepted in another context.
-// Without it, a leaked sales-session token could theoretically be replayed as an auth-token.
 export type JwtTyp = 'auth' | 'sales-session' | 'device' | 'session-binding';
 
+export interface SessionUser {
+  sub: string;
+  email: string;
+  role: string;
+  isEditor: boolean;
+  firstName?: string | null;
+  lastName?: string | null;
+  odRegionId?: string | null;
+  locationId?: string | null;
+  teamId?: string | null;
+  sessionVersion?: number;
+}
+
 export function signJWT(payload: object, expiresIn = '4h', typ: JwtTyp = 'auth') {
-  return new SignJWT({ ...payload, typ })
-    .setProtectedHeader({ alg: ALG })
+  return new SignJWT({
+    ...payload,
+    typ,
+  })
+    .setProtectedHeader({
+      alg: ALG,
+    })
     .setIssuedAt()
     .setExpirationTime(expiresIn)
     .sign(key);
 }
 
-// expectedTyp: if provided, the token is rejected when the typ claim doesn't match.
 export async function verifyJWT(token: string, expectedTyp?: JwtTyp) {
   try {
-    const { payload } = await jwtVerify(token, key, { algorithms: [ALG] });
+    const {
+      payload,
+    } = await jwtVerify(token, key, {
+      algorithms: [
+        ALG,
+      ],
+    });
     if (expectedTyp && payload.typ !== expectedTyp) return null;
     return payload;
-  } catch (error) {
-    // JWTExpired is normal on any unauthenticated request or after 4h idle.
-    // Logging it as console.error floods Sentry/Datadog with false alarms.
+  }
+  catch (error) {
     if (!(error instanceof JoseErrors.JWTExpired)) {
       logger.warn(`JWT verification failed: ${(error as Error).message}`);
     }
@@ -36,11 +63,11 @@ export async function verifyJWT(token: string, expectedTyp?: JwtTyp) {
   }
 }
 
-export async function getSession() {
+export async function getSession(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth-token')?.value;
   if (!token) return null;
-  return verifyJWT(token, 'auth');
+  return verifyJWT(token, 'auth') as any;
 }
 
 export async function login(userData: {
@@ -51,7 +78,12 @@ export async function login(userData: {
   odRegionId?: string | null;
   locationId?: string | null;
   teamId?: string | null;
+  sessionVersion?: number;
 }) {
+  const isSalesUser = userData.role === 'USER';
+  const expiresIn = isSalesUser ? '30d' : '4h';
+  const maxAge = isSalesUser ? 60 * 60 * 24 * 30 : 60 * 60 * 4;
+
   const token = await signJWT(
     {
       sub: userData.id,
@@ -61,8 +93,9 @@ export async function login(userData: {
       odRegionId: userData.odRegionId,
       locationId: userData.locationId,
       teamId: userData.teamId,
+      sessionVersion: userData.sessionVersion || 1,
     },
-    '4h',
+    expiresIn,
     'auth',
   );
   const cookieStore = await cookies();
@@ -71,22 +104,26 @@ export async function login(userData: {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 4, // 4h — matches JWT expiry
+    maxAge,
   });
 }
 
 export async function logout() {
   const cookieStore = await cookies();
   cookieStore.delete('auth-token');
+  cookieStore.delete('sales-session-id');
 }
 
 export async function logoutSalesSession() {
   const cookieStore = await cookies();
+  cookieStore.delete('auth-token');
   cookieStore.delete('sales-session-id');
 }
 
 export function signSessionId(id: string) {
-  return signJWT({ id }, '30d', 'sales-session');
+  return signJWT({
+    id,
+  }, '30d', 'sales-session');
 }
 
 export async function verifySessionId(token: string) {
@@ -95,7 +132,9 @@ export async function verifySessionId(token: string) {
 }
 
 export function signDeviceId(deviceId: string) {
-  return signJWT({ deviceId }, '365d', 'device');
+  return signJWT({
+    deviceId,
+  }, '365d', 'device');
 }
 
 export async function verifyDeviceId(token: string) {
@@ -103,13 +142,21 @@ export async function verifyDeviceId(token: string) {
   return payload?.deviceId as string | undefined;
 }
 
-// Short-lived token that binds a pending SalesSession to the browser that created it.
-// Prevents finalizeLogin from being called by anyone who guesses/intercepts the session CUID.
 export function signSessionBinding(sessionId: string) {
-  return signJWT({ sid: sessionId }, '10m', 'session-binding');
+  return signJWT({
+    sid: sessionId,
+  }, '10m', 'session-binding');
 }
 
 export async function verifySessionBinding(token: string) {
   const payload = await verifyJWT(token, 'session-binding');
   return payload?.sid as string | undefined;
+}
+
+export function hashPin(pin: string): Promise<string> {
+  return bcrypt.hash(pin, 10);
+}
+
+export function verifyPin(pin: string, hashedPin: string): Promise<boolean> {
+  return bcrypt.compare(pin, hashedPin);
 }

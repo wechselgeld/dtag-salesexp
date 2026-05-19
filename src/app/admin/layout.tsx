@@ -19,7 +19,6 @@ import {
 	Shield,
 	MapPin,
 	Globe,
-	Activity,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -31,6 +30,9 @@ import {
 import {
 	trpc,
 } from '@/lib/trpc';
+import {
+	usePermissions,
+} from '@/hooks/use-permissions';
 import type {
 	LucideIcon,
 } from 'lucide-react';
@@ -41,6 +43,9 @@ import {
 	SidebarItem,
 	SidebarGroup,
 } from '@/components/layout/sidebar/sidebar-item';
+import {
+	SidebarAccount,
+} from '@/components/layout/sidebar/sidebar-account';
 import {
 	AdminPasskeyPrompt,
 } from '@/components/admin/passkey-prompt';
@@ -76,6 +81,15 @@ export default function AdminLayout({
 		data: currentUser,
 	} = trpc.auth.me.useQuery();
 
+	const { can, role, isAuthenticated } = usePermissions();
+
+	useEffect(() => {
+		if (!isAuthenticated) return;
+		if (role === 'USER') {
+			router.push('/');
+		}
+	}, [isAuthenticated, role, router]);
+
 	const handleLogout = () => {
 		logoutMutation.mutate();
 	};
@@ -105,104 +119,43 @@ export default function AdminLayout({
 	}, [
 	]);
 
-	const role = currentUser?.role;
-	const isEditor = currentUser?.isEditor || role === 'ADMIN';
+	if (isAuthenticated && role === 'USER') {
+		return null;
+	}
 
 	const menuGroups: MenuGroup[] = [
 		{
 			title: 'Katalog & Konditionen',
-			show: isEditor,
+			show: can('catalog:manage') || can('prices:manage') || can('addons:manage') || can('credits:manage'),
 			items: [
-				{
-					href: '/admin/products',
-					label: 'Produkte',
-					icon: Box,
-				},
-				{
-					href: '/admin/special-prices',
-					label: 'Aktionen',
-					icon: Tag,
-				},
-				{
-					href: '/admin/addons',
-					label: 'Optionen',
-					icon: Layers,
-				},
-				{
-					href: '/admin/credits',
-					label: 'Gutschriften',
-					icon: Wallet,
-				},
+				...(can('catalog:manage') ? [{ href: '/admin/products', label: 'Produkte', icon: Box }] : []),
+				...(can('prices:manage') ? [{ href: '/admin/special-prices', label: 'Aktionen', icon: Tag }] : []),
+				...(can('addons:manage') ? [{ href: '/admin/addons', label: 'Optionen', icon: Layers }] : []),
+				...(can('credits:manage') ? [{ href: '/admin/credits', label: 'Gutschriften', icon: Wallet }] : []),
 			],
 		},
 		{
 			title: 'Organisation',
-			show: true,
+			show: can('od:manage') || can('locations:manage') || can('teams:manage'),
 			items: [
-				...(role === 'ADMIN'
-					? [
-						{
-							href: '/admin/od-regions',
-							label: 'OD-Bereiche',
-							icon: Globe,
-						},
-					]
-					: [
-					]),
-				...(role === 'ADMIN' || role === 'OD_MANAGER' || role === 'LOCATION_MANAGER'
-					? [
-						{
-							href: '/admin/locations',
-							label: 'Standorte',
-							icon: MapPin,
-						},
-					]
-					: [
-					]),
-				{
-					href: '/admin/teams',
-					label: 'Teams',
-					icon: Users,
-				},
-				{
-					href: '/admin/sessions',
-					label: 'Sessions',
-					icon: Activity,
-				},
+				...(can('od:manage') ? [{ href: '/admin/od-regions', label: 'OD-Bereiche', icon: Globe }] : []),
+				...(can('locations:manage') ? [{ href: '/admin/locations', label: 'Standorte', icon: MapPin }] : []),
+				...(can('teams:manage') ? [{ href: '/admin/teams', label: 'Teams', icon: Users }] : []),
 			],
 		},
 		{
 			title: 'Inhalte',
-			show: true,
+			show: can('news:create'),
 			items: [
-				{
-					href: '/admin/news',
-					label: 'Neuigkeiten',
-					icon: Megaphone,
-				},
+				...(can('news:create') ? [{ href: '/admin/news', label: 'Neuigkeiten', icon: Megaphone }] : []),
 			],
 		},
 		{
 			title: 'System',
-			show: true,
+			show: can('users:read') || can('settings:manage'),
 			items: [
-				...(role === 'ADMIN' ||
-				role === 'OD_MANAGER' ||
-				role === 'LOCATION_MANAGER'
-					? [
-						{
-							href: '/admin/users',
-							label: 'Benutzer',
-							icon: Shield,
-						},
-					]
-					: [
-					]),
-				{
-					href: '/admin/settings',
-					label: 'Einstellungen',
-					icon: Settings,
-				},
+				...(can('users:read') ? [{ href: '/admin/users', label: 'Benutzer', icon: Shield }] : []),
+				...(can('settings:manage') ? [{ href: '/admin/settings', label: 'Einstellungen', icon: Settings }] : []),
 			],
 		},
 	];
@@ -216,23 +169,7 @@ export default function AdminLayout({
 				catColor="#e20074"
 				copyright={`© ${new Date().getFullYear()} buffinteractive.net`}
 				footerActions={
-					<div className="px-3 w-full mb-6">
-						<div
-							className={clsx(
-								'flex flex-col gap-0.5',
-								!collapsed && 'bg-[#f7f8fa] rounded-[20px] p-2',
-								collapsed && 'items-center gap-1.5',
-							)}
-						>
-							<SidebarItem
-								icon={LogOut}
-								label="Abmelden"
-								onClick={handleLogout}
-								collapsed={collapsed}
-								variant="danger"
-							/>
-						</div>
-					</div>
+					<SidebarAccount collapsed={collapsed} />
 				}
 			>
 				<nav className="flex flex-col mt-2">

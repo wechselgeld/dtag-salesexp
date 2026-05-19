@@ -12,7 +12,6 @@ import {
 import {
 	Loader2,
 	Save,
-	ArrowLeft,
 	Plus,
 	X,
 	Package,
@@ -26,7 +25,6 @@ import {
 	Euro,
 	CheckCircle2,
 } from 'lucide-react';
-import Link from 'next/link';
 import {
 	useForm, useFieldArray,
 } from 'react-hook-form';

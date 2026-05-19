@@ -4,30 +4,41 @@ import {
 	trpc,
 } from '@/lib/trpc';
 import {
-	Plus, Edit, Trash2, Search, Tag, MessageSquare,
+	Plus, Edit, Trash2, Search, Tag, MessageSquare, Loader2, Tv, Smartphone, ArrowUpCircle, X,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
-	useState,
+	useState, useMemo,
 } from 'react';
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
+import {
+	ScrollableFilterRow,
+} from '@/components/shared/scrollable-filter-row';
 import {
 	confirmDelete,
 } from '@/components/shared/delete-confirm-toast';
 import {
 	AdminPageHeader,
 } from '@/components/shared/ui/admin-ui';
-import {
-	Loader2,
-} from 'lucide-react';
+import clsx from 'clsx';
+
+import { AdminSearch } from '@/components/shared/admin-search';
 
 export default function AdminSpecialPricesPage() {
 	const [
-		search,
-		setSearch,
+		searchQuery,
+		setSearchQuery,
 	] = useState('');
+	const [
+		searchedPrices,
+		setSearchedPrices,
+	] = useState<any[]>([]);
+	const [
+		activeFilterId,
+		setActiveFilterId,
+	] = useState<string>('ALL');
 	const utils = trpc.useUtils();
 
 	const {
@@ -35,8 +46,7 @@ export default function AdminSpecialPricesPage() {
 	} =
 		trpc.admin.getAllSpecialPrices.useInfiniteQuery(
 			{
-				limit: 20,
-				search: search || undefined,
+				limit: 250, // Fetch all special prices for seamless client-side search
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -49,8 +59,22 @@ export default function AdminSpecialPricesPage() {
 		},
 	});
 
-	const specialPrices = data?.pages.flatMap((page) => page.items) || [
-	];
+	const specialPrices = useMemo(() => {
+		return data?.pages.flatMap((page) => page.items) || [];
+	}, [data]);
+
+	const filteredPrices = useMemo(() => {
+		if (activeFilterId === 'ALL') { return searchedPrices; }
+		return searchedPrices.filter((sp: any) => {
+			if (activeFilterId === 'MAGENTA_TV_REQUIRED') { return sp.magentaTVRequirement === 'REQUIRED'; }
+			if (activeFilterId === 'MAGENTA_TV_NOT_ALLOWED') { return sp.magentaTVRequirement === 'NOT_ALLOWED'; }
+			if (activeFilterId === 'HIGH_PRIO') { return sp.priority >= 5; }
+			return true;
+		});
+	}, [
+		searchedPrices,
+		activeFilterId,
+	]);
 
 	return (
 		<div className="space-y-6 pb-20">
@@ -69,15 +93,51 @@ export default function AdminSpecialPricesPage() {
 				</Link>
 			</div>
 
-			<div className="relative">
-				<Search className="w-4 h-4 text-[#bbb] absolute left-4 top-1/2 -translate-y-1/2" />
-				<input
-					type="text"
-					placeholder="Aktiansname oder Produkt suchen..."
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#eaedf0] bg-white focus:outline-none focus:border-[#e20074]/30 focus:shadow-[0_0_0_3px_rgba(226,0,116,0.06)] transition-all text-[0.85rem]"
+			<div className="flex flex-col gap-4">
+				<AdminSearch
+					items={specialPrices}
+					onResultsChange={setSearchedPrices}
+					getSearchableText={(sp: any) => [
+						sp.name || '',
+						sp.internalNote || '',
+						...(sp.products?.map((p: any) => p.name) || []),
+					]}
+					value={searchQuery}
+					onChange={setSearchQuery}
+					placeholder="Aktionsname, interne Notiz oder Produkt suchen..."
 				/>
+
+				{/* Filter Bubbles */}
+				<ScrollableFilterRow>
+					{[
+						{ id: 'ALL', label: 'Alle Aktionen', icon: Tag, color: '#1a1a2e' },
+						{ id: 'MAGENTA_TV_REQUIRED', label: 'MagentaTV erforderlich', icon: Tv, color: '#e20074' },
+						{ id: 'MAGENTA_TV_NOT_ALLOWED', label: 'Nur ohne MagentaTV', icon: Smartphone, color: '#7b61ff' },
+						{ id: 'HIGH_PRIO', label: 'Hohe Priorität (Prio ≥ 5)', icon: ArrowUpCircle, color: '#ff6b00' },
+					].map((filter) => {
+						const isSelected = activeFilterId === filter.id;
+						const Icon = filter.icon;
+						return (
+							<button
+								key={filter.id}
+								onClick={() => setActiveFilterId(filter.id)}
+								className={clsx(
+									'flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border whitespace-nowrap transition-all duration-200 cursor-pointer outline-none font-semibold text-[0.8rem] active:scale-95',
+									isSelected
+										? 'text-white shadow-md'
+										: 'bg-linear-to-br from-white to-[#fcfafc] border-[#eaedf0] text-[#666] hover:bg-[#f7f8fa] hover:border-[#ddd]',
+								)}
+								style={{
+									backgroundColor: isSelected ? filter.color : undefined,
+									borderColor: isSelected ? filter.color : undefined,
+								}}
+							>
+								<Icon className={clsx('w-4 h-4', isSelected ? 'opacity-100' : 'opacity-60')} />
+								<span>{filter.label}</span>
+							</button>
+						);
+					})}
+				</ScrollableFilterRow>
 			</div>
 
 			<div className="bg-white rounded-3xl border border-[#eaedf0] overflow-hidden shadow-sm">
@@ -93,7 +153,7 @@ export default function AdminSpecialPricesPage() {
 							<Skeleton key={i} className="h-14 w-full rounded-xl" />
 						))}
 					</div>
-				) : specialPrices.length === 0 ? (
+				) : filteredPrices.length === 0 ? (
 					<div className="p-20 flex flex-col items-center justify-center text-center">
 						<div className="w-16 h-16 bg-[#f7f8fa] rounded-2xl flex items-center justify-center mb-4 border border-[#eaedf0]">
 							<Tag className="w-6 h-6 text-[#ccc]" />
@@ -101,9 +161,17 @@ export default function AdminSpecialPricesPage() {
 						<h3 className="text-[1.1rem] font-bold text-[#1a1a2e] mb-1">
 							Keine Aktionen gefunden
 						</h3>
-						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0">
-							Es wurden keine Aktionspreise für deine Suche gefunden.
+						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0 mb-4">
+							Es wurden keine Aktionspreise {searchQuery || activeFilterId !== 'ALL' ? 'für deine Suche/Filter' : ''} gefunden.
 						</p>
+						{(searchQuery || activeFilterId !== 'ALL') && (
+							<button
+								onClick={() => { setSearchQuery(''); setActiveFilterId('ALL'); }}
+								className="text-[#1a1a2e] text-[0.85rem] font-semibold bg-white border border-[#eaedf0] px-4 py-2 rounded-xl hover:bg-[#f7f8fa] transition-colors cursor-pointer"
+							>
+								Filter zurücksetzen
+							</button>
+						)}
 					</div>
 				) : (
 					<div className="overflow-x-auto">
@@ -125,7 +193,7 @@ export default function AdminSpecialPricesPage() {
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-[#f0f0f0]">
-								{specialPrices.map((sp: any) => (
+								{filteredPrices.map((sp: any) => (
 									<tr
 										key={sp.id}
 										className="hover:bg-[#fcfcfd] transition-colors group"
@@ -208,10 +276,11 @@ export default function AdminSpecialPricesPage() {
 														confirmDelete({
 															id: sp.id,
 															name: sp.name,
-															onConfirm: () =>
-																deleteMutation.mutate({
+															onConfirm: (sudoPassword) =>
+																deleteMutation.mutateAsync({
 																	id: sp.id,
-																}),
+																	sudoPassword,
+																	}),
 														})
 													}
 													className="p-2 text-[#ccc] hover:text-[#dc2626] hover:bg-[#fee2e2] rounded-lg transition-all cursor-pointer border-none bg-transparent"

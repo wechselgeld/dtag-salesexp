@@ -1,20 +1,33 @@
-import { router, publicProcedure, protectedProcedure } from '../trpc';
-import { z } from 'zod';
-import { cookies } from 'next/headers';
-import { TRPCError } from '@trpc/server';
+import {
+    router, publicProcedure, protectedProcedure, requirePermission,
+} from '../trpc';
+import {
+    z,
+} from 'zod';
+import {
+    cookies,
+} from 'next/headers';
+import {
+    TRPCError,
+} from '@trpc/server';
 import ipaddr from 'ipaddr.js';
 import crypto from 'crypto';
-import { getCached } from '@/lib/cache';
 import {
-    signSessionId, signDeviceId,
-    verifySessionId, verifyDeviceId,
+    getCached,
+} from '@/lib/cache';
+import {
+    login, signDeviceId, verifyDeviceId,
     signSessionBinding, verifySessionBinding,
+    hashPin, verifyPin,
 } from '@/lib/auth';
+import {
+    getUserFilter,
+} from '@/lib/rbac';
 
 const SETTINGS_TTL = 1000 * 60 * 60; // 1 hour
 
 function checkIpIsAllowed(ipString: string, allowedIpsString: string) {
-    if (!allowedIpsString || allowedIpsString.trim() === '') { return true; } // Empty string means all IPs allowed
+    if (!allowedIpsString || allowedIpsString.trim() === '') { return true; }
 
     const allowedIps = allowedIpsString.split('\n').map(ip => ip.trim()).filter(ip => ip !== '');
     if (allowedIps.length === 0) { return true; }
@@ -24,24 +37,23 @@ function checkIpIsAllowed(ipString: string, allowedIpsString: string) {
 
         for (const allowed of allowedIps) {
             try {
-                if (allowed.includes('/')) { // CIDR
+                if (allowed.includes('/')) {
                     const range = ipaddr.parseCIDR(allowed);
                     if (clientIp.match(range)) { return true; }
                 }
-                else { // Single IP
+                else {
                     const allowedIp = ipaddr.parse(allowed);
                     if (clientIp.kind() === allowedIp.kind() && clientIp.toString() === allowedIp.toString()) { return true; }
                 }
             }
             catch (error) {
-                // Ignore invalid entries in allowed list
                 console.error(error);
             }
         }
     }
     catch (error) {
         console.error(error);
-        return false; // Invalid client IP
+        return false;
     }
 
     return false;
@@ -90,10 +102,12 @@ export const sessionRouter = router({
 
     requestVerification: publicProcedure
         .input(z.object({
-            teamId: z.string(),
+            locationId: z.string().min(1),
+            teamId: z.string().min(1),
             firstName: z.string().min(1),
             lastName: z.string().min(1),
-            email: z.string().email(),
+            email: z.string().email().trim().toLowerCase(),
+            pin: z.string().length(6),
             acceptedTerms: z.literal(true),
         }))
         .mutation(async ({
@@ -101,14 +115,21 @@ export const sessionRouter = router({
         }) => {
             const clientIp = ctx.ip || '127.0.0.1';
 
-            // Split cache to fix invalidation footgun
             const allowedIpsSetting = await getCached('systemSettings:allowed_ips', SETTINGS_TTL, () => {
-                return ctx.prisma.systemSetting.findUnique({ where: { key: 'allowed_ips' } });
+                return ctx.prisma.systemSetting.findUnique({
+                    where: {
+                        key: 'allowed_ips',
+                    },
+                });
             });
             const allowedIpsValue = allowedIpsSetting?.value || '';
 
             const emailVerificationSetting = await getCached('systemSettings:require_email_verification', SETTINGS_TTL, () => {
-                return ctx.prisma.systemSetting.findUnique({ where: { key: 'require_email_verification' } });
+                return ctx.prisma.systemSetting.findUnique({
+                    where: {
+                        key: 'require_email_verification',
+                    },
+                });
             });
             const isEmailRequiredSystemWide = emailVerificationSetting?.value !== 'false';
 
@@ -119,22 +140,31 @@ export const sessionRouter = router({
                 });
             }
 
-            // The inline deleteMany that used to run here on every login fired unindexed
-            // DELETE queries under load, causing table locks and latency spikes.
-            // GC is now triggered manually via the admin.session.cleanup procedure.
-
-            // Rate-Limiting: Max 50 per IP, Max 3 per Email in the last 15 minutes (Fixes NAT trap)
             const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-            const [recentIpRequests, recentEmailRequests] = await Promise.all([
-                ctx.prisma.salesSession.count({
-                    where: { ip: clientIp, createdAt: { gte: fifteenMinutesAgo }, isVerified: false },
+            const [
+                recentIpRequests,
+                recentEmailRequests,
+            ] = await Promise.all([
+                ctx.prisma.userSession.count({
+                    where: {
+                        ip: clientIp,
+                        createdAt: {
+                            gte: fifteenMinutesAgo,
+                        },
+                    },
                 }),
-                ctx.prisma.salesSession.count({
-                    where: { email: input.email, createdAt: { gte: fifteenMinutesAgo }, isVerified: false },
-                })
+                ctx.prisma.user.count({
+                    where: {
+                        email: input.email,
+                        createdAt: {
+                            gte: fifteenMinutesAgo,
+                        },
+                        isVerified: false,
+                    },
+                }),
             ]);
 
-            if (recentIpRequests >= 50 || recentEmailRequests >= 3) {
+            if (recentIpRequests >= 50 || recentEmailRequests >= 5) {
                 throw new TRPCError({
                     code: 'TOO_MANY_REQUESTS',
                     message: 'Zu viele Anfragen. Bitte versuche es später erneut.',
@@ -150,10 +180,14 @@ export const sessionRouter = router({
                 if (deviceToken) {
                     const verifiedDeviceId = await verifyDeviceId(deviceToken);
                     if (verifiedDeviceId) {
-                        const recognizedDevice = await ctx.prisma.salesSession.findFirst({
-                            where: { email: input.email, deviceId: verifiedDeviceId, isVerified: true },
+                        const recognizedUser = await ctx.prisma.user.findFirst({
+                            where: {
+                                email: input.email,
+                                deviceId: verifiedDeviceId,
+                                isVerified: true,
+                            },
                         });
-                        if (recognizedDevice) {
+                        if (recognizedUser) {
                             bypassEmailCheck = true;
                             deviceId = verifiedDeviceId;
                         }
@@ -162,70 +196,125 @@ export const sessionRouter = router({
             }
 
             const token = crypto.randomBytes(32).toString('hex');
+            const hashedPinValue = await hashPin(input.pin);
 
-            const session = await ctx.prisma.salesSession.create({
+            const existingUser = await ctx.prisma.user.findUnique({
+                where: {
+                    email: input.email,
+                },
+            });
+
+            if (existingUser) {
+                throw new TRPCError({
+                    code: 'CONFLICT',
+                    message: 'Diese E-Mail-Adresse ist bereits registriert. Bitte melde Dich über "Willkommen zurück" an.',
+                });
+            }
+
+            const user = await ctx.prisma.user.create({
                 data: {
-                    teamId: input.teamId,
+                    email: input.email,
+                    pin: hashedPinValue,
                     firstName: input.firstName,
                     lastName: input.lastName,
-                    email: input.email,
-                    acceptedTerms: input.acceptedTerms,
-                    ip: clientIp,
+                    role: 'USER',
+                    locationId: input.locationId,
+                    teamId: input.teamId,
+                    acceptedTerms: true,
                     deviceId: deviceId,
-                    userAgent: ctx.req?.headers.get('user-agent'),
                     isVerified: bypassEmailCheck,
                     verificationToken: bypassEmailCheck ? null : token,
                     verificationExpiresAt: bypassEmailCheck ? null : new Date(Date.now() + 60 * 60 * 1000),
                 },
             });
 
-            if (!bypassEmailCheck) {
-                const { sendVerificationEmail } = await import('@/lib/email');
+            if (!bypassEmailCheck && !user.isVerified) {
+                const {
+                    sendVerificationEmail,
+                } = await import('@/lib/email');
                 await sendVerificationEmail(input.email, input.firstName, token);
             }
 
-            // A signed JWT that proves ownership of this pending session.
-            // The raw session CUID is not returned — guessing it would let anyone
-            // call finalizeLogin and steal the resulting session cookie.
-            const bindingToken = await signSessionBinding(session.id);
+            const bindingToken = await signSessionBinding(user.id);
 
-            return { bindingToken, bypassed: bypassEmailCheck };
+            return {
+                bindingToken,
+                bypassed: bypassEmailCheck,
+            };
         }),
 
     verifyEmail: publicProcedure
-        .input(z.object({ token: z.string() }))
-        .mutation(async ({ ctx, input }) => {
-            const session = await ctx.prisma.salesSession.findUnique({
-                where: { verificationToken: input.token },
+        .input(z.object({
+            token: z.string(),
+        }))
+        .mutation(async ({
+            ctx, input,
+        }) => {
+            const user = await ctx.prisma.user.findUnique({
+                where: {
+                    verificationToken: input.token,
+                },
             });
 
-            if (!session) {
-                throw new TRPCError({ code: 'NOT_FOUND', message: 'Ungültiger oder abgelaufener Link' });
-            }
-
-            if (session.verificationExpiresAt && session.verificationExpiresAt < new Date()) {
-                throw new TRPCError({ code: 'FORBIDDEN', message: 'Der Link ist abgelaufen. Bitte fordere einen neuen an.' });
-            }
-
-            if (!session.isVerified) {
-                await ctx.prisma.salesSession.update({
-                    where: { id: session.id },
-                    data: { isVerified: true, verificationToken: null },
+            if (!user) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Ungültiger oder abgelaufener Link',
                 });
             }
 
-            const signedToken = await signSessionId(session.id);
-            const cookieStore = await cookies();
-            cookieStore.set('sales-session-id', signedToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                path: '/',
-                maxAge: 60 * 60 * 24 * 30,
+            if (user.verificationExpiresAt && user.verificationExpiresAt < new Date()) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Der Link ist abgelaufen. Bitte fordere einen neuen an.',
+                });
+            }
+
+            if (!user.isVerified) {
+                await ctx.prisma.user.update({
+                    where: {
+                        id: user.id,
+                    },
+                    data: {
+                        isVerified: true,
+                        verificationToken: null,
+                    },
+                });
+            }
+
+            const clientIp = ctx.ip || '127.0.0.1';
+            
+            if (user.deviceId) {
+                await ctx.prisma.userSession.deleteMany({
+                    where: {
+                        deviceId: user.deviceId,
+                    },
+                });
+            }
+
+            await ctx.prisma.userSession.create({
+                data: {
+                    userId: user.id,
+                    deviceId: user.deviceId,
+                    ip: clientIp,
+                    userAgent: ctx.req?.headers.get('user-agent'),
+                    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+                },
             });
 
-            if (session.deviceId) {
-                const signedDeviceToken = await signDeviceId(session.deviceId);
+            await login({
+                id: user.id,
+                email: user.email,
+                role: 'USER',
+                isEditor: false,
+                odRegionId: user.odRegionId,
+                locationId: user.locationId,
+                teamId: user.teamId,
+            });
+
+            if (user.deviceId) {
+                const cookieStore = await cookies();
+                const signedDeviceToken = await signDeviceId(user.deviceId);
                 cookieStore.set('sales-device-id', signedDeviceToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
@@ -237,56 +326,97 @@ export const sessionRouter = router({
 
             return {
                 success: true,
-                firstName: session.firstName,
-                lastName: session.lastName,
-                email: session.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
             };
         }),
 
     checkVerification: publicProcedure
-        .input(z.object({ bindingToken: z.string() }))
-        .query(async ({ ctx, input }) => {
-            // Verify the signed token — rejects expired/tampered tokens before any DB call.
-            const sessionId = await verifySessionBinding(input.bindingToken);
-            if (!sessionId) return { verified: false };
+        .input(z.object({
+            bindingToken: z.string(),
+        }))
+        .query(async ({
+            ctx, input,
+        }) => {
+            const userId = await verifySessionBinding(input.bindingToken);
+            if (!userId) {
+                return {
+                    verified: false,
+                };
+            }
 
-            const session = await ctx.prisma.salesSession.findUnique({
-                where: { id: sessionId },
+            const user = await ctx.prisma.user.findUnique({
+                where: {
+                    id: userId,
+                },
             });
-            return { verified: session?.isVerified ?? false };
+            return {
+                verified: user?.isVerified ?? false,
+            };
         }),
 
     finalizeLogin: publicProcedure
-        .input(z.object({ bindingToken: z.string() }))
-        .mutation(async ({ ctx, input }) => {
-            // The binding token was signed server-side at requestVerification time.
-            // Without this check, anyone who knows or guesses a session CUID can
-            // call this endpoint and receive a valid auth cookie for someone else.
-            const sessionId = await verifySessionBinding(input.bindingToken);
-            if (!sessionId) {
-                throw new TRPCError({ code: 'FORBIDDEN', message: 'Invalid or expired binding token.' });
+        .input(z.object({
+            bindingToken: z.string(),
+        }))
+        .mutation(async ({
+            ctx, input,
+        }) => {
+            const userId = await verifySessionBinding(input.bindingToken);
+            if (!userId) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Invalid or expired binding token.',
+                });
             }
 
-            const session = await ctx.prisma.salesSession.findUnique({
-                where: { id: sessionId },
+            const user = await ctx.prisma.user.findUnique({
+                where: {
+                    id: userId,
+                },
             });
 
-            if (!session || !session.isVerified) {
-                throw new TRPCError({ code: 'FORBIDDEN', message: 'Not verified' });
+            if (!user || !user.isVerified) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Not verified',
+                });
             }
 
-            const signedToken = await signSessionId(session.id);
-            const cookieStore = await cookies();
-            cookieStore.set('sales-session-id', signedToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                path: '/',
-                maxAge: 60 * 60 * 24 * 30,
+            const clientIp = ctx.ip || '127.0.0.1';
+
+            if (user.deviceId) {
+                await ctx.prisma.userSession.deleteMany({
+                    where: {
+                        deviceId: user.deviceId,
+                    },
+                });
+            }
+
+            await ctx.prisma.userSession.create({
+                data: {
+                    userId: user.id,
+                    deviceId: user.deviceId,
+                    ip: clientIp,
+                    userAgent: ctx.req?.headers.get('user-agent'),
+                    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+                },
             });
 
-            if (session.deviceId) {
-                const signedDeviceToken = await signDeviceId(session.deviceId);
+            await login({
+                id: user.id,
+                email: user.email,
+                role: 'USER',
+                isEditor: false,
+                odRegionId: user.odRegionId,
+                locationId: user.locationId,
+                teamId: user.teamId,
+            });
+
+            if (user.deviceId) {
+                const cookieStore = await cookies();
+                const signedDeviceToken = await signDeviceId(user.deviceId);
                 cookieStore.set('sales-device-id', signedDeviceToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
@@ -298,56 +428,70 @@ export const sessionRouter = router({
 
             return {
                 success: true,
-                firstName: session.firstName,
-                lastName: session.lastName,
-                email: session.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
             };
         }),
 
-    getCurrent: publicProcedure.query(async ({ ctx }) => {
-        const cookieStore = await cookies();
-        const token = cookieStore.get('sales-session-id')?.value;
-        if (!token) return null;
+    getCurrent: publicProcedure.query(async ({
+        ctx,
+    }) => {
+        if (!ctx.session || !ctx.session.sub) return null;
 
-        const sessionId = await verifySessionId(token);
-        if (!sessionId) return null;
-
-        const session = await ctx.prisma.salesSession.findUnique({
-            where: { id: sessionId },
-            include: { team: { include: { highlights: true } } },
+        const user = await ctx.prisma.user.findUnique({
+            where: {
+                id: ctx.session.sub as string,
+            },
+            include: {
+                team: {
+                    include: {
+                        highlights: true,
+                    },
+                },
+            },
         });
 
-        if (!session || !session.isActive || !session.isVerified) return null;
-        return session;
+        if (!user || !user.isVerified) return null;
+        return user;
     }),
 
-    updateTeam: publicProcedure
-        .input(z.object({ teamId: z.string() }))
-        .mutation(async ({ ctx, input }) => {
-            const cookieStore = await cookies();
-            const token = cookieStore.get('sales-session-id')?.value;
-            if (!token) throw new TRPCError({ code: 'UNAUTHORIZED' });
-
-            const sessionId = await verifySessionId(token);
-            if (!sessionId) throw new TRPCError({ code: 'UNAUTHORIZED' });
-
-            await ctx.prisma.salesSession.update({
-                where: { id: sessionId },
-                data: { teamId: input.teamId },
+    updateTeam: protectedProcedure
+        .input(z.object({
+            teamId: z.string(),
+        }))
+        .mutation(async ({
+            ctx, input,
+        }) => {
+            const userId = ctx.session.sub as string;
+            await ctx.prisma.user.update({
+                where: {
+                    id: userId,
+                },
+                data: {
+                    teamId: input.teamId,
+                },
             });
-            return { success: true };
+            return {
+                success: true,
+            };
         }),
 
     reloginReturningUser: publicProcedure
         .input(z.object({
-            email: z.string().email(),
+            email: z.string().email().trim().toLowerCase(),
+            pin: z.string().length(6).optional(),
         }))
         .mutation(async ({
             ctx, input,
         }) => {
             const clientIp = ctx.ip || '127.0.0.1';
             const allowedIpsSetting = await getCached('systemSettings:allowed_ips', SETTINGS_TTL, () => {
-                return ctx.prisma.systemSetting.findUnique({ where: { key: 'allowed_ips' } });
+                return ctx.prisma.systemSetting.findUnique({
+                    where: {
+                        key: 'allowed_ips',
+                    },
+                });
             });
 
             if (!checkIpIsAllowed(clientIp, allowedIpsSetting?.value || '')) {
@@ -357,138 +501,322 @@ export const sessionRouter = router({
                 });
             }
 
-            // verify if this email had a session previously
-            const lastSession = await ctx.prisma.salesSession.findFirst({
+            const user = await ctx.prisma.user.findUnique({
                 where: {
                     email: input.email,
-                    isVerified: true,
-                },
-                orderBy: {
-                    createdAt: 'desc',
                 },
             });
 
-            // If the user hasn't verified before, they must do full setup
-            if (!lastSession) {
+            if (!user) {
                 throw new TRPCError({
                     code: 'NOT_FOUND',
-                    message: 'No prior verified session found.',
+                    message: 'Kein Benutzer mit dieser E-Mail gefunden.',
                 });
             }
 
+            if (input.pin) {
+                if (!user.pin) {
+                    throw new TRPCError({
+                        code: 'UNAUTHORIZED',
+                        message: 'Es wurde noch keine PIN für dieses Konto eingerichtet.',
+                    });
+                }
+                const isPinValid = await verifyPin(input.pin, user.pin);
+                if (!isPinValid) {
+                    throw new TRPCError({
+                        code: 'UNAUTHORIZED',
+                        message: 'Die eingegebene PIN ist falsch.',
+                    });
+                }
+            }
+
             const emailVerificationSetting = await getCached('systemSettings:require_email_verification', SETTINGS_TTL, () => {
-                return ctx.prisma.systemSetting.findUnique({ where: { key: 'require_email_verification' } });
+                return ctx.prisma.systemSetting.findUnique({
+                    where: {
+                        key: 'require_email_verification',
+                    },
+                });
             });
             const isEmailRequiredSystemWide = emailVerificationSetting?.value !== 'false';
 
-            let canInstantlyRelogin = !isEmailRequiredSystemWide;
-            let deviceId = crypto.randomBytes(16).toString('hex');
+            let canInstantlyRelogin = !isEmailRequiredSystemWide || user.isVerified;
+            const deviceId = user.deviceId || crypto.randomBytes(16).toString('hex');
 
-            // Device fingerprinting check
-            if (isEmailRequiredSystemWide) {
+            if (isEmailRequiredSystemWide && !user.isVerified) {
                 const cookieStore = await cookies();
                 const deviceToken = cookieStore.get('sales-device-id')?.value;
                 if (deviceToken) {
-                    const { verifyDeviceId } = await import('@/lib/auth');
                     const verifiedDeviceId = await verifyDeviceId(deviceToken);
-                    if (verifiedDeviceId) {
-                        const recognizedDevice = await ctx.prisma.salesSession.findFirst({
-                            where: { email: input.email, deviceId: verifiedDeviceId, isVerified: true }
-                        });
-                        if (recognizedDevice) {
-                            canInstantlyRelogin = true;
-                            deviceId = verifiedDeviceId;
-                        }
+                    if (verifiedDeviceId && verifiedDeviceId === user.deviceId) {
+                        canInstantlyRelogin = true;
                     }
                 }
             }
 
             if (!canInstantlyRelogin) {
-                // Return requiresVerification instead of failing, and create a pending session with magic link
                 const token = crypto.randomBytes(32).toString('hex');
-                const session = await ctx.prisma.salesSession.create({
+                await ctx.prisma.user.update({
+                    where: {
+                        id: user.id,
+                    },
                     data: {
-                        teamId: lastSession.teamId,
-                        firstName: lastSession.firstName,
-                        lastName: lastSession.lastName,
-                        email: lastSession.email,
-                        acceptedTerms: true,
-                        ip: clientIp,
-                        deviceId: deviceId,
-                        userAgent: ctx.req?.headers.get('user-agent'),
-                        isVerified: false,
                         verificationToken: token,
-                        verificationExpiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+                        verificationExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
                     },
                 });
 
-                const { sendVerificationEmail } = await import('@/lib/email');
-                await sendVerificationEmail(input.email, lastSession.firstName || '', token);
+                const {
+                    sendVerificationEmail,
+                } = await import('@/lib/email');
+                await sendVerificationEmail(input.email, user.firstName || '', token);
+
+                const bindingToken = await signSessionBinding(user.id);
 
                 return {
                     success: false,
                     requiresVerification: true,
-                    sessionId: session.id,
+                    bindingToken,
                 };
             }
 
-            const newSession = await ctx.prisma.salesSession.create({
+            if (deviceId) {
+                await ctx.prisma.userSession.deleteMany({
+                    where: {
+                        deviceId,
+                    },
+                });
+            }
+
+            await ctx.prisma.userSession.create({
                 data: {
-                    teamId: lastSession.teamId,
-                    firstName: lastSession.firstName,
-                    lastName: lastSession.lastName,
-                    email: lastSession.email,
-                    acceptedTerms: true,
-                    ip: clientIp,
+                    userId: user.id,
                     deviceId: deviceId,
+                    ip: clientIp,
                     userAgent: ctx.req?.headers.get('user-agent'),
-                    isVerified: true,
+                    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
                 },
             });
 
-            const {
-                signSessionId, signDeviceId
-            } = await import('@/lib/auth');
-            const signedToken = await signSessionId(newSession.id);
-
-            const cookieStore = await cookies();
-            cookieStore.set('sales-session-id', signedToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                path: '/',
-                maxAge: 60 * 60 * 24 * 30, // 30 days
+            await login({
+                id: user.id,
+                email: user.email,
+                role: 'USER',
+                isEditor: false,
+                odRegionId: user.odRegionId,
+                locationId: user.locationId,
+                teamId: user.teamId,
             });
 
             if (deviceId) {
+                const cookieStore = await cookies();
                 const signedDeviceToken = await signDeviceId(deviceId);
                 cookieStore.set('sales-device-id', signedDeviceToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax',
                     path: '/',
-                    maxAge: 60 * 60 * 24 * 365, // 365 days
+                    maxAge: 60 * 60 * 24 * 365,
                 });
             }
 
             return {
                 success: true,
                 requiresVerification: false,
-                firstName: newSession.firstName,
-                lastName: newSession.lastName,
-                email: newSession.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+            };
+        }),
+
+    requestPinResetCode: publicProcedure
+        .input(z.object({
+            email: z.string().email().trim().toLowerCase(),
+        }))
+        .mutation(async ({
+            ctx, input,
+        }) => {
+            const user = await ctx.prisma.user.findUnique({
+                where: {
+                    email: input.email,
+                },
+            });
+
+            if (!user || !user.isVerified) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Kein verifizierter Benutzer mit dieser E-Mail gefunden.',
+                });
+            }
+
+            // Rate limit check: e.g. max 5 reset requests per 10 minutes per IP
+            const clientIp = ctx.ip || '127.0.0.1';
+            const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+            const recentRequests = await ctx.prisma.userSession.count({
+                where: {
+                    ip: clientIp,
+                    createdAt: {
+                        gte: tenMinutesAgo,
+                    },
+                },
+            });
+
+            if (recentRequests >= 50) {
+                throw new TRPCError({
+                    code: 'TOO_MANY_REQUESTS',
+                    message: 'Zu viele Anfragen. Bitte versuche es später erneut.',
+                });
+            }
+
+            // Generate 6-digit PIN reset code
+            const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            await ctx.prisma.user.update({
+                where: {
+                    id: user.id,
+                },
+                data: {
+                    verificationToken: otpCode,
+                    verificationExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes expiry
+                },
+            });
+
+            const {
+                sendPinResetEmail,
+            } = await import('@/lib/email');
+            await sendPinResetEmail(user.email, user.firstName || 'Nutzer', otpCode);
+
+            return {
+                success: true,
+            };
+        }),
+
+    verifyPinResetCode: publicProcedure
+        .input(z.object({
+            email: z.string().email().trim().toLowerCase(),
+            code: z.string().length(6),
+        }))
+        .mutation(async ({
+            ctx, input,
+        }) => {
+            const user = await ctx.prisma.user.findFirst({
+                where: {
+                    email: input.email,
+                    verificationToken: input.code,
+                },
+            });
+
+            if (!user) {
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                    message: 'Der eingegebene Code ist falsch oder abgelaufen.',
+                });
+            }
+
+            if (user.verificationExpiresAt && user.verificationExpiresAt < new Date()) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Der Code ist abgelaufen. Bitte fordere einen neuen an.',
+                });
+            }
+
+            // Clear token
+            await ctx.prisma.user.update({
+                where: {
+                    id: user.id,
+                },
+                data: {
+                    verificationToken: null,
+                    verificationExpiresAt: null,
+                    isVerified: true,
+                },
+            });
+
+            const clientIp = ctx.ip || '127.0.0.1';
+            const deviceId = user.deviceId || crypto.randomBytes(16).toString('hex');
+
+            if (deviceId) {
+                await ctx.prisma.userSession.deleteMany({
+                    where: {
+                        deviceId,
+                    },
+                });
+            }
+
+            await ctx.prisma.userSession.create({
+                data: {
+                    userId: user.id,
+                    deviceId,
+                    ip: clientIp,
+                    userAgent: ctx.req?.headers.get('user-agent'),
+                    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+                },
+            });
+
+            await login({
+                id: user.id,
+                email: user.email,
+                role: 'USER',
+                isEditor: false,
+                odRegionId: user.odRegionId,
+                locationId: user.locationId,
+                teamId: user.teamId,
+            });
+
+            if (deviceId) {
+                const cookieStore = await cookies();
+                const signedDeviceToken = await signDeviceId(deviceId);
+                cookieStore.set('sales-device-id', signedDeviceToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/',
+                    maxAge: 60 * 60 * 24 * 365,
+                });
+            }
+
+            return {
+                success: true,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+            };
+        }),
+
+    updatePin: protectedProcedure
+        .input(z.object({
+            pin: z.string().length(6),
+        }))
+        .mutation(async ({
+            ctx, input,
+        }) => {
+            const userId = ctx.session.sub as string;
+            const hashedPin = await hashPin(input.pin);
+
+            await ctx.prisma.user.update({
+                where: {
+                    id: userId,
+                },
+                data: {
+                    pin: hashedPin,
+                },
+            });
+
+            return {
+                success: true,
             };
         }),
 
     logout: publicProcedure.mutation(async () => {
         const cookieStore = await cookies();
+        cookieStore.delete('auth-token');
         cookieStore.delete('sales-session-id');
         return true;
     }),
 
     list: protectedProcedure
+        .use(requirePermission('users:read'))
         .input(z.object({
-            limit: z.number().min(1).max(100).default(50),
+            limit: z.number().min(1).max(1000).default(50),
             cursor: z.string().nullish(),
             search: z.string().optional(),
             locationId: z.string().optional(),
@@ -502,65 +830,85 @@ export const sessionRouter = router({
             const locationId = input?.locationId;
             const session = ctx.session as any;
 
-            const whereClause: any = {};
-
-            if (session.role === 'OD_MANAGER' && session.odRegionId) {
-                if (locationId) {
-                    whereClause.team = {
-                        locationId,
-                        location: { odRegionId: session.odRegionId },
-                    };
-                } else {
-                    whereClause.team = {
-                        location: { odRegionId: session.odRegionId },
-                    };
-                }
+            const userFilter = getUserFilter(session);
+            const userWhere: any = {
+                AND: [
+                    userFilter,
+                ],
+            };
+            if (locationId) {
+                userWhere.AND.push({
+                    locationId,
+                });
             }
-            else if (session.role === 'LOCATION_MANAGER' && session.locationId) {
-                // Location managers can only ever see their own location
-                whereClause.team = {
-                    locationId: session.locationId,
-                };
-            }
-            else if (session.role === 'TEAM_LEADER' && session.teamId) {
-                // Team leaders can only ever see their own team
-                whereClause.teamId = session.teamId;
-            }
-            else {
-                // ADMIN or unrestricted
-                if (locationId) {
-                    whereClause.team = {
-                        locationId,
-                    };
-                }
-            }
-
-            const where: any = { AND: [whereClause] };
+            const where: any = {
+                AND: [
+                    userFilter.id === 'UNAUTHORIZED' ? {
+                        id: 'UNAUTHORIZED',
+                    } : {
+                        user: userWhere,
+                    },
+                ],
+                isActive: true,
+            };
 
             if (search) {
-
                 where.AND.push({
                     OR: [
-                        { email: { contains: search, mode: 'insensitive' } },
-                        { firstName: { contains: search, mode: 'insensitive' } },
-                        { lastName: { contains: search, mode: 'insensitive' } },
-                        { team: { name: { contains: search, mode: 'insensitive' } } },
+                        {
+                            user: {
+                                email: {
+                                    contains: search,
+                                    mode: 'insensitive',
+                                },
+                            },
+                        },
+                        {
+                            user: {
+                                firstName: {
+                                    contains: search,
+                                    mode: 'insensitive',
+                                },
+                            },
+                        },
+                        {
+                            user: {
+                                lastName: {
+                                    contains: search,
+                                    mode: 'insensitive',
+                                },
+                            },
+                        },
+                        {
+                            user: {
+                                team: {
+                                    name: {
+                                        contains: search,
+                                        mode: 'insensitive',
+                                    },
+                                },
+                            },
+                        },
                     ],
                 });
             }
 
-            const items = await ctx.prisma.salesSession.findMany({
+            const items = await ctx.prisma.userSession.findMany({
                 take: limit + 1,
                 cursor: cursor ? {
                     id: cursor,
                 } : undefined,
                 where,
                 include: {
-                    team: {
+                    user: {
                         include: {
-                            location: {
+                            team: {
                                 include: {
-                                    odRegion: true,
+                                    location: {
+                                        include: {
+                                            odRegion: true,
+                                        },
+                                    },
                                 },
                             },
                         },
@@ -583,4 +931,3 @@ export const sessionRouter = router({
             };
         }),
 });
-

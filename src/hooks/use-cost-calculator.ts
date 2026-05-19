@@ -83,48 +83,27 @@ export function calculateProductCosts({
 
 	// 1. Determine Base Price (Standard or Bundle or Hardware)
 	let effectiveBasePrice = product.basePrice;
-
-	if (product.category === 'DEVICE') {
-		if (hardwarePurchaseType === 'BUY') {
-			effectiveBasePrice = 0; // The monthly cost for hardware is 0 if bought
-		}
-		else if (hardwarePurchaseType === 'RENT') {
-			effectiveBasePrice = product.rentalPrice ?? product.basePrice;
-		}
-		else {
-			// Default to rental price or base if none selected
-			effectiveBasePrice = product.rentalPrice ?? product.basePrice;
-		}
-	}
-	else if (isMagentaTVSelected && product.magentaTVBundlePrice) {
-		// If MagentaTV is selected, we might have a different base price for the bundle
-		effectiveBasePrice = product.magentaTVBundlePrice;
-	}
-
 	if (customBasePrice !== undefined) {
 		effectiveBasePrice = customBasePrice;
 	}
+	else if (product.category === 'DEVICE') {
+		effectiveBasePrice = hardwarePurchaseType === 'BUY'
+			? 0
+			: (product.rentalPrice ?? product.basePrice);
+	}
+	else if (isMagentaTVSelected && product.magentaTVBundlePrice) {
+		effectiveBasePrice = product.magentaTVBundlePrice;
+	}
 
 	// Hardware Tier Surcharge (MOBILE only)
-	let hardwareTierSurcharge = 0;
 	if (product.category === 'MOBILE' && hardwareTier !== 'none') {
-		switch (hardwareTier) {
-			case 'smartphone':
-				hardwareTierSurcharge = settings.mobile_tier_smartphone;
-				break;
-			case 'top':
-				hardwareTierSurcharge = settings.mobile_tier_top;
-				break;
-			case 'premium':
-				hardwareTierSurcharge = settings.mobile_tier_premium;
-				break;
-			case 'premium_plus':
-				hardwareTierSurcharge = settings.mobile_tier_premium_plus;
-				break;
-			default:
-				break;
-		}
-		effectiveBasePrice += hardwareTierSurcharge;
+		const SURCHARGES: Record<string, number> = {
+			smartphone: settings.mobile_tier_smartphone,
+			top: settings.mobile_tier_top,
+			premium: settings.mobile_tier_premium,
+			premium_plus: settings.mobile_tier_premium_plus,
+		};
+		effectiveBasePrice += SURCHARGES[hardwareTier] ?? 0;
 	}
 
 	// 2. Determine One-Time Costs (Activation Fee)
@@ -141,28 +120,15 @@ export function calculateProductCosts({
 		});
 	}
 
-	let activationFee = 0;
-	switch (businessCase) {
-		case 'NEW_ACTIVATION':
-			activationFee = product.activationFeeNew ?? 0;
-			break;
-		case 'MOVE':
-			activationFee = product.activationFeeMove ?? 0;
-			break;
-		case 'PLAN_CHANGE':
-			activationFee = product.activationFeePlanChange ?? 0;
-			break;
-		case 'SPEED_UP':
-			activationFee = product.activationFeeSpeedUp ?? 0;
-			break;
-		default:
-			activationFee = 0;
-			break;
-	}
-
-	if (customBasePrice !== undefined) {
-		activationFee = 0;
-	}
+	const activationFeeMap: Record<BusinessCase, number | null | undefined> = {
+		NEW_ACTIVATION: product.activationFeeNew,
+		MOVE: product.activationFeeMove,
+		PLAN_CHANGE: product.activationFeePlanChange,
+		SPEED_UP: product.activationFeeSpeedUp,
+	};
+	const activationFee = (customBasePrice !== undefined)
+		? 0
+		: (activationFeeMap[businessCase] ?? 0);
 
 	if (activationFee > 0) {
 		oneTimeTotal += activationFee;
@@ -248,33 +214,33 @@ export function calculateProductCosts({
 
 		for (const sp of activeSpecialPrices) {
 			const matchingTier = sp.tiers.find(t => month >= t.fromMonth && month <= t.toMonth);
-			if (matchingTier) {
-				const target = matchingTier.discountTarget || sp.discountTarget;
-				const type = matchingTier.discountType || sp.discountType;
+			if (!matchingTier) { continue; }
 
-				if (target === 'MAGENTA_TV') {
-					let simulatedCost = type === 'RELATIVE'
-						? tvPackagePrice - matchingTier.price
-						: matchingTier.price;
+			const target = matchingTier.discountTarget || sp.discountTarget;
+			const type = matchingTier.discountType || sp.discountType;
 
-					if (simulatedCost < 0) { simulatedCost = 0; }
+			if (target === 'MAGENTA_TV') {
+				let simulatedCost = type === 'RELATIVE'
+					? tvPackagePrice - matchingTier.price
+					: matchingTier.price;
 
-					if (simulatedCost < bestTVCost) {
-						bestTVCost = simulatedCost;
-						appliedTVSpecial = sp;
-					}
+				if (simulatedCost < 0) { simulatedCost = 0; }
+
+				if (simulatedCost < bestTVCost) {
+					bestTVCost = simulatedCost;
+					appliedTVSpecial = sp;
 				}
-				else {
-					let simulatedCost = type === 'RELATIVE'
-						? effectiveBasePrice - matchingTier.price
-						: matchingTier.price;
+			}
+			else {
+				let simulatedCost = type === 'RELATIVE'
+					? effectiveBasePrice - matchingTier.price
+					: matchingTier.price;
 
-					if (simulatedCost < 0) { simulatedCost = 0; }
+				if (simulatedCost < 0) { simulatedCost = 0; }
 
-					if (simulatedCost < bestBasePrice) {
-						bestBasePrice = simulatedCost;
-						appliedBasePriceSpecial = sp;
-					}
+				if (simulatedCost < bestBasePrice) {
+					bestBasePrice = simulatedCost;
+					appliedBasePriceSpecial = sp;
 				}
 			}
 		}
@@ -476,12 +442,32 @@ export function useCostCalculator(
 
 		const activeCredits = availableCredits.filter(c => selectedCreditIds.includes(c.id));
 
+		const validSpecialPriceIds = selectedSpecialPriceIds.filter(spId => {
+			const sp = product.specialPrices.find(s => s.id === spId);
+			if (!sp) { return false; }
+			if (sp.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
+			if (sp.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
+			if (sp.requiresMove && businessCase !== 'MOVE') { return false; }
+			if (sp.requiresNewActivation && businessCase !== 'NEW_ACTIVATION') { return false; }
+			if (sp.requiresSpeedUp && businessCase !== 'SPEED_UP') { return false; }
+			return true;
+		});
+
+		const validAddonIds = selectedAddonIds.filter(tierId => {
+			const addon = product.compatibleAddons!.find(a => (a.tiers || [
+			]).some(t => t.id === tierId));
+			if (!addon) { return false; }
+			if (addon.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
+			if (addon.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
+			return true;
+		});
+
 		return calculateProductCosts({
 			product,
 			businessCase,
 			magentaTVPackage,
-			selectedSpecialPriceIds,
-			selectedAddonIds,
+			selectedSpecialPriceIds: validSpecialPriceIds,
+			selectedAddonIds: validAddonIds,
 			vouchers,
 			credits: activeCredits,
 			hardwarePurchaseType,
@@ -494,6 +480,7 @@ export function useCostCalculator(
 		product,
 		businessCase,
 		magentaTVPackage,
+		isMagentaTVSelected,
 		selectedSpecialPriceIds,
 		selectedAddonIds,
 		vouchers,
