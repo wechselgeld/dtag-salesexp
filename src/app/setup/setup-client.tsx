@@ -145,20 +145,56 @@ export default function SetupPage({
     ] = useState('');
 
     // Already registered / PIN reset states
-    const [isAlreadyRegisteredFlow, setIsAlreadyRegisteredFlow] = useState(false);
-    const [loginEmail, setLoginEmail] = useState('');
-    const [loginPin, setLoginPin] = useState('');
-    const [loginError, setLoginError] = useState<string | null>(null);
-    const [isLoggingIn, setIsLoggingIn] = useState(false);
+    const [
+ isAlreadyRegisteredFlow,
+setIsAlreadyRegisteredFlow,
+] = useState(false);
+    const [
+ loginEmail,
+setLoginEmail,
+] = useState('');
+    const [
+ loginPin,
+setLoginPin,
+] = useState('');
+    const [
+ loginError,
+setLoginError,
+] = useState<string | null>(null);
+    const [
+ isLoggingIn,
+setIsLoggingIn,
+] = useState(false);
 
-    const [isPinResetFlow, setIsPinResetFlow] = useState(false);
-    const [pinResetOtp, setPinResetOtp] = useState('');
-    const [pinResetError, setPinResetError] = useState<string | null>(null);
+    const [
+ isPinResetFlow,
+setIsPinResetFlow,
+] = useState(false);
+    const [
+ pinResetOtp,
+setPinResetOtp,
+] = useState('');
+    const [
+ pinResetError,
+setPinResetError,
+] = useState<string | null>(null);
 
-    const [isSettingNewPin, setIsSettingNewPin] = useState(false);
-    const [newPin, setNewPin] = useState('');
-    const [newPinConfirm, setNewPinConfirm] = useState('');
-    const [newPinError, setNewPinError] = useState<string | null>(null);
+    const [
+ isSettingNewPin,
+setIsSettingNewPin,
+] = useState(false);
+    const [
+ newPin,
+setNewPin,
+] = useState('');
+    const [
+ newPinConfirm,
+setNewPinConfirm,
+] = useState('');
+    const [
+ newPinError,
+setNewPinError,
+] = useState<string | null>(null);
 
     const [
  locationSearch,
@@ -212,7 +248,10 @@ setFormErrors,
 setReloginError,
 ] = useState<string | null>(null);
     const isAutoCheckRef = useRef(false);
-    const [isSilentSuccess, setIsSilentSuccess] = useState(false);
+    const [
+ isSilentSuccess,
+setIsSilentSuccess,
+] = useState(false);
 
     const cardRef = useRef<HTMLDivElement>(null);
     const [
@@ -378,10 +417,10 @@ refetchOnWindowFocus: false,
             setLoginError('Bitte gib Deine 6-stellige PIN ein.');
             return;
         }
-        
+
         const isAuto = !!overridePin;
         isAutoCheckRef.current = isAuto;
-        
+
         if (!isAuto) {
             setIsLoggingIn(true);
         }
@@ -398,7 +437,7 @@ refetchOnWindowFocus: false,
                 if (!isAuto) {
                     setLoginError(err.message || 'Die Anmeldung ist fehlgeschlagen.');
                 }
-            }
+            },
         });
     };
 
@@ -451,7 +490,9 @@ refetchOnWindowFocus: false,
         setReloginError(null);
         setLoginError(null);
         try {
-            await requestPinReset.mutateAsync({ email: targetEmail });
+            await requestPinReset.mutateAsync({
+ email: targetEmail,
+});
             setIsPinResetFlow(true);
             setPinResetOtp('');
             setPinResetError(null);
@@ -499,12 +540,14 @@ refetchOnWindowFocus: false,
         }
         setNewPinError(null);
         try {
-            await updatePinMutation.mutateAsync({ pin: newPin });
-            
+            await updatePinMutation.mutateAsync({
+ pin: newPin,
+});
+
             const targetEmail = email || loginEmail;
             persistName(firstName || 'Vertrieb', lastName || 'Berater', targetEmail);
             markSetupComplete();
-            
+
             refetchCurrentSession().then(() => {
                 router.push('/products');
                 router.refresh();
@@ -538,13 +581,17 @@ finalizeLogin,
 
     const isReturningUser = hasCompletedBefore;
 
-    const { data: userExistsData, isLoading: isUserExistsLoading } = trpc.session.checkUserExists.useQuery(
-        { email },
+    const {
+ data: userExistsData, isLoading: isUserExistsLoading,
+} = trpc.session.checkUserExists.useQuery(
+        {
+ email,
+},
         {
             enabled: isReturningUser && !!email && !showReconfigure,
             refetchOnWindowFocus: false,
             retry: false,
-        }
+        },
     );
 
     useEffect(() => {
@@ -563,7 +610,12 @@ finalizeLogin,
             setShowReconfigure(true);
             setCurrentStep(1);
         }
-    }, [isReturningUser, showReconfigure, email, userExistsData]);
+    }, [
+ isReturningUser,
+showReconfigure,
+email,
+userExistsData,
+]);
 
     const autofillAttemptedRef = useRef(false);
 
@@ -958,28 +1010,69 @@ height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
                     <div ref={cardRef} className="p-8 sm:p-12">
                         {isWizardFlow && (
                             <div className="flex justify-center gap-2 mb-8">
-                                {[1, 2, 3, 4].map(step => (
-                                    <div key={step} className={clsx("h-1.5 rounded-full transition-all duration-300", currentStep === step ? "w-8 bg-[#e20074]" : currentStep > step ? "w-8 bg-[#e20074]/30" : "w-2 bg-[#eaedf0]")} />
+                                {[
+ 1,
+2,
+3,
+4,
+].map(step => (
+                                    <div key={step} className={clsx('h-1.5 rounded-full transition-all duration-300', currentStep === step ? 'w-8 bg-[#e20074]' : currentStep > step ? 'w-8 bg-[#e20074]/30' : 'w-2 bg-[#eaedf0]')} />
                                 ))}
                             </div>
                         )}
                         <AnimatePresence mode="wait" initial={false}>
                             {isIpLoading ? (
-                                <motion.div key="ipLoading" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex flex-col items-center gap-4 py-12">
+                                <motion.div key="ipLoading" initial={{
+ opacity: 0,
+x: 15,
+}} animate={{
+ opacity: 1,
+x: 0,
+}} exit={{
+ opacity: 0,
+x: -15,
+}} className="flex flex-col items-center gap-4 py-12">
                                     <div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
                                     <p className="text-[#888] text-[0.9rem] font-medium">Überprüfe Zugriffsberechtigung…</p>
                                 </motion.div>
                             ) : isIpError ? (
-                                <motion.div key="ipError" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }}>
+                                <motion.div key="ipError" initial={{
+ opacity: 0,
+x: 15,
+}} animate={{
+ opacity: 1,
+x: 0,
+}} exit={{
+ opacity: 0,
+x: -15,
+}}>
                                     <IpBlockedCard error={ipError} />
                                 </motion.div>
                             ) : isReturningUser && !showReconfigure && isUserExistsLoading ? (
-                                <motion.div key="userExistsLoading" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex flex-col items-center gap-4 py-12">
+                                <motion.div key="userExistsLoading" initial={{
+ opacity: 0,
+x: 15,
+}} animate={{
+ opacity: 1,
+x: 0,
+}} exit={{
+ opacity: 0,
+x: -15,
+}} className="flex flex-col items-center gap-4 py-12">
                                     <div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
                                     <p className="text-[#888] text-[0.9rem] font-medium">Profil wird geladen…</p>
                                 </motion.div>
                             ) : isReturningUser && !showReconfigure ? (
-                                <motion.div key="welcomeBack" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }}>
+                                <motion.div key="welcomeBack" initial={{
+ opacity: 0,
+x: 15,
+}} animate={{
+ opacity: 1,
+x: 0,
+}} exit={{
+ opacity: 0,
+x: -15,
+}}>
                                     <WelcomeBackCard
                                         firstName={firstName} lastName={lastName} email={email} teamName={existingSession?.team?.name}
                                         reloginPin={reloginPin} setReloginPin={setReloginPin} reloginError={reloginError}
@@ -1036,7 +1129,8 @@ height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
                                         onReconfigure={async () => {
                                             try {
                                                 await logoutMutation.mutateAsync();
-                                            } catch (err) {
+                                            }
+ catch (err) {
                                                 console.error('Logout during reconfigure failed:', err);
                                             }
                                             localStorage.removeItem(LS_KEY_FIRST_NAME);
@@ -1057,7 +1151,16 @@ height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
                                     />
                                 </motion.div>
                             ) : requestPinReset.isPending ? (
-                                <motion.div key="sendingReset" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex flex-col items-center text-center gap-5 py-12">
+                                <motion.div key="sendingReset" initial={{
+ opacity: 0,
+x: 15,
+}} animate={{
+ opacity: 1,
+x: 0,
+}} exit={{
+ opacity: 0,
+x: -15,
+}} className="flex flex-col items-center text-center gap-5 py-12">
                                     <div className="relative flex items-center justify-center mb-1">
                                         <div className="absolute -inset-1.5 border-[3px] border-[#fdf2f8] border-t-[#e20074] rounded-full animate-spin" />
                                         <div className="w-16 h-16 bg-[#fdf2f8] rounded-full flex items-center justify-center relative z-10">
@@ -1072,7 +1175,16 @@ height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
                                     </div>
                                 </motion.div>
                             ) : isSettingNewPin ? (
-                                <motion.div key="settingNewPin" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex flex-col gap-6 py-4">
+                                <motion.div key="settingNewPin" initial={{
+ opacity: 0,
+x: 15,
+}} animate={{
+ opacity: 1,
+x: 0,
+}} exit={{
+ opacity: 0,
+x: -15,
+}} className="flex flex-col gap-6 py-4">
                                     <ScreenHeader icon={<Lock className="w-5 h-5 text-[#e20074]" />} title="Neue PIN festlegen" subtitle="Vergib eine neue 6-stellige PIN für dieses Gerät." />
                                     <form onSubmit={handleSaveNewPin} className="w-full flex flex-col gap-4">
                                         <div className="flex flex-col gap-2 text-left">
@@ -1107,7 +1219,16 @@ height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
                                     </form>
                                 </motion.div>
                             ) : isPinResetFlow ? (
-                                <motion.div key="pinResetFlow" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex flex-col gap-6 py-4">
+                                <motion.div key="pinResetFlow" initial={{
+ opacity: 0,
+x: 15,
+}} animate={{
+ opacity: 1,
+x: 0,
+}} exit={{
+ opacity: 0,
+x: -15,
+}} className="flex flex-col gap-6 py-4">
                                     <ScreenHeader icon={<Mail className="w-5 h-5 text-[#e20074]" />} title="Sicherheitscode eingeben" subtitle="Wir haben einen 6-stelligen Bestätigungscode an Deine E-Mail-Adresse gesendet." />
                                     <form onSubmit={handleVerifyPinResetOtp} className="w-full flex flex-col gap-4">
                                         <div className="flex flex-col gap-2 text-left">
@@ -1131,7 +1252,7 @@ height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
                                                             },
                                                             onError: (err) => {
                                                                 setPinResetError(err.message || 'Der eingegebene Code ist ungültig.');
-                                                            }
+                                                            },
                                                         });
                                                     }
                                                 }}
@@ -1156,7 +1277,16 @@ height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
                                     </form>
                                 </motion.div>
                             ) : isAlreadyRegisteredFlow ? (
-                                <motion.div key="alreadyRegistered" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex flex-col gap-6 py-4">
+                                <motion.div key="alreadyRegistered" initial={{
+ opacity: 0,
+x: 15,
+}} animate={{
+ opacity: 1,
+x: 0,
+}} exit={{
+ opacity: 0,
+x: -15,
+}} className="flex flex-col gap-6 py-4">
                                     <ScreenHeader icon={<User className="w-5 h-5 text-[#e20074]" />} title="Mit bestehendem Profil anmelden" subtitle="Gib Deine E-Mail-Adresse und Deine 6-stellige PIN ein, um Dich auf diesem Gerät anzumelden." />
                                     <form onSubmit={handleLoginSubmit} className="w-full flex flex-col gap-4">
                                         <PremiumInput id="loginEmail" type="email" label="E-Mail-Adresse" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="max.mustermann@telekom.de" disabled={isLoggingIn || isSilentSuccess} autoComplete="username webauthn" />
@@ -1207,7 +1337,16 @@ height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
                                     </form>
                                 </motion.div>
                             ) : pendingBindingToken ? (
-                                <motion.div key="pendingToken" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex flex-col items-center text-center gap-5 py-4">
+                                <motion.div key="pendingToken" initial={{
+ opacity: 0,
+x: 15,
+}} animate={{
+ opacity: 1,
+x: 0,
+}} exit={{
+ opacity: 0,
+x: -15,
+}} className="flex flex-col items-center text-center gap-5 py-4">
                                     <div className="relative flex items-center justify-center mb-1">
                                         <div className="absolute -inset-1.5 border-[3px] border-[#fdf2f8] border-t-[#e20074] rounded-full animate-spin" />
                                         <div className="w-16 h-16 bg-[#fdf2f8] rounded-full flex items-center justify-center relative z-10">
@@ -1252,9 +1391,6 @@ y: 0,
         </div>
     );
 }
-
-
-
 
 
 function IpBlockedCard({
