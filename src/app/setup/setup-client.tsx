@@ -538,6 +538,33 @@ finalizeLogin,
 
     const isReturningUser = hasCompletedBefore;
 
+    const { data: userExistsData, isLoading: isUserExistsLoading } = trpc.session.checkUserExists.useQuery(
+        { email },
+        {
+            enabled: isReturningUser && !!email && !showReconfigure,
+            refetchOnWindowFocus: false,
+            retry: false,
+        }
+    );
+
+    useEffect(() => {
+        if (isReturningUser && !showReconfigure && email && userExistsData && !userExistsData.exists) {
+            localStorage.removeItem(LS_KEY_FIRST_NAME);
+            localStorage.removeItem(LS_KEY_LAST_NAME);
+            localStorage.removeItem(LS_KEY_EMAIL);
+            localStorage.removeItem(LS_KEY_SETUP_DONE);
+            setFirstName('');
+            setLastName('');
+            setEmail('');
+            setPin('');
+            setSelectedLocationId(null);
+            setSelectedTeamId(null);
+            setHasCompletedBefore(false);
+            setShowReconfigure(true);
+            setCurrentStep(1);
+        }
+    }, [isReturningUser, showReconfigure, email, userExistsData]);
+
     const autofillAttemptedRef = useRef(false);
 
     useEffect(() => {
@@ -945,6 +972,11 @@ height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
                             ) : isIpError ? (
                                 <motion.div key="ipError" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }}>
                                     <IpBlockedCard error={ipError} />
+                                </motion.div>
+                            ) : isReturningUser && !showReconfigure && isUserExistsLoading ? (
+                                <motion.div key="userExistsLoading" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex flex-col items-center gap-4 py-12">
+                                    <div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
+                                    <p className="text-[#888] text-[0.9rem] font-medium">Profil wird geladen…</p>
                                 </motion.div>
                             ) : isReturningUser && !showReconfigure ? (
                                 <motion.div key="welcomeBack" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }}>

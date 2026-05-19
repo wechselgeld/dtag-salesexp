@@ -456,6 +456,27 @@ export const sessionRouter = router({
         return user;
     }),
 
+    checkUserExists: publicProcedure
+        .input(z.object({
+            email: z.string().email().trim().toLowerCase(),
+        }))
+        .query(async ({
+            ctx, input,
+        }) => {
+            const user = await ctx.prisma.user.findUnique({
+                where: {
+                    email: input.email,
+                },
+                select: {
+                    id: true,
+                },
+            });
+            return {
+                exists: !!user,
+            };
+        }),
+
+
     updateTeam: protectedProcedure
         .input(z.object({
             teamId: z.string(),
