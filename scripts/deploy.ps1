@@ -46,11 +46,11 @@ if (-not $isClean) {
 if ($Target -eq "staging") {
     Write-Host "[STAGING] Deploying to STAGING..." -ForegroundColor Cyan
     
-    # Run migrations for Staging
-    Write-Host "Running STAGING migrations..." -ForegroundColor Yellow
-    pnpm run db:migrate:staging
+    # Run database schema push for Staging
+    Write-Host "Running STAGING database push..." -ForegroundColor Yellow
+    pnpm run db:push:staging
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "[ERROR] Staging migration failed. Aborting deployment." -ForegroundColor Red
+        Write-Host "[ERROR] Staging database push failed. Aborting deployment." -ForegroundColor Red
         exit 1
     }
 
@@ -127,11 +127,11 @@ if ($Target -eq "production") {
         }
     }
 
-    # 3. Run production database migrations
-    Write-Host "Running PRODUCTION database migrations..." -ForegroundColor Yellow
-    pnpm run db:migrate:prod
+    # 3. Run production database schema push
+    Write-Host "Running PRODUCTION database push..." -ForegroundColor Yellow
+    pnpm run db:push:prod
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "[ERROR] Production migration failed! Switching back to original branch..." -ForegroundColor Red
+        Write-Host "[ERROR] Production database push failed! Switching back to original branch..." -ForegroundColor Red
         if ($currentBranch -ne "master") {
             git checkout $currentBranch
         }
@@ -158,5 +158,5 @@ if ($Target -eq "production") {
         }
     }
 
-    Write-Host "[SUCCESS] PRODUCTION deployment triggered and database migrated successfully!" -ForegroundColor Green
+    Write-Host "[SUCCESS] PRODUCTION deployment triggered and database schema pushed successfully!" -ForegroundColor Green
 }
