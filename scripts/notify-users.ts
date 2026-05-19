@@ -52,6 +52,7 @@ async function main() {
 		const users = await prisma.user.findMany({
 			select: {
 				email: true,
+				firstName: true,
 			},
 			orderBy: {
 				email: 'asc',
