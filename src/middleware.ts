@@ -50,6 +50,9 @@ export async function middleware(req: NextRequest) {
       if (!roles.includes(session.role as string)) {
         response = NextResponse.redirect(new URL('/', req.url));
       }
+      else if (path === '/admin') {
+        response = NextResponse.redirect(new URL('/admin/products', req.url));
+      }
     }
   }
 

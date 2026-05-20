@@ -459,7 +459,7 @@ refetchOnWindowFocus: false,
             });
             if (verifyResp.success) {
                 if ('isAdmin' in verifyResp && verifyResp.isAdmin) {
-                    router.push('/admin');
+                    router.push('/admin/products');
                     return;
                 }
                 const salesData = verifyResp as { firstName?: string, lastName?: string, email?: string };
@@ -646,7 +646,7 @@ response: authResp,
 });
                     if (verifyResp.success) {
                         if ('isAdmin' in verifyResp && verifyResp.isAdmin) {
-                            router.push('/admin');
+                            router.push('/admin/products');
                             return;
                         }
                         const salesData = verifyResp as { firstName?: string, lastName?: string, email?: string };
@@ -1104,7 +1104,7 @@ x: -15,
                                                 });
                                                 if (verifyResp.success) {
                                                     if ('isAdmin' in verifyResp && verifyResp.isAdmin) {
-                                                        router.push('/admin');
+                                                        router.push('/admin/products');
                                                         return;
                                                     }
                                                     const salesData = verifyResp as { firstName?: string, lastName?: string, email?: string };

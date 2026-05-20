@@ -321,6 +321,19 @@ export const webauthnRouter = router({
             }
             catch (error: any) {
                 console.error('Authentication verification failed:', error);
+                if (passkey) {
+                    try {
+                        await ctx.prisma.passkey.delete({
+                            where: {
+                                id: passkey.id,
+                            },
+                        });
+                        console.warn(`[Auto-Heal] Successfully deleted broken passkey ${passkey.id} for user ${passkey.email} due to verification failure.`);
+                    }
+                    catch (deleteError) {
+                        console.error(`[Auto-Heal] Failed to delete broken passkey ${passkey.id}:`, deleteError);
+                    }
+                }
                 throw new TRPCError({
                     code: 'BAD_REQUEST',
                     message: error.message,
@@ -384,6 +397,7 @@ export const webauthnRouter = router({
                     odRegionId: user.odRegionId,
                     locationId: user.locationId,
                     teamId: user.teamId,
+                    sessionVersion: user.sessionVersion,
                 });
 
                 const signedDeviceToken = await signDeviceId(deviceId);

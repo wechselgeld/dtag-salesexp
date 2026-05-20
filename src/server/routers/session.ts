@@ -349,6 +349,7 @@ export const sessionRouter = router({
                 odRegionId: user.odRegionId,
                 locationId: user.locationId,
                 teamId: user.teamId,
+                sessionVersion: user.sessionVersion,
             });
 
             if (user.deviceId) {
@@ -451,6 +452,7 @@ export const sessionRouter = router({
                 odRegionId: user.odRegionId,
                 locationId: user.locationId,
                 teamId: user.teamId,
+                sessionVersion: user.sessionVersion,
             });
 
             if (user.deviceId) {
@@ -704,6 +706,7 @@ export const sessionRouter = router({
                 odRegionId: user.odRegionId,
                 locationId: user.locationId,
                 teamId: user.teamId,
+                sessionVersion: user.sessionVersion,
             });
 
             if (deviceId) {
@@ -869,6 +872,7 @@ export const sessionRouter = router({
                 odRegionId: user.odRegionId,
                 locationId: user.locationId,
                 teamId: user.teamId,
+                sessionVersion: user.sessionVersion,
             });
 
             if (deviceId) {
