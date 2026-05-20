@@ -15,6 +15,12 @@ import {
 import {
 	GlobalFooter,
 } from '@/components/shared/global-footer';
+import {
+	useSettingsStore,
+} from '@/hooks/use-settings-store';
+import {
+	PremiumButton,
+} from '@/components/shared/form/form-suite';
 
 const TARGET_WIDTH = 1920;
 const TARGET_HEIGHT = 1080;
@@ -26,6 +32,11 @@ const MIN_HEIGHT = 900;
 export function ResolutionGuard({
 	children,
 }: { children: React.ReactNode }) {
+	const {
+		bypassResolutionGuard,
+		setBypassResolutionGuard,
+	} = useSettingsStore();
+
 	const [
 		isTooSmall,
 		setIsTooSmall,
@@ -58,17 +69,18 @@ export function ResolutionGuard({
 		window.addEventListener('resize', checkResolution);
 		return () =>
 			window.removeEventListener('resize', checkResolution);
-	}, [
-	]);
+	}, []);
 
 	if (!mounted) {
 		return <>{children}</>;
 	}
 
+	const shouldShowGuard = isTooSmall && !bypassResolutionGuard;
+
 	return (
 		<>
 			<AnimatePresence>
-				{isTooSmall && (
+				{shouldShowGuard && (
 					<motion.div
 						initial={{
 							opacity: 0,
@@ -105,10 +117,10 @@ export function ResolutionGuard({
 							>
 								<TelekomLogo className="w-12 h-12 text-[#e20074] mb-8" />
 								<h1 className="text-3xl sm:text-[2.5rem] font-extrabold text-[#1a1a2e] tracking-tight mb-3 leading-none">
-									Sales Experience @ DTS
+									Sales Experience
 								</h1>
 								<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">
-									Die Sales Expirience funktioniert aktuell nur mit einer Auflösung von 1920x1080 Pixeln.
+									Die Sales Experience ist für eine Auflösung von 1920x1080 Pixeln ausgelegt.
 								</p>
 							</motion.div>
 
@@ -140,41 +152,32 @@ export function ResolutionGuard({
 											<div className="absolute inset-0 rounded-full border-2 border-[#e20074]/10 animate-ping opacity-20" />
 											<MonitorOff className="w-8 h-8 text-[#e20074]" />
 										</div>
-										<div>
-											<h3 className="text-[1.1rem] font-extrabold text-[#1a1a2e] mb-2 tracking-tight">
-												Auflösung zu gering
+										<div className="space-y-3">
+											<h3 className="text-[1.2rem] font-extrabold text-[#1a1a2e] tracking-tight">
+												Auflösung nicht optimal
 											</h3>
-											<p className="text-[0.9rem] text-[#888] leading-relaxed max-w-md mx-auto">
-												Die Sales Experience ist für eine optimale Darstellung ab einer Auflösung von{' '}
-												<span className="font-bold text-[#1a1a2e]">
-													{TARGET_WIDTH} x {TARGET_HEIGHT} Pixeln
-												</span>{' '}
-												optimiert.
+											<p className="text-[0.92rem] text-[#555] leading-relaxed max-w-lg mx-auto">
+												Die Sales Experience ist nicht für diese Bildschirmauflösung ausgelegt. Daher kann es sein, dass die App nicht wie erwartet funktioniert. Bitte verschiebe die Anwendung stattdessen auf einen Monitor mit einer Auflösung von{' '}
+												<span className="font-bold text-[#e20074]">{TARGET_WIDTH}x{TARGET_HEIGHT} Pixeln</span>.
 											</p>
-											<p className="text-[0.75rem] text-[#aaa] mt-3 italic">
+											<p className="mr-1 text-[0.75rem] text-[#999] font-semibold bg-[#f7f8fa] border border-[#eaedf0] inline-block px-3 py-1.5 rounded-xl">
+												Empfohlene Auflösung: {MIN_WIDTH} x {MIN_HEIGHT} Pixel
+											</p>
+											<p className="ml-1 text-[0.75rem] text-[#999] font-semibold bg-[#f7f8fa] border border-[#eaedf0] inline-block px-3 py-1.5 rounded-xl">
 												Deine aktuelle Auflösung: {windowSize.width} x {windowSize.height} Pixel
 											</p>
 										</div>
 
-										<div className="mt-4 flex flex-col gap-4 w-full max-w-xs mx-auto">
-											<div className="h-1 w-full bg-[#f7f8fa] rounded-full overflow-hidden">
-												<motion.div
-													className="h-full bg-[#e20074]"
-													initial={{
-														width: '0%',
-													}}
-													animate={{
-														width: `${Math.min(100, (windowSize.width / MIN_WIDTH) * 100)}%`,
-													}}
-													transition={{
-														duration: 0.8,
-														ease: 'easeOut',
-													}}
-												/>
+										<div className="mt-4 flex flex-col gap-5 w-full max-w-sm mx-auto">
+											<div className="flex flex-col gap-3 items-center">
+												<PremiumButton
+													onClick={() => setBypassResolutionGuard(true)}
+													variant="primary"
+													className="w-full max-w-xs h-[48px] text-[0.85rem] shadow-lg shadow-[#e20074]/20"
+												>
+													Okay, trotzdem fortfahren
+												</PremiumButton>
 											</div>
-											<p className="text-[0.8rem] text-[#888]">
-												Bitte vergrößere dein Browserfenster oder nutze den Vollbildmodus (F11), um fortzufahren.
-											</p>
 										</div>
 									</div>
 								</div>
@@ -212,7 +215,7 @@ export function ResolutionGuard({
 					</motion.div>
 				)}
 			</AnimatePresence>
-			<div className={isTooSmall ? 'sr-only pointer-events-none overflow-hidden h-0' : 'contents'}>
+			<div className={shouldShowGuard ? 'sr-only pointer-events-none overflow-hidden h-0' : 'contents'}>
 				{children}
 			</div>
 		</>

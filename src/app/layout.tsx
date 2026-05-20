@@ -80,10 +80,10 @@ const teleNeo = localFont({
 
 export const metadata: Metadata = {
 	title: {
-		default: 'Sales Experience @ Chemnitz',
+		default: 'Sales Experience',
 		template: '%s | Sales Experience',
 	},
-	description: 'Die Sales Experience für Chemnitz.',
+	description: 'Die Sales Experience für die DT Service GmbH.',
 	icons: {
 		icon: '/favicon.ico',
 	},

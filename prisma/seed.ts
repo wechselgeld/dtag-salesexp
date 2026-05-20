@@ -287,7 +287,6 @@ async function main() {
     // 5. Users
     console.log('👤 Seeding Users...');
     const hashedAdminPassword = await bcrypt.hash('admin123', 10);
-    const hashedSuperAdminPassword = await bcrypt.hash('superadmin123', 10);
     const hashedPin = await bcrypt.hash('123456', 10);
 
     const usersData = [
@@ -298,19 +297,6 @@ async function main() {
             firstName: 'Admin',
             lastName: 'Telekom',
             role: 'ADMIN',
-            isVerified: true,
-            acceptedTerms: true,
-            teamId: teams['Team Alpha Berlin'].id,
-            locationId: locations['Berlin'].id,
-            odRegionId: regions['Region Ost'].id,
-        },
-        {
-            email: 'superadmin@telekom.de',
-            password: hashedSuperAdminPassword,
-            pin: hashedPin,
-            firstName: 'Super',
-            lastName: 'Admin',
-            role: 'SUPER_ADMIN',
             isVerified: true,
             acceptedTerms: true,
             teamId: teams['Team Alpha Berlin'].id,

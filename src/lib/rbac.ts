@@ -129,10 +129,6 @@ export function getNewsVisibilityFilter(user: SessionUser | undefined | null) {
             id: 'UNAUTHORIZED',
         };
     }
-    if (hasRole(user, 'ADMIN')) {
-        return {
-        };
-    }
 
     const orConditions: any[] = [
         {
@@ -168,7 +164,6 @@ export function getNewsVisibilityFilter(user: SessionUser | undefined | null) {
 
 export function isNewsVisible(user: SessionUser | undefined | null, news: { odRegionId?: string | null, locationId?: string | null, teamId?: string | null }): boolean {
     if (!user) return false;
-    if (hasRole(user, 'ADMIN')) return true;
 
     const isGlobal = !news.odRegionId && !news.locationId && !news.teamId;
     if (isGlobal) return true;

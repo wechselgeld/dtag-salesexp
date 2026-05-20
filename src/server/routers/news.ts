@@ -13,6 +13,9 @@ import {
 import {
     getNewsVisibilityFilter, isNewsVisible,
 } from '@/lib/rbac';
+import {
+    getCached,
+} from '@/lib/cache';
 
 async function getSessionContext(ctx: any) {
     if (!ctx.session?.sub) {
@@ -25,38 +28,47 @@ async function getSessionContext(ctx: any) {
         };
     }
 
-    const user = await prisma.user.findUnique({
-        where: {
-            id: ctx.session.sub,
-        },
-        include: {
-            team: {
-                include: {
-                    location: true,
-                },
+    const userId = ctx.session.sub;
+
+    // Cache the fully resolved hierarchical context under `session:user:${userId}:context`.
+    // It will be automatically invalidated by calls to `invalidateCache("session:user:" + userId)`
+    // because that uses `session:user:${userId}*` prefix pattern matching.
+    const sessionContext = await getCached(`session:user:${userId}:context`, 5 * 60 * 1000, async () => {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId,
             },
-            location: true,
-            odRegion: true,
-        },
+            include: {
+                team: {
+                    include: {
+                        location: true,
+                    },
+                },
+                location: true,
+                odRegion: true,
+            },
+        });
+
+        if (!user) {
+            return {
+                odRegionId: null,
+                locationId: null,
+                teamId: null,
+                isAdmin: false,
+                role: 'USER',
+            };
+        }
+
+        return {
+            odRegionId: user.odRegionId || user.location?.odRegionId || user.team?.location?.odRegionId || null,
+            locationId: user.locationId || user.team?.locationId || null,
+            teamId: user.teamId || null,
+            isAdmin: user.role === 'ADMIN',
+            role: user.role,
+        };
     });
 
-    if (!user) {
-        return {
-            odRegionId: null,
-            locationId: null,
-            teamId: null,
-            isAdmin: false,
-            role: 'USER',
-        };
-    }
-
-    return {
-        odRegionId: user.odRegionId || user.location?.odRegionId || user.team?.location?.odRegionId || null,
-        locationId: user.locationId || user.team?.locationId || null,
-        teamId: user.teamId || null,
-        isAdmin: user.role === 'ADMIN',
-        role: user.role,
-    };
+    return sessionContext;
 }
 
 export const newsRouter = router({
@@ -116,14 +128,9 @@ export const newsRouter = router({
 
         for await (const [
             news,
-        ] of on(newsEmitter, 'add', {
+        ] of on(newsEmitter, 'local_add', {
             signal,
         })) {
-            if (isAdmin) {
-                yield news;
-                continue;
-            }
-
             const sessionUser = {
                 id: ctx.session?.sub || 'anonymous',
                 role,

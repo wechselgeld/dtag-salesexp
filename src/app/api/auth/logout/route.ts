@@ -7,5 +7,10 @@ import {
 
 export async function GET(request: Request) {
     await logout();
-    return NextResponse.redirect(new URL('/login', request.url));
+    
+    const url = new URL(request.url);
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || url.host;
+    const protocol = request.headers.get('x-forwarded-proto') || (url.protocol.startsWith('https') ? 'https' : 'http');
+    
+    return NextResponse.redirect(new URL('/login', `${protocol}://${host}`));
 }

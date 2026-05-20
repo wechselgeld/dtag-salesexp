@@ -975,7 +975,7 @@ x: -15,
     const isWizardFlow = !isIpLoading && !isIpError && !(isReturningUser && !showReconfigure) && !isAlreadyRegisteredFlow && !isPinResetFlow && !isSettingNewPin && !requestPinReset.isPending;
 
     return (
-        <div className="h-screen w-full py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074] scrollbar-none overflow-y-auto overflow-x-hidden fixed inset-0">
+        <div className="h-screen w-full py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074] scrollbar-none overflow-y-auto overflow-x-hidden fixed inset-0 bg-[#f7f8fa]">
             <div className="max-w-3xl mx-auto">
                 <motion.div initial={{
  opacity: 0,
@@ -987,9 +987,9 @@ y: 0,
  duration: 0.5,
 }} className="flex flex-col items-center mb-10 text-center">
                     <TelekomLogo className="w-12 h-12 text-[#e20074] mb-8" />
-                    <h1 className="text-3xl sm:text-[2.5rem] font-extrabold text-[#1a1a2e] tracking-tight mb-3 leading-none">Sales Experience @ DTS</h1>
+                    <h1 className="text-3xl sm:text-[2.5rem] font-extrabold text-[#1a1a2e] tracking-tight mb-3 leading-none">Sales Experience</h1>
                     <p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">
-                        Willkommen bei der Sales Experience! 👋🏻<br />Sie hilft Dir interaktiv bei der Beratung im Gespräch.
+                        Willkommen bei der Sales Experience, kurz SXP! 👋🏻<br />Sie hilft Dir interaktiv bei der Beratung im Gespräch.
                     </p>
                 </motion.div>
 

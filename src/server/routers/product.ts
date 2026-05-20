@@ -31,33 +31,36 @@ export const productRouter = router({
             // Default to uppercase if not found in map (fallback)
             const mappedCategory = categoryMap[input.category.toLowerCase()] || input.category.toUpperCase();
 
-            return prisma.product.findMany({
-                where: {
-                    category: mappedCategory,
-                    isActive: true,
-                },
-                include: {
-                    specialPrices: {
-                        include: {
-                            tiers: {
-                                orderBy: {
-                                    fromMonth: 'asc',
+            // Cache for 5 minutes, invalidated when products are modified in admin panel via invalidateCache('product')
+            return getCached(`products:category:${mappedCategory}`, 5 * 60 * 1000, () => {
+                return prisma.product.findMany({
+                    where: {
+                        category: mappedCategory,
+                        isActive: true,
+                    },
+                    include: {
+                        specialPrices: {
+                            include: {
+                                tiers: {
+                                    orderBy: {
+                                        fromMonth: 'asc',
+                                    },
                                 },
                             },
                         },
-                    },
-                    salesArguments: {
-                        where: {
-                            isActive: true,
+                        salesArguments: {
+                            where: {
+                                isActive: true,
+                            },
+                            orderBy: {
+                                sortOrder: 'asc',
+                            },
                         },
-                        orderBy: {
-                            sortOrder: 'asc',
-                        },
                     },
-                },
-                orderBy: {
-                    priority: 'desc',
-                },
+                    orderBy: {
+                        priority: 'desc',
+                    },
+                });
             });
         }),
 
@@ -201,13 +204,15 @@ export const productRouter = router({
         }),
 
     getOneTimeCredits: publicProcedure.query(() => {
-        return prisma.oneTimeCredit.findMany({
-            where: {
-                isActive: true,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
+        return getCached('products:oneTimeCredits', 60 * 60 * 1000, () => {
+            return prisma.oneTimeCredit.findMany({
+                where: {
+                    isActive: true,
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
+            });
         });
     }),
 

@@ -275,11 +275,36 @@ duration: 0.25,
                 <Check className={clsx('w-2.5 h-2.5 text-white transition-transform duration-200', isSelected ? 'scale-100' : 'scale-0')} strokeWidth={4} />
             </div>
             <div className="flex flex-col items-start gap-0.5 text-left overflow-hidden">
-                <span className={clsx('text-[0.88rem] font-bold transition-colors leading-tight truncate w-full', isSelected ? 'text-[#e20074]' : 'text-[#1a1a2e]')}>
+                <span className={clsx('text-[0.88rem] font-bold transition-colors leading-tight w-full', isSelected ? 'text-[#e20074]' : 'text-[#1a1a2e]')}>
                     {name}
                 </span>
-                {subtitle && <span className="text-[0.7rem] text-[#888] font-medium leading-[1.2] truncate w-full">{subtitle}</span>}
+                {subtitle && <span className="text-[0.7rem] text-[#888] font-medium leading-[1.2] w-full">{subtitle}</span>}
             </div>
         </motion.button>
+    );
+}
+
+// --- Info Card (Vaguely copies the design of Interner Nutzungshinweis from /setup) ---
+export function InfoCard({
+    icon,
+    title,
+    children,
+    className,
+}: {
+    icon?: React.ReactNode;
+    title: string;
+    children: React.ReactNode;
+    className?: string;
+}) {
+    return (
+        <div className={clsx('bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl p-5 text-left w-full shadow-sm', className)}>
+            <div className="flex gap-4">
+                {icon && <div className="shrink-0 mt-[2px] text-[#888]">{icon}</div>}
+                <div className="flex flex-col gap-1.5 min-w-0 w-full text-left">
+                    <h4 className="text-[0.85rem] font-bold text-[#1a1a2e] m-0 leading-none">{title}</h4>
+                    <div className="text-[0.8rem] text-[#888] leading-relaxed font-medium m-0">{children}</div>
+                </div>
+            </div>
+        </div>
     );
 }

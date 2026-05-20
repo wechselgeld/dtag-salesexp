@@ -921,9 +921,9 @@ export const adminRouter = router({
 
                 // Emit the newly created news to SSE subscribers
                 import('@/lib/news-emitter').then(({
-                    newsEmitter,
+                    publishNewsEvent,
                 }) => {
-                    newsEmitter.emit('add', news);
+                    publishNewsEvent(news);
                 });
 
                 return news;

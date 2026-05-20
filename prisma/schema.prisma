@@ -23,6 +23,8 @@ model User {
   isVerified            Boolean       @default(false)
   verificationToken     String?       @unique
   verificationExpiresAt DateTime?
+  pinResetOtpHash       String?
+  pinResetExpiresAt     DateTime?
   odRegionId            String?
   locationId            String?
   teamId                String?
@@ -61,6 +63,8 @@ model Location {
   news       News[]
   teams      Team[]
   users      User[]
+
+  @@index([odRegionId, isActive])
 }
 
 model Product {
@@ -114,6 +118,8 @@ model SalesArgument {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, isActive, sortOrder])
 }
 
 model PriceHistory {
@@ -123,6 +129,8 @@ model PriceHistory {
   label     String?
   createdAt DateTime @default(now())
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, createdAt])
 }
 
 model SpecialPrice {
@@ -153,6 +161,8 @@ model SpecialPriceTier {
   discountTarget String       @default("BASE_PRICE")
   discountType   String       @default("ABSOLUTE")
   specialPrice   SpecialPrice @relation(fields: [specialPriceId], references: [id], onDelete: Cascade)
+
+  @@index([specialPriceId, fromMonth])
 }
 
 model Addon {
@@ -177,6 +187,8 @@ model AddonTier {
   name    String
   price   Float
   addon   Addon  @relation(fields: [addonId], references: [id], onDelete: Cascade)
+
+  @@index([addonId])
 }
 
 model TeamHighlight {
@@ -192,6 +204,10 @@ model TeamHighlight {
   addon        Addon?   @relation(fields: [addonId], references: [id], onDelete: Cascade)
   product      Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   team         Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId, active])
+  @@index([productId, active])
+  @@index([addonId, active])
 }
 
 model MaintenanceAnnouncement {

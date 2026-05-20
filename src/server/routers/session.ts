@@ -12,6 +12,7 @@ import {
 } from '@trpc/server';
 import ipaddr from 'ipaddr.js';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import {
     getCached,
 } from '@/lib/cache';
@@ -23,8 +24,56 @@ import {
 import {
     getUserFilter,
 } from '@/lib/rbac';
+import {
+    RedisRateLimiter,
+} from '@/lib/rate-limit';
 
-const SETTINGS_TTL = 1000 * 60 * 60; // 1 hour
+// 1 hour
+const SETTINGS_TTL = 1000 * 60 * 60;
+
+// Rate Limiters
+
+// 15 minutes window, max 20 per IP
+const registrationIpLimiter = new RedisRateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    keyPrefix: 'rate_limit:registration:ip',
+});
+
+// 15 minutes window, max 5 per email
+const registrationEmailLimiter = new RedisRateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    keyPrefix: 'rate_limit:registration:email',
+});
+
+// 1 minute window, max 20 per IP
+const loginIpLimiter = new RedisRateLimiter({
+    windowMs: 60 * 1000,
+    max: 20,
+    keyPrefix: 'rate_limit:login:ip',
+});
+
+// 5 minutes window, max 5 per email
+const loginEmailLimiter = new RedisRateLimiter({
+    windowMs: 5 * 60 * 1000,
+    max: 5,
+    keyPrefix: 'rate_limit:login:email',
+});
+
+// 1 hour window, max 5 per IP
+const pinResetRequestIpLimiter = new RedisRateLimiter({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    keyPrefix: 'rate_limit:pin_reset_request:ip',
+});
+
+// 15 minutes window, max 5 per email
+const pinResetVerifyEmailLimiter = new RedisRateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    keyPrefix: 'rate_limit:pin_reset_verify:email',
+});
 
 function checkIpIsAllowed(ipString: string, allowedIpsString: string) {
     if (!allowedIpsString || allowedIpsString.trim() === '') { return true; }
@@ -106,7 +155,12 @@ export const sessionRouter = router({
             teamId: z.string().min(1),
             firstName: z.string().min(1),
             lastName: z.string().min(1),
-            email: z.string().email().trim().toLowerCase(),
+            email: z.string().email().trim().toLowerCase().refine(
+                (email) => email.endsWith('@telekom.de'),
+                {
+                    message: 'Nur @telekom.de E-Mail-Adressen sind erlaubt.',
+                },
+            ),
             pin: z.string().length(6),
             acceptedTerms: z.literal(true),
         }))
@@ -140,34 +194,19 @@ export const sessionRouter = router({
                 });
             }
 
-            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-            const [
-                recentIpRequests,
-                recentEmailRequests,
-            ] = await Promise.all([
-                ctx.prisma.userSession.count({
-                    where: {
-                        ip: clientIp,
-                        createdAt: {
-                            gte: fifteenMinutesAgo,
-                        },
-                    },
-                }),
-                ctx.prisma.user.count({
-                    where: {
-                        email: input.email,
-                        createdAt: {
-                            gte: fifteenMinutesAgo,
-                        },
-                        isVerified: false,
-                    },
-                }),
-            ]);
-
-            if (recentIpRequests >= 50 || recentEmailRequests >= 5) {
+            const ipLimitRes = await registrationIpLimiter.limit(clientIp);
+            if (!ipLimitRes.success) {
                 throw new TRPCError({
                     code: 'TOO_MANY_REQUESTS',
-                    message: 'Zu viele Anfragen. Bitte versuche es später erneut.',
+                    message: 'Zu viele Registrierungsanfragen von dieser IP-Adresse. Bitte warte einen Moment.',
+                });
+            }
+
+            const emailLimitRes = await registrationEmailLimiter.limit(input.email);
+            if (!emailLimitRes.success) {
+                throw new TRPCError({
+                    code: 'TOO_MANY_REQUESTS',
+                    message: 'Zu viele Registrierungsanfragen für diese E-Mail-Adresse. Bitte warte einen Moment.',
                 });
             }
 
@@ -449,6 +488,7 @@ export const sessionRouter = router({
                         highlights: true,
                     },
                 },
+                location: true,
             },
         });
 
@@ -485,14 +525,36 @@ export const sessionRouter = router({
             ctx, input,
         }) => {
             const userId = ctx.session.sub as string;
-            await ctx.prisma.user.update({
+            const team = await ctx.prisma.team.findUnique({
+                where: {
+                    id: input.teamId,
+                },
+                select: {
+                    locationId: true,
+                },
+            });
+
+            const updatedUser = await ctx.prisma.user.update({
                 where: {
                     id: userId,
                 },
                 data: {
                     teamId: input.teamId,
+                    locationId: team?.locationId ?? undefined,
                 },
             });
+
+            await login({
+                id: updatedUser.id,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                isEditor: updatedUser.isEditor,
+                odRegionId: updatedUser.odRegionId,
+                locationId: updatedUser.locationId,
+                teamId: updatedUser.teamId,
+                sessionVersion: updatedUser.sessionVersion,
+            });
+
             return {
                 success: true,
             };
@@ -519,6 +581,24 @@ export const sessionRouter = router({
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'IP address not allowed',
+                });
+            }
+
+            // IP rate limit
+            const ipLimitRes = await loginIpLimiter.limit(clientIp);
+            if (!ipLimitRes.success) {
+                throw new TRPCError({
+                    code: 'TOO_MANY_REQUESTS',
+                    message: 'Zu viele Login-Versuche von dieser IP-Adresse. Bitte warte einen Moment.',
+                });
+            }
+
+            // Email rate limit
+            const emailLimitRes = await loginEmailLimiter.limit(input.email);
+            if (!emailLimitRes.success) {
+                throw new TRPCError({
+                    code: 'TOO_MANY_REQUESTS',
+                    message: 'Dieses Konto wurde vorübergehend gesperrt. Bitte versuche es in 5 Minuten erneut.',
                 });
             }
 
@@ -654,6 +734,17 @@ export const sessionRouter = router({
         .mutation(async ({
             ctx, input,
         }) => {
+            const clientIp = ctx.ip || '127.0.0.1';
+
+            // IP rate limit for requesting reset codes
+            const ipLimitRes = await pinResetRequestIpLimiter.limit(clientIp);
+            if (!ipLimitRes.success) {
+                throw new TRPCError({
+                    code: 'TOO_MANY_REQUESTS',
+                    message: 'Zu viele Anfragen von dieser IP-Adresse. Bitte versuche es später erneut.',
+                });
+            }
+
             const user = await ctx.prisma.user.findUnique({
                 where: {
                     email: input.email,
@@ -667,35 +758,18 @@ export const sessionRouter = router({
                 });
             }
 
-            // Rate limit check: e.g. max 5 reset requests per 10 minutes per IP
-            const clientIp = ctx.ip || '127.0.0.1';
-            const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-            const recentRequests = await ctx.prisma.userSession.count({
-                where: {
-                    ip: clientIp,
-                    createdAt: {
-                        gte: tenMinutesAgo,
-                    },
-                },
-            });
-
-            if (recentRequests >= 50) {
-                throw new TRPCError({
-                    code: 'TOO_MANY_REQUESTS',
-                    message: 'Zu viele Anfragen. Bitte versuche es später erneut.',
-                });
-            }
-
             // Generate 6-digit PIN reset code
             const otpCode = crypto.randomInt(100000, 1000000).toString();
+            const otpHash = await bcrypt.hash(otpCode, 10);
 
             await ctx.prisma.user.update({
                 where: {
                     id: user.id,
                 },
                 data: {
-                    verificationToken: otpCode,
-                    verificationExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes expiry
+                    pinResetOtpHash: otpHash,
+                    // 10 minutes expiry
+                    pinResetExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
                 },
             });
 
@@ -717,35 +791,51 @@ export const sessionRouter = router({
         .mutation(async ({
             ctx, input,
         }) => {
-            const user = await ctx.prisma.user.findFirst({
+            // Email-based rate limit against OTP guessing
+            const limitRes = await pinResetVerifyEmailLimiter.limit(input.email);
+            if (!limitRes.success) {
+                throw new TRPCError({
+                    code: 'TOO_MANY_REQUESTS',
+                    message: 'Zu viele fehlerhafte Versuche. Bitte fordere einen neuen Code an oder warte 15 Minuten.',
+                });
+            }
+
+            const user = await ctx.prisma.user.findUnique({
                 where: {
                     email: input.email,
-                    verificationToken: input.code,
                 },
             });
 
-            if (!user) {
+            if (!user || !user.pinResetOtpHash || !user.pinResetExpiresAt) {
                 throw new TRPCError({
                     code: 'UNAUTHORIZED',
                     message: 'Der eingegebene Code ist falsch oder abgelaufen.',
                 });
             }
 
-            if (user.verificationExpiresAt && user.verificationExpiresAt < new Date()) {
+            if (user.pinResetExpiresAt < new Date()) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Der Code ist abgelaufen. Bitte fordere einen neuen an.',
                 });
             }
 
-            // Clear token
+            const isOtpValid = await bcrypt.compare(input.code, user.pinResetOtpHash);
+            if (!isOtpValid) {
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                    message: 'Der eingegebene Code ist falsch oder abgelaufen.',
+                });
+            }
+
+            // Clear OTP fields
             await ctx.prisma.user.update({
                 where: {
                     id: user.id,
                 },
                 data: {
-                    verificationToken: null,
-                    verificationExpiresAt: null,
+                    pinResetOtpHash: null,
+                    pinResetExpiresAt: null,
                     isVerified: true,
                 },
             });
@@ -774,8 +864,8 @@ export const sessionRouter = router({
             await login({
                 id: user.id,
                 email: user.email,
-                role: 'USER',
-                isEditor: false,
+                role: user.role || 'USER',
+                isEditor: user.isEditor || false,
                 odRegionId: user.odRegionId,
                 locationId: user.locationId,
                 teamId: user.teamId,

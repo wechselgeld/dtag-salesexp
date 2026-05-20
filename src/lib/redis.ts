@@ -20,6 +20,8 @@ const createRedisInstance = () => {
     // immediately rather than silently accumulating. Callers (cache.ts) handle
     // the error and fall through to the DB, which is the correct behavior.
     enableOfflineQueue: false,
+    // KeepAlive (10 seconds) prevents connection dropouts over NATs/firewalls
+    keepAlive: 10000,
     // Backoff with jitter, capped at 30s. Never returns null — ioredis interprets
     // null as "stop retrying forever", which turns a 5-second Redis restart into
     // a full application outage until the Node process is manually killed.
@@ -29,6 +31,7 @@ const createRedisInstance = () => {
     },
   });
 
+  instance.on('connecting', () => cacheLogger.debug(pc.yellow('Redis connecting')));
   instance.on('connect', () => cacheLogger.debug(pc.green('Redis connected')));
   instance.on('ready', () => cacheLogger.debug(pc.cyan('Redis ready')));
   instance.on('error', (err) => cacheLogger.error(pc.red(`Redis error: ${err.message}`)));

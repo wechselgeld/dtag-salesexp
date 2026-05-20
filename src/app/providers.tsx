@@ -66,7 +66,7 @@ export default function Providers({
 					error?.message === 'UNAUTHORIZED' ||
 					error?.message?.includes('UNAUTHORIZED')
 				) {
-					if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+					if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/setup')) {
 						window.location.href = '/api/auth/logout';
 					}
 				}

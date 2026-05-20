@@ -52,6 +52,8 @@ const PRIORITY_CONFIG: Record<
 };
 
 export function GlobalNewsNotification() {
+	const utils = trpc.useUtils();
+
 	const notifications = useNewsNotificationStore(
 		(state) => state.notifications,
 	);
@@ -81,6 +83,9 @@ export function GlobalNewsNotification() {
 	trpc.news.onAdd.useSubscription(undefined, {
 		enabled: subscriptionEnabled,
 		onData(news: any) {
+			// Invalidate active news list so the carousel updates in real-time
+			utils.news.listActive.invalidate();
+
 			if (!notifications.some((n) => n.id === news.id)) {
 				addNotification({
 					id: news.id,

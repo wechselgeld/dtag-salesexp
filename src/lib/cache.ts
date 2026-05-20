@@ -28,7 +28,7 @@ export async function getCache<T>(key: string): Promise<T | typeof MISSING> {
 
 export async function setCache<T>(key: string, value: T, ttlMs: number): Promise<void> {
   try {
-    if (value !== undefined && value !== null) {
+    if (value !== undefined) {
       await redis.set(key, JSON.stringify(value), 'PX', ttlMs);
     }
   }
@@ -88,16 +88,23 @@ async function scanKeys(pattern: string): Promise<string[]> {
   return keys;
 }
 
-export function invalidateCache(keyPrefix: string): void {
+export async function invalidateCache(keyPrefix: string): Promise<void> {
   const start = Date.now();
-  scanKeys(`${keyPrefix}*`)
-    .then((keys) => {
-      if (keys.length === 0) return;
-      return redis.del(...keys).then(() => {
-        cacheLogger.info(
-          `${pc.bold(pc.magenta('INVALIDATE'))} ${pc.dim(keyPrefix)}* ${pc.gray(`(${keys.length} keys, ${Date.now() - start}ms)`)}`,
-        );
-      });
-    })
-    .catch((err) => cacheLogger.error(`Cache invalidation failed for "${keyPrefix}*": ${err.message}`));
+  try {
+    const keys = await scanKeys(`${keyPrefix}*`);
+    if (keys.length === 0) return;
+    
+    const batchSize = 100;
+    for (let i = 0; i < keys.length; i += batchSize) {
+      const chunk = keys.slice(i, i + batchSize);
+      await redis.del(...chunk);
+    }
+
+    cacheLogger.info(
+      `${pc.bold(pc.magenta('INVALIDATE'))} ${pc.dim(keyPrefix)}* ${pc.gray(`(${keys.length} keys, ${Date.now() - start}ms)`)}`,
+    );
+  }
+  catch (err) {
+    cacheLogger.error(`Cache invalidation failed for "${keyPrefix}*": ${(err as Error).message}`);
+  }
 }

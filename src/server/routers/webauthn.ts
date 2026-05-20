@@ -144,6 +144,9 @@ export const webauthnRouter = router({
                 });
             }
 
+            // Strict Single-Use: delete challenge immediately upon retrieval
+            await redis.del(`webauthn_challenge:reg:${input.email}`);
+
             const {
                 rpID, origin,
             } = getRpIdAndOrigin();
@@ -183,8 +186,6 @@ export const webauthnRouter = router({
                         transports: input.response.response.transports?.join(',') || '',
                     },
                 });
-
-                await redis.del(`webauthn_challenge:reg:${input.email}`);
 
                 return {
                     success: true,
@@ -260,9 +261,15 @@ export const webauthnRouter = router({
             let expectedChallenge: string | null = null;
             if (input.challengeId) {
                 expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.challengeId}`);
+                if (expectedChallenge) {
+                    await redis.del(`webauthn_challenge:auth:${input.challengeId}`);
+                }
             }
             else if (input.email) {
                 expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.email}`);
+                if (expectedChallenge) {
+                    await redis.del(`webauthn_challenge:auth:${input.email}`);
+                }
             }
 
             if (!expectedChallenge) {
@@ -335,10 +342,6 @@ export const webauthnRouter = router({
                     },
                 });
 
-                if (input.challengeId) await redis.del(`webauthn_challenge:auth:${input.challengeId}`);
-                if (input.email) await redis.del(`webauthn_challenge:auth:${input.email}`);
-                await redis.del(`webauthn_challenge:auth:${userEmail}`);
-
                 const user = await ctx.prisma.user.findUnique({
                     where: {
                         email: userEmail,
@@ -349,13 +352,6 @@ export const webauthnRouter = router({
                     throw new TRPCError({
                         code: 'NOT_FOUND',
                         message: 'Benutzerkonto nicht gefunden.',
-                    });
-                }
-
-                if (user.role === 'USER') {
-                    throw new TRPCError({
-                        code: 'FORBIDDEN',
-                        message: 'Deine Rolle hat keine Berechtigung für administrative Aktionen.',
                     });
                 }
 

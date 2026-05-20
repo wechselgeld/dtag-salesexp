@@ -43,7 +43,6 @@ export async function middleware(req: NextRequest) {
       // Role check
       const roles = [
         'ADMIN',
-        'SUPER_ADMIN',
         'OD_MANAGER',
         'LOCATION_MANAGER',
         'TEAM_LEADER',
@@ -59,7 +58,6 @@ export async function middleware(req: NextRequest) {
     const session = await getMiddlewareSession(req);
     const adminRoles = [
       'ADMIN',
-      'SUPER_ADMIN',
       'OD_MANAGER',
       'LOCATION_MANAGER',
       'TEAM_LEADER',
