@@ -1,5 +1,5 @@
 import {
-	useEffect, useRef,
+	useEffect, useRef, useMemo,
 } from 'react';
 import {
 	useBasketStore,
@@ -14,10 +14,15 @@ import {
 	trpc,
 } from '@/lib/trpc';
 
-export function useBasketLogic() {
-	const {
-		items, basketCredits,
-	} = useBasketStore();
+export function useBasketLogic(basketId?: string) {
+	const basket = useBasketStore((state) =>
+		basketId ? (state.baskets || []).find((b) => b.id === basketId) : null
+	);
+	const storeItems = useBasketStore((state) => state.items);
+	const storeBasketCredits = useBasketStore((state) => state.basketCredits);
+
+	const items = basket ? basket.items : storeItems;
+	const basketCredits = basket ? basket.basketCredits : storeBasketCredits;
 	const addNotification = useNewsNotificationStore((state) => state.addNotification);
 	const lastNudgeRef = useRef<string | null>(null);
 
@@ -32,6 +37,13 @@ export function useBasketLogic() {
 	useEffect(() => {
 		if (items.length === 0) {
 			lastNudgeRef.current = null;
+			return;
+		}
+
+		// Only trigger the nudge if an item was added very recently (within the last 2 seconds)
+		// This prevents the nudge from showing up on page reloads, comparison toggles, or tab switches.
+		const hasRecentlyAddedItem = items.some((item) => Date.now() - item.addedAt < 2000);
+		if (!hasRecentlyAddedItem) {
 			return;
 		}
 
@@ -73,41 +85,46 @@ export function useBasketLogic() {
 	]);
 
 	// Cache calculations for each item to avoid redundant expensive calls
-	const itemsWithCosts = items.map(item => {
-		const costs = calculateProductCosts({
-			product: item.product,
-			businessCase: item.config.businessCase,
-			magentaTVPackage: item.config.magentaTVPackage,
-			selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
-			selectedAddonIds: item.config.selectedAddonIds,
-			vouchers: item.config.vouchers,
-			hardwarePurchaseType: item.config.hardwarePurchaseType,
-			plusKartenCount: item.config.plusKartenCount,
-			settings,
-			customBasePrice: item.config.customBasePrice,
-			hardwareTier: item.config.hardwareTier,
-		});
+	const itemsWithCosts = useMemo(() => {
+		return items.map(item => {
+			const costs = calculateProductCosts({
+				product: item.product,
+				businessCase: item.config.businessCase,
+				magentaTVPackage: item.config.magentaTVPackage,
+				selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
+				selectedAddonIds: item.config.selectedAddonIds,
+				vouchers: item.config.vouchers,
+				hardwarePurchaseType: item.config.hardwarePurchaseType,
+				plusKartenCount: item.config.plusKartenCount,
+				settings,
+				customBasePrice: item.config.customBasePrice,
+				hardwareTier: item.config.hardwareTier,
+			});
 
-		// One-time costs for Bestandsprodukte are already 0 from useCostCalculator
-		return {
-			item,
-			costs,
-		};
-	});
+			return {
+				item,
+				costs,
+			};
+		});
+	}, [items, settings]);
 
 	// Aggregated Totals
-	const totals = itemsWithCosts.reduce((acc, entry) => {
-		return {
-			monthly: acc.monthly + entry.costs.averageMonthlyCost,
-			daily: acc.daily + entry.costs.averageMonthlyCost / 30,
-		};
-	}, {
-		monthly: 0,
-		daily: 0,
-	});
+	const totals = useMemo(() => {
+		return itemsWithCosts.reduce((acc, entry) => {
+			return {
+				monthly: acc.monthly + entry.costs.averageMonthlyCost,
+				daily: acc.daily + entry.costs.averageMonthlyCost / 30,
+			};
+		}, {
+			monthly: 0,
+			daily: 0,
+		});
+	}, [itemsWithCosts]);
 
 	// Monthly steps calculation (24 months)
-	const combinedSteps = itemsWithCosts.length > 0 ? (() => {
+	const combinedSteps = useMemo(() => {
+		if (itemsWithCosts.length === 0) return [];
+
 		const monthlyTotals = Array(24).fill(0);
 		itemsWithCosts.forEach((entry) => {
 			entry.costs.monthlyCosts.forEach((mc, index) => {
@@ -115,8 +132,7 @@ export function useBasketLogic() {
 			});
 		});
 
-		const steps: { start: number; end: number; total: number }[] = [
-		];
+		const steps: { start: number; end: number; total: number }[] = [];
 		let currentStep = {
 			start: 1,
 			end: 1,
@@ -140,29 +156,48 @@ export function useBasketLogic() {
 		}
 		steps.push(currentStep);
 		return steps;
-	})() : [
-	];
+	}, [itemsWithCosts]);
 
 	// One-time costs breakdown
-	const oneTimeBreakdowns = itemsWithCosts.flatMap((entry) => entry.costs.oneTimeCosts.breakdown);
+	const oneTimeBreakdowns = useMemo(() => {
+		return itemsWithCosts.flatMap((entry) => entry.costs.oneTimeCosts.breakdown);
+	}, [itemsWithCosts]);
 
-	const oneTimeBreakdownNoShipping = oneTimeBreakdowns.filter(c => c.name !== 'Versand Hardware');
-	const totalOneTimeItems = oneTimeBreakdownNoShipping.reduce((acc, curr) => acc + curr.cost, 0);
-	const hasDevice = items.some((i) => i.product.category === 'DEVICE');
-	const globalShippingFee = hasDevice ? settings.shipping_hardware_fee : 0;
+	const oneTimeBreakdownNoShipping = useMemo(() => {
+		return oneTimeBreakdowns.filter(c => c.name !== 'Versand Hardware');
+	}, [oneTimeBreakdowns]);
 
-	const groupedOneTimeCosts = oneTimeBreakdownNoShipping.reduce((acc, curr) => {
-		acc[curr.name] = (acc[curr.name] || 0) + curr.cost;
-		return acc;
-	}, {
-	} as Record<string, number>);
+	const totalOneTimeItems = useMemo(() => {
+		return oneTimeBreakdownNoShipping.reduce((acc, curr) => acc + curr.cost, 0);
+	}, [oneTimeBreakdownNoShipping]);
 
-	if (globalShippingFee > 0) {
-		groupedOneTimeCosts['Versand Hardware'] = globalShippingFee;
-	}
+	const hasDevice = useMemo(() => {
+		return items.some((i) => i.product.category === 'DEVICE');
+	}, [items]);
 
-	const totalCredits = basketCredits.reduce((acc, credit) => acc + credit.value, 0);
-	const totalOneTime = (totalOneTimeItems + globalShippingFee) - totalCredits;
+	const globalShippingFee = useMemo(() => {
+		return hasDevice ? settings.shipping_hardware_fee : 0;
+	}, [hasDevice, settings.shipping_hardware_fee]);
+
+	const groupedOneTimeCosts = useMemo(() => {
+		const grouped = oneTimeBreakdownNoShipping.reduce((acc, curr) => {
+			acc[curr.name] = (acc[curr.name] || 0) + curr.cost;
+			return acc;
+		}, {} as Record<string, number>);
+
+		if (globalShippingFee > 0) {
+			grouped['Versand Hardware'] = globalShippingFee;
+		}
+		return grouped;
+	}, [oneTimeBreakdownNoShipping, globalShippingFee]);
+
+	const totalCredits = useMemo(() => {
+		return basketCredits.reduce((acc, credit) => acc + credit.value, 0);
+	}, [basketCredits]);
+
+	const totalOneTime = useMemo(() => {
+		return (totalOneTimeItems + globalShippingFee) - totalCredits;
+	}, [totalOneTimeItems, globalShippingFee, totalCredits]);
 
 	return {
 		totals,

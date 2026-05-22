@@ -11,6 +11,12 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
+	useBasketStore,
+} from '@/hooks/use-basket-store';
+import {
+	useMediaQuery,
+} from '@/hooks/use-media-query';
+import {
 	trpc,
 } from '@/lib/trpc';
 import {
@@ -250,6 +256,13 @@ export function AddonSelector({
 	isMagentaTVSelected,
 	catColor = '#e20074',
 }: Props) {
+	const isOpen = useBasketStore((state) => state.isOpen);
+	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
+	const basketsCount = useBasketStore((state) => state.baskets.length);
+	const isComparing = isOpen && isComparisonMode && basketsCount > 1;
+	const isNarrowViewport = useMediaQuery('(max-width: 1024px)');
+	const isSqueezed = isComparing || (isOpen && basketsCount >= 3) || isNarrowViewport;
+
 	const [
 		searchQuery,
 		setSearchQuery,
@@ -423,67 +436,74 @@ export function AddonSelector({
 							)}
 
 							{/* Row Content */}
-							<div className="relative z-10 flex items-center gap-4 px-4 py-3.5">
-								{/* Toggle checkbox — always present */}
-								<div
-									className="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all duration-200"
-									style={{
-										borderColor: hasSelected ? catColor : '#ddd',
-										backgroundColor: hasSelected ? catColor : 'transparent',
-									}}
-								>
-									{hasSelected && (
-										<Check
-											className="w-3.5 h-3.5 text-white"
-											strokeWidth={4}
-										/>
-									)}
-								</div>
-
-								{/* Title + Price subtitle + Description */}
-								<div className="flex-1 min-w-0">
-									<div className="flex items-center gap-2 mb-0.5">
-										<h3
-											className={clsx(
-												'font-bold text-[0.95rem] m-0 transition-colors',
-												showImageBg
-													? 'text-white'
-													: hasSelected
-														? `text-[${catColor}]`
-														: 'text-[#1a1a2e]',
-											)}
-											style={{
-												color: showImageBg
-													? undefined
-													: hasSelected
-														? catColor
-														: undefined,
-											}}
-										>
-											{addon.name}
-										</h3>
-									</div>
-									<p
-										className={clsx(
-											'text-[0.78rem] m-0 transition-colors',
-											showImageBg ? 'text-white/70' : 'text-[#999]',
-										)}
+							<div className={clsx(
+								'relative z-10 flex gap-4 px-4 py-3.5',
+								isSqueezed 
+									? 'flex-col items-stretch' 
+									: 'flex-row items-center justify-between'
+							)}>
+								<div className="flex items-center gap-4 flex-1 min-w-0">
+									{/* Toggle checkbox — always present */}
+									<div
+										className="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+										style={{
+											borderColor: hasSelected ? catColor : '#ddd',
+											backgroundColor: hasSelected ? catColor : 'transparent',
+										}}
 									>
-										{!isMultiTier || hasSelected
-											? `+${displayPrice.toFixed(2).replace('.', ',')} € mtl.`
-											: `ab ${displayPrice.toFixed(2).replace('.', ',')} € mtl.`}
-										{addon.description && (
-											<>
-												<span className="mx-1.5 opacity-50">•</span>
-												{addon.description}
-											</>
+										{hasSelected && (
+											<Check
+												className="w-3.5 h-3.5 text-white"
+												strokeWidth={4}
+											/>
 										)}
-									</p>
+									</div>
+
+									{/* Title + Price subtitle + Description */}
+									<div className="flex-1 min-w-0">
+										<div className="flex items-center gap-2 mb-0.5">
+											<h3
+												className={clsx(
+													'font-bold text-[0.95rem] m-0 transition-colors',
+													showImageBg
+														? 'text-white'
+														: hasSelected
+															? `text-[${catColor}]`
+															: 'text-[#1a1a2e]',
+												)}
+												style={{
+													color: showImageBg
+														? undefined
+														: hasSelected
+															? catColor
+															: undefined,
+												}}
+											>
+												{addon.name}
+											</h3>
+										</div>
+										<p
+											className={clsx(
+												'text-[0.78rem] m-0 transition-colors',
+												showImageBg ? 'text-white/70' : 'text-[#999]',
+											)}
+										>
+											{!isMultiTier || hasSelected
+												? `+${displayPrice.toFixed(2).replace('.', ',')} € mtl.`
+												: `ab ${displayPrice.toFixed(2).replace('.', ',')} € mtl.`}
+											{addon.description && (
+												<>
+													<span className="mx-1.5 opacity-50">•</span>
+													{addon.description}
+												</>
+											)}
+										</p>
+									</div>
 								</div>
 
 								{/* Variant Dropdown (multi-tier only, at end of row) */}
 								{isMultiTier && (
-									<div onClick={(e) => e.stopPropagation()}>
+									<div onClick={(e) => e.stopPropagation()} className={clsx('shrink-0', isSqueezed ? 'ml-9' : 'ml-0')}>
 										<VariantDropdown
 											addon={addon}
 											selectedTierId={selectedTierId}

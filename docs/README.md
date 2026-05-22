@@ -1,6 +1,8 @@
 # Technische Dokumentation SXP
 
-Dieses Verzeichnis enthält die technische Dokumentation der Sales Experience, dem internen Vertriebsberatungstool der Deutschen Telekom Service GmbH.
+Dieses Verzeichnis enthält die technische Dokumentation der Sales Experience (SXP), dem internen Vertriebsberatungstool der Deutschen Telekom Service GmbH.
+
+Die SXP ist ein eigenständiges Tool, das nicht mit anderen Telekom-Schnittstellen verbunden ist. Derzeit findet der Einsatz des Tools ausschließlich im Callcenter-Umfeld (Inbound & Outbound) in Live-Kontakten statt.
 
 ---
 

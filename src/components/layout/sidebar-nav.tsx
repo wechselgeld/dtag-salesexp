@@ -69,9 +69,7 @@ const CATEGORY_NAMES: Record<string, string> = {
 
 export function SidebarNav() {
 	const pathname = usePathname();
-	const {
-		items,
-	} = useBasketStore();
+	const items = useBasketStore((state) => state.items);
 	const {
 		setCalculatorOpen, setBattlecardOpen, setFeedbackOpen,
 	} =

@@ -455,7 +455,7 @@ setIsPasskeyLoading,
 									<ScreenHeader
 										icon={<Key className="w-5 h-5 text-[#e20074]" />}
 										title="Gerät sicher merken (Passkey)"
-										subtitle="Melde Dich in Zukunft blitzschnell per Fingerabdruck, FaceID oder Windows Hello an – ganz ohne PIN oder Passwort!"
+										subtitle="Melde Dich in Zukunft blitzschnell per Fingerabdruck, FaceID, Bitwarden oder Windows Hello an – ganz ohne PIN oder Passwort!"
 									/>
 
 									<div className="flex flex-col gap-3 w-full mt-4">

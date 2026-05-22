@@ -44,6 +44,9 @@ import {
 	useBasketStore,
 } from '@/hooks/use-basket-store';
 import {
+	useMediaQuery,
+} from '@/hooks/use-media-query';
+import {
 	Skeleton,
 } from '@/components/shared/skeleton';
 
@@ -170,9 +173,29 @@ export default function ProductListPage() {
 	const {
 		compactView, sortOption, setSortOption,
 	} = useSettingsStore();
-	const {
-		addItem,
-	} = useBasketStore();
+	const addItem = useBasketStore((state) => state.addItem);
+	const isOpen = useBasketStore((state) => state.isOpen);
+	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
+	const basketsCount = useBasketStore((state) => state.baskets.length);
+	const isComparing = isOpen && isComparisonMode && basketsCount > 1;
+	const isMobileViewport = useMediaQuery('(max-width: 640px)');
+	const isCardCompact = compactView || isMobileViewport || isComparing;
+
+	const gridColsClass = (() => {
+		if (isComparing) {
+			if (basketsCount === 2) {
+				return 'grid-cols-1 xl:grid-cols-2';
+			}
+			return 'grid-cols-1';
+		}
+		if (isOpen) {
+			// When basket drawer is open (occupying 320px), use 1 column below xl (1280px).
+			// This prevents narrow, squeezed cards in tablet/medium desktop viewports.
+			return 'grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3';
+		}
+		// When basket drawer is closed, use 1 column below lg (1024px).
+		return 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3';
+	})();
 
 	const {
 		data: session,
@@ -656,7 +679,7 @@ export default function ProductListPage() {
 			{/* Product Grid */}
 			<div className="pb-10">
 				{isLoading ? (
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div className={clsx("grid gap-6", gridColsClass)}>
 						{[
 							1,
 							2,
@@ -708,7 +731,7 @@ export default function ProductListPage() {
 						))}
 					</div>
 				) : (
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div className={clsx("grid gap-6", gridColsClass)}>
 						<AnimatePresence mode="popLayout">
 							{filteredProducts.map((product, index) => {
 								const isFocused = session?.team?.highlights.some(
@@ -738,7 +761,7 @@ export default function ProductListPage() {
 										className={clsx(
 											'bg-linear-to-br from-white to-[#fcfafc] rounded-2xl flex flex-col justify-between transition-all duration-300 group border relative cursor-pointer overflow-hidden',
 											isFocused ? 'highlight-glow' : 'border-[#eaedf0]',
-											compactView ? 'p-3.5' : 'p-5',
+											isCardCompact ? 'p-3.5' : 'p-5',
 										)}
 									>
 										{/* Gradient overlay - hover only */}
@@ -764,18 +787,18 @@ export default function ProductListPage() {
 											)}
 
 
-											{/* Title + Duration + Stats indicator on same line */}
+											{/* Title + Duration + Stats indicator on same line (or wrapped downwards when small) */}
 											<div
 												className={clsx(
-													'flex items-baseline justify-between',
-													compactView ? 'mb-1.5' : 'mb-3',
+													'flex items-start justify-between gap-3',
+													isCardCompact ? 'mb-1.5' : 'mb-3',
 												)}
 											>
-												<div className="flex items-center gap-3">
+												<div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 min-w-0 flex-1">
 													<h3
 														className={clsx(
-															'font-bold transition-colors duration-300 leading-tight m-0 flex items-center gap-2',
-															compactView ? 'text-[0.95rem]' : 'text-[1.15rem]',
+															'font-bold transition-colors duration-300 leading-tight m-0 flex items-center gap-2 min-w-0',
+															isCardCompact ? 'text-[0.95rem]' : 'text-[1.15rem]',
 															isFocused
 																? ''
 																: 'text-[#1a1a2e] group-hover:text-(--cat-color)',
@@ -783,15 +806,18 @@ export default function ProductListPage() {
 														style={isFocused ? {
 															color: catColor,
 														} : undefined}
+														title={product.name}
 													>
-														{product.name}
+														<span className="truncate">
+															{product.name}
+														</span>
 													</h3>
 
 													{/* Speed / Volume Visualizer */}
 													{product.category === 'MOBILE' &&
 													product.dataVolume ? (
 															<div
-																className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold text-[0.7rem] uppercase tracking-wide group-hover:scale-[1.02] transition-transform"
+																className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold text-[0.7rem] uppercase tracking-wide group-hover:scale-[1.02] transition-transform shrink-0"
 																style={{
 																	backgroundColor: `${catColor}0d`,
 																	borderColor: `${catColor}25`,
@@ -811,7 +837,7 @@ export default function ProductListPage() {
 														) : product.category !== 'DEVICE' &&
 													  product.downloadSpeed ? (
 																<div
-																	className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold text-[0.7rem] uppercase tracking-wide group-hover:scale-[1.02] transition-transform"
+																	className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold text-[0.7rem] uppercase tracking-wide group-hover:scale-[1.02] transition-transform shrink-0"
 																	style={{
 																		backgroundColor: `${catColor}0d`,
 																		borderColor: `${catColor}25`,
@@ -831,14 +857,14 @@ export default function ProductListPage() {
 															) : null}
 												</div>
 												{product.contractDuration && (
-													<span className="text-[0.68rem] font-medium text-[#c0c0c0] uppercase tracking-wider ml-3 shrink-0">
+													<span className="text-[0.68rem] font-medium text-[#c0c0c0] uppercase tracking-wider ml-1 shrink-0 mt-0.5">
 														{product.contractDuration}M
 													</span>
 												)}
 											</div>
 
 											{/* Description snippet */}
-											{!compactView && product.description && (
+											{!isCardCompact && product.description && (
 												<p className="text-[0.8rem] text-[#666] line-clamp-2 mt-1 mb-3 leading-relaxed">
 													{product.description}
 												</p>
@@ -939,7 +965,7 @@ export default function ProductListPage() {
 										</div>
 
 										{/* Bottom: Price + CTA */}
-										<div className="relative z-10 flex justify-between items-end mt-2 pt-2 border-t border-[#f0f0f0]">
+										<div className="relative z-10 flex flex-wrap gap-2 justify-between items-end mt-2 pt-2 border-t border-[#f0f0f0]">
 											<div>
 												{product.category === 'DEVICE' ? (
 													<div className="flex flex-col gap-1 mb-1 justify-end h-full">
@@ -989,7 +1015,7 @@ export default function ProductListPage() {
 														<span
 															className={clsx(
 																'font-extrabold text-[#1a1a2e] tracking-tight leading-none',
-																compactView ? 'text-[1.3rem]' : 'text-[1.8rem]',
+																isCardCompact ? 'text-[1.3rem]' : 'text-[1.8rem]',
 															)}
 														>
 															{product.basePrice.toFixed(2)} €

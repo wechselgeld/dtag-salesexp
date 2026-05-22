@@ -11,6 +11,12 @@ import clsx from 'clsx';
 import {
 	motion,
 } from 'framer-motion';
+import {
+	useBasketStore,
+} from '@/hooks/use-basket-store';
+import {
+	useMediaQuery,
+} from '@/hooks/use-media-query';
 
 interface Product {
 	allowNewActivation: boolean;
@@ -39,6 +45,26 @@ export function BusinessCaseSelector({
 	highlightedCases = [
 	],
 }: Props) {
+	const isOpen = useBasketStore((state) => state.isOpen);
+	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
+	const basketsCount = useBasketStore((state) => state.baskets.length);
+	const isComparing = isOpen && isComparisonMode && basketsCount > 1;
+	const isNarrowViewport = useMediaQuery('(max-width: 1024px)');
+	const isSqueezed = isComparing || isNarrowViewport || (isOpen && basketsCount >= 3);
+
+	const gridClass = (() => {
+		if (isSqueezed) {
+			if (basketsCount === 2 || isNarrowViewport) {
+				return 'grid-cols-1 sm:grid-cols-2';
+			}
+			return 'grid-cols-1';
+		}
+		if (isOpen) {
+			return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
+		}
+		return 'grid-cols-2 sm:grid-cols-4';
+	})();
+
 	const cases = [
 		{
 			id: 'NEW_ACTIVATION',
@@ -71,7 +97,7 @@ export function BusinessCaseSelector({
 	] as const;
 
 	return (
-		<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+		<div className={clsx("grid gap-4", gridClass)}>
 			{cases.map((item) => {
 				if (!item.allowed) { return null; }
 				const isSelected = selectedCase === item.id;

@@ -1,5 +1,8 @@
 'use client';
 
+import type {
+	BasketItem,
+} from '@/hooks/use-basket-store';
 import {
 	useBasketStore,
 } from '@/hooks/use-basket-store';
@@ -12,6 +15,10 @@ import {
 } from '@/lib/trpc';
 import {
 	useMemo,
+	useId,
+	useState,
+	useEffect,
+	useRef,
 } from 'react';
 import {
 	Bar,
@@ -24,13 +31,83 @@ import {
 import {
 	AnimatedNumber,
 } from '@/components/shared/animated-number';
+import {
+	Skeleton,
+} from '@/components/shared/skeleton';
 
 export function CombinedTimeline({
 	catColor = '#e20074',
+	items: propItems,
+	columnIndex = 0,
+	activeLoadingIndex = 0,
+	onLoadFinished,
 }: {
 	catColor?: string;
+	items?: BasketItem[];
+	columnIndex?: number;
+	activeLoadingIndex?: number;
+	onLoadFinished?: () => void;
 }) {
-	const items = useBasketStore((state) => state.items);
+	const [isChartReady, setIsChartReady] = useState(false);
+	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
+	const prevComparisonRef = useRef(isComparisonMode);
+	const prevComparisonMode = prevComparisonRef.current;
+
+	useEffect(() => {
+		prevComparisonRef.current = isComparisonMode;
+	}, [isComparisonMode]);
+
+	useEffect(() => {
+		// Case A: Comparison mode is active (Multi-basket view)
+		if (isComparisonMode) {
+			if (columnIndex < activeLoadingIndex) {
+				setIsChartReady(true);
+				return;
+			}
+
+			if (columnIndex > activeLoadingIndex) {
+				setIsChartReady(false);
+				return;
+			}
+
+			// Hide the chart initially for Stage 3 coordination during first column expand
+			if (activeLoadingIndex === 0) {
+				setIsChartReady(false);
+			}
+
+			const delay = activeLoadingIndex === 0 ? 600 : 350;
+			const timer = setTimeout(() => {
+				setIsChartReady(true);
+				onLoadFinished?.();
+			}, delay);
+
+			return () => clearTimeout(timer);
+		}
+
+		// Case B: Comparison mode is inactive (Single-basket view)
+		// If we just collapsed comparison mode (transitioned from true to false),
+		// we delay showing the chart by 550ms to let the 500ms drawer collapse complete at high FPS.
+		if (prevComparisonMode === true && !isComparisonMode) {
+			setIsChartReady(false);
+			const timer = setTimeout(() => {
+				setIsChartReady(true);
+			}, 550);
+			return () => clearTimeout(timer);
+		}
+
+		// Otherwise, normal single-basket mode (e.g., active tab selection sliding)
+		setIsChartReady(true);
+	}, [
+		columnIndex,
+		activeLoadingIndex,
+		isComparisonMode,
+		prevComparisonMode,
+		onLoadFinished,
+	]);
+
+	const storeItems = useBasketStore((state) => propItems !== undefined ? null : state.items);
+	const items = propItems !== undefined ? propItems : (storeItems || []);
+	const uniqueId = useId().replace(/:/g, '');
 	const {
 		data: pricingSettings,
 	} = trpc.settings.getPricingSettings.useQuery(
@@ -111,9 +188,23 @@ export function CombinedTimeline({
 			</div>
 
 			{/* Chart */}
-			<div className="h-[100px] w-full transition-all duration-500">
-				<ResponsiveContainer width="100%" height="100%">
-					<BarChart
+			<div className="h-[100px] w-full transition-all duration-500 relative flex items-end">
+				{!isChartReady ? (
+					<div className="w-full h-full flex items-end justify-between gap-1 px-1 pb-1">
+						{Array.from({ length: 12 }).map((_, i) => {
+							const heights = ['h-1/3', 'h-1/2', 'h-2/3', 'h-3/4', 'h-2/5', 'h-1/2', 'h-3/5', 'h-4/5', 'h-1/2', 'h-2/3', 'h-3/4', 'h-1/3'];
+							const height = heights[i % heights.length];
+							return (
+								<Skeleton
+									key={i}
+									className={`${height} w-full rounded-t-sm bg-[#eaedf0]`}
+								/>
+							);
+						})}
+					</div>
+				) : (
+					<ResponsiveContainer width="100%" height="100%">
+						<BarChart
 						data={aggregatedData}
 						margin={{
 							top: 4,
@@ -195,7 +286,7 @@ export function CombinedTimeline({
 						/>
 						<Bar
 							dataKey="total"
-							fill="url(#colorTotal)"
+							fill={`url(#colorTotal-${uniqueId})`}
 							radius={[
 								7,
 								7,
@@ -205,13 +296,14 @@ export function CombinedTimeline({
 							maxBarSize={14}
 						/>
 						<defs>
-							<linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+							<linearGradient id={`colorTotal-${uniqueId}`} x1="0" y1="0" x2="0" y2="1">
 								<stop offset="0%" stopColor="var(--cat-color)" stopOpacity={0.2} />
 								<stop offset="100%" stopColor="var(--cat-color)" stopOpacity={1} />
 							</linearGradient>
 						</defs>
 					</BarChart>
 				</ResponsiveContainer>
+				)}
 			</div>
 		</div>
 	);

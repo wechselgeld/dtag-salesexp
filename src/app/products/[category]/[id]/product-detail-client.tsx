@@ -68,6 +68,9 @@ import {
 	useBasketStore,
 } from '@/hooks/use-basket-store';
 import {
+	useMediaQuery,
+} from '@/hooks/use-media-query';
+import {
 	SearchBar,
 } from '@/components/features/search/search-bar';
 import {
@@ -101,9 +104,26 @@ function ProductPageContent() {
 	const searchParams = useSearchParams();
 	const basketItemId = searchParams.get('basketItemId');
 
-	const {
-		items, updateItem, addItem, setIsOpen,
-	} = useBasketStore();
+	const items = useBasketStore((state) => state.items);
+	const updateItem = useBasketStore((state) => state.updateItem);
+	const addItem = useBasketStore((state) => state.addItem);
+	const setIsOpen = useBasketStore((state) => state.setIsOpen);
+
+	const isOpen = useBasketStore((state) => state.isOpen);
+	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
+	const basketsCount = useBasketStore((state) => state.baskets.length);
+	const isComparing = isOpen && isComparisonMode && basketsCount > 1;
+	const isNarrowViewport = useMediaQuery('(max-width: 1024px)');
+
+	const detailGridClass = (() => {
+		if (isComparing) {
+			return 'grid-cols-1';
+		}
+		if (isOpen) {
+			return 'grid-cols-1 xl:grid-cols-[1fr_320px]';
+		}
+		return 'grid-cols-1 lg:grid-cols-[1fr_320px]';
+	})();
 
 	const catColor = CATEGORY_COLORS[category] || '#e20074';
 	const catName = CATEGORY_NAMES[category] || category;
@@ -505,7 +525,7 @@ function ProductPageContent() {
 					</div>
 				</div>
 
-				<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start pb-10">
+				<div className={clsx("grid gap-6 items-start pb-10", detailGridClass)}>
 					<div className="space-y-4">
 						<Skeleton className="h-32 w-full rounded-2xl" />
 						<Skeleton className="h-48 w-full rounded-2xl" />
@@ -614,9 +634,9 @@ function ProductPageContent() {
 					}}
 				/>
 
-				<div className="relative z-20 flex items-start justify-between">
+				<div className="relative z-20 flex flex-wrap items-start justify-between gap-6">
 					{/* Left: Product info */}
-					<div>
+					<div className="flex-1 min-w-[280px]">
 						<div className="flex flex-col gap-2 mb-4">
 							{session?.team?.highlights.some(
 								(h) =>
@@ -702,7 +722,7 @@ function ProductPageContent() {
 					</div>
 
 					{/* Right: Price highlight & Actions */}
-					<div className="shrink-0 ml-6 flex items-start gap-4">
+					<div className="shrink-0 flex items-start gap-4">
 						{/* MagentaInfos Link (Left of price) */}
 						{product.magentaInfosUrl && (
 							<a
@@ -795,12 +815,12 @@ function ProductPageContent() {
 										</div>
 									</div>
 								) : (
-									<div className="flex items-baseline gap-1.5">
-										<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
+									<div className="flex items-center gap-1.5">
+										<span className="text-[0.75rem] font-bold text-[#b0b0b0] uppercase tracking-wider mt-0.5 select-none">
 											Ab
 										</span>
 										<span
-											className="text-[1.5rem] font-extrabold tracking-tight"
+											className="text-[1.25rem] font-extrabold tracking-tight"
 											style={{
 												color: catColor,
 											}}
@@ -814,12 +834,12 @@ function ProductPageContent() {
 											/>{' '}
 											€
 										</span>
-										<span className="text-[1.4rem] text-[#b0b0b0] font-medium">
+										<span className="text-[0.75rem] font-bold text-[#b0b0b0] uppercase tracking-wider mt-0.5 select-none">
 											/Monat
 										</span>
 										<ChevronDown
 											className={clsx(
-												'w-4 h-4 ml-1.5 transition-transform',
+												'w-4 h-4 ml-0.5 transition-transform',
 												priceDropdownOpen && 'rotate-180',
 											)}
 											style={{
@@ -996,7 +1016,7 @@ function ProductPageContent() {
 			</motion.div>
 
 			{/* ── Configuration + Summary ── */}
-			<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start pb-10">
+			<div className={clsx("grid gap-4 items-start pb-10", detailGridClass)}>
 				{/* LEFT: Configuration Flow */}
 				<div className="space-y-4">
 					{/* Sales Script Assistant */}

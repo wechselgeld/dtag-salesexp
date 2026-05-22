@@ -18,6 +18,24 @@ import {
 import clsx from 'clsx';
 
 const CHANGELOGS = [
+		{
+		id: 'may-22',
+		title: '22. Mai 2026',
+		items: [
+			{
+				q: 'Hinzugefügt',
+				a: 'Vergleichsmodus (Comparison Mode) für Warenkorbkonfigurationen hinzugefügt, damit Du verschiedene Tarife speichern und schnell vergleichen kannst; PINs & Passwörter zu Accounts verpflichtend gemacht; ...und noch viel mehr',
+			},
+			{
+				q: 'Geändert',
+				a: 'Produktkarten und -Konfiguration sind nun für kleinere Bildschirme optimiert; Fehlerlog hinzugefügt, damit wir die Anwendung stetig und schneller verbessern können; Das Design einiger Elemente wurde verbessert',
+			},
+			{
+				q: 'Entfernt',
+				a: 'Es wurde nichts entfernt',
+			},
+		],
+	},
 	{
 		id: 'may-16',
 		title: '16. Mai 2026',

@@ -960,7 +960,7 @@ x: -15,
             }}
             className="flex flex-col gap-6 py-4"
         >
-            <ScreenHeader icon={<Key className="w-5 h-5 text-[#e20074]" />} title="Gerät sicher merken (Passkey)" subtitle="Melde Dich in Zukunft blitzschnell per Fingerabdruck, FaceID oder Windows Hello an – ganz ohne PIN oder Passwort!" />
+            <ScreenHeader icon={<Key className="w-5 h-5 text-[#e20074]" />} title="Gerät sicher merken (Passkey)" subtitle="Melde Dich in Zukunft blitzschnell per Fingerabdruck, FaceID, Bitwarden oder Windows Hello an – ganz ohne PIN oder Passwort!" />
             <div className="flex flex-col gap-3 w-full mt-2">
                 <PremiumButton onClick={handlePasskeyEnrollment} variant="primary" className="w-full">
                     <Key className="w-4 h-4 mr-2" /> Passkey einrichten

@@ -1,7 +1,7 @@
 'use client';
 
 import {
-	useState, useEffect, useRef,
+	useState, useEffect, useRef, useId,
 } from 'react';
 import {
 	motion,
@@ -28,51 +28,38 @@ export function Toast({
 	className,
 	style,
 }: ToastProps) {
-	const [
-		progress,
-		setProgress,
-	] = useState(0);
-	const accumulatedTimeRef = useRef(0);
-	const [
-		isPaused,
-		setIsPaused,
-	] = useState(false);
-	const isPausedRef = useRef(isPaused);
+	const uniqueId = useId().replace(/:/g, '');
+	const [isPaused, setIsPaused] = useState(false);
+
+	const startTimeRef = useRef(0);
+	const remainingTimeRef = useRef(duration);
+	const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
-		isPausedRef.current = isPaused;
-	}, [
-		isPaused,
-	]);
+		if (duration <= 0) return;
 
-	useEffect(() => {
-		let animationFrame: number;
-		let lastTime = performance.now();
+		if (!isPaused) {
+			startTimeRef.current = Date.now();
+			timeoutIdRef.current = setTimeout(() => {
+				onDismiss();
+			}, remainingTimeRef.current);
+		}
 
-		const tick = (currentTime: number) => {
-			const delta = currentTime - lastTime;
-			lastTime = currentTime;
-
-			if (!isPausedRef.current && duration > 0) {
-				accumulatedTimeRef.current += delta;
-				const p = Math.min((accumulatedTimeRef.current / duration) * 100, 100);
-				setProgress(p);
-
-				if (accumulatedTimeRef.current >= duration) {
-					onDismiss();
-					return;
-				}
+		return () => {
+			if (timeoutIdRef.current) {
+				clearTimeout(timeoutIdRef.current);
 			}
-			animationFrame = requestAnimationFrame(tick);
+			if (!isPaused) {
+				const elapsed = Date.now() - startTimeRef.current;
+				remainingTimeRef.current = Math.max(0, remainingTimeRef.current - elapsed);
+			}
 		};
+	}, [isPaused, duration, onDismiss]);
 
-		animationFrame = requestAnimationFrame(tick);
-
-		return () => cancelAnimationFrame(animationFrame);
-	}, [
-		duration,
-		onDismiss,
-	]);
+	const circumference = 2 * Math.PI * 8; // ~50.265
+	const currentProgressPercent = duration > 0 ? (duration - remainingTimeRef.current) / duration : 0;
+	const currentOffset = circumference * currentProgressPercent;
+	const animationName = `toast-progress-${uniqueId}`;
 
 	return (
 		<motion.div
@@ -110,6 +97,16 @@ export function Toast({
 						className="relative w-5 h-5 flex items-center justify-center transition-opacity duration-300"
 						title={isPaused ? 'Pausiert' : 'Schließt in kürze...'}
 					>
+						<style>{`
+							@keyframes ${animationName} {
+								from {
+									stroke-dashoffset: ${circumference - currentOffset};
+								}
+								to {
+									stroke-dashoffset: ${circumference};
+								}
+							}
+						`}</style>
 						<svg className="w-full h-full -rotate-90" style={{
 							color,
 						}}>
@@ -129,10 +126,11 @@ export function Toast({
 								stroke="currentColor"
 								strokeWidth="2.5"
 								fill="none"
-								strokeDasharray={2 * Math.PI * 8}
-								strokeDashoffset={
-									2 * Math.PI * 8 - (2 * Math.PI * 8 * progress) / 100
-								}
+								strokeDasharray={circumference}
+								style={{
+									animation: isPaused ? 'none' : `${animationName} ${remainingTimeRef.current}ms linear forwards`,
+									strokeDashoffset: isPaused ? circumference - currentOffset : undefined,
+								}}
 								className="transition-none"
 							/>
 						</svg>

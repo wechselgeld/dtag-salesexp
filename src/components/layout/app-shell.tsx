@@ -10,6 +10,10 @@ import {
 	BasketDrawer,
 } from '@/components/features/basket/basket-drawer';
 import {
+	useBasketStore,
+} from '@/hooks/use-basket-store';
+import clsx from 'clsx';
+import {
 	IntroSplash,
 } from '@/components/features/auth-intro/intro-splash';
 import {
@@ -82,12 +86,25 @@ export function AppShell({
 		return <MaintenanceSplash />;
 	}
 
+	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
+	const basketsCount = useBasketStore((state) => (state.baskets || []).length);
+	const showComparison = isComparisonMode && basketsCount > 1;
+	const basketWidth = showComparison 
+		? `${basketsCount === 2 ? 780 : 1120}px` 
+		: '340px';
+
 	const shellContent = isStandalone ? (
 		<div className="h-screen w-full overflow-y-auto bg-white sm:bg-[#f7f8fa]">
 			{children}
 		</div>
 	) : (
-		<div className="grid grid-cols-[auto_1fr_340px] h-screen w-full">
+		<div
+			className="grid h-screen w-full"
+			style={{
+				gridTemplateColumns: `auto 1fr ${basketWidth}`,
+				transition: 'grid-template-columns 500ms cubic-bezier(0.16, 1, 0.3, 1)',
+			}}
+		>
 			<SidebarNav />
 			<main className="p-8 overflow-y-auto w-full max-w-[1200px] mx-auto scrollbar-none">
 				<div className="h-full">{children}</div>

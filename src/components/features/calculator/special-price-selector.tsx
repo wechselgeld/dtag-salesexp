@@ -5,6 +5,12 @@ import type {
 } from '@/types/product';
 import clsx from 'clsx';
 import {
+	useBasketStore,
+} from '@/hooks/use-basket-store';
+import {
+	useMediaQuery,
+} from '@/hooks/use-media-query';
+import {
 	motion,
 } from 'framer-motion';
 import {
@@ -32,6 +38,13 @@ export function SpecialPriceSelector({
 	basePrice,
 	tvBasePrice,
 }: Props) {
+	const isOpen = useBasketStore((state) => state.isOpen);
+	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
+	const basketsCount = useBasketStore((state) => state.baskets.length);
+	const isComparing = isOpen && isComparisonMode && basketsCount > 1;
+	const isNarrowViewport = useMediaQuery('(max-width: 1024px)');
+	const isSqueezed = isComparing || (isOpen && basketsCount >= 3) || isNarrowViewport;
+
 	const availablePrices = specialPrices.filter((sp) => {
 		if (sp.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
 		if (sp.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
@@ -129,56 +142,64 @@ export function SpecialPriceSelector({
 						}}
 					>
 						{/* Main row */}
-						<div className="flex items-center p-4">
-							{/* Radio circle with Checkmark */}
-							<div
-								className="w-5 h-5 rounded-full border-2 flex items-center justify-center mr-3 shrink-0 transition-all duration-200"
-								style={{
-									borderColor: isSelected ? accentColor : '#ddd',
-									backgroundColor: isSelected ? accentColor : 'transparent',
-								}}
-							>
-								{isSelected && (
-									<Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />
-								)}
-							</div>
-
-							{/* Info */}
-							<div className="flex-1 min-w-0">
-								<div className="text-[0.9rem] font-bold text-[#1a1a2e] truncate">
-									{sp.name}
+						<div className={clsx(
+							'flex gap-4 p-4',
+							isSqueezed ? 'flex-col items-stretch' : 'flex-row items-center justify-between'
+						)}>
+							<div className="flex items-center gap-3 flex-1 min-w-0">
+								{/* Radio circle with Checkmark */}
+								<div
+									className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+									style={{
+										borderColor: isSelected ? accentColor : '#ddd',
+										backgroundColor: isSelected ? accentColor : 'transparent',
+									}}
+								>
+									{isSelected && (
+										<Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />
+									)}
 								</div>
-								{sp.description && (
-									<div className="text-[0.72rem] text-[#888] line-clamp-1 mt-0.5">
-										{sp.description}
-									</div>
-								)}
-								<div className="flex flex-wrap gap-1.5 mt-1.5">
-									{sp.tiers.map((tier, i) => {
-										const displayPrice = getTierDisplayPrice(tier);
 
-										return (
-											<span
-												key={i}
-												className="text-[0.65rem] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors"
-												style={{
-													backgroundColor: isSelected
-														? `${accentColor}15`
-														: '#f0f2f5',
-													color: isSelected ? accentColor : '#666',
-												}}
-											>
-												<ArrowDown className="w-3 h-3" />
-												Monat {tier.fromMonth}–{tier.toMonth}:{' '}
-												{displayPrice.toFixed(2).replace('.', ',')} €
-											</span>
-										);
-									})}
+								{/* Info */}
+								<div className="flex-1 min-w-0">
+									<div className="text-[0.9rem] font-bold text-[#1a1a2e] truncate">
+										{sp.name}
+									</div>
+									{sp.description && (
+										<div className="text-[0.72rem] text-[#888] line-clamp-1 mt-0.5">
+											{sp.description}
+										</div>
+									)}
+									<div className="flex flex-wrap gap-1.5 mt-1.5">
+										{sp.tiers.map((tier, i) => {
+											const displayPrice = getTierDisplayPrice(tier);
+
+											return (
+												<span
+													key={i}
+													className="text-[0.65rem] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors"
+													style={{
+														backgroundColor: isSelected
+															? `${accentColor}15`
+															: '#f0f2f5',
+														color: isSelected ? accentColor : '#666',
+													}}
+												>
+													<ArrowDown className="w-3 h-3" />
+													Monat {tier.fromMonth}–{tier.toMonth}:{' '}
+													{displayPrice.toFixed(2).replace('.', ',')} €
+												</span>
+											);
+										})}
+									</div>
 								</div>
 							</div>
 
 							{/* Price */}
-							<div className="flex flex-col items-end shrink-0 ml-4">
+							<div className={clsx(
+								'flex flex-col shrink-0',
+								isSqueezed ? 'items-start ml-8' : 'items-end ml-4'
+							)}>
 								<div className="flex items-center gap-1.5 mt-0.5">
 									{basePrice !== undefined && lowestPrice < basePrice && (
 										<span className="text-[0.75rem] font-semibold text-[#a0a0a0] line-through decoration-[#a0a0a0] opacity-80">

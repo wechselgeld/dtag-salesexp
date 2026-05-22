@@ -103,9 +103,7 @@ interface TeamItem {
 }
 
 export default function SettingsPage() {
-	const {
- clearBasket,
-} = useBasketStore();
+	const clearBasket = useBasketStore((state) => state.clearBasket);
 	const {
 		compactView,
 		setCompactView,
@@ -873,7 +871,7 @@ x: -15,
 					</div>
 
 					<p className="text-[0.82rem] text-[#666] leading-relaxed max-w-2xl m-0">
-						Nutze Face ID, Touch ID oder Windows Hello für eine besonders schnelle und sichere Anmeldung direkt im Browser.
+						Melde Dich blitzschnell per Fingerabdruck, FaceID, Bitwarden oder Windows Hello an – ganz ohne PIN oder Passwort!
 					</p>
 
 					<div className="bg-[#f8f9fa] border border-[#eaedf0] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 mt-2">

@@ -26,6 +26,9 @@ import {
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
+import {
+	useSettingsStore,
+} from '@/hooks/use-settings-store';
 
 interface HeroHeaderProps {
 	firstName: string;
@@ -62,6 +65,9 @@ export function HeroHeader({
 	categories,
 	showHeroImage,
 }: HeroHeaderProps) {
+	const {
+		reduceAnimations,
+	} = useSettingsStore();
 	const [
 		hasHydrated,
 		setHasHydrated,
@@ -122,13 +128,14 @@ export function HeroHeader({
 		: 'text-[#666]';
 
 	useEffect(() => {
-		if (!categories || categories.length === 0) { return; }
+		if (!categories || categories.length === 0 || reduceAnimations) { return; }
 		const timer = setInterval(() => {
 			setActiveCategoryIdx((prev) => (prev + 1) % categories.length);
 		}, 3500);
 		return () => clearInterval(timer);
 	}, [
 		categories,
+		reduceAnimations,
 	]);
 
 	const currentCategory = categories?.[activeCategoryIdx];

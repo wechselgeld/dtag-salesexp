@@ -9,12 +9,14 @@ import {
 
 import type {
 	BasketItem,
+	Basket,
 } from '@/hooks/use-basket-store';
 import {
 	useBasketStore,
 } from '@/hooks/use-basket-store';
 import {
 	calculateProductCosts,
+	DEFAULT_PRICING,
 } from '@/hooks/use-cost-calculator';
 import {
 	MAGENTA_TV_PACKAGES,
@@ -35,6 +37,9 @@ import {
 	Edit2,
 	Tag,
 	AlertTriangle,
+	Plus,
+	X,
+	Columns,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -56,10 +61,10 @@ import {
 	Skeleton,
 } from '@/components/shared/skeleton';
 import {
-	useState, useEffect,
+	useState, useEffect, useRef, useMemo, useCallback, memo,
 } from 'react';
 import {
-	motion, AnimatePresence,
+	motion, AnimatePresence, LayoutGroup,
 } from 'framer-motion';
 import {
 	useSettingsStore,
@@ -86,6 +91,129 @@ const CATEGORY_LABELS: Record<string, string> = {
 	DEVICE: 'Gerät',
 };
 
+function TabCard({
+	basket,
+	isActive,
+	isComparison,
+	onMakeActive,
+	editingId,
+	setEditingId,
+	editName,
+	setEditName,
+	renameBasket,
+	removeBasket,
+	basketsCount,
+	catColor,
+}: {
+	basket: Basket;
+	isActive: boolean;
+	isComparison: boolean;
+	onMakeActive: () => void;
+	editingId: string | null;
+	setEditingId: (id: string | null) => void;
+	editName: string;
+	setEditName: (name: string) => void;
+	renameBasket: (id: string, name: string) => void;
+	removeBasket: (id: string) => void;
+	basketsCount: number;
+	catColor: string;
+}) {
+	const isEditing = editingId === basket.id;
+
+	if (isEditing) {
+		return (
+			<motion.div
+				layoutId={`tab-card-${basket.id}`}
+				layout
+				transition={{
+					type: 'spring',
+					stiffness: 300,
+					damping: 32,
+					delay: isComparison ? 0.15 : 0,
+				}}
+				className="text-[0.72rem] flex items-center justify-between transition-colors duration-300 border shadow-sm w-full px-3 py-1.5 rounded-xl border-[#eaedf0] gap-1.5 shrink-0"
+				style={{ backgroundColor: '#ffffff', borderColor: catColor, color: '#1a1a2e' }}
+				onClick={(e) => e.stopPropagation()}
+			>
+				<input
+					type="text"
+					value={editName}
+					onChange={(e) => setEditName(e.target.value)}
+					onBlur={() => {
+						renameBasket(basket.id, editName);
+						setEditingId(null);
+					}}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') {
+							renameBasket(basket.id, editName);
+							setEditingId(null);
+						} else if (e.key === 'Escape') {
+							setEditingId(null);
+						}
+					}}
+					className="w-full text-left text-[0.72rem] font-bold text-[#1a1a2e] border-none outline-none p-0 bg-transparent flex-1 min-w-0"
+					autoFocus
+					maxLength={25}
+				/>
+				{basketsCount > 1 && (
+					<div className="w-3.5 h-3.5 shrink-0 opacity-0 pointer-events-none" />
+				)}
+			</motion.div>
+		);
+	}
+
+	return (
+		<motion.div
+			layoutId={`tab-card-${basket.id}`}
+			layout
+			transition={{
+				type: 'spring',
+				stiffness: 300,
+				damping: 32,
+				delay: isComparison ? 0.15 : 0,
+			}}
+			onClick={(e) => {
+				e.stopPropagation();
+				onMakeActive();
+			}}
+			onDoubleClick={(e) => {
+				e.stopPropagation();
+				setEditingId(basket.id);
+				setEditName(basket.name);
+			}}
+			className="group/tab text-[0.72rem] flex items-center justify-between transition-colors duration-300 select-none border cursor-pointer font-semibold shadow-sm w-full px-3 py-1.5 rounded-xl border-[#eaedf0] gap-1.5 shrink-0"
+			style={
+				isActive
+					? { backgroundColor: catColor, borderColor: catColor, color: '#ffffff' }
+					: { backgroundColor: '#f7f8fa', borderColor: '#eaedf0', color: '#555555' }
+			}
+		>
+			<span className={clsx('flex items-center gap-1 min-w-0 flex-1', !isComparison && 'max-w-[80px]')}>
+				<span className="truncate flex-1" title={basket.name}>
+					{basket.name}
+				</span>
+			</span>
+
+			{basketsCount > 1 && (
+				<button
+					onClick={(e) => {
+						e.stopPropagation();
+						removeBasket(basket.id);
+					}}
+					className={clsx(
+						'w-3.5 h-3.5 rounded-full flex items-center justify-center p-0 transition-all border-none cursor-pointer shrink-0',
+						isActive
+							? 'text-white/70 hover:text-white hover:bg-white/20'
+							: 'text-[#999] hover:text-[#dc2626] hover:bg-[#fee2e2]',
+					)}
+				>
+					<X className="w-2.5 h-2.5" />
+				</button>
+			)}
+		</motion.div>
+	);
+}
+
 const EMPTY_NOTICES = [
 	'Hier drin herrscht gähnende Leere. Lass uns das ändern!',
 	'Dein Warenkorb wartet auf Gesellschaft – er ist einsam.',
@@ -99,25 +227,27 @@ const EMPTY_NOTICES = [
 	'Hier ist noch ganz viel Luft nach oben (und nach unten).',
 ];
 
+const NOOP = () => {};
+
 export function BasketDrawer() {
 	const {
-		items, removeItem, clearBasket, basketCredits, setBasketCredits,
-	} =
-		useBasketStore();
-	const [
-		creditsOpen,
-		setCreditsOpen,
-	] = useState(false);
-	const [
-		isGenerating,
-		setIsGenerating,
-	] = useState<
-		'idle' | 'generating' | 'success'
-	>('idle');
+		baskets,
+		activeBasketId,
+		isComparisonMode,
+		setIsComparisonMode,
+		addBasket,
+		removeBasket,
+		setActiveBasketId,
+		renameBasket,
+	} = useBasketStore();
 
-	/* const {
-		data: availableCredits,
-	} = trpc.product.getOneTimeCredits.useQuery(); */
+	const showComparison = isComparisonMode && baskets.length > 1;
+
+	const [editingId, setEditingId] = useState<string | null>(null);
+	const [editName, setEditName] = useState('');
+	const [showLeftFade, setShowLeftFade] = useState(false);
+	const [showRightFade, setShowRightFade] = useState(false);
+
 	const {
 		data: session,
 	} = trpc.session.getCurrent.useQuery();
@@ -128,17 +258,31 @@ export function BasketDrawer() {
 		isMounted,
 		setIsMounted,
 	] = useState(false);
-	const [
-		randomNotice,
-		setRandomNotice,
-	] = useState('');
+
+	const [activeLoadingIndex, setActiveLoadingIndex] = useState(0);
+
+	useEffect(() => {
+		if (isComparisonMode) {
+			setActiveLoadingIndex(0);
+		}
+	}, [isComparisonMode]);
+
+	// Auto-skip columns that have no items/timeline to load
+	useEffect(() => {
+		if (isComparisonMode && activeLoadingIndex < baskets.length) {
+			const currentBasket = baskets[activeLoadingIndex];
+			if (currentBasket && currentBasket.items.length === 0) {
+				setActiveLoadingIndex((prev) => prev + 1);
+			}
+		}
+	}, [activeLoadingIndex, baskets, isComparisonMode]);
 
 	const teamEmail = session?.team?.email || 'team06@telekom.de';
 	const salesRepName = session
 		? [
- session.firstName,
-session.lastName,
-].filter(Boolean).join(' ')
+			session.firstName,
+			session.lastName,
+		].filter(Boolean).join(' ')
 		: '';
 
 	const params = useParams();
@@ -148,17 +292,432 @@ session.lastName,
 		? CATEGORY_COLORS[categoryFromUrl.toUpperCase()] || '#e20074'
 		: '#e20074';
 
+	const tabsRef = useRef<HTMLDivElement>(null);
+
+	// Synchronized column scrolling refs and controller
+	const scrollContainersRef = useRef<Map<string, HTMLDivElement>>(new Map());
+	const isSyncScrolling = useRef(false);
+
+	const registerScrollContainer = useCallback((id: string, el: HTMLDivElement | null) => {
+		if (el) {
+			scrollContainersRef.current.set(id, el);
+		} else {
+			scrollContainersRef.current.delete(id);
+		}
+	}, []);
+
+	const handleColumnScroll = useCallback((scrolledId: string, scrollTop: number) => {
+		if (isSyncScrolling.current) return;
+		isSyncScrolling.current = true;
+
+		scrollContainersRef.current.forEach((el, id) => {
+			if (id !== scrolledId && el) {
+				el.scrollTop = scrollTop;
+			}
+		});
+
+		requestAnimationFrame(() => {
+			isSyncScrolling.current = false;
+		});
+	}, []);
+
+	const handleLoadFinished = useCallback(() => {
+		setActiveLoadingIndex((prev) => prev + 1);
+	}, []);
+
+
 
 	useEffect(() => {
-		const timer = setTimeout(() => {
-			setIsMounted(true);
-			setRandomNotice(
-				EMPTY_NOTICES[Math.floor(Math.random() * EMPTY_NOTICES.length)],
-			);
-		}, 0);
-		return () => clearTimeout(timer);
-	}, [
-	]);
+		setIsMounted(true);
+	}, []);
+
+	useEffect(() => {
+		const el = tabsRef.current;
+		if (!el) return;
+
+		const handleScroll = () => {
+			const scrollLeft = el.scrollLeft;
+			const maxScroll = el.scrollWidth - el.clientWidth;
+			setShowLeftFade(scrollLeft > 2);
+			setShowRightFade(scrollLeft < maxScroll - 2);
+		};
+
+		// Run initially
+		handleScroll();
+		// Run shortly after to allow Next.js / DOM elements to render and size
+		const timeoutId = setTimeout(handleScroll, 100);
+
+		el.addEventListener('scroll', handleScroll);
+		window.addEventListener('resize', handleScroll);
+
+		return () => {
+			el.removeEventListener('scroll', handleScroll);
+			window.removeEventListener('resize', handleScroll);
+			clearTimeout(timeoutId);
+		};
+	}, [baskets, activeBasketId, showComparison]);
+
+	useEffect(() => {
+		const el = tabsRef.current;
+		if (!el) return;
+
+		const timeoutId = setTimeout(() => {
+			const activeTabEl = el.querySelector('[data-active="true"]') as HTMLElement;
+			if (activeTabEl) {
+				const containerWidth = el.clientWidth;
+				const tabLeft = activeTabEl.offsetLeft;
+				const tabWidth = activeTabEl.offsetWidth;
+				const scrollLeft = el.scrollLeft;
+
+				// Ensure active tab is outside the 48px (w-12) fade boundaries
+				const padding = 52;
+
+				if (tabLeft < scrollLeft + padding) {
+					el.scrollTo({
+						left: Math.max(0, tabLeft - padding),
+						behavior: 'smooth',
+					});
+				} else if (tabLeft + tabWidth > scrollLeft + containerWidth - padding) {
+					el.scrollTo({
+						left: Math.min(el.scrollWidth - containerWidth, tabLeft + tabWidth - containerWidth + padding),
+						behavior: 'smooth',
+					});
+				}
+			}
+		}, 50);
+
+		return () => clearTimeout(timeoutId);
+	}, [activeBasketId, showComparison]);
+
+	useEffect(() => {
+		const el = tabsRef.current;
+		if (!el) return;
+
+		let targetScrollLeft = el.scrollLeft;
+		let currentScrollLeft = el.scrollLeft;
+		let animationFrameId: number | null = null;
+
+		const updateScroll = () => {
+			const diff = targetScrollLeft - currentScrollLeft;
+			if (Math.abs(diff) > 0.5) {
+				currentScrollLeft += diff * 0.15;
+				el.scrollLeft = currentScrollLeft;
+				animationFrameId = requestAnimationFrame(updateScroll);
+			} else {
+				el.scrollLeft = targetScrollLeft;
+				currentScrollLeft = targetScrollLeft;
+				animationFrameId = null;
+			}
+		};
+
+		const handleWheel = (e: WheelEvent) => {
+			const delta = e.deltaY !== 0 ? e.deltaY : e.deltaX;
+			if (delta === 0) return;
+			e.preventDefault();
+
+			if (animationFrameId === null) {
+				currentScrollLeft = el.scrollLeft;
+				targetScrollLeft = el.scrollLeft;
+			}
+
+			const maxScroll = el.scrollWidth - el.clientWidth;
+			targetScrollLeft = Math.max(0, Math.min(maxScroll, targetScrollLeft + delta));
+
+			if (animationFrameId === null) {
+				animationFrameId = requestAnimationFrame(updateScroll);
+			}
+		};
+
+		el.addEventListener('wheel', handleWheel, { passive: false });
+		return () => {
+			el.removeEventListener('wheel', handleWheel);
+			if (animationFrameId !== null) {
+				cancelAnimationFrame(animationFrameId);
+			}
+		};
+	}, [baskets, activeBasketId, showComparison]);
+
+	const activeBasket = baskets.find((b) => b.id === activeBasketId) || baskets[0];
+
+	return (
+		<aside
+			id="tour-basket"
+			className="bg-white border-l border-[#eaedf0] flex flex-col z-10 overflow-hidden h-full relative"
+		>
+			{/* Header */}
+			<div className={clsx('py-4 shrink-0', showComparison ? 'px-4' : 'px-5')}>
+				<div className="flex items-center justify-between">
+					<h2 className="m-0 text-[0.88rem] text-[#1a1a2e] font-bold tracking-tight">
+						Zusammenfassung
+					</h2>
+					{!showComparison && activeBasket && (
+						<span
+							className="text-[0.65rem] font-semibold px-2 py-0.5 rounded-full transition-all duration-500"
+							style={{
+								color: catColor,
+								backgroundColor: `${catColor}10`,
+							}}
+						>
+							{activeBasket.items.length} {activeBasket.items.length === 1 ? 'Produkt' : 'Produkte'}
+						</span>
+					)}
+				</div>
+
+				{/* Header Actions Row */}
+				<div className={clsx('flex items-center mt-3', showComparison ? 'gap-4 w-full' : 'justify-between gap-2')}>
+					<div className={clsx('flex items-center flex-1', showComparison ? 'gap-4' : 'gap-1.5 overflow-hidden')}>
+						<div className="relative flex-1 overflow-hidden">
+							<LayoutGroup id="basket-tabs">
+								<motion.div
+									layout
+									ref={tabsRef}
+									className={clsx(
+										'relative flex items-center scrollbar-none py-1 flex-1 pr-1',
+										showComparison ? 'gap-4' : 'gap-1.5 overflow-x-auto'
+									)}
+									style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+								>
+									{baskets.map((basket) => (
+										<motion.div
+											layout
+											key={basket.id}
+											className={clsx(
+												showComparison ? 'flex-1 min-w-[310px] max-w-[330px]' : 'shrink-0 w-[120px]'
+											)}
+											transition={{
+												type: 'spring',
+												stiffness: 300,
+												damping: 32,
+												delay: showComparison ? 0.15 : 0,
+											}}
+										>
+											<TabCard
+												basket={basket}
+												isActive={basket.id === activeBasketId}
+												isComparison={showComparison}
+												onMakeActive={() => setActiveBasketId(basket.id)}
+												editingId={editingId}
+												setEditingId={setEditingId}
+												editName={editName}
+												setEditName={setEditName}
+												renameBasket={renameBasket}
+												removeBasket={removeBasket}
+												basketsCount={baskets.length}
+												catColor={catColor}
+											/>
+										</motion.div>
+									))}
+								</motion.div>
+							</LayoutGroup>
+
+							{/* Gradient fade-out overlay on the left */}
+							<div
+								className={clsx(
+									'absolute left-0 top-0 bottom-0 w-12 pointer-events-none z-10 transition-opacity duration-300',
+									showLeftFade && !showComparison ? 'opacity-100' : 'opacity-0'
+								)}
+								style={{
+									background: 'linear-gradient(to right, #ffffff 0%, rgba(255, 255, 255, 0) 100%)',
+								}}
+							/>
+
+							{/* Gradient fade-out overlay on the right */}
+							<div
+								className={clsx(
+									'absolute right-0 top-0 bottom-0 w-12 pointer-events-none z-10 transition-opacity duration-300',
+									showRightFade && !showComparison ? 'opacity-100' : 'opacity-0'
+								)}
+								style={{
+									background: 'linear-gradient(to left, #ffffff 0%, rgba(255, 255, 255, 0) 100%)',
+								}}
+							/>
+						</div>
+
+						{!showComparison && baskets.length < 3 && (
+							<button
+								onClick={addBasket}
+								className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#f7f8fa] hover:bg-[#eaeaea] text-[#888] transition-all border border-[#eaedf0] shrink-0 cursor-pointer active:scale-90"
+								title="Neue Konfiguration hinzufügen"
+							>
+								<Plus className="w-4 h-4" />
+							</button>
+						)}
+					</div>
+
+					{/* Action Buttons (Plus & Columns Toggle) */}
+					{showComparison ? (
+						<div className="w-[80px] flex items-center justify-end gap-1.5 shrink-0 ml-auto pr-1">
+							{baskets.length < 3 && (
+								<button
+									onClick={addBasket}
+									className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#f7f8fa] hover:bg-[#eaeaea] text-[#888] transition-all border border-[#eaedf0] shrink-0 cursor-pointer active:scale-90"
+									title="Neue Konfiguration hinzufügen"
+								>
+									<Plus className="w-4 h-4" />
+								</button>
+							)}
+							{baskets.length > 1 && (
+								<button
+									onClick={() => setIsComparisonMode(!isComparisonMode)}
+									className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 shrink-0 cursor-pointer active:scale-95 border bg-[#e20074] text-white border-[#e20074] shadow-sm hover:opacity-90"
+									style={{ backgroundColor: catColor, borderColor: catColor }}
+									title="Vergleichsmodus beenden"
+								>
+									<Columns className="w-4 h-4" />
+								</button>
+							)}
+						</div>
+					) : (
+						baskets.length > 1 && (
+							<button
+								onClick={() => setIsComparisonMode(!isComparisonMode)}
+								className={clsx(
+									'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 shrink-0 cursor-pointer active:scale-95 border',
+									isComparisonMode
+										? 'bg-[#e20074] text-white border-[#e20074] shadow-sm hover:opacity-90'
+										: 'bg-[#f7f8fa] text-[#555] border-[#eaedf0] hover:bg-[#eaeaea]',
+								)}
+								style={isComparisonMode ? { backgroundColor: catColor, borderColor: catColor } : {}}
+								title={isComparisonMode ? 'Vergleichsmodus beenden' : 'Vergleichsmodus aktivieren'}
+							>
+								<Columns className="w-4 h-4" />
+							</button>
+						)
+					)}
+				</div>
+			</div>
+
+			{/* Rounded fluent divider line below header */}
+			<div className="px-4 shrink-0">
+				<div className="h-[2px] bg-[#eaedf0] rounded-full w-full" />
+			</div>
+
+			{/* Columns Content Grid */}
+			<div className="flex-1 flex overflow-hidden">
+				{!isMounted ? (
+					<div className="flex-1 px-4 py-4 flex flex-col gap-4">
+						<Skeleton className="h-[120px] rounded-xl" />
+						<Skeleton className="h-10 rounded-xl" />
+						<div className="flex flex-col gap-3">
+							{[1, 2].map((i) => (
+								<Skeleton key={i} className="h-28 rounded-xl" />
+							))}
+						</div>
+					</div>
+				) : (
+					<motion.div
+						layout
+						className={clsx(
+							'flex-1 flex overflow-x-auto scrollbar-none bg-[#f7f8fa] h-full relative',
+							showComparison ? 'px-4 py-4' : ''
+						)}
+						transition={{
+							type: 'spring',
+							stiffness: 300,
+							damping: 32,
+						}}
+					>
+						{baskets.map((basket, index) => {
+							const isColumnActive = basket.id === activeBasketId;
+							const isVisible = showComparison || isColumnActive;
+							const hasMargin = showComparison && index < baskets.length - 1;
+
+							return (
+								<motion.div
+									key={basket.id}
+									layout
+									initial={false}
+									animate={{
+										opacity: isVisible ? (showComparison && !isColumnActive ? 0.7 : 1) : 0,
+										scale: isVisible ? 1 : 0.95,
+										width: isVisible ? (showComparison ? '320px' : '100%') : '0px',
+										marginRight: isVisible && hasMargin ? '16px' : '0px',
+									}}
+									transition={{
+										type: 'spring',
+										stiffness: 300,
+										damping: 32,
+									}}
+									className={clsx(
+										'h-full shrink-0 flex flex-col overflow-hidden',
+										!isVisible && 'pointer-events-none'
+									)}
+								>
+									<BasketColumn
+										basket={basket}
+										isActive={isColumnActive}
+										setActiveBasketId={setActiveBasketId}
+										catColor={catColor}
+										teamEmail={teamEmail}
+										salesRepName={salesRepName}
+										offerTemplateText={offerTemplateText}
+										clearAfterExport={clearAfterExport}
+										isComparisonMode={showComparison}
+										basketsCount={baskets.length}
+										registerScrollContainer={registerScrollContainer}
+										onColumnScroll={handleColumnScroll}
+										columnIndex={index}
+										activeLoadingIndex={activeLoadingIndex}
+										onLoadFinished={handleLoadFinished}
+									/>
+								</motion.div>
+							);
+						})}
+						{/* Extra trailing space to match the header action buttons and ensure perfect vertical alignment */}
+						{showComparison && <div className="w-[80px] shrink-0" />}
+					</motion.div>
+				)}
+			</div>
+		</aside>
+	);
+}
+
+const BasketColumn = memo(function BasketColumn({
+	basket,
+	isActive,
+	setActiveBasketId,
+	catColor,
+	teamEmail,
+	salesRepName,
+	offerTemplateText,
+	clearAfterExport,
+	isComparisonMode,
+	basketsCount,
+	registerScrollContainer,
+	onColumnScroll,
+	columnIndex = 0,
+	activeLoadingIndex = 0,
+	onLoadFinished,
+}: {
+	basket: Basket;
+	isActive: boolean;
+	setActiveBasketId: (id: string) => void;
+	catColor: string;
+	teamEmail: string;
+	salesRepName: string;
+	offerTemplateText: string;
+	clearAfterExport: boolean;
+	isComparisonMode: boolean;
+	basketsCount: number;
+	registerScrollContainer?: (id: string, el: HTMLDivElement | null) => void;
+	onColumnScroll?: (id: string, scrollTop: number) => void;
+	columnIndex?: number;
+	activeLoadingIndex?: number;
+	onLoadFinished?: () => void;
+}) {
+	const {
+		clearBasketForId,
+		setBasketCreditsForId,
+	} = useBasketStore();
+
+	const [creditsOpen, setCreditsOpen] = useState(false);
+	const [oneTimeOpen, setOneTimeOpen] = useState(false);
+	const [isGenerating, setIsGenerating] = useState<'idle' | 'generating' | 'success'>('idle');
+	const [randomNotice, setRandomNotice] = useState('');
+
+	useEffect(() => {
+		setRandomNotice(EMPTY_NOTICES[Math.floor(Math.random() * EMPTY_NOTICES.length)]);
+	}, []);
 
 	const {
 		totals,
@@ -168,407 +727,445 @@ session.lastName,
 		totalCredits,
 		hasDevice,
 		settings,
-	} = useBasketLogic();
+	} = useBasketLogic(basket.id);
 
+	const items = basket.items;
+	const basketCredits = basket.basketCredits;
 	const totalMonthly = totals.monthly;
 
+	const isMultiColumn = isComparisonMode && basketsCount > 1;
+
 	return (
-		<aside
-			id="tour-basket"
-			className="bg-white border-l border-[#eaedf0] flex flex-col z-10 overflow-hidden h-full relative"
-		>
-			{/* Header */}
-			{items.length > 0 && (
-				<div className="px-5 py-4 border-b border-[#eaedf0]">
-					<div className="flex items-center justify-between">
-						<h2 className="m-0 text-[0.88rem] text-[#1a1a2e] font-bold tracking-tight">
-							Zusammenfassung
-						</h2>
-						<span
-							className="text-[0.65rem] font-semibold px-2 py-0.5 rounded-full transition-all duration-500"
-							style={{
-								color: catColor,
-								backgroundColor: `${catColor}10`,
-							}}
-						>
-							{items.length} {items.length === 1 ? 'Produkt' : 'Produkte'}
-						</span>
-					</div>
-				</div>
+		<div
+			className={clsx(
+				'flex flex-col h-full overflow-hidden bg-transparent relative w-full h-full',
+				isMultiColumn ? 'gap-4' : 'bg-[#f7f8fa]'
 			)}
+		>
 
-			{/* Content */}
-			<div className="flex-1 px-4 py-4 overflow-y-auto scrollbar-none">
-				{!isMounted ? (
-					<div className="flex flex-col gap-4">
-						<Skeleton className="h-[120px] rounded-xl" />
-						<Skeleton className="h-10 rounded-xl" />
-						<div className="flex flex-col gap-3">
-							{[
-								1,
-								2,
-							].map((i) => (
-								<Skeleton key={i} className="h-28 rounded-xl" />
-							))}
+
+			{/* Product / Content Card */}
+			<div
+				className={clsx(
+					'flex-1 flex flex-col overflow-hidden bg-white relative transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]',
+					isMultiColumn ? 'shadow-sm rounded-2xl border' : 'rounded-none border-0',
+					isMultiColumn && isActive && 'z-10',
+					isMultiColumn && !isActive && 'opacity-70 hover:opacity-95 cursor-pointer bg-slate-50/20'
+				)}
+				style={
+					isActive && isMultiColumn
+						? { 
+							borderColor: catColor, 
+							boxShadow: `0 4px 12px rgba(0,0,0,0.05), inset 0 0 0 1.5px ${catColor}` 
+						}
+						: isMultiColumn
+							? { borderColor: '#eaedf0' }
+							: {}
+				}
+				onClick={() => {
+					if (isMultiColumn && !isActive) {
+						setActiveBasketId(basket.id);
+					}
+				}}
+			>
+				{/* Inner Scrollable Container */}
+				<div
+					ref={(el) => {
+						if (isMultiColumn && registerScrollContainer) {
+							registerScrollContainer(basket.id, el);
+						}
+					}}
+					onScroll={(e) => {
+						if (isMultiColumn && onColumnScroll) {
+							onColumnScroll(basket.id, e.currentTarget.scrollTop);
+						}
+					}}
+					className={clsx(
+						"flex-1 overflow-y-auto scrollbar-none",
+						isMultiColumn ? "px-4 py-4" : "px-5 py-4"
+					)}
+				>
+					{/* Chart */}
+					{items.length > 0 && (
+						<div className="mb-4 bg-[#f7f8fa] rounded-xl p-3.5">
+							<CombinedTimeline
+								items={items}
+								catColor={catColor}
+								columnIndex={columnIndex}
+								activeLoadingIndex={activeLoadingIndex}
+								onLoadFinished={onLoadFinished}
+							/>
 						</div>
-					</div>
-				) : (
-					<>
-						{/* Chart */}
-						{items.length > 0 && (
-							<div className="mb-4 bg-[#f7f8fa] rounded-xl p-3.5">
-								<CombinedTimeline catColor={catColor} />
-							</div>
-						)}
+					)}
 
-						{/* Credits - Only show if items exist */}
-						{items.length > 0 && (
-							<div className="mb-4">
-								<button
-									className="w-full flex items-center gap-2 px-3.5 py-2.5 bg-white border border-[#eaedf0] rounded-xl text-left transition-all duration-200 hover:border-[#ddd] cursor-pointer"
-									onClick={() => setCreditsOpen(!creditsOpen)}
-								>
-									<Percent className="w-3.5 h-3.5 text-[#00a878]" />
-									<span className="flex-1 text-[0.78rem] font-semibold text-[#1a1a2e]">
-										Gutschriften
+					{/* Credits */}
+					{items.length > 0 && (
+						<div className="mb-4">
+							<button
+								className="w-full flex items-center gap-2 px-3.5 py-2.5 bg-white border border-[#eaedf0] rounded-xl text-left transition-all duration-200 hover:border-[#ddd] cursor-pointer"
+								onClick={(e) => {
+									e.stopPropagation();
+									setCreditsOpen(!creditsOpen);
+								}}
+							>
+								<Percent className="w-3.5 h-3.5 text-[#00a878]" />
+								<span className="flex-1 text-[0.78rem] font-semibold text-[#1a1a2e]">
+									Gutschriften
+								</span>
+								{totalCredits > 0 && (
+									<span className="text-[0.72rem] text-[#00a878] font-semibold mr-1">
+										−{totalCredits.toFixed(2)} €
 									</span>
-									{totalCredits > 0 && (
-										<span className="text-[0.72rem] text-[#00a878] font-semibold mr-1">
-											−{totalCredits.toFixed(2)} €
-										</span>
+								)}
+								<ChevronDown
+									className={clsx(
+										'w-3.5 h-3.5 text-[#bbb] transition-transform duration-200',
+										creditsOpen && 'rotate-180',
 									)}
-									<ChevronDown
-										className={clsx(
-											'w-3.5 h-3.5 text-[#bbb] transition-transform duration-200',
-											creditsOpen && 'rotate-180',
-										)}
-									/>
-								</button>
+								/>
+							</button>
+							<AnimatePresence initial={false}>
 								{creditsOpen && (
-									<div className="mt-2 pl-1">
+									<motion.div
+										initial={{ height: 0, opacity: 0, marginTop: 0 }}
+										animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
+										exit={{ height: 0, opacity: 0, marginTop: 0 }}
+										transition={{ duration: 0.2, ease: 'easeInOut' }}
+										className="overflow-hidden pl-1"
+									>
 										<CreditSelector
 											basketCredits={basketCredits}
-											setBasketCredits={setBasketCredits}
+											setBasketCredits={(credits) => setBasketCreditsForId(basket.id, credits)}
 										/>
-									</div>
-								)}
-							</div>
-						)}
-
-						{/* Items */}
-						<div className="flex flex-col gap-3">
-							<AnimatePresence mode="popLayout">
-								{items.length === 0 ? (
-									<motion.div
-										key="empty"
-										initial={{
-											opacity: 0,
-											y: 10,
-										}}
-										animate={{
-											opacity: 1,
-											y: 0,
-										}}
-										exit={{
-											opacity: 0,
-											y: -10,
-										}}
-										transition={{
-											duration: 0.4,
-											ease: [
-												0.16,
-												1,
-												0.3,
-												1,
-											],
-										}}
-										className="bg-white min-h-[300px] flex flex-col items-center justify-center p-8 text-center"
-									>
-										<div
-											className="w-20 h-20 rounded-[1.5rem] flex items-center justify-center mb-6 shadow-sm border transition-all duration-500"
-											style={{
-												backgroundColor: `${catColor}10`,
-												borderColor: `${catColor}20`,
-											}}
-										>
-											<ShoppingBag
-												className="w-9 h-9 transition-colors duration-500"
-												color={catColor}
-												strokeWidth={2}
-											/>
-										</div>
-										<h3 className="text-[1.2rem] font-extrabold text-[#1a1a2e] m-0 mb-3 leading-tight tracking-tight">
-											Warenkorb leer
-										</h3>
-										<p className="text-[0.95rem] text-[#888] font-medium leading-relaxed max-w-[240px] m-0">
-											{randomNotice}
-										</p>
 									</motion.div>
-								) : (
-									items.map((item) => (
-										<BasketItemCard
-											key={item.id}
-											item={item}
-											removeItem={() => removeItem(item.id)}
-											settings={settings}
-										/>
-									))
 								)}
 							</AnimatePresence>
 						</div>
-					</>
-				)}
-			</div>
+					)}
 
-			{/* Footer */}
-			<div className="w-full bg-white border-t border-[#eaedf0] z-20 shrink-0">
-				{!isMounted ? (
-					<div className="p-4 flex flex-col gap-3">
-						<Skeleton className="h-24 w-full rounded-xl" />
-						<Skeleton className="h-12 w-full rounded-xl" />
-					</div>
-				) : items.length > 0 ? (
-					<div className="p-4">
-						{/* Costs */}
-						<div className="space-y-1.5 mb-3">
-							<div className="flex justify-between items-center">
-								<span className="text-[0.75rem] text-[#aaa]">Einmalige Kosten insg.</span>
-								<span
-									className={clsx(
-										'text-[0.8rem] font-semibold flex items-center overflow-hidden h-[1.2rem]',
-										totalOneTime < 0 ? 'text-[#00a878]' : 'text-[#1a1a2e]',
-									)}
+					{/* Items */}
+					<div className="flex flex-col gap-3">
+						<AnimatePresence mode="popLayout">
+							{items.length === 0 ? (
+								<motion.div
+									key="empty"
+									initial={{ opacity: 0, y: 10 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -10 }}
+									transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+									className="bg-white min-h-[220px] flex flex-col items-center justify-center p-6 text-center"
 								>
-									{totalOneTime < 0 && (
-										<span className="mr-[2px]">Gutschrift i. H. v.</span>
-									)}
-									<AnimatePresence mode="popLayout">
-										<motion.span
-											key={totalOneTime}
-											initial={{
-												opacity: 0,
-												y: -15,
-											}}
-											animate={{
-												opacity: 1,
-												y: 0,
-											}}
-											exit={{
-												opacity: 0,
-												y: 15,
-											}}
-											transition={{
-												duration: 0.2,
-												type: 'spring',
-												stiffness: 300,
-												damping: 25,
-											}}
-											className="inline-block"
-										>
-											{Math.abs(totalOneTime).toFixed(2)}
-										</motion.span>
-									</AnimatePresence>
-									<span className="ml-[3px]">
-										€
-										{Object.keys(groupedOneTimeCosts).length > 0 ||
-										hasDevice ||
-										totalCredits > 0
-											? ', aus:'
-											: ''}
-									</span>
-								</span>
-							</div>
-
-							{Object.entries(groupedOneTimeCosts).map(
-								([
-									name,
-									cost ]: [string, number
-]) => (
 									<div
-										key={name}
-										className="flex justify-between items-center text-[0.75rem] text-[#aaa] mt-1 pr-1.5"
-									>
-										<span>{name}</span>
-										<span>{cost.toFixed(2)} €</span>
-									</div>
-								),
-							)}
-
-							{totalCredits > 0 && (
-								<div className="flex justify-between items-center text-[0.75rem] text-[#00a878] mt-1 pr-1.5">
-									<span>Gutschrift</span>
-									<span>
-										−<AnimatedNumber value={totalCredits} /> €
-									</span>
-								</div>
-							)}
-						</div>
-
-						{/* Monthly total */}
-						<div className="bg-[#f7f8fa] border border-[#eaedf0] px-4 py-3 rounded-xl flex flex-col gap-2 mb-3">
-							<div className="flex justify-between items-center mb-1">
-								<span className="text-[0.65rem] uppercase tracking-wider text-[#999] font-medium">
-									Kostenübersicht (24 Monate)
-								</span>
-							</div>
-							{combinedSteps.map(
-								(
-									step: { start: number; end: number; total: number },
-									idx: number,
-								) => (
-									<div key={idx} className="flex justify-between items-center">
-										<span className="text-[0.75rem] text-[#888]">
-											{step.start === step.end
-												? `Monat ${step.start}`
-												: `Monat ${step.start} - ${step.end}`}
-										</span>
-										<span className="text-[0.95rem] font-bold tracking-tight text-[#1a1a2e] flex items-center">
-											<AnimatedNumber value={step.total} />
-											<span className="ml-[3px] text-[0.75rem] font-normal text-[#aaa]">
-												€
-											</span>
-										</span>
-									</div>
-								),
-							)}
-
-							<div className="border-t border-ds-border mt-1 pt-2 flex justify-between items-center">
-								<div className="flex flex-col">
-									<span className="text-[0.65rem] uppercase tracking-wider text-[#999] font-medium">
-										Ø Monatlich
-									</span>
-									<span className="text-[0.6rem] text-[#bbb] font-medium">
-										ca.{' '}
-										<AnimatedNumber
-											value={items.length > 0 ? totals.daily : 0}
-										/>{' '}
-										€ am Tag
-									</span>
-								</div>
-								<span
-									className="text-[1.3rem] font-extrabold tracking-tight flex items-center leading-none transition-colors duration-500"
-									style={{
-										color: catColor,
-									}}
-								>
-									<AnimatedNumber value={totalMonthly} />
-									<span
-										className="ml-[3px] text-[0.8rem] font-normal transition-colors duration-500"
+										className="w-14 h-16 rounded-[1.2rem] flex items-center justify-center mb-4 border transition-all duration-500"
 										style={{
-											color: `${catColor}99`,
+											backgroundColor: `${catColor}10`,
+											borderColor: `${catColor}20`,
 										}}
 									>
+										<ShoppingBag
+											className="w-6 h-6 transition-colors duration-500"
+											color={catColor}
+											strokeWidth={2}
+										/>
+									</div>
+									<h3 className="text-[0.95rem] font-extrabold text-[#1a1a2e] m-0 mb-2 leading-tight tracking-tight">
+										Warenkorb leer
+									</h3>
+									<p className="text-[0.8rem] text-[#888] font-medium leading-relaxed max-w-[200px] m-0">
+										{randomNotice}
+									</p>
+								</motion.div>
+							) : (
+								items.map((item) => (
+									<BasketItemCard
+										key={item.id}
+										item={item}
+										basketId={basket.id}
+										settings={settings}
+									/>
+								))
+							)}
+						</AnimatePresence>
+					</div>
+				</div>
+			</div>
+
+			{/* Bottom Cost Summary Card */}
+			{items.length > 0 && (
+				<div
+					className={clsx(
+						"bg-white shrink-0 rounded-2xl border border-[#eaedf0] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+						isMultiColumn 
+							? "w-full p-4" 
+							: "p-4 mx-4 mb-4 mt-2 w-[calc(100%-32px)]"
+					)}
+				>
+					{/* Costs */}
+					<div className="space-y-1.5 mb-3">
+						<div
+							className={clsx(
+								'flex justify-between items-center select-none',
+								Object.keys(groupedOneTimeCosts).length > 0 ? 'cursor-pointer group/onetime' : ''
+							)}
+							onClick={() => {
+								if (Object.keys(groupedOneTimeCosts).length > 0) {
+									setOneTimeOpen(!oneTimeOpen);
+								}
+							}}
+						>
+							<span className="text-[0.72rem] text-[#aaa] flex items-center gap-1 group-hover/onetime:text-[#777] transition-colors">
+								Einmalige Kosten insg.
+								{Object.keys(groupedOneTimeCosts).length > 0 && (
+									<ChevronDown
+										className={clsx(
+											'w-3 h-3 text-[#bbb] transition-transform duration-200 group-hover/onetime:text-[#999]',
+											oneTimeOpen && 'rotate-180'
+										)}
+									/>
+								)}
+							</span>
+							<span
+								className={clsx(
+									'text-[0.78rem] font-semibold flex items-center overflow-hidden h-[1.2rem]',
+									totalOneTime < 0 ? 'text-[#00a878]' : 'text-[#1a1a2e]',
+								)}
+							>
+								{totalOneTime < 0 && (
+									<span className="mr-[2px] text-[0.7rem]">Gutschrift i. H. v.</span>
+								)}
+								<AnimatePresence mode="popLayout">
+									<motion.span
+										key={totalOneTime}
+										initial={{ opacity: 0, y: -15 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: 15 }}
+										transition={{
+											duration: 0.2,
+											type: 'spring',
+											stiffness: 300,
+											damping: 25,
+										}}
+										className="inline-block"
+									>
+										{Math.abs(totalOneTime).toFixed(2)}
+									</motion.span>
+								</AnimatePresence>
+								<span className="ml-[3px]">€</span>
+							</span>
+						</div>
+
+						<AnimatePresence initial={false}>
+							{oneTimeOpen && Object.keys(groupedOneTimeCosts).length > 0 && (
+								<motion.div
+									initial={{ height: 0, opacity: 0, marginTop: 0 }}
+									animate={{ height: 'auto', opacity: 1, marginTop: 4 }}
+									exit={{ height: 0, opacity: 0, marginTop: 0 }}
+									transition={{ duration: 0.2, ease: 'easeInOut' }}
+									className="overflow-hidden space-y-1 pl-1"
+								>
+									{Object.entries(groupedOneTimeCosts).map(([name, cost]: [string, number]) => (
+										<div
+											key={name}
+											className="flex justify-between items-center text-[0.72rem] text-[#aaa] pr-1.5"
+										>
+											<span className="truncate max-w-[190px]">{name}</span>
+											<span>{cost.toFixed(2)} €</span>
+										</div>
+									))}
+								</motion.div>
+							)}
+						</AnimatePresence>
+
+						{totalCredits > 0 && (
+							<div className="flex justify-between items-center text-[0.72rem] text-[#00a878] mt-1 pr-1.5">
+								<span>Gutschrift</span>
+								<span>
+									−<AnimatedNumber value={totalCredits} /> €
+								</span>
+							</div>
+						)}
+					</div>
+
+					{/* Monthly total */}
+					<div className="bg-[#f7f8fa] border border-[#eaedf0] px-3.5 py-2.5 rounded-xl flex flex-col gap-1.5 mb-3">
+						<div className="flex justify-between items-center mb-0.5">
+							<span className="text-[0.6rem] uppercase tracking-wider text-[#999] font-medium">
+								Kostenübersicht (24 Monate)
+							</span>
+						</div>
+						{combinedSteps.map((step: { start: number; end: number; total: number }, idx: number) => (
+							<div key={idx} className="flex justify-between items-center">
+								<span className="text-[0.72rem] text-[#888]">
+									{step.start === step.end
+										? `Monat ${step.start}`
+										: `Monat ${step.start} - ${step.end}`}
+								</span>
+								<span className="text-[0.88rem] font-bold tracking-tight text-[#1a1a2e] flex items-center">
+									<AnimatedNumber value={step.total} />
+									<span className="ml-[3px] text-[0.72rem] font-normal text-[#aaa]">
 										€
 									</span>
 								</span>
 							</div>
-						</div>
+						))}
 
-						{/* Actions */}
-						<div className="flex gap-2">
-							<button
-								onClick={clearBasket}
-								className="px-3.5 py-2.5 rounded-xl bg-[#f7f8fa] text-[0.78rem] text-[#999] hover:bg-[#fee2e2] hover:text-[#dc2626] font-medium transition-all duration-200 border border-[#eaedf0] hover:border-[#fca5a5] cursor-pointer active:scale-95"
+						{/* Custom rounded divider line */}
+						<div className="h-[2px] bg-slate-200/50 rounded-full w-full mt-1 shrink-0" />
+
+						<div className="pt-1.5 flex justify-between items-center">
+							<div className="flex flex-col">
+								<span className="text-[0.6rem] uppercase tracking-wider text-[#999] font-medium">
+									Ø Monatlich
+								</span>
+								<span className="text-[0.55rem] text-[#bbb] font-medium">
+									ca.{' '}
+									<AnimatedNumber
+										value={items.length > 0 ? totals.daily : 0}
+									/>{' '}
+									€ am Tag
+								</span>
+							</div>
+							<span
+								className="text-[1.2rem] font-extrabold tracking-tight flex items-center leading-none transition-colors duration-500"
+								style={{ color: catColor }}
 							>
-								Leeren
-							</button>
-							<button
-								id="tour-offer-action"
-								onClick={async () => {
-									setIsGenerating('generating');
-									await generateOfferPdf(
-										items,
-										basketCredits,
-										settings,
-										teamEmail,
-										salesRepName,
-									);
-
-									const subject = encodeURIComponent(
-										'Ihr persönliches Angebot der Telekom',
-									);
-									const bodyText = encodeURIComponent(
-										offerTemplateText.replace(
-											/\{\{salesRepName\}\}/g,
-											salesRepName,
-										),
-									);
-
-									window.location.href = `mailto:${teamEmail}?subject=${subject}&body=${bodyText}`;
-
-									setIsGenerating('success');
-									if (clearAfterExport) {
-										setTimeout(() => clearBasket(), 500);
-									}
-									setTimeout(() => setIsGenerating('idle'), 10000);
-								}}
-								disabled={isGenerating !== 'idle'}
-								className={clsx(
-									'flex-1 py-2.5 rounded-xl text-white font-semibold transition-all duration-500 flex items-center justify-center gap-2 text-[0.82rem] cursor-pointer active:scale-95',
-									isGenerating === 'idle' && 'text-white active:scale-95 hover:opacity-90',
-									isGenerating === 'generating' &&
-										'bg-[#ff69b4] cursor-not-allowed',
-									isGenerating === 'success' && 'bg-[#00a878]',
-								)}
-								style={isGenerating === 'idle' ? {
-									backgroundColor: catColor,
-								} : {
-								}}
-							>
-								{isGenerating === 'idle' && (
-									<>
-										Angebot erstellen
-										<ArrowRight className="w-3.5 h-3.5" />
-									</>
-								)}
-								{isGenerating === 'generating' && <>Wird generiert...</>}
-								{isGenerating === 'success' && (
-									<>
-										Outlook geöffnet
-										<Check className="w-3.5 h-3.5" />
-									</>
-								)}
-							</button>
+								<AnimatedNumber value={totalMonthly} />
+								<span
+									className="ml-[3px] text-[0.75rem] font-normal transition-colors duration-500"
+									style={{ color: `${catColor}99` }}
+								>
+									€
+								</span>
+							</span>
 						</div>
 					</div>
-				) : (
-					<div className="h-0 overflow-hidden" />
-				)}
-			</div>
-		</aside>
-	);
-}
 
-function BasketItemCard({
+					{/* Actions */}
+					<div className="flex gap-2">
+						<button
+							onClick={() => clearBasketForId(basket.id)}
+							className="px-3 py-2 rounded-xl bg-[#f7f8fa] text-[0.75rem] text-[#999] hover:bg-[#fee2e2] hover:text-[#dc2626] font-medium transition-all duration-200 border border-[#eaedf0] hover:border-[#fca5a5] cursor-pointer active:scale-95 text-center flex items-center justify-center"
+						>
+							Leeren
+						</button>
+						<button
+							onClick={async () => {
+								setIsGenerating('generating');
+								await generateOfferPdf(
+									items,
+									basketCredits,
+									settings,
+									teamEmail,
+									salesRepName,
+								);
+
+								const subject = encodeURIComponent('Ihr persönliches Angebot der Telekom');
+								const bodyText = encodeURIComponent(
+									offerTemplateText.replace(/\{\{salesRepName\}\}/g, salesRepName),
+								);
+
+								window.location.href = `mailto:${teamEmail}?subject=${subject}?body=${bodyText}`;
+
+								setIsGenerating('success');
+								if (clearAfterExport) {
+									setTimeout(() => clearBasketForId(basket.id), 500);
+								}
+								setTimeout(() => setIsGenerating('idle'), 10000);
+							}}
+							disabled={isGenerating !== 'idle'}
+							className={clsx(
+								'flex-1 py-2 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-1.5 text-[0.78rem] cursor-pointer active:scale-95 border border-solid',
+								isGenerating === 'idle' && (
+									isMultiColumn && !isActive
+										? 'bg-white hover:text-white hover:opacity-100 transition-colors hover:bg-[var(--btn-color)] hover:text-white'
+										: 'text-white active:scale-95 hover:opacity-90 border-transparent'
+								),
+								isGenerating === 'generating' && 'bg-[#ff69b4] text-white border-transparent cursor-not-allowed',
+								isGenerating === 'success' && 'bg-[#00a878] text-white border-transparent',
+							)}
+							style={
+								isGenerating === 'idle'
+									? isMultiColumn && !isActive
+										? { 
+											borderColor: catColor, 
+											color: catColor, 
+											backgroundColor: '#ffffff',
+											'--btn-color': catColor,
+										} as React.CSSProperties
+										: { 
+											backgroundColor: catColor, 
+											borderColor: 'transparent',
+											'--btn-color': catColor,
+										} as React.CSSProperties
+									: {}
+							}
+						>
+							{isGenerating === 'idle' && (
+								<>
+									Angebot erstellen
+									<ArrowRight className="w-3.5 h-3.5" />
+								</>
+							)}
+							{isGenerating === 'generating' && <>Wird generiert...</>}
+							{isGenerating === 'success' && (
+								<>
+									Outlook geöffnet
+									<Check className="w-3.5 h-3.5" />
+								</>
+							)}
+						</button>
+					</div>
+				</div>
+			)}
+		</div>
+	);
+});
+
+const BasketItemCard = memo(function BasketItemCard({
 	item,
-	removeItem,
+	basketId,
 	settings,
 }: {
 	item: BasketItem;
-	removeItem: (id: string) => void;
+	basketId: string;
 	settings: PricingSettings;
 }) {
 	const router = useRouter();
+	const removeItemForId = useBasketStore((state) => state.removeItemForId);
 	const [
 		isBadgeHovered,
 		setIsBadgeHovered,
 	] = useState(false);
-	const calculation = calculateProductCosts({
-		product: item.product,
-		businessCase: item.config.businessCase,
-		magentaTVPackage: item.config.magentaTVPackage,
-		selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
-		selectedAddonIds: item.config.selectedAddonIds,
-		vouchers: item.config.vouchers,
-		hardwarePurchaseType: item.config.hardwarePurchaseType,
-		plusKartenCount: item.config.plusKartenCount,
-		settings,
-		customBasePrice: item.config.customBasePrice,
-	});
+	const calculation = useMemo(() => {
+		return calculateProductCosts({
+			product: item.product,
+			businessCase: item.config.businessCase,
+			magentaTVPackage: item.config.magentaTVPackage,
+			selectedSpecialPriceIds: item.config.selectedSpecialPriceIds,
+			selectedAddonIds: item.config.selectedAddonIds,
+			vouchers: item.config.vouchers,
+			hardwarePurchaseType: item.config.hardwarePurchaseType,
+			plusKartenCount: item.config.plusKartenCount,
+			settings,
+			customBasePrice: item.config.customBasePrice,
+		});
+	}, [item, settings]);
 
 	const catColor = CATEGORY_COLORS[item.product.category] || '#e20074';
 	const catLabel =
 		CATEGORY_LABELS[item.product.category] || item.product.category;
+
+	const itemSuffix = item.config.magentaTVPackage
+		? ` mit ${MAGENTA_TV_PACKAGES[item.config.magentaTVPackage].name}`
+		: item.config.hardwareTier && item.config.hardwareTier !== 'none'
+			? ` mit ${{
+				smartphone: 'Smartphone',
+				top: 'Top-Smartphone',
+				premium: 'Premium-Smartphone',
+				premium_plus: 'Premium-Plus-Smartphone',
+			}[item.config.hardwareTier] || 'Smartphone'}`
+			: '';
+	const fullItemTitle = `${item.product.name}${itemSuffix}`;
 
 	return (
 		<motion.div
@@ -593,7 +1190,7 @@ function BasketItemCard({
 				damping: 25,
 				stiffness: 300,
 			}}
-			className="bg-white border border-[#eaedf0] rounded-xl p-3.5 transition-all duration-200 hover:border-[#ddd] group relative overflow-hidden cursor-pointer"
+			className="bg-white border border-[#eaedf0] rounded-xl p-3.5 transition-colors duration-200 hover:border-[#ddd] group relative overflow-hidden cursor-pointer"
 			onClick={() =>
 				router.push(
 					`/products/${item.product.category}/${item.product.id}?basketItemId=${item.id}`,
@@ -620,18 +1217,13 @@ function BasketItemCard({
 						>
 							{catLabel}
 						</span>
-						<h4 className="font-bold text-[0.85rem] text-[#1a1a2e] leading-tight m-0 mt-0.5">
-							{item.product.name}
-							{item.config.magentaTVPackage
-								? ` mit ${MAGENTA_TV_PACKAGES[item.config.magentaTVPackage].name}`
-								: item.config.hardwareTier && item.config.hardwareTier !== 'none'
-									? ` mit ${{
-										smartphone: 'Smartphone',
-										top: 'Top-Smartphone',
-										premium: 'Premium-Smartphone',
-										premium_plus: 'Premium-Plus-Smartphone',
-									}[item.config.hardwareTier] || 'Smartphone'}`
-									: ''}
+						<h4 
+							className="font-bold text-[0.85rem] text-[#1a1a2e] leading-tight m-0 mt-0.5 truncate max-w-full"
+							title={fullItemTitle}
+						>
+							<span className="truncate">
+								{fullItemTitle}
+							</span>
 						</h4>
 					</div>
 
@@ -639,7 +1231,7 @@ function BasketItemCard({
 					<button
 						onClick={(e) => {
 							e.stopPropagation();
-							removeItem(item.id);
+							removeItemForId(basketId, item.id);
 						}}
 						className="w-6 h-6 rounded-lg flex items-center justify-center bg-transparent hover:bg-[#fee2e2] text-[#ccc] hover:text-[#dc2626] transition-all duration-150 border-none cursor-pointer p-0 opacity-0 group-hover:opacity-100 shrink-0 ml-2 active:scale-95"
 						title="Entfernen"
@@ -799,7 +1391,6 @@ function BasketItemCard({
 							item.config.vouchers?.length > 0 ||
 							item.config.magentaTVPackage) && (
 							<motion.div
-								layout
 								onHoverStart={() => setIsBadgeHovered(true)}
 								onHoverEnd={() => setIsBadgeHovered(false)}
 								className={clsx(
@@ -867,4 +1458,4 @@ function BasketItemCard({
 			</div>
 		</motion.div>
 	);
-}
+});
