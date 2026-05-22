@@ -1,59 +1,61 @@
 # Automatisierung & Systemwartung
 
-Dieses Dokument beschreibt die automatisierten Abläufe im System, die manuellen Administrationsprozesse, die E-Mail-Kommunikationsketten und die Routine-Wartungsarbeiten.
+Dieses Dokument beschreibt die automatisierten Hintergrundprozesse, manuelle Administrationsabläufe, transaktionale E-Mail-Kommunikationsketten und die Einrichtung von Datenbank-Bereinigungen.
 
 ---
 
-## 1. Übersicht der Wartungs- & Pflegeaufgaben
+## 1. System-Wartungsaufgaben
 
-Um das System auf einem aktuellen Stand zu halten, teilen sich die Aufgaben wie folgt auf:
+Die Wartung des Systems ist in automatisierte Abläufe und manuelle Eingriffe unterteilt:
 
-### ⚙️ Automatische Prozesse
-*   **Mitarbeiter-Verifizierung**: Vollautomatisch. Der Benutzer registriert sich, erhält einen Verifizierungslink per E-Mail und wird nach Klick verifiziert.
-*   **Sitzungs-Ablauf (TTL)**: Sessions verfallen automatisch nach 30 Tagen (oder 4 Stunden für administrative Rollen), definiert durch das `expiresAt`-Feld im Cookie und der Datenbank.
-*   **Cache-Verwaltung**: Redis-Cache wird bei jeder Änderung an Tarifen oder Einstellungen automatisch invalidiert.
+### Automatische Prozesse
 
-### ✍️ Manuelle Administrationsaufgaben
-*   **Produktdatenpflege**: Neue Tarife einpflegen, Preise aktualisieren, veraltete Optionen deaktivieren (monatlich / bei Tarifwechseln der Telekom).
-*   **Aktionen & Rabattstufen**: Laufende Sonderaktionen pflegen und priorisieren (monatlich).
-*   **Benutzerverwaltung**: Sperren von Accounts ausgeschiedener Mitarbeiter, Rollenanpassungen bei Beförderungen (z. B. Beförderung zum Teamleiter).
-*   **System-News**: Verfassen von Ankündigungen über neue Features oder Tarifänderungen im Admin-Panel (bei Bedarf).
+* **Mitarbeiter-Verifizierung**: Ein neuer Mitarbeiter registriert sich, das System versendet einen zeitlich begrenzten Verifizierungslink per E-Mail, und nach dem Klick wird der Status des Nutzers in der Datenbank aktualisiert.
+* **Sitzungs-Verfall (TTL)**: Sitzungen werden nach vordefinierten Zeiträumen ungültig (30 Tage für Vertriebsberater, 4 Stunden für administrative Rollen). Dies wird über das Feld `expiresAt` in der Session-Tabelle gesteuert.
+* **Cache-Invalidierung**: Der Redis-Cache wird bei jeder Änderung an Tarifen oder Systemeinstellungen über Event-Hooks automatisch bereinigt.
+
+### Manuelle Administrationsaufgaben
+
+* **Tarifdatenpflege**: Aktualisierung von Preisen, Einpflege neuer Tarife und Deaktivierung abgelaufener Optionen über das administrative Web-Interface (monatlich / bei Tarifänderungen der Telekom).
+* **Benutzerverwaltung**: Anpassung von Berechtigungsstufen (Rollen) und die Sperrung ausgeschiedener Mitarbeiter.
+* **System-News**: Erstellung und Veröffentlichung von Systemankündigungen direkt im Admin-Panel.
 
 ---
 
 ## 2. E-Mail-Kommunikationsabläufe (`src/lib/email.ts`)
 
-Das System versendet transaktionale E-Mails an Mitarbeiter über die **Resend**-API. Folgende E-Mail-Typen sind implementiert:
+Das System nutzt die Resend-API zur Übermittlung transaktionaler E-Mails an Mitarbeiter. Folgende E-Mail-Typen sind implementiert:
 
-### A. Registrierungs-Verifizierung (`VerificationEmail`)
-*   **Trigger**: Wird ausgelöst, wenn sich ein neuer Mitarbeiter auf der Login-Seite registriert (`sessionRouter.requestVerification`).
-*   **Inhalt**: Ein einmaliger Registrierungslink mit einem Token (Gültigkeit: 1 Stunde).
-*   **Ziel**: Verifizierung, dass der Mitarbeiter Zugriff auf das Telekom-Postfach hat.
+### Registrierungs-Verifizierung (`VerificationEmail`)
+* **Trigger**: Wird über den tRPC-Endpoint `sessionRouter.requestVerification` ausgelöst, wenn ein neuer Mitarbeiter sich registriert.
+* **Payload**: Enthält ein einmaliges Verifizierungstoken (Gültigkeit: 1 Stunde) als URL-Parameter.
+* **Zweck**: Verifiziert die Zugriffsberechtigung auf das geschäftliche Telekom-Postfach.
 
-### B. Willkommens-Mail (`WelcomeEmail`)
-*   **Trigger**: Wird ausgelöst, wenn ein Administrator einen neuen Benutzer manuell im Admin-Panel anlegt (`adminUsersRouter.create`).
-*   **Inhalt**: Zugangsdaten (Benutzername und temporäres Passwort) sowie ein Link zum Login.
+### Willkommens-Mail (`WelcomeEmail`)
+* **Trigger**: Wird über `adminUsersRouter.create` ausgelöst, wenn ein Administrator ein neues Profil manuell anlegt.
+* **Payload**: Enthält die initialen Zugangsdaten (E-Mail und temporäres Passwort).
 
-### C. Account-Löschung (`GoodbyeEmail`)
-*   **Trigger**: Wird ausgelöst, wenn ein Administrator einen Benutzer aus dem System löscht (`adminUsersRouter.delete`).
-*   **Inhalt**: Information über die Löschung des Accounts und die Löschung der zugehörigen Daten.
+### Account-Löschung (`GoodbyeEmail`)
+* **Trigger**: Wird über `adminUsersRouter.delete` ausgelöst, wenn ein Administrator ein Benutzerkonto löscht.
+* **Zweck**: Bestätigung des Löschvorgangs und der Entfernung personenbezogener Daten aus dem System.
 
 ---
 
-## 3. Datenbank-Bereinigung (UserSession-Cleanup)
+## 3. Datenbank-Bereinigung (Cleanup)
 
-Durch die Registrierung und Anmeldung vieler Mitarbeiter wächst die `UserSession`-Tabelle kontinuierlich an. Veraltete Sitzungsdaten sollten regelmäßig gelöscht werden.
+Das kontinuierliche Wachstum der `UserSession`-Tabelle erfordert eine regelmäßige Bereinigung abgelaufener Sitzungsdaten.
 
-### PostgreSQL Cron-Job (Empfohlen)
-Richte auf dem PostgreSQL-Server einen täglichen Cron-Job ein, um Sitzungen, die älter als 30 Tage sind, automatisch zu löschen.
+### Cron-Job-Konfiguration (PostgreSQL)
 
-1.  Öffne das Cron-Verzeichnis auf dem Server:
-    ```bash
-    crontab -e
-    ```
-2.  Füge folgende Zeile hinzu, um den Cleanup täglich um 03:00 Uhr nachts auszuführen:
-    ```bash
-    0 3 * * * PGPASSWORD="dein-db-passwort" psql -h localhost -U postgres -d dtag -c "DELETE FROM \"UserSession\" WHERE \"createdAt\" < NOW() - INTERVAL '30 days';"
-    ```
+Richte einen systemseitigen Cron-Job auf dem PostgreSQL-Server ein, um Einträge zu löschen, die älter als 30 Tage sind.
 
-*(Hinweis: Ersetze `dein-db-passwort` und den Datenbanknamen `dtag` entsprechend deiner Konfiguration in `.env.production`.)*
+1. Öffne die Crontab-Konfiguration des Servers über das Terminal:
+   ```bash
+   crontab -e
+   ```
+2. Füge die folgende Zeile hinzu, um die Bereinigung täglich um 03:00 Uhr Serverzeit auszuführen:
+   ```bash
+   0 3 * * * PGPASSWORD="dein-datenbank-passwort" psql -h localhost -U postgres -d dtag -c "DELETE FROM \"UserSession\" WHERE \"createdAt\" < NOW() - INTERVAL '30 days';"
+   ```
+
+*(Ersetze `dein-datenbank-passwort` und den Datenbanknamen `dtag` gemäß der Konfiguration in der jeweiligen `.env`-Datei).*

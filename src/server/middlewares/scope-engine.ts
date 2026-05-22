@@ -4,8 +4,10 @@ import {
 import {
   prisma,
 } from '@/lib/prisma';
-import type {
-  SessionUser,
+import {
+  ROLE_RANKS,
+  type Role,
+  type SessionUser,
 } from '@/lib/rbac';
 
 export type HierarchicalEntity = 'user' | 'team' | 'location' | 'odRegion' | 'news' | 'product';
@@ -49,6 +51,7 @@ export const withHierarchicalScope = (entityType: HierarchicalEntity) =>
             id,
           },
           select: {
+            role: true,
             odRegionId: true,
             locationId: true,
             teamId: true,
@@ -75,6 +78,19 @@ export const withHierarchicalScope = (entityType: HierarchicalEntity) =>
             locationId: u.locationId || u.team?.locationId || null,
             teamId: u.teamId || null,
           };
+
+          // Role Rank Validation: Enforce that the target user's rank is strictly lower than the caller's rank.
+          // Self-management (session.id === id) is bypassed here.
+          if (session.id !== id) {
+            const currentRank = ROLE_RANKS[session.role as Role] || 0;
+            const targetRank = ROLE_RANKS[u.role as Role] || 0;
+            if (targetRank >= currentRank) {
+              throw new TRPCError({
+                code: 'FORBIDDEN',
+                message: 'Du hast keine Berechtigung, einen gleich- oder höherrangigen Account zu verwalten.',
+              });
+            }
+          }
         }
       }
       else if (entityType === 'team') {
@@ -162,7 +178,7 @@ export const withHierarchicalScope = (entityType: HierarchicalEntity) =>
       }
 
       if (session.role === 'OD_MANAGER') {
-        if (!session.odRegionId || (lineage.odRegionId && lineage.odRegionId !== session.odRegionId)) {
+        if (!session.odRegionId || lineage.odRegionId !== session.odRegionId) {
           throw new TRPCError({
             code: 'FORBIDDEN',
             message: 'Diese Entität befindet sich außerhalb Deines OD-Bereichs.',
@@ -170,7 +186,7 @@ export const withHierarchicalScope = (entityType: HierarchicalEntity) =>
         }
       }
       else if (session.role === 'LOCATION_MANAGER') {
-        if (!session.locationId || (lineage.locationId && lineage.locationId !== session.locationId)) {
+        if (!session.locationId || lineage.locationId !== session.locationId) {
           throw new TRPCError({
             code: 'FORBIDDEN',
             message: 'Diese Entität befindet sich außerhalb Deines Standorts.',
@@ -178,7 +194,7 @@ export const withHierarchicalScope = (entityType: HierarchicalEntity) =>
         }
       }
       else if (session.role === 'TEAM_LEADER') {
-        if (!session.teamId || (lineage.teamId && lineage.teamId !== session.teamId)) {
+        if (!session.teamId || lineage.teamId !== session.teamId) {
           throw new TRPCError({
             code: 'FORBIDDEN',
             message: 'Diese Entität befindet sich außerhalb Deines Teams.',

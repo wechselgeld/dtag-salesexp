@@ -21,9 +21,69 @@ import {
 } from '@/lib/cache';
 
 export const authRouter = router({
-  me: publicProcedure.query(({
+  me: publicProcedure.query(async ({
     ctx,
-  }) => ctx.session || null),
+  }) => {
+    if (!ctx.session || !ctx.session.sub) {
+      return null;
+    }
+    const sub = ctx.session.sub as string;
+    const user = await prisma.user.findUnique({
+      where: {
+        id: sub,
+      },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        isEditor: true,
+        odRegionId: true,
+        locationId: true,
+        teamId: true,
+        firstName: true,
+        lastName: true,
+        sessionVersion: true,
+        password: true,
+        team: {
+          select: {
+            locationId: true,
+            location: {
+              select: {
+                odRegionId: true,
+              },
+            },
+          },
+        },
+        location: {
+          select: {
+            odRegionId: true,
+          },
+        },
+      },
+    });
+
+    if (!user) return null;
+
+    const effectiveLocationId = user.locationId || user.team?.locationId || null;
+    const effectiveOdRegionId = user.odRegionId || user.location?.odRegionId || user.team?.location?.odRegionId || null;
+
+    return {
+      ...ctx.session,
+      id: user.id,
+      email: user.email,
+      role: ctx.session.role === 'USER' ? 'USER' : user.role,
+      isEditor: ctx.session.role === 'USER' ? false : user.isEditor,
+      odRegionId: user.odRegionId,
+      locationId: user.locationId,
+      teamId: user.teamId,
+      effectiveLocationId,
+      effectiveOdRegionId,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      sessionVersion: user.sessionVersion,
+      password: user.password,
+    };
+  }),
 
   login: publicProcedure
     .input(z.object({

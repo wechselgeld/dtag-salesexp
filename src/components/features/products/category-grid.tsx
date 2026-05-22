@@ -7,6 +7,9 @@ import {
 	Smartphone, Wifi, Phone, Tv, PlusCircle, Router,
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+	trpc,
+} from '@/lib/trpc';
 
 const categories = [
 	{
@@ -66,6 +69,8 @@ const categories = [
 ];
 
 export function CategoryGrid() {
+	const utils = trpc.useUtils();
+
 	return (
 		<div
 			id="tour-categories"
@@ -76,6 +81,16 @@ export function CategoryGrid() {
 					href={category.href}
 					key={category.id}
 					className="no-underline tour-category-card"
+					onMouseEnter={() => {
+						utils.product.getProductsByCategory.prefetch({
+							category: category.id,
+						});
+					}}
+					onFocus={() => {
+						utils.product.getProductsByCategory.prefetch({
+							category: category.id,
+						});
+					}}
 				>
 					<motion.div
 						initial={{

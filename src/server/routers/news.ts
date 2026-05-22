@@ -79,43 +79,47 @@ export const newsRouter = router({
             odRegionId, locationId, teamId, isAdmin, role,
         } = await getSessionContext(ctx);
 
-        const sessionUser = {
-            id: ctx.session?.sub || 'anonymous',
-            role,
-            isEditor: isAdmin,
-            odRegionId,
-            locationId,
-            teamId,
-        };
-        const visibilityFilter = getNewsVisibilityFilter(sessionUser as any);
+        const cacheKey = `news:active:r_${odRegionId || 'null'}:l_${locationId || 'null'}:t_${teamId || 'null'}`;
 
-        const whereClause: any = {
-            isActive: true,
-            ...visibilityFilter,
-        };
+        return getCached(cacheKey, 5 * 60 * 1000, () => {
+            const sessionUser = {
+                id: ctx.session?.sub || 'anonymous',
+                role,
+                isEditor: isAdmin,
+                odRegionId,
+                locationId,
+                teamId,
+            };
+            const visibilityFilter = getNewsVisibilityFilter(sessionUser as any);
 
-        return prisma.news.findMany({
-            where: whereClause,
-            include: {
-                odRegion: {
-                    select: {
-                        name: true,
+            const whereClause: any = {
+                isActive: true,
+                ...visibilityFilter,
+            };
+
+            return prisma.news.findMany({
+                where: whereClause,
+                include: {
+                    odRegion: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                    location: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                    team: {
+                        select: {
+                            name: true,
+                        },
                     },
                 },
-                location: {
-                    select: {
-                        name: true,
-                    },
+                orderBy: {
+                    createdAt: 'desc',
                 },
-                team: {
-                    select: {
-                        name: true,
-                    },
-                },
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
+            });
         });
     }),
 

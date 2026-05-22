@@ -27,6 +27,8 @@ export interface SessionUser {
   odRegionId?: string | null;
   locationId?: string | null;
   teamId?: string | null;
+  effectiveOdRegionId?: string | null;
+  effectiveLocationId?: string | null;
   sessionVersion?: number;
 }
 

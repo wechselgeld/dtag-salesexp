@@ -60,6 +60,38 @@ interface MenuGroup {
 	items: MenuItem[];
 }
 
+function SidebarGroupSkeleton({ collapsed }: { collapsed: boolean }) {
+	return (
+		<div className="px-3 w-full mb-6 animate-pulse">
+			{!collapsed && (
+				<div className="h-4 bg-[#e2e4e8] rounded-full w-24 mb-3.5 mx-2" />
+			)}
+			<div
+				className={clsx(
+					'flex flex-col gap-2',
+					!collapsed && 'bg-[#f7f8fa] rounded-[20px] p-2',
+					collapsed && 'items-center gap-2',
+				)}
+			>
+				{[1, 2, 3].map((i) => (
+					<div
+						key={i}
+						className={clsx(
+							'bg-white/60 rounded-[14px]',
+							collapsed ? 'w-10 h-10' : 'h-10 w-full flex items-center px-3 gap-3',
+						)}
+					>
+						<div className={clsx('bg-[#e2e4e8] rounded-full shrink-0', collapsed ? 'w-4.5 h-4.5 m-auto' : 'w-4 h-4')} />
+						{!collapsed && (
+							<div className="h-3 bg-[#e2e4e8] rounded-full w-24" />
+						)}
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
+
 export default function AdminLayout({
 	children,
 }: {
@@ -69,7 +101,7 @@ export default function AdminLayout({
 	const router = useRouter();
 
 	const {
-		can, role, isAuthenticated,
+		can, role, isAuthenticated, isLoading,
 	} = usePermissions();
 
 	useEffect(() => {
@@ -250,26 +282,33 @@ export default function AdminLayout({
 						/>
 					</SidebarGroup>
 
-					{menuGroups
-						.filter((group) => group.show && group.items.length > 0)
-						.map((group) => (
-							<SidebarGroup
-								key={group.title}
-								title={group.title}
-								collapsed={collapsed}
-							>
-								{group.items.map((item) => (
-									<SidebarItem
-										key={item.href}
-										icon={item.icon}
-										label={item.label}
-										href={item.href}
-										active={pathname.startsWith(item.href)}
-										collapsed={collapsed}
-									/>
-								))}
-							</SidebarGroup>
-						))}
+					{isLoading ? (
+						<>
+							<SidebarGroupSkeleton collapsed={collapsed} />
+							<SidebarGroupSkeleton collapsed={collapsed} />
+						</>
+					) : (
+						menuGroups
+							.filter((group) => group.show && group.items.length > 0)
+							.map((group) => (
+								<SidebarGroup
+									key={group.title}
+									title={group.title}
+									collapsed={collapsed}
+								>
+									{group.items.map((item) => (
+										<SidebarItem
+											key={item.href}
+											icon={item.icon}
+											label={item.label}
+											href={item.href}
+											active={pathname.startsWith(item.href)}
+											collapsed={collapsed}
+										/>
+									))}
+								</SidebarGroup>
+							))
+					)}
 				</nav>
 			</SidebarLayout>
 

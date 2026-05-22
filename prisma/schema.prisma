@@ -107,6 +107,9 @@ model Product {
   highlights              TeamHighlight[]
   compatibleAddons        Addon[]         @relation("ProductAddons")
   specialPrices           SpecialPrice[]  @relation("ProductSpecialPrices")
+
+  @@index([category, isActive, priority])
+  @@index([isActive, priority])
 }
 
 model SalesArgument {

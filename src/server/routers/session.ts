@@ -14,7 +14,7 @@ import ipaddr from 'ipaddr.js';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import {
-    getCached,
+    getCached, invalidateCache,
 } from '@/lib/cache';
 import {
     login, signDeviceId, verifyDeviceId,
@@ -475,27 +475,30 @@ export const sessionRouter = router({
             };
         }),
 
-    getCurrent: publicProcedure.query(async ({
+    getCurrent: publicProcedure.query(({
         ctx,
     }) => {
         if (!ctx.session || !ctx.session.sub) return null;
+        const userId = ctx.session.sub as string;
 
-        const user = await ctx.prisma.user.findUnique({
-            where: {
-                id: ctx.session.sub as string,
-            },
-            include: {
-                team: {
-                    include: {
-                        highlights: true,
-                    },
+        return getCached(`session:user:${userId}:current`, 60 * 1000, async () => {
+            const user = await ctx.prisma.user.findUnique({
+                where: {
+                    id: userId,
                 },
-                location: true,
-            },
-        });
+                include: {
+                    team: {
+                        include: {
+                            highlights: true,
+                        },
+                    },
+                    location: true,
+                },
+            });
 
-        if (!user || !user.isVerified) return null;
-        return user;
+            if (!user || !user.isVerified) return null;
+            return user;
+        });
     }),
 
     checkUserExists: publicProcedure
@@ -545,6 +548,9 @@ export const sessionRouter = router({
                     locationId: team?.locationId ?? undefined,
                 },
             });
+
+            // Proactively clear user's session current cache and middleware auth cache
+            await invalidateCache(`session:user:${userId}`);
 
             await login({
                 id: updatedUser.id,

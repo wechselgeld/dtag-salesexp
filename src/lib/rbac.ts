@@ -10,9 +10,11 @@ export interface SessionUser {
     odRegionId?: string | null;
     locationId?: string | null;
     teamId?: string | null;
+    effectiveOdRegionId?: string | null;
+    effectiveLocationId?: string | null;
 }
 
-const ROLE_RANKS = {
+export const ROLE_RANKS = {
     ADMIN: 4,
     OD_MANAGER: 3,
     LOCATION_MANAGER: 2,
@@ -33,23 +35,19 @@ export function hasRole(user: SessionUser | undefined | null, role: Role): boole
 // ------------------------------------------------------------------
 
 export function getOdRegionFilter(user: SessionUser | undefined | null) {
-    if (!user) {
+    if (!user || user.role === 'USER') {
         return {
             isActive: true,
         };
     }
-    if (hasPermission(user.role, 'od:manage') || hasRole(user, 'ADMIN')) {
+    if (hasRole(user, 'ADMIN')) {
         return {
         };
     }
-    if (user.role === 'OD_MANAGER' && user.odRegionId) {
+    const odId = user.effectiveOdRegionId || user.odRegionId;
+    if (odId) {
         return {
-            id: user.odRegionId,
-        };
-    }
-    if (user.odRegionId) {
-        return {
-            id: user.odRegionId,
+            id: odId,
         };
     }
     return {
@@ -58,28 +56,30 @@ export function getOdRegionFilter(user: SessionUser | undefined | null) {
 }
 
 export function getLocationFilter(user: SessionUser | undefined | null) {
-    if (!user) {
+    if (!user || user.role === 'USER') {
         return {
             isActive: true,
         };
     }
-    if (hasPermission(user.role, 'locations:manage') || hasRole(user, 'ADMIN')) {
+    if (hasRole(user, 'ADMIN')) {
         return {
         };
     }
-    if (user.role === 'OD_MANAGER' && user.odRegionId) {
+    const odId = user.effectiveOdRegionId || user.odRegionId;
+    const locId = user.effectiveLocationId || user.locationId;
+    if (user.role === 'OD_MANAGER' && odId) {
         return {
-            odRegionId: user.odRegionId,
+            odRegionId: odId,
         };
     }
-    if (user.role === 'LOCATION_MANAGER' && user.locationId) {
+    if (user.role === 'LOCATION_MANAGER' && locId) {
         return {
-            id: user.locationId,
+            id: locId,
         };
     }
-    if (user.locationId) {
+    if (locId) {
         return {
-            id: user.locationId,
+            id: locId,
         };
     }
     return {
@@ -88,24 +88,26 @@ export function getLocationFilter(user: SessionUser | undefined | null) {
 }
 
 export function getTeamFilter(user: SessionUser | undefined | null) {
-    if (!user) {
+    if (!user || user.role === 'USER') {
         return {
         };
     }
-    if (hasPermission(user.role, 'teams:manage') || hasRole(user, 'ADMIN')) {
+    if (hasRole(user, 'ADMIN')) {
         return {
         };
     }
-    if (user.role === 'OD_MANAGER' && user.odRegionId) {
+    const odId = user.effectiveOdRegionId || user.odRegionId;
+    const locId = user.effectiveLocationId || user.locationId;
+    if (user.role === 'OD_MANAGER' && odId) {
         return {
             location: {
-                odRegionId: user.odRegionId,
+                odRegionId: odId,
             },
         };
     }
-    if (user.role === 'LOCATION_MANAGER' && user.locationId) {
+    if (user.role === 'LOCATION_MANAGER' && locId) {
         return {
-            locationId: user.locationId,
+            locationId: locId,
         };
     }
     if (user.role === 'TEAM_LEADER' && user.teamId) {
@@ -188,6 +190,7 @@ export function getUserFilter(user: SessionUser | undefined | null) {
     }
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
         return {
+            role: { notIn: ['ADMIN', 'OD_MANAGER'] },
             OR: [
                 {
                     odRegionId: user.odRegionId,
@@ -209,6 +212,7 @@ export function getUserFilter(user: SessionUser | undefined | null) {
     }
     if (user.role === 'LOCATION_MANAGER' && user.locationId) {
         return {
+            role: { notIn: ['ADMIN', 'OD_MANAGER', 'LOCATION_MANAGER'] },
             OR: [
                 {
                     locationId: user.locationId,

@@ -1,82 +1,84 @@
-# Server-Hosting & Infrastruktur
+# Server-Hosting & Infrastruktur-Setup
 
-Dieses Dokument beschreibt die Hosting-Voraussetzungen, die Konfiguration des Produktions-Servers, den Deployment-Prozess und die Kostenszenarien.
+Dieses Dokument beschreibt die Systemvoraussetzungen, die Konfiguration der Systemkomponenten sowie die empfohlenen Deployment-Verfahren für den Produktionsbetrieb.
 
 ---
 
-## 1. Systemvoraussetzungen (Hardware-Sizing)
+## 1. Systemvoraussetzungen
 
-Für den reibungslosen Betrieb mit ca. 1.000 registrierten Mitarbeitern und 50–150 zeitgleichen Peak-Nutzern werden folgende Hardwareressourcen benötigt:
+Die folgenden Hardwareressourcen sind für den Betrieb mit ca. 1.000 registrierten Benutzern und einer Peak-Last von 50 bis 150 zeitgleichen Sitzungen ausgelegt:
 
-| Ressource | Mindestwert | Empfohlen |
+| Ressource | Mindestanforderung | Empfohlene Spezifikation |
 | :--- | :--- | :--- |
 | **Node.js-Laufzeit** | v20 LTS | v22 LTS |
 | **Betriebssystem** | Ubuntu 22.04 LTS | Ubuntu 24.04 LTS |
-| **Arbeitsspeicher (RAM)** | 1 GB | 2 GB (wegen Next.js-Builds) |
-| **CPU** | 1 vCPU (ARM oder x86) | 2 vCPU |
-| **Festplattenspeicher** | 10 GB | 20+ GB (für Docker-Images & Logs) |
+| **Arbeitsspeicher (RAM)** | 1 GB | 2 GB (Erforderlich für Next.js-Builds auf dem Server) |
+| **Prozessor (CPU)** | 1 vCPU | 2 vCPU |
+| **Speicherplatz** | 10 GB | 20 GB oder mehr (Abhängig von Docker-Images und Log-Rotations) |
 
 ---
 
-## 2. Infrastruktur-Komponenten
+## 2. Infrastruktur-Konfiguration
 
-### A. PostgreSQL-Datenbank
-Die Anwendung erfordert eine PostgreSQL-Datenbank (Version 15 oder 16).
-*   **Verbindungs-Optimierung**: Die Verbindungs-URLs hängen standardmäßig `?connection_limit=20&pool_timeout=30` an. Der PostgreSQL-Server muss so konfiguriert sein, dass er mindestens 50 gleichzeitige Clientverbindungen zulässt (`max_connections = 100`).
+### PostgreSQL-Datenbank
+Das System erfordert eine PostgreSQL-Datenbank (Version 15 oder 16).
+* **Verbindungs-Parameter**: An die Verbindungs-URL sind standardmäßig die Parameter `?connection_limit=20&pool_timeout=30` anzuhängen. Der PostgreSQL-Server muss auf mindestens 50 gleichzeitige Clientverbindungen ausgelegt sein (`max_connections = 100`).
 
-### B. Dragonfly (Redis) Caching-Layer
-Dragonfly (oder ein Standard-Redis-Server) wird als In-Memory-Cache verwendet. Der Zugriff erfolgt über die `REDIS_URL`. Es ist keine Persistenz zwingend notwendig, da es sich um flüchtige Cache-Daten handelt.
+### Dragonfly Redis
+Ein Dragonfly- oder Standard-Redis-Server fungiert als In-Memory-Cache. Der Zugriff erfolgt über die Umgebungsvariable `REDIS_URL`. Es ist keine Persistierung der Redis-Daten erforderlich (flüchtige Cache-Daten).
 
-### C. E-Mail-Dienst (Resend)
-Der E-Mail-Versand (z. B. für Passkey-Registrierungen und Welcome-Nachrichten) läuft über **Resend**.
-*   Erfordert einen `RESEND_API_KEY`.
-*   Erfordert die Einrichtung einer verifizierten Domain (`EMAIL_FROM`), um Spam-Filterung zu vermeiden.
-
----
-
-## 3. Empfohlene Deployments
-
-### Option A: Self-Hosted via Coolify (Docker)
-Das Projekt besitzt eine Standalone-Konfiguration in `next.config.ts` (`output: 'standalone'`). Dies reduziert die Docker-Image-Größe von ca. 1 GB auf **~150 MB**, da nur die absolut notwendigen Node-Module gepackt werden.
-
-*   **Dockerfile-Pfad**: `./Dockerfile`
-*   **Pre-Deployment-Command** (in Coolify eintragen, um Prisma-Migrationen vor dem Start auszuführen):
-    ```bash
-    npx prisma migrate deploy
-    ```
-*   **Port & Healthcheck**: Die Anwendung lauscht auf Port `3000`. Der Healthcheck kann auf den Pfad `/` oder `/login` gerichtet werden.
+### E-Mail-Dienst (Resend)
+Der transaktionale E-Mail-Versand (z. B. für Passkey-Verifizierungen) läuft über die Resend-API.
+* Erfordert die Hinterlegung des `RESEND_API_KEY`.
+* Setzt eine verifizierte Domain (`EMAIL_FROM`) voraus, um die Zustellbarkeit zu sichern.
 
 ---
 
-### Option B: PM2 (Direkt auf Ubuntu-Server)
-Falls die Anwendung ohne Docker betrieben wird, empfiehlt sich **PM2** zur Prozessüberwachung:
+## 3. Deployment-Verfahren
+
+### Option A: Deployment über Coolify (Docker Standalone)
+
+Die Next.js-App nutzt das Standalone-Build-Feature (`output: 'standalone'` in `next.config.ts`), welches die Größe des finalen Docker-Images auf ca. 150 MB minimiert.
+
+* **Dockerfile**: Befindet sich im Root-Verzeichnis unter `./Dockerfile`.
+* **Pre-Deployment-Befehl**: Führe vor dem Anwendungsstart ausstehende Prisma-Migrationen aus:
+  ```bash
+  npx prisma migrate deploy
+  ```
+* **Port & Healthcheck**: Die Anwendung läuft auf Port `3000`. Setze den Healthcheck-Pfad auf `/` oder `/login`.
+
+---
+
+### Option B: Direktes Deployment mit PM2 (Bare Ubuntu)
+
+Führe für ein Bare-Metal- oder VM-basiertes Deployment ohne Docker die folgenden CLI-Befehle auf dem Zielserver aus:
 
 ```bash
-# 1. Neuesten Code holen
+# 1. Repository klonen und aktualisieren
 git pull origin main
 
-# 2. Abhängigkeiten installieren
+# 2. NodeJS-Abhängigkeiten installieren
 pnpm install
 
-# 3. Datenbank-Migrationen einspielen
+# 3. Datenbank-Migrationen einspielen (Produktion)
 pnpm run db:push:prod
 
-# 4. Next.js App bauen (erstellt Standalone-Assets)
+# 4. Next.js Applikation bauen (generiert Standalone-Assets)
 pnpm run build
 
-# 5. Prozess in PM2 registrieren und starten
-pm2 start "node .next/standalone/server.js" --name saleshelper
+# 5. Prozess über PM2 registrieren und starten
+pm2 start "node .next/standalone/server.js" --name sxp
 
-# 6. Autostart bei Serverneustart sichern
+# 6. PM2-Autostart bei Systemneustart konfigurieren
 pm2 startup
 pm2 save
 ```
 
 ---
 
-## 4. Nginx Reverse-Proxy & SSL
+## 4. Nginx Reverse-Proxy-Konfiguration
 
-Die App sollte über einen Nginx Reverse Proxy mit SSL-Terminierung (Let's Encrypt) an das Internet angebunden werden:
+Zur SSL-Terminierung (z. B. Let's Encrypt) ist ein Nginx Reverse-Proxy vorzuschalten. Nutze die folgende Server-Konfiguration:
 
 ```nginx
 server {
@@ -99,14 +101,3 @@ server {
     }
 }
 ```
-
----
-
-## 5. Kostenübersicht für 1.000 Benutzer
-
-| Hosting-Variante | Anbieter / Tarif | Kosten/Monat | Eignung / Stabilität |
-| :--- | :--- | :--- | :--- |
-| **Self-Hosted (Hetzner)** | 1x Cloud Server CPX21 (App)<br>1x Cloud Server CPX11 (PostgreSQL + Redis) | **~12–15 €** | **Empfohlen**: Sehr stabil, Backups inklusive, hervorragende europäische Latenzen. |
-| **Free Tier (Oracle ARM)** | Oracle Cloud VM.Standard.A1.Flex | **0 €** | Gut für Entwicklung/Staging, birgt jedoch das Risiko unangekündigter Free-Tier-Terminierungen. |
-| **Managed (Railway)** | Railway Web Service + Database | **~25–40 €** | Sehr einfacher Betrieb, automatische Skalierung, aber teurer als dedizierte Server. |
-| **Serverless (Vercel)** | Vercel Pro Plan + Supabase Postgres | **~30–50 €** | Exzellentes Edge-Caching, aber potenziell hohe Serverless-Cold-Start-Latenzen bei tRPC-Batching. |

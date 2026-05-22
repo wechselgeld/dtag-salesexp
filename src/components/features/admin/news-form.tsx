@@ -88,26 +88,26 @@ export function NewsForm({
 	const {
 		data: locationsData, isLoading: isLoadingLocations,
 	} = trpc.location.list.useQuery(
-		((currentUser?.role === 'OD_MANAGER' && currentUser.odRegionId)
+		((currentUser?.role === 'OD_MANAGER' && (currentUser.effectiveOdRegionId || currentUser.odRegionId))
 			? {
-				odRegionId: currentUser.odRegionId,
+				odRegionId: currentUser.effectiveOdRegionId || currentUser.odRegionId,
 			}
-			: (currentUser?.role === 'LOCATION_MANAGER' && currentUser.locationId)
+			: (currentUser?.role === 'LOCATION_MANAGER' && (currentUser.effectiveLocationId || currentUser.locationId))
 				? {
-					locationId: currentUser.locationId,
+					locationId: currentUser.effectiveLocationId || currentUser.locationId,
 				}
 				: undefined) as any,
 	);
 	const {
 		data: teamsData, isLoading: isLoadingTeams,
 	} = trpc.team.list.useQuery(
-		((currentUser?.role === 'OD_MANAGER' && currentUser.odRegionId)
+		((currentUser?.role === 'OD_MANAGER' && (currentUser.effectiveOdRegionId || currentUser.odRegionId))
 			? {
-				odRegionId: currentUser.odRegionId,
+				odRegionId: currentUser.effectiveOdRegionId || currentUser.odRegionId,
 			}
-			: (currentUser?.role === 'LOCATION_MANAGER' && currentUser.locationId)
+			: (currentUser?.role === 'LOCATION_MANAGER' && (currentUser.effectiveLocationId || currentUser.locationId))
 				? {
-					locationId: currentUser.locationId,
+					locationId: currentUser.effectiveLocationId || currentUser.locationId,
 				}
 				: undefined) as any,
 	);
@@ -212,27 +212,29 @@ export function NewsForm({
 
 	useEffect(() => {
 		if (currentUser && mode === 'create') {
+			const odId = currentUser.effectiveOdRegionId || currentUser.odRegionId;
+			const locId = currentUser.effectiveLocationId || currentUser.locationId;
 			if (targetType === 'GLOBAL' && currentUser.role !== 'ADMIN') {
 				if (currentUser.role === 'OD_MANAGER') {
 					setValue('targetType', 'OD_REGION' as any);
-					if (currentUser.odRegionId) { setValue('odRegionId', currentUser.odRegionId as string); }
+					if (odId) { setValue('odRegionId', odId as string); }
 				}
 				else if (currentUser.role === 'LOCATION_MANAGER') {
 					setValue('targetType', 'LOCATION' as any);
-					if (currentUser.locationId) { setValue('locationId', currentUser.locationId as string); }
+					if (locId) { setValue('locationId', locId as string); }
 				}
 				else if (currentUser.role === 'TEAM_LEADER') {
 					setValue('targetType', 'TEAM' as any);
 					if (currentUser.teamId) { setValue('teamId', currentUser.teamId as string); }
 				}
 			}
- else {
+			else {
 				// Always ensure the relevant ID is prefilled if they navigate to a target type they are locked to
-				if (targetType === 'OD_REGION' && currentUser.role === 'OD_MANAGER' && currentUser.odRegionId) {
-					setValue('odRegionId', currentUser.odRegionId as string);
+				if (targetType === 'OD_REGION' && currentUser.role === 'OD_MANAGER' && odId) {
+					setValue('odRegionId', odId as string);
 				}
-				if (targetType === 'LOCATION' && currentUser.role === 'LOCATION_MANAGER' && currentUser.locationId) {
-					setValue('locationId', currentUser.locationId as string);
+				if (targetType === 'LOCATION' && currentUser.role === 'LOCATION_MANAGER' && locId) {
+					setValue('locationId', locId as string);
 				}
 				if (targetType === 'TEAM' && currentUser.role === 'TEAM_LEADER' && currentUser.teamId) {
 					setValue('teamId', currentUser.teamId as string);

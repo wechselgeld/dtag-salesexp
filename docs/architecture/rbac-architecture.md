@@ -1,144 +1,152 @@
-# Rollen- & Berechtigungs-Architektur (RBAC & RLS)
+# Rollen- und Berechtigungs-Architektur (RBAC & RLS)
 
-Dieses Dokument beschreibt die Implementierung des **Role-Based Access Control (RBAC)** und des **Row-Level Security (RLS)** Systems zur logischen Absicherung aller API-Routen und Datenbankabfragen.
+Dieses Dokument beschreibt die Implementierung von Role-Based Access Control (RBAC) und Row-Level Security (RLS) zur Autorisierung auf API- und Datenbankebene.
 
 ---
 
-## 1. Übersicht der Sicherheitsarchitektur
+## 1. Systemstruktur & Kontrollschichten
 
-Die Absicherung erfolgt über vier aufeinander aufbauende Kontrollschichten:
+Die Absicherung erfolgt über vier hierarchische Ebenen:
 
-```text
-+-------------------------------------------------------------------------------+
-| 1. Frontend-Schicht: usePermissions() & <RequirePermission>                   |
-+-------------------------------------------------------------------------------+
-                                       |
-+-------------------------------------------------------------------------------+
-| 2. tRPC-Middleware: isAuthed & requirePermission('...')                       |
-+-------------------------------------------------------------------------------+
-                                       |
-+-------------------------------------------------------------------------------+
-| 3. Scope Engine Middleware: withHierarchicalScope('...')                      |
-+-------------------------------------------------------------------------------+
-                                       |
-+-------------------------------------------------------------------------------+
-| 4. Datenbank-Schicht: Prisma-Erweiterung (getScopedPrisma)                    |
-+-------------------------------------------------------------------------------+
+1. **Frontend-Schicht**: Clientseitige Steuerung der UI-Sichtbarkeit über den Custom Hook `usePermissions` und die Guard-Komponente `<RequirePermission>`.
+2. **tRPC-Middleware**: Routen-Schutz durch Validierung der Berechtigungs-Matrix über `requirePermission` im Server.
+3. **Scope-Engine-Middleware**: Validierung der organisatorischen Zugehörigkeit des angeforderten Zielobjekts über `withHierarchicalScope`.
+4. **Datenbank-Schicht**: Automatische Injection von SQL-Bedingungen über die Prisma-Erweiterung `getScopedPrisma` zur Verhinderung von Datenzugriffen außerhalb des zulässigen Scopes.
+
+---
+
+## 2. Implementierungsdetails der Komponenten
+
+### Berechtigungs-Matrix
+
+Die Berechtigungs-Matrix trennt Benutzerrollen von konkreten Berechtigungen und ist in `src/lib/permissions.ts` definiert.
+
+* **Feingranulare Berechtigungs-Tokens (`PERMISSIONS`)**: Vordefinierte Aktionen wie `users:read`, `users:write`, `users:delete`, `teams:manage`, `teams:delete`, `locations:manage`, `locations:delete`, `od:manage`, `news:create`, `news:delete`, `catalog:manage`, `settings:manage`, `sudo:required`, `credits:manage`, `addons:manage`, `prices:manage`.
+* **Rollen-Spezifikation (`ROLE_PERMISSIONS`)**:
+  * `ADMIN`: Besitzt alle Berechtigungen.
+  * `OD_MANAGER`: Verwaltet Benutzer, Teams und Standorte des eigenen OD-Bereichs sowie News-Einträge.
+  * `LOCATION_MANAGER`: Verwaltet Teams und Benutzer des eigenen Standorts sowie News-Einträge.
+  * `TEAM_LEADER`: Darf News-Einträge für das eigene Team verfassen.
+  * `USER` (Vertriebsberater): Besitzt standardmäßig keine administrativen Berechtigungen.
+* **isEditor-Kompatibilität**: Wenn das Flag `isEditor` für einen Benutzer gesetzt ist, erhält dieser in `hasPermission` automatisch die Berechtigungen zur Tarif- und Konditionsverwaltung (`catalog:manage`, `prices:manage`, `addons:manage`, `credits:manage`).
+
+### tRPC-Authentifizierung & Autorisierung (`src/server/trpc.ts`)
+
+Jede API-Anfrage durchläuft eine definierte Middleware-Kette:
+
+1. **Authentifizierung (`isAuthed`)**:
+   * Liest das signierte JWT aus dem HTTP-Only-Cookie aus.
+   * Überprüft die Session-Version in der PostgreSQL-Datenbank gegen das Token.
+   * Cacht das Abfrageergebnis für 60 Sekunden in Redis (`session:user:${userId}:current`). Bei Änderungen an Benutzerdaten wird der Cache sofort invalidiert (`invalidateCache`).
+2. **Berechtigungs-Check (`requirePermission('...')`)**:
+   * Gleicht die Rolle des Benutzers sowie das `isEditor`-Flag der Session gegen die Berechtigungsmatrix ab.
+   * Bricht bei fehlenden Berechtigungen mit einem `FORBIDDEN`-Fehler ab.
+
+### Hierarchische Scope-Engine (`src/server/middlewares/scope-engine.ts`)
+
+Die Middleware `withHierarchicalScope(entityType)` erzwingt, dass Manager und Teamleiter nur Entitäten bearbeiten dürfen, die in ihrer organisatorischen Hierarchie liegen.
+
+* **Funktionsweise**: Ermittelt die ID des Zielobjekts aus dem tRPC-Input, fragt dessen organisationsstrukturelle Ahnenreihe (Lineage) in der Datenbank ab und vergleicht diese mit den Attributen der Session:
+  * `OD_MANAGER`: Erlaubt Aktionen nur, wenn die `odRegionId` des Zielobjekts mit der des Managers übereinstimmt.
+  * `LOCATION_MANAGER`: Erlaubt Aktionen nur, wenn die `locationId` des Zielobjekts mit der des Managers übereinstimmt.
+  * `TEAM_LEADER`: Erlaubt Aktionen nur, wenn die `teamId` des Zielobjekts mit der des Teamleiters übereinstimmt.
+
+### Row-Level Security (RLS) via Prisma Extension (`src/lib/prisma-extended.ts`)
+
+Für Leseabfragen (`findMany`, `findFirst`) injiziert die Prisma-Erweiterung `getScopedPrisma(session)` dynamisch SQL-Filterbedingungen.
+
+* **Filter-Injection**: Modifiziert das `where`-Argument der Prisma-Abfrage durch Einbetten der Filter in ein logisches `AND`:
+  ```typescript
+  args.where = {
+    AND: [
+      args.where || {},
+      rlsWhere, // Liefert die Filterbedingungen aus src/lib/rbac.ts
+    ],
+  };
+  ```
+* **Sicherheits-Eigenschaften**: Durch die Verwendung des logischen `AND` wird verhindert, dass clientseitig übergebene Suchparameter oder `OR`-Abfragen die RLS-Filter überschreiben oder aushebeln.
+
+---
+
+## 3. Interaktionen und Beziehungen
+
+```
+[Frontend Guard / Hook] ──> [tRPC Router / requirePermission]
+                                            │
+                                            ▼
+[Prisma Client (Scoped)] <── [tRPC Middleware / Scope Engine]
 ```
 
----
-
-## 2. Die Schichten im Detail
-
-### A. Deklarative Berechtigungs-Matrix (`src/lib/permissions.ts`)
-
-Entkoppelt Rollen von fest verdrahteten Berechtigungen. Es definiert feingranulare Permission-Tokens:
-
-*   **Berechtigungstokens**: `users:read`, `users:write`, `users:delete`, `teams:manage`, `teams:delete`, `locations:manage`, `locations:delete`, `od:manage`, `news:create`, `news:delete`, `catalog:manage`, `settings:manage`, `sudo:required`, `credits:manage`, `addons:manage`, `prices:manage`.
-*   **Rollenverteilung (`ROLE_PERMISSIONS`)**:
-    *   `ADMIN`: Besitzt alle Berechtigungen.
-    *   `OD_MANAGER`: Kann Benutzer, Teams und Standorte des eigenen Bereichs verwalten sowie News erstellen.
-    *   `LOCATION_MANAGER`: Kann Teams und Benutzer des Standorts verwalten sowie News erstellen.
-    *   `TEAM_LEADER`: Kann News für das eigene Team verfassen.
-    *   `USER` (Vertriebsberater): Keine administrativen Berechtigungen (nur Kalkulator-Zugriff).
-*   **Legacy `isEditor` Brücke**: Um Abwärtskompatibilität mit dem bestehenden Schema und UI-Formularen zu wahren, wertet `hasPermission` zusätzlich das optionale Flag `isEditor` aus. Wenn `isEditor` wahr ist, erhält der Benutzer automatisch alle Berechtigungen zur Katalog- und Konditionsverwaltung (`catalog:manage`, `prices:manage`, `addons:manage`, `credits:manage`).
+* Die Hooks `usePermissions` im Frontend basieren auf den identischen Validierungsregeln (`hasPermission`) aus `src/lib/permissions.ts`, die auch auf dem Server in der tRPC-Middleware ausgeführt werden.
+* Die tRPC-Middleware `isAuthed` injiziert das `session`-Objekt in den tRPC-Context (`ctx.session`). Dieses Objekt wird anschließend von `getScopedPrisma(ctx.session)` verwendet, um die RLS-Query-Einschränkungen auf Datenbankebene anzuwenden.
 
 ---
 
-### B. tRPC-Authentifizierungs- & Autorisierungs-Pipeline (`src/server/trpc.ts`)
+## 4. Entwickler-Anleitung: System erweitern
 
-Jede API-Anfrage durchläuft eine strikte Validierungs-Kette:
+### Neue Berechtigung hinzufügen
 
-```text
-[Client-Anfrage]
-      │
-      ▼
-1. isAuthed Middleware
-      │  ├── JWT verifizieren & Session laden
-      │  └── Überprüfung der Session-Version in der DB (gecacht für 60s)
-      ▼
-2. requirePermission Middleware
-      │  └── Permission-Matrix-Check (z.B. "teams:manage")
-      ▼
-3. withHierarchicalScope Middleware (Scope Engine)
-      │  └── Validierung der Organisations-Hierarchie des Zielobjekts
-      ▼
-[Resolver ausführen]
-```
+1. **Token registrieren**: Füge das Berechtigungs-Token zum String-Array `PERMISSIONS` in `src/lib/permissions.ts` hinzu:
+   ```typescript
+   export const PERMISSIONS = [
+     // ... bestehende Tokens
+     'logs:view',
+   ] as const;
+   ```
+2. **Rollen zuweisen**: Weise die Berechtigung den gewünschten Rollen im Objekt `ROLE_PERMISSIONS` in `src/lib/permissions.ts` zu:
+   ```typescript
+   export const ROLE_PERMISSIONS: Record<string, ReadonlySet<Permission>> = {
+     ADMIN: new Set(PERMISSIONS),
+     OD_MANAGER: new Set([
+       // ... andere Berechtigungen
+       'logs:view',
+     ]),
+     // ... weitere Rollen
+   };
+   ```
 
-#### Schicht 1: `isAuthed` (Authentifizierung & Widerruf)
-Liest das custom JWT aus dem HTTP-Only-Cookie aus. Um zu verhindern, dass entzogene, geänderte oder gelöschte Konten mit aktiven JWTs Zugriff behalten, prüft die Middleware den DB-Nutzer-Status:
-*   **Caching-Topologie**: Die DB-Abfrage wird über Redis (`getCached`) für 60 Sekunden zwischengespeichert.
-*   **Cache-Invalidierung**: Modifikationen an Benutzerdaten (`adminUsers.update`, `auth.setPassword`) rufen sofort `invalidateCache('session:user:' + id)` auf.
+### Neue Rolle registrieren
 
-#### Schicht 2: `requirePermission('...')`
-Prüft die geladene Benutzerrolle sowie das `isEditor`-Flag aus der Session gegen die Berechtigungsmatrix ab. Schlägt der Check fehl, wird die Anfrage mit einem `FORBIDDEN`-Fehler abgebrochen.
+1. **Rang definieren**: Trage die neue Rolle und ihren numerischen Rang (Hierarchie-Ebene) im Objekt `ROLE_RANKS` in `src/lib/rbac.ts` ein:
+   ```typescript
+   const ROLE_RANKS = {
+       ADMIN: 4,
+       REGIONAL_DIRECTOR: 3.5, // Neue Rolle zwischen ADMIN und OD_MANAGER
+       OD_MANAGER: 3,
+       // ...
+   } as const;
+   ```
+2. **Berechtigungen zuordnen**: Definiere das Berechtigungs-Set für die neue Rolle im Objekt `ROLE_PERMISSIONS` in `src/lib/permissions.ts`:
+   ```typescript
+   export const ROLE_PERMISSIONS: Record<string, ReadonlySet<Permission>> = {
+     // ...
+     REGIONAL_DIRECTOR: new Set([
+       'users:read',
+       'od:manage',
+     ]),
+   };
+   ```
+3. **Sicherheitsfilter anpassen**: Erweitere die Filterfunktionen in `src/lib/rbac.ts` (z. B. `getOdRegionFilter`, `getUserFilter`), um das Verhalten der neuen Rolle bei RLS-Abfragen festzulegen.
 
----
+### Scoped tRPC-Route implementieren
 
-### C. Hierarchische Scope Engine (`src/server/middlewares/scope-engine.ts`)
+Führe für schreibende oder modifizierende Operationen die Middlewares `requirePermission` und `withHierarchicalScope` in der gewünschten Prozeduren-Kette aus:
 
-Die Scope-Engine stellt sicher, dass Manager oder Teamleiter nur Operationen auf Objekten ausführen dürfen, die in ihrer Hierarchie-Struktur liegen. 
+```typescript
+import { router, protectedProcedure } from '../trpc';
+import { requirePermission } from '../trpc';
+import { withHierarchicalScope } from '../middlewares/scope-engine';
+import { z } from 'zod';
 
-*   **Verwendung**:
-    ```typescript
-    export const teamRouter = router({
-      update: protectedProcedure
-        .use(requirePermission('teams:manage'))
-        .use(withHierarchicalScope('team')) // Prüft Berechtigung auf das Team
-        .mutation(async ({ ctx, input }) => { ... }),
-    });
-    ```
-*   **Mechanismus**: Die Middleware holt die ID des Zielobjekts aus dem Input, fragt dessen organisatorische Zugehörigkeit ab und vergleicht diese mit den Claims der Benutzersession:
-    *   `OD_MANAGER`: Darf nur Aktionen auf Objekten ausführen, deren `odRegionId` mit der eigenen übereinstimmt.
-    *   `LOCATION_MANAGER`: Darf nur Objekte des eigenen `locationId`-Bereichs modifizieren.
-    *   `TEAM_LEADER`: Darf nur die eigene `teamId` verwalten.
-
----
-
-### D. Row-Level Security (RLS) via Prisma Extension (`src/lib/prisma-extended.ts`)
-
-Für Lese-Abfragen (`findMany`, `findFirst`) wird der Prisma Client dynamisch erweitert, um automatische RLS-Bedingungen in die SQL-Queries zu injizieren.
-
-*   **getScopedPrisma(session)**: Liefert einen erweiterten Client zurück, der Abfragen auf `user`, `team`, `location` und `odRegion` abfängt und modifiziert:
-    ```typescript
-    // Injektion eines logischen AND Filters zur Verhinderung von Privilege Escalation
-    args.where = {
-      AND: [
-        args.where || {},
-        rlsWhere, // Aus src/lib/rbac.ts
-      ],
-    };
-    ```
-*   **Verhinderung von Leaks**: Durch das Einbetten in ein logisches `AND` wird verhindert, dass clientseitig übergebene `OR`-Abfragen (wie z. B. Freitext-Suchen) die RLS-Filter überschreiben.
-
----
-
-### E. Frontend-Fähigkeiten-Flags (`src/hooks/use-permissions.ts` & `guard.tsx`)
-
-Für die dynamische Steuerung der Benutzeroberfläche stehen zwei Tools zur Verfügung:
-
-#### Custom React Hook `usePermissions`
-```tsx
-import { usePermissions } from '@/hooks/use-permissions';
-
-export function AddProductButton() {
-  const { can } = usePermissions();
-
-  if (!can('catalog:manage')) return null;
-  return <button onClick={openModal}>Tarif hinzufügen</button>;
-}
-```
-
-#### Deklarative Guard-Komponente `<RequirePermission>`
-```tsx
-import { RequirePermission } from '@/components/shared/guard';
-
-export function AdminPanel() {
-  return (
-    <RequirePermission action="users:read" fallback={<p>Keine Berechtigung</p>}>
-      <UserListView />
-    </RequirePermission>
-  );
-}
+export const documentRouter = router({
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() })) // Erfordert ID zur Scope-Überprüfung
+    .use(requirePermission('documents:delete')) // Berechtigungs-Check
+    .use(withHierarchicalScope('document')) // Scope-Engine Hierarchie-Check
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.document.delete({
+        where: { id: input.id },
+      });
+    }),
+});
 ```

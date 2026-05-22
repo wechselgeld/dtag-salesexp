@@ -1,85 +1,114 @@
 # Design System & UI-Richtlinien
 
-Dieses Dokument beschreibt die Design-Philosophie, die visuelle Sprache und die Styling-Konventionen für die **Sales Experience**-Plattform. 
-
-Das Design folgt einer Ästhetik, die die offizielle Deutsche Telekom Identität mit modernen Web-Interaktionen und flüssigen Animationen kombiniert.
+Dieses Dokument beschreibt die technische Umsetzung des Design-Systems, der Farbvariablen, der Typografie und der Animationskonventionen für das Frontend.
 
 ---
 
-## 1. Visuelle Philosophie
+## 1. Systemstruktur & CSS-Konfiguration
 
-*   **Verlässliche Wertigkeit**: Klare Abgrenzungen, großzügiges Spacing und gut lesbare Schriftbilder.
-*   **Dynamische Zustände**: Visuelle Rückmeldung bei Nutzerinteraktionen (Hover-Effekte, selektierte Kanten, weiche Einblendungen).
-*   **Kategorien-Fokus**: Farblich aufeinander abgestimmte Badges und Icons, um den Vertrieblern die Unterscheidung von Mobilfunk, Festnetz und MagentaTV zu erleichtern.
-*   **Ein-Seiten-Gefühl**: Minimierung ganzer Seiten-Reloads durch flüssig reagierende Slider, Slide-Over Drawers und Modals.
-
----
-
-## 2. Farbpalette & CSS-Variablen
-
-Das UI greift die offizielle Telekom Farbpalette auf. Die Farbvariablen sind in der `@theme`-Direktive der CSS-Dateien definiert.
+Das UI basiert auf Tailwind CSS v4. Die Systemvariablen sind über die `@theme`-Direktive in den CSS-Dateien definiert und steuern das einheitliche Erscheinungsbild der Benutzeroberfläche.
 
 ### Core-Farben (Telekom Brand)
 
-*   **Magenta**: `#E20074` (`--color-primary`) – Primäre Aktionsfarbe, Buttons und Highlights.
-*   **Dark Gray**: `#262626` (`--color-ds-text-main`) – Haupttext.
-*   **Light Gray**: `#6A6A6A` (`--color-ds-text-light`) – Sekundärer Text / Meta-Angaben.
-*   **Shell Gray**: `#F7F8FA` – Hintergrund für App-Container.
-*   **Border Gray**: `#E0E0E0` (`--color-ds-border`) – Standard-Rahmenlinien.
+Feste Farbwerte (Hex-Codes) sind im Code zu vermeiden. Nutze stattdessen die vordefinierten Klassen:
+
+* **Magenta (`--color-primary`)**: `#E20074` – Primäre Aktionsfarbe für Buttons, aktive Zustände und Marken-Highlights.
+* **Dark Gray (`--color-ds-text-main`)**: `#262626` – Haupttextfarbe für Fließtext und Titel mit hohem Kontrast.
+* **Light Gray (`--color-ds-text-light`)**: `#6A6A6A` – Sekundärer Text für Metadaten und Nebensächlichkeiten.
+* **Shell Gray**: `#F7F8FA` – Hintergrundfarbe für Anwendungs-Container und Cards.
+* **Border Gray (`--color-ds-border`)**: `#E0E0E0` – Standardfarbe für Trennlinien und Kanten.
 
 ### Funktionale Farben
 
-*   **Success (Erfolg)**: `#2B8A3E` (z. B. für aktive Rabatte oder fertige Berechnungen)
-*   **Danger (Gefahr / Fehler)**: `#D9534F` (z. B. für ungültige Auswahlausschlüsse oder Lösch-Buttons)
+* **Success (Erfolg)**: `#2B8A3E` – Kennzeichnung aktiver Rabatte, positiver Kalkulationsergebnisse und Erfolgsmeldungen.
+* **Danger (Gefahr / Fehler)**: `#D9534F` – Kennzeichnung für Validierungsfehler, Ausschlüsse und destruktive Aktionen (z. B. Lösch-Buttons).
 
 ---
 
-## 3. Typographie
+## 2. Typografie & Schriftfamilien
 
-Die Applikation nutzt die **TeleNeo** und **TeleNeo-Marker** Schriftarten-Familie für ein einheitliches Telekom-Branding.
+Das Branding erfordert die Schriftarten-Familie **TeleNeo** und **TeleNeo-Marker**.
 
-*   **Titel-Hierarchie (`h1` / `h2`)**: Fettgedruckt, mit reduziertem Zeichenabstand für markantes Branding.
-*   **Karten-Überschriften (`h3`)**: `1.15rem`, Bold (z. B. in Tarif- und Addon-Cards).
-*   **Body (Fließtext)**: Standardgröße, hoher Kontrast auf hellem Hintergrund.
-*   **Labels / Stats**: `0.72rem`, Medium (z. B. Laufzeit-Angaben, Bandbreiten-Badges).
-
----
-
-## 4. UI-Elemente & Komponenten
-
-### Karten-Layouts & Eckenradien
-*   **Karten-Ecken**: Der Standard für Inhaltskarten und Panels liegt bei **`20px`** (`rounded-3xl` / `rounded-[20px]`).
-*   **Kompakte Steuerelemente**: Kleine UI-Elemente wie Buttons, Eingabefelder und Dropdowns nutzen **`10px`** (`rounded-lg` / `rounded-[10px]`).
-
-### Standard-Karten-Effekte (Cards)
-*   **Hintergrund**: `bg-linear-to-br from-white to-[#FCFAFC]`.
-*   **Kante**: `1px solid #E8E8E8`.
-*   **Hover-Effekt**: Sanfte Schatten-Verstärkung (`shadow-[0_4px_24px_rgba(0,0,0,0.06)]`) und Kanten-Hervorhebung.
-
-### Glassmorphismus (Unschärfe-Overlays)
-*   Für Header, Drawer-Hintergründe und Modals wird ein Blur-Effekt genutzt:
-    *   Klasse: `.glass`
-    *   CSS: `backdrop-filter: blur(12px)` kombiniert mit einer leicht transparenten Hintergrundfarbe.
+* **Titel-Hierarchie (`h1` / `h2`)**: Fettgedruckt mit reduziertem Zeichenabstand (`letter-spacing`).
+* **Karten-Überschriften (`h3`)**: Schriftgröße `1.15rem`, Schriftschnitt `Bold` (z. B. in Produkt- und Addon-Karten).
+* **Body (Fließtext)**: Standardgröße, hoher Farbkontrast zur Gewährleistung der Barrierefreiheit.
+* **Labels & Metriken**: Schriftgröße `0.72rem`, Schriftschnitt `Medium` (z. B. für Laufzeitangaben oder Bandbreiten-Badges).
 
 ---
 
-## 5. Animationen & Bewegungsmuster
+## 3. UI-Elemente & Layout-Spezifikationen
 
-Alle Interface-Wechsel verwenden **Framer Motion** für weiche Animationen.
+### Eckenradien (Border Radius)
 
-*   **Standard-Übergänge**: `duration-400 ease-out` oder exponentielles Ausfaden mittels `cubic-bezier(0.16, 1, 0.3, 1)`.
-*   **Shimmer (Skelett-Ladeeffekt)**: Während Daten geladen werden, zeigt die App ein sanft pulsierendes Shimmer-Muster mit leichtem Magenta-Stich.
-*   **Highlight-Glow**: Ausgewählte Tarife oder Fokusprodukte nutzen einen rotierenden Conic-Glow-Effekt an den Rändern (`highlight-glow`).
+* **Inhaltskarten (Cards) und Haupt-Panels**: Standard-Radius beträgt `20px` (`rounded-[20px]` / `rounded-3xl`).
+* **Steuerelemente**: Buttons, Eingabefelder und Dropdown-Menüs nutzen einen einheitlichen Eckenradius von `10px` (`rounded-[10px]` / `rounded-lg`).
+
+### Visuelle Effekte & Overlays
+
+* **Karten-Layouts (Cards)**:
+  * Hintergrund-Gradient: `bg-linear-to-br from-white to-[#FCFAFC]`
+  * Rahmen: `1px solid #E8E8E8`
+  * Hover-Zustand: Schatten-Verstärkung (`shadow-[0_4px_24px_rgba(0,0,0,0.06)]`) und Kanten-Akzentuierung.
+* **Glassmorphismus (`.glass`)**:
+  * Eingesetzt für Header, Slide-Over Drawers und Modals.
+  * Umsetzung über CSS-Backdrop-Filter: `backdrop-filter: blur(12px)` kombiniert mit einer semitransparenten Hintergrundfarbe.
 
 ---
 
-## 6. Tailwind CSS v4 Richtlinien
+## 4. Animationen & Framer Motion
 
-Im Code sollten feste Farbwerte vermieden werden. Verwende stattdessen die vordefinierten Klassen:
+Interaktive Übergänge und Zustandswechsel nutzen **Framer Motion**:
 
-*   **Textfarben**: `text-ds-text-main`, `text-ds-text-light`.
-*   **Rahmen**: `border-ds-border`.
-*   **Abgerundete Ecken**: `rounded-[20px]` (Karten) oder `rounded-[10px]` (Buttons).
-*   **Eigene Utilities**:
-    *   `.scrollbar-none`: Versteckt Scrollbalken in horizontalen Tarif-Scrollbars.
-    *   `.animate-fade-slide-up`: Weiches Einfliegen von Listeninhalten von unten nach oben.
+* **Standard-Timing**: Dauer von 400ms (`duration-400 ease-out`) oder nicht-lineare Bewegungskurven über `cubic-bezier(0.16, 1, 0.3, 1)`.
+* **Shimmer-Effekt**: Skelett-Ladeplatzhalter pulsieren im Frequenzbereich des Shimmer-Musters mit einer leichten Magenta-Nuance.
+* **Border-Glow**: Hervorgehobene Empfehlungen oder Fokusprodukte nutzen einen rotierenden Conic-Gradient-Rahmen (`highlight-glow`).
+
+---
+
+## 5. Beziehungen & Komponenten-Verwendung
+
+Die Design-Vorgaben sind direkt in den wiederverwendbaren UI-Komponenten in `src/components/shared/` umgesetzt:
+
+* **`guard.tsx`**: Nutzt die standardmäßigen Berechtigungsabfragen und passt UI-Elemente (z. B. Sichtbarkeit) an.
+* **`premium-pin-input.tsx`**: Setzt den standardisierten Eckenradius von `10px` (`rounded-[10px]`) für die PIN-Zahlenfelder um.
+* **`telekom-logo.tsx`**: Kapselt das Vektorlogo der Telekom und rendert es mit der CSS-Markenfarbe `--color-primary`.
+
+---
+
+## 6. Entwickler-Anleitung: Design-System modifizieren
+
+### Core-Branding-Farben anpassen
+
+Die Definition der Farben erfolgt in der globalen CSS-Datei des Projekts. Um beispielsweise den Standard-Farbwert für Magenta anzupassen, modifiziere die CSS-Themen-Konfiguration:
+
+```css
+@theme {
+  --color-primary: #E20074; /* Neuer HEX-Code für die Primärfarbe */
+  --color-ds-border: #E0E0E0; /* Anpassung der Standard-Rahmenfarbe */
+}
+```
+
+### Custom Tailwind Utility registrieren
+
+Wenn ein neues wiederkehrendes Styling-Muster (z. B. ein weicher Schatten) projektweit verfügbar sein soll, deklariere die Utility-Klasse in der globalen CSS-Datei:
+
+```css
+@utility shadow-soft-premium {
+  box-shadow: 0 8px 32px rgba(38, 38, 38, 0.04);
+}
+```
+Die Klasse steht anschließend im gesamten JSX-Code als `shadow-soft-premium` zur Verfügung.
+
+### Framer Motion Übergangszeit global ändern
+
+Wenn du die Dauer aller Standard-Einblendungen oder Drawer-Animationen anpassen möchtest, modifiziere die Config-Konstanten der entsprechenden Animationsdatei (z. B. unter `src/lib/constants/` oder direkt in den Motion-Props):
+
+```typescript
+// Beispiel für ein zentrales Transition-Config-Objekt
+export const DEFAULT_TRANSITION = {
+  type: "spring",
+  stiffness: 300,
+  damping: 30,
+  duration: 0.4, // Ändere diesen Wert, um das Timing anzupassen
+};
+```

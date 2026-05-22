@@ -51,9 +51,72 @@ async function logErrorToDatabase(params: {
   }
 }
 
+function sanitizeErrorInput(val: any): any {
+  if (val === null || val === undefined) {
+    return val;
+  }
+  if (Array.isArray(val)) {
+    return val.map(sanitizeErrorInput);
+  }
+  if (typeof val === 'object') {
+    const sanitized: Record<string, any> = {
+};
+    for (const key of Object.keys(val)) {
+      const lowerKey = key.toLowerCase();
+      if (
+        lowerKey.includes('password') ||
+        lowerKey.includes('pin') ||
+        lowerKey.includes('token') ||
+        lowerKey.includes('otp') ||
+        lowerKey.includes('code') ||
+        lowerKey.includes('secret') ||
+        lowerKey.includes('credential') ||
+        lowerKey.includes('auth')
+      ) {
+        sanitized[key] = '[GEFILTERT]';
+      }
+ else {
+        sanitized[key] = sanitizeErrorInput(val[key]);
+      }
+    }
+    return sanitized;
+  }
+  return val;
+}
+
+function shouldLogErrorToDb(params: {
+  path?: string;
+  code: string;
+  cause?: any;
+}): boolean {
+  const {
+ path, code,
+} = params;
+
+  if (path) {
+    if (path === 'webauthn.generateAuthenticationOptions' && code === 'NOT_FOUND') {
+      return false;
+    }
+    if (path === 'webauthn.verifyRegistration' && code === 'BAD_REQUEST') {
+      return false;
+    }
+    if (path === 'webauthn.verifyAuthentication' && (code === 'BAD_REQUEST' || code === 'NOT_FOUND')) {
+      return false;
+    }
+    if (path === 'session.reloginReturningUser' && (code === 'NOT_FOUND' || code === 'UNAUTHORIZED')) {
+      return false;
+    }
+    if (path === 'auth.login' && (code === 'UNAUTHORIZED' || code === 'FORBIDDEN')) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 const t = initTRPC.context<Context>().create({
   errorFormatter({
-    shape, error, ctx,
+    shape, error, ctx, path, input,
   }) {
     const isDevelopment = process.env.NODE_ENV === 'development';
     const isAdmin = ctx?.session?.role === 'ADMIN';
@@ -61,20 +124,46 @@ const t = initTRPC.context<Context>().create({
     const cause = error.cause && typeof error.cause === 'object' ? (error.cause as Record<string, any>) : null;
     const errorType = cause?.type || error.code || 'UNKNOWN';
 
-    if (ctx?.traceId) {
+    const shouldLog = shouldLogErrorToDb({
+      path,
+      code: error.code,
+      cause,
+    });
+
+    if (ctx?.traceId && shouldLog) {
+      const sanitizedInput = sanitizeErrorInput(input);
+      const mergedDetails = cause
+        ? {
+ ...cause,
+input: sanitizedInput,
+}
+        : {
+ input: sanitizedInput,
+};
+
       logErrorToDatabase({
         traceId: ctx.traceId,
         path: shape.data.path,
         type: errorType,
         message: error.message,
         stack: error.stack,
-        details: cause,
+        details: mergedDetails,
         userId: (ctx.session as any)?.id || ctx.session?.sub || null,
         userEmail: ctx.session?.email || null,
         userRole: ctx.session?.role || null,
         clientIp: ctx.ip,
       }).catch(console.error);
     }
+
+    const sanitizedDiagnosticsInput = sanitizeErrorInput(input);
+    const diagnosticsDetails = cause
+      ? {
+ ...cause,
+input: sanitizedDiagnosticsInput,
+}
+      : {
+ input: sanitizedDiagnosticsInput,
+};
 
     const diagnostics = {
       traceId: ctx?.traceId || 'tr_unknown',
@@ -86,7 +175,7 @@ const t = initTRPC.context<Context>().create({
         email: ctx.session.email,
       } : null,
       clientIp: ctx?.ip,
-      details: cause,
+      details: diagnosticsDetails,
     };
 
     return {
@@ -176,6 +265,21 @@ const isAuthed = t.middleware(async ({
         lastName: true,
         sessionVersion: true,
         password: true,
+        team: {
+          select: {
+            locationId: true,
+            location: {
+              select: {
+                odRegionId: true,
+              },
+            },
+          },
+        },
+        location: {
+          select: {
+            odRegionId: true,
+          },
+        },
       },
     });
   });
@@ -203,6 +307,9 @@ const isAuthed = t.middleware(async ({
     });
   }
 
+  const effectiveLocationId = user.locationId || user.team?.locationId || null;
+  const effectiveOdRegionId = user.odRegionId || user.location?.odRegionId || user.team?.location?.odRegionId || null;
+
   return next({
     ctx: {
       session: {
@@ -214,6 +321,8 @@ const isAuthed = t.middleware(async ({
         odRegionId: user.odRegionId,
         locationId: user.locationId,
         teamId: user.teamId,
+        effectiveLocationId,
+        effectiveOdRegionId,
         firstName: user.firstName,
         lastName: user.lastName,
         sessionVersion: user.sessionVersion,

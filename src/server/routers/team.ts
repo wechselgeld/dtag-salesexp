@@ -11,6 +11,9 @@ import bcrypt from 'bcryptjs';
 import {
 	getTeamFilter, hasRole,
 } from '@/lib/rbac';
+import {
+	getCached, invalidateCache,
+} from '@/lib/cache';
 
 export const teamRouter = router({
 	list: publicProcedure
@@ -21,7 +24,7 @@ export const teamRouter = router({
 			cursor: z.string().nullish(),
 			search: z.string().optional(),
 		}).optional())
-		.query(async ({
+		.query(({
 			ctx, input,
 		}) => {
 			const limit = input?.limit ?? 50;
@@ -36,101 +39,110 @@ export const teamRouter = router({
 				});
 			}
 
-			const where: any = {
-				AND: [
-					securityFilter,
-				],
-			};
+			const role = session?.role || 'anonymous';
+			const userOd = session?.odRegionId || 'null';
+			const userLoc = session?.locationId || 'null';
+			const userTeam = session?.teamId || 'null';
 
-			if (input?.locationId) {
-				where.AND.push({
-					locationId: input.locationId,
-				});
-			}
+			const cacheKey = `teams:list:role_${role}:od_${userOd}:loc_${userLoc}:team_${userTeam}:inp_loc_${input?.locationId || 'all'}:inp_od_${input?.odRegionId || 'all'}:s_${search || ''}:c_${cursor || ''}:${limit}`;
 
-			if (input?.odRegionId) {
-				where.AND.push({
-					location: {
-						odRegionId: input.odRegionId,
-					},
-				});
-			}
+			return getCached(cacheKey, 60 * 60 * 1000, async () => {
+				const where: any = {
+					AND: [
+						securityFilter,
+					],
+				};
 
-			if (search) {
-				where.AND.push({
-					OR: [
-						{
-							name: {
-								contains: search,
-								mode: 'insensitive',
-							},
+				if (input?.locationId) {
+					where.AND.push({
+						locationId: input.locationId,
+					});
+				}
+
+				if (input?.odRegionId) {
+					where.AND.push({
+						location: {
+							odRegionId: input.odRegionId,
 						},
-						{
-							location: {
+					});
+				}
+
+				if (search) {
+					where.AND.push({
+						OR: [
+							{
 								name: {
 									contains: search,
 									mode: 'insensitive',
 								},
 							},
-						},
-						{
-							location: {
-								odRegion: {
+							{
+								location: {
 									name: {
 										contains: search,
 										mode: 'insensitive',
 									},
 								},
 							},
-						},
-					],
-				});
-			}
+							{
+								location: {
+									odRegion: {
+										name: {
+											contains: search,
+											mode: 'insensitive',
+										},
+									},
+								},
+							},
+						],
+					});
+				}
 
-			const items = await ctx.prisma.team.findMany({
-				take: limit + 1,
-				cursor: cursor ? {
-					id: cursor,
-				} : undefined,
-				where,
-				select: {
-					id: true,
-					name: true,
-					email: true,
-					locationId: true,
-					location: {
-						select: {
-							name: true,
-							address: true,
-							odRegionId: true,
-							odRegion: {
-								select: {
-									name: true,
+				const items = await ctx.prisma.team.findMany({
+					take: limit + 1,
+					cursor: cursor ? {
+						id: cursor,
+					} : undefined,
+					where,
+					select: {
+						id: true,
+						name: true,
+						email: true,
+						locationId: true,
+						location: {
+							select: {
+								name: true,
+								address: true,
+								odRegionId: true,
+								odRegion: {
+									select: {
+										name: true,
+									},
 								},
 							},
 						},
-					},
-					highlights: {
-						include: {
-							product: true,
+						highlights: {
+							include: {
+								product: true,
+							},
 						},
 					},
-				},
-				orderBy: {
-					name: 'asc',
-				},
+					orderBy: {
+						name: 'asc',
+					},
+				});
+
+				let nextCursor: typeof cursor | undefined;
+				if (items.length > limit) {
+					const nextItem = items.pop();
+					nextCursor = nextItem!.id;
+				}
+
+				return {
+					items,
+					nextCursor,
+				};
 			});
-
-			let nextCursor: typeof cursor | undefined;
-			if (items.length > limit) {
-				const nextItem = items.pop();
-				nextCursor = nextItem!.id;
-			}
-
-			return {
-				items,
-				nextCursor,
-			};
 		}),
 
 	getById: publicProcedure
@@ -194,13 +206,15 @@ export const teamRouter = router({
 				}
 			}
 
-			return ctx.prisma.team.create({
+			const team = await ctx.prisma.team.create({
 				data: {
 					name: input.name,
 					email: input.email || 'team06@telekom.de',
 					locationId: input.locationId,
 				},
 			});
+			await invalidateCache('teams:list');
+			return team;
 		}),
 
 	update: protectedProcedure
@@ -212,7 +226,7 @@ export const teamRouter = router({
 			email: z.string().email().optional(),
 			locationId: z.string().optional().nullable(),
 		}))
-		.mutation(({
+		.mutation(async ({
 			ctx, input,
 		}) => {
 			const {
@@ -226,12 +240,14 @@ export const teamRouter = router({
 				});
 			}
 
-			return ctx.prisma.team.update({
+			const updated = await ctx.prisma.team.update({
 				where: {
 					id,
 				},
 				data: dataToUpdate,
 			});
+			await invalidateCache('teams:list');
+			return updated;
 		}),
 
 	delete: protectedProcedure
@@ -261,11 +277,13 @@ export const teamRouter = router({
 			}
 
 			try {
-				return await ctx.prisma.team.delete({
+				const deleted = await ctx.prisma.team.delete({
 					where: {
 						id: input.id,
 					},
 				});
+				await invalidateCache('teams:list');
+				return deleted;
 			}
 			catch (error: any) {
 				if (error.code === 'P2003') {
@@ -324,6 +342,7 @@ export const teamRouter = router({
 						id: existing.id,
 					},
 				});
+				await invalidateCache('teams:list');
 				return {
 					added: false,
 				};
@@ -337,6 +356,7 @@ export const teamRouter = router({
 						businessCase: input.businessCase,
 					},
 				});
+				await invalidateCache('teams:list');
 				return {
 					added: true,
 				};

@@ -1,65 +1,38 @@
 # Audit Log & Revert Engine Architektur
 
-Dieses Dokument beschreibt das Design und die Implementierung des enterprise-grade **Audit Log (Aktivitätslog) & Revert (Rückgängigmachungs) Systems**. Es ermöglicht eine lückenlose Verfolgung aller relevanten Datenänderungen (Erstellungen, Updates, Löschungen) sowie administrativer Systemaktionen (wie Logins und Logouts) und bietet Administratoren die Möglichkeit, Änderungen atomar und kollisionssicher rückgängig zu machen.
+Dieses Dokument beschreibt den Entwurf und die Implementierung des Aktivitätslogs (Audit Log) und des Wiederherstellungs-Systems (Revert Engine). Das System erfasst Datenänderungen (Erstellungen, Updates, Löschungen) sowie administrative Aktionen (z. B. Logins) und ermöglicht kaskadierende, transaktionssichere Rollbacks.
 
 ---
 
-## 1. Übersicht der Audit- & Revert-Architektur
+## 1. Systemstruktur & Funktionsweise
 
-Das System fängt Datenbank-Mutationen vollautomatisch auf Prisma-Ebene ab, verbindet diese mit dem asynchronen Request-Context (wer hat die Aktion ausgeführt?), bereitet die Daten datenschutzkonform auf und speichert sie in einem strukturierten Diff-Format.
+Das System verarbeitet Datenbank-Mutationen vollautomatisch auf Prisma-Ebene:
 
-```text
-+---------------------------------------------------------------------------------+
-| 1. Request-Schicht: tRPC Middleware befüllt AsyncLocalStorage (AuditContext)    |
-+---------------------------------------------------------------------------------+
-                                         │
-                                         ▼
-+---------------------------------------------------------------------------------+
-| 2. Datenbank-Schicht: Prisma-Erweiterung ($extends.query) fängt Mutation ab     |
-+---------------------------------------------------------------------------------+
-                                         │
-                ┌────────────────────────┴────────────────────────┐
-                ▼                                                 ▼
-   [Bei DELETE / UPDATE]:                            [Bei CREATE / UPDATE]:
-   Lade Vorher-Zustand (inkl.                         Führe Query aus & erhalte
-   Relationaler Bäume via prefetch)                   Nachher-Zustand
-                │                                                 │
-                └────────────────────────┬────────────────────────┘
-                                         ▼
-+---------------------------------------------------------------------------------+
-| 3. Logger-Service: Sanitize Payload (GDPR), Generiere Label & Log-Nachricht     |
-+---------------------------------------------------------------------------------+
-                                         │
-                                         ▼
-+---------------------------------------------------------------------------------+
-| 4. AuditLog-Tabelle: Speichere Aktion, ID, Email, IP, Nachricht & JSON-Diff     |
-+---------------------------------------------------------------------------------+
-                                         │
-                                         ▼
-+---------------------------------------------------------------------------------+
-| 5. Revert Engine: Rollback via $transaction (Unterstützt komplexe Kaskaden)     |
-+---------------------------------------------------------------------------------+
-```
+1. **Request-Schicht**: Eine tRPC-Middleware befüllt den `AsyncLocalStorage` (`AuditContext`) mit den Session-Informationen des aktuellen Requests.
+2. **Datenbank-Schicht**: Eine Prisma-Erweiterung (`$extends.query`) fängt alle schreibenden Operationen ab.
+3. **Zustandserfassung**: Bei `DELETE` und `UPDATE` wird der Vorher-Zustand (ggf. inklusive relationaler Abhängigkeiten) über Prefetch-Funktionen geladen. Bei `CREATE` wird die Query ausgeführt und der Nachher-Zustand aufgezeichnet.
+4. **Log-Generierung**: Der Logger-Service filtert sensible Felder, ermittelt ein sprechendes Label für die Entität und schreibt einen Eintrag in die Tabelle `AuditLog`.
+5. **Wiederherstellung**: Die Revert Engine führt bei Bedarf die inverse Datenbank-Operation aus, verpackt in eine atomare Prisma-Transaktion.
 
 ---
 
 ## 2. Das Datenmodell (`schema.prisma`)
 
-Die Tabelle `AuditLog` ist auf maximale Abfragegeschwindigkeit und flexible Datenhaltung ausgelegt. Sie verwendet das JSON-Format, um den Zustand von Objekten zum Zeitpunkt der Änderung zu speichern.
+Die Tabelle `AuditLog` speichert den Zustand der Objekte zum Zeitpunkt der Änderung im JSON-Format:
 
 ```prisma
 model AuditLog {
   id             String   @id @default(cuid())
-  action         String   // z.B. "CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", "REVERT"
-  entityType     String?  // Name des Modells, z.B. "Product", "Location", "User"
+  action         String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, REVERT
+  entityType     String?  // Name des Prisma-Modells (z. B. Product, User)
   entityId       String?  // Primärschlüssel des betroffenen Datensatzes
-  message        String   // Benutzerfreundliche, lokalisierte Beschreibung (Deutsch)
-  details        Json?    // { oldValue: ..., newValue: ... } für Diffs und Wiederherstellungen
+  message        String   // Deutsche Beschreibung der Aktion
+  details        Json?    // { oldValue: ..., newValue: ... } für Diffs und Rollbacks
   userId         String?  // ID des ausführenden Benutzers
   userEmail      String?  // E-Mail des ausführenden Benutzers
-  userRole       String?  // Rolle des ausführenden Benutzers zum Zeitpunkt der Aktion
-  clientIp       String?  // IP-Adresse des Clients (DSGVO-konform verschleiert/erfasst)
-  revertedFromId String?  // Verweis auf die ursprüngliche AuditLog-ID, falls dies ein Revert ist
+  userRole       String?  // Rolle des ausführenden Benutzers
+  clientIp       String?  // IP-Adresse des Clients
+  revertedFromId String?  // Referenz auf die ursprüngliche AuditLog-ID bei Reverts
   createdAt      DateTime @default(now())
 
   @@index([action, createdAt])
@@ -70,32 +43,13 @@ model AuditLog {
 
 ---
 
-## 3. Asynchroner Request-Scoped Context
+## 3. Request-Scoped Context über AsyncLocalStorage (`src/lib/audit-context.ts`)
 
-Da Prisma-Abfragen tief im Service-Layer oder in Drittanbieter-Bibliotheken ausgeführt werden, ist es oft unpraktisch, Session-Informationen manuell durch alle Funktionsaufrufe durchzureichen. Das System nutzt daher **`AsyncLocalStorage`** aus dem Node.js-Standardmodul `node:async_hooks`.
+Da Prisma-Abfragen tief im Service-Layer ausgeführt werden und kein manuelles Durchreichen des Session-Kontextes stattfinden soll, nutzt das System `AsyncLocalStorage` aus dem Node.js-Modul `node:async_hooks`.
 
-### Funktionsweise (`src/lib/audit-context.ts`)
-`AsyncLocalStorage` erlaubt es, Variablen an die asynchrone Ausführungskette eines bestimmten Requests zu binden:
+### Kontext-Initialisierung in tRPC (`src/server/trpc.ts`)
 
-```typescript
-import { AsyncLocalStorage } from 'node:async_hooks';
-
-export interface AuditContext {
-  userId?: string | null;
-  userEmail?: string | null;
-  userRole?: string | null;
-  clientIp?: string | null;
-}
-
-export const auditContextStorage = new AsyncLocalStorage<AuditContext>();
-
-export function getAuditContext(): AuditContext | undefined {
-  return auditContextStorage.getStore();
-}
-```
-
-### Registrierung in tRPC (`src/server/trpc.ts`)
-Eine globale tRPC-Middleware fängt die Session- und IP-Daten des ankommenden Requests ab und startet den asynchronen Kontext:
+Eine globale tRPC-Middleware extrahiert die Session- und IP-Daten des Requests und startet den asynchronen Kontext:
 
 ```typescript
 const auditContextMiddleware = t.middleware(async ({ ctx, next }) => {
@@ -106,21 +60,16 @@ const auditContextMiddleware = t.middleware(async ({ ctx, next }) => {
     userRole: session?.role || null,
     clientIp: ctx.ip || null,
   };
-  // Alle nachfolgenden asynchronen Aufrufe innerhalb dieser Kette haben Zugriff auf 'context'
   return auditContextStorage.run(context, () => next());
 });
 ```
 
 ---
 
-## 4. Globaler Prisma Interceptor
+## 4. Globaler Prisma Interceptor (`src/lib/prisma.ts`)
 
-Um sicherzustellen, dass keine Datenmutation unprotokolliert bleibt, ist ein globaler Abfrage-Interceptor direkt in den Prisma-Client integriert.
+Der Prisma-Client registriert den Query-Interceptor statisch beim Erstellen des Prisma-Singletons:
 
-> [!IMPORTANT]
-> **Performance & Memory-Leaks**: Die Prisma-Erweiterung `$extends` wird **einmalig statisch** beim Erstellen des Prisma-Singletons (`src/lib/prisma.ts`) registriert. Dynamische Erweiterungen bei jedem Request würden neue Prisma-Instanzen erzeugen, was unter Last zu Speicherlecks und Connection-Pool-Exhaustion führt.
-
-### Interceptor-Ablauf (`src/lib/prisma.ts`)
 ```typescript
 client.$extends({
   query: {
@@ -128,7 +77,6 @@ client.$extends({
       async $allOperations({ model, operation, args, query }) {
         const isWrite = ['create', 'update', 'delete'].includes(operation);
         if (model && isWrite && isAuditedModel(model)) {
-          // Dynamic import verhindert zirkuläre Abhängigkeiten während des App-Bootstraps
           const { logAutomaticAction, fetchCurrentState, fetchCurrentStateWithRelations } = 
             await import('./audit-logger');
 
@@ -150,119 +98,113 @@ client.$extends({
             return result;
           }
         }
-        return query(args); // Standard-Fallthrough für Leseoperationen
+        return query(args);
       }
     }
   }
 });
 ```
 
-### Label- & Variablen-Auflösung (`getEntityLabel`)
-Um aussagekräftige Log-Nachrichten wie `Standort "Hannover" wurde erstellt.` statt anonymer IDs anzuzeigen, ermittelt `getEntityLabel` dynamisch das lesbarste Feld des Objekts:
-
-```typescript
-function getEntityLabel(model: string, data: any): string {
-  if (!data) return 'Unbekannt';
-  if (model === 'SystemSetting') return data.key || 'Einstellung';
-  if (model === 'User' && (data.firstName || data.lastName)) {
-    return `${data.firstName || ''} ${data.lastName || ''}`.trim();
-  }
-  return data.name || data.title || data.email || data.firstName || data.id || 'Unbekannt';
-}
-```
-*   **Fehlerbehebung**: Zuvor fielen Abfragen fälschlicherweise auf nicht existierende User-Eigenschaften zurück, was leere Anführungszeichen (`""`) zur Folge hatte. Durch die explizite Typprüfung auf `model === 'User'` ist eine präzise Label-Erzeugung für alle Entitäten garantiert.
-
-### DSGVO & Sicherheits-Filter (`sanitizePayload`)
-Das System schwärzt sensible Felder (wie Passwörter, PINs, OTP-Hashes und Tokens) vollständig, bevor sie in das JSON-Details-Feld geschrieben werden.
+> [!WARNING]
+> Dynamische Instanziierungen über `$extends` innerhalb von Request-Handlern führen zu Speicherlecks und Connection-Pool-Fehlern. Registriere Erweiterungen ausschließlich statisch auf dem Singleton-Client.
 
 ---
 
 ## 5. Die Wiederherstellungs-Engine (Revert Engine)
 
-Die Revert Engine (`src/lib/audit-revert.ts`) macht Änderungen rückgängig, indem sie die inversen Operationen ausführt:
-1.  **CREATE rückgängig machen** $\rightarrow$ Löscht den erstellten Datensatz.
-2.  **UPDATE rückgängig machen** $\rightarrow$ Schreibt die alten Skalarwerte (`oldValue`) zurück in den Datensatz.
-3.  **DELETE rückgängig machen** $\rightarrow$ Erstellt den gelöschten Datensatz neu und verknüpft kaskadiert gelöschte Relationen.
+Die Engine in `src/lib/audit-revert.ts` macht Änderungen rückgängig:
 
-### Atomare Transaktionssicherheit
-Alle Schritte einer Wiederherstellung werden innerhalb einer **Prisma-Datenbanktransaktion (`prisma.$transaction`)** ausgeführt. Schlägt die Wiederherstellung einer kaskadierten Beziehung fehl (z. B. durch eine verletzte Foreign-Key-Constraint), wird die gesamte Operation rückgängig gemacht, um Dateninkonsistenzen zu verhindern.
+* **CREATE**: Löscht den erstellten Datensatz anhand der ID.
+* **UPDATE**: Schreibt alle im Log gespeicherten Skalarwerte aus `oldValue` in den Datensatz zurück.
+* **DELETE**: Erstellt den gelöschten Datensatz neu und rekonstruiert kaskadierend gelöschte Relationen im selben Transaktions-Scope (`prisma.$transaction`).
 
-### Deep Relationship Prefetching (Lösch-Kaskaden)
-Beim Löschen komplexer Modelle reicht es nicht aus, nur den Hauptdatensatz zu sichern. Das System führt vor der eigentlichen Löschung ein Prefetching durch:
-*   **Product**: Sichert Sales-Arguments und die Preis-Historie (`priceHistory`).
-*   **SpecialPrice**: Sichert Rabatt-Staffelungen (`tiers`) und Produktverknüpfungen.
-*   **Addon**: Sichert Preisstufen (`tiers`) und kompatible Produkte.
+### Deep Relationship Prefetching
 
-Bei der Wiederherstellung (`REVERT DELETE`) rekonstruiert die Engine diese Relationen hierarchisch im selben Transaktions-Scope.
+Beim Löschen komplexer Modelle sichert `fetchCurrentStateWithRelations` abhängige Relationen, bevor diese gelöscht werden:
+* **Product**: Sichert Verkaufsargumente (`salesArguments`) und die Preishistorie (`priceHistory`).
+* **SpecialPrice**: Sichert Rabattstaffeln (`tiers`) und Produktverknüpfungen.
+* **Addon**: Sichert Preisstufen (`tiers`) und kompatible Produkte.
 
 ---
 
-## 6. Frontend-Kollisionsschutz & Visual Diffing
+## 6. Interaktionen und Beziehungen
 
-Das Administrations-Interface für das Aktivitätslog (`src/app/admin/audit/`) ist für maximale Zuverlässigkeit im operativen Betrieb optimiert.
+```
+[tRPC Router] ──> [Prisma Client (Statisch erweitert)]
+                         │
+                         ▼ (Aufruf)
+                  [audit-logger.ts] <── [audit-context.ts] (Session-Daten)
+                         │
+                         ▼ (Schreibt in)
+                  [AuditLog Tabelle]
+                         ▲
+                         │ (Liest & schreibt)
+                  [audit-revert.ts]
+```
 
-### Side-by-Side Visual Diffing
-Die Komponente vergleicht `oldValue` und `newValue` auf Feldebene. Hinzugefügter Text wird grün hervorgehoben, während gelöschter Text rot und durchgestrichen dargestellt wird.
-
-### Write-Collision Detection
-Wenn Admin A einen Datensatz ändert, danach Admin B denselben Datensatz aktualisiert und Admin A versucht, seine Änderung rückgängig zu machen, droht ein Datenverlust, da Admin B's neuere Änderung überschrieben würde.
-
-*   **Schutz-Mechanismus**: Vor der Ausführung eines Reverts ruft der Client `getCurrentState` auf. Weicht der aktuelle Datenbank-Zustand vom Zustand nach der zu revertierenden Aktion ab (`newValue`), wird eine prominente Warnung im UI eingeblendet:
-    > ⚠️ **Achtung Write-Kollision**: Dieses Element wurde nach dieser Aktion erneut geändert. Das Rückgängigmachen überschreibt neuere Änderungen!
-*   Der Administrator muss diese Warnung explizit zur Kenntnis nehmen, um fortzufahren.
+* Der Prisma-Interceptor in `src/lib/prisma.ts` ist direkt an `src/lib/audit-logger.ts` gekoppelt.
+* `src/lib/audit-logger.ts` liest die Metadaten des ausführenden Benutzers asynchron aus `src/lib/audit-context.ts` aus.
+* Die Revert-Engine in `src/lib/audit-revert.ts` liest Protokolleinträge aus der `AuditLog`-Tabelle und modifiziert die betroffenen Tabellen über denselben Prisma-Client.
 
 ---
 
-## 7. Entwickler-Leitfaden: Das System erweitern
+## 7. Entwickler-Anleitung: System erweitern
 
 ### Neues Modell unter Audit-Kontrolle stellen
 
-Wenn ein neues Datenmodell (z. B. `TeamHighlight`) automatisch auditiert werden soll, sind folgende drei Schritte notwendig:
+Wenn ein neues Modell (z. B. `TeamHighlight`) automatisch auditiert werden soll, führe folgende Schritte aus:
 
-#### Schritt A: Modell registrieren
-Füge den exakten Namen des Prisma-Modells zum Array `AUDITED_MODELS` in `src/lib/audit-logger.ts` hinzu:
-```typescript
-export const AUDITED_MODELS = [
-  // ... bestehende Modelle
-  'TeamHighlight',
-];
-```
+1. **Modell registrieren**: Füge den exakten Namen des Prisma-Modells zum Array `AUDITED_MODELS` in `src/lib/audit-logger.ts` hinzu:
+   ```typescript
+   export const AUDITED_MODELS = [
+     // ...
+     'TeamHighlight',
+   ];
+   ```
+2. **Deutschen Namen definieren**: Trage die Übersetzung im Mapping `GERMAN_MODEL_NAMES` in `src/lib/audit-logger.ts` ein:
+   ```typescript
+   const GERMAN_MODEL_NAMES: Record<string, string> = {
+     // ...
+     TeamHighlight: 'Highlight des Teams',
+   };
+   ```
+3. **Relationen sichern (Prefetching)**: Wenn das Modell abhängige Tabellen besitzt, die kaskadierend gelöscht werden, füge diese in `fetchCurrentStateWithRelations` in `src/lib/audit-logger.ts` hinzu:
+   ```typescript
+   else if (model === 'TeamHighlight') {
+     options.include = {
+       highlights: true, // Relationen, die mitgesichert werden sollen
+     };
+   }
+   ```
+4. **Revert-Logik erweitern**: Implementiere das Wiederherstellen dieser Relationen im `DELETE`-Block von `revertAuditLog` in `src/lib/audit-revert.ts`.
 
-#### Schritt B: Deutschen Namen für die Log-Nachricht definieren
-Trage die Übersetzung im Mapping `GERMAN_MODEL_NAMES` in `src/lib/audit-logger.ts` ein:
-```typescript
-const GERMAN_MODEL_NAMES: Record<string, string> = {
-  // ...
-  TeamHighlight: 'Highlight des Teams',
-};
-```
+### Sensible Felder filtern (Sanitizing)
 
-#### Schritt C: (Optional) Relationen sichern (Prefetching)
-Falls das Modell abhängige Kind-Tabellen besitzt, die bei einer Löschung kaskadierend verschwinden, füge diese in `fetchCurrentStateWithRelations` hinzu:
-```typescript
-else if (model === 'TeamHighlight') {
-  options.include = {
-    // Relationen definieren, die mitgesichert werden sollen
-  };
-}
-```
-Erweitere anschließend den `REVERT DELETE` Block in `src/lib/audit-revert.ts`, um diese Relationen bei der Wiederherstellung neu zu erzeugen.
+Um DSGVO-relevante oder sicherheitskritische Felder nicht im Klartext im Audit-Log zu speichern, filtert `sanitizePayload` diese aus.
 
----
+* **Feld registrieren**: Füge den Feldnamen (z. B. `secretToken`) zum Array `sensitiveKeys` in `src/lib/audit-logger.ts` hinzu:
+   ```typescript
+   const sensitiveKeys = [
+     'password',
+     'pin',
+     // ...
+     'secretToken',
+   ];
+   ```
+   Das System überschreibt diese Felder in der Payload rekursiv mit dem Platzhalter `"[GEFILTERT]"`.
 
-## 8. Manuelles Logging von Systemaktionen
+### Manuelles Logging ausführen
 
-Für Aktionen, die nicht direkt an eine einzelne Datenbank-Mutation gekoppelt sind (z. B. Authentifizierungsschritte), stellt das System die Funktion `writeAuditLog` zur Verfügung:
+Nutze für Aktionen, die nicht direkt an eine Prisma-Mutation gekoppelt sind (z. B. Authentifizierungs-Events), die Funktion `writeAuditLog`:
 
 ```typescript
 import { writeAuditLog } from '@/lib/audit-logger';
 
-// Protokollieren eines erfolgreichen Logins
 await writeAuditLog({
-  action: 'LOGIN',
+  action: 'LOGIN_FAILED',
   entityType: 'User',
   entityId: user.id,
-  message: `Erfolgreiche Anmeldung für ${user.firstName} ${user.lastName}.`,
-  details: { email: user.email, role: user.role },
+  message: `Fehlgeschlagener Anmeldeversuch für E-Mail ${user.email}.`,
+  details: { ip: clientIp },
 });
 ```

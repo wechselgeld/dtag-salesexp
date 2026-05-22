@@ -11,6 +11,9 @@ import bcrypt from 'bcryptjs';
 import {
     getLocationFilter, hasRole, canManageLocation,
 } from '@/lib/rbac';
+import {
+    getCached, invalidateCache,
+} from '@/lib/cache';
 
 export const locationRouter = router({
     list: publicProcedure
@@ -21,7 +24,7 @@ export const locationRouter = router({
             cursor: z.string().nullish(),
             search: z.string().optional(),
         }).optional())
-        .query(async ({
+        .query(({
             ctx, input,
         }) => {
             const limit = input?.limit ?? 50;
@@ -36,89 +39,97 @@ export const locationRouter = router({
                 });
             }
 
-            const where: any = {
-                AND: [
-                    securityFilter,
-                ],
-            };
+            const role = session?.role || 'anonymous';
+            const userOd = session?.odRegionId || 'null';
+            const userLoc = session?.locationId || 'null';
 
-            if (input?.locationId) {
-                where.AND.push({
-                    id: input.locationId,
-                });
-            }
+            const cacheKey = `locations:list:role_${role}:od_${userOd}:loc_${userLoc}:inp_loc_${input?.locationId || 'all'}:inp_od_${input?.odRegionId || 'all'}:s_${search || ''}:c_${cursor || ''}:${limit}`;
 
-            if (input?.odRegionId) {
-                where.AND.push({
-                    odRegionId: input.odRegionId,
-                });
-            }
+            return getCached(cacheKey, 60 * 60 * 1000, async () => {
+                const where: any = {
+                    AND: [
+                        securityFilter,
+                    ],
+                };
 
-            if (search) {
-                where.AND.push({
-                    OR: [
-                        {
-                            name: {
-                                contains: search,
-                                mode: 'insensitive',
-                            },
-                        },
-                        {
-                            address: {
-                                contains: search,
-                                mode: 'insensitive',
-                            },
-                        },
-                        {
-                            odRegion: {
+                if (input?.locationId) {
+                    where.AND.push({
+                        id: input.locationId,
+                    });
+                }
+
+                if (input?.odRegionId) {
+                    where.AND.push({
+                        odRegionId: input.odRegionId,
+                    });
+                }
+
+                if (search) {
+                    where.AND.push({
+                        OR: [
+                            {
                                 name: {
                                     contains: search,
                                     mode: 'insensitive',
                                 },
                             },
+                            {
+                                address: {
+                                    contains: search,
+                                    mode: 'insensitive',
+                                },
+                            },
+                            {
+                                odRegion: {
+                                    name: {
+                                        contains: search,
+                                        mode: 'insensitive',
+                                    },
+                                },
+                            },
+                        ],
+                    });
+                }
+
+                const items = await ctx.prisma.location.findMany({
+                    take: limit + 1,
+                    cursor: cursor ? {
+                        id: cursor,
+                    } : undefined,
+                    where,
+                    select: {
+                        id: true,
+                        name: true,
+                        address: true,
+                        isActive: true,
+                        odRegionId: true,
+                        odRegion: {
+                            select: {
+                                name: true,
+                            },
                         },
-                    ],
+                        _count: {
+                            select: {
+                                teams: true,
+                            },
+                        },
+                    },
+                    orderBy: {
+                        name: 'asc',
+                    },
                 });
-            }
 
-            const items = await ctx.prisma.location.findMany({
-                take: limit + 1,
-                cursor: cursor ? {
-                    id: cursor,
-                } : undefined,
-                where,
-                select: {
-                    id: true,
-                    name: true,
-                    address: true,
-                    isActive: true,
-                    odRegionId: true,
-                    odRegion: {
-                        select: {
-                            name: true,
-                        },
-                    },
-                    _count: {
-                        select: {
-                            teams: true,
-                        },
-                    },
-                },
-                orderBy: {
-                    name: 'asc',
-                },
+                let nextCursor: typeof cursor | undefined;
+                if (items.length > limit) {
+                    const nextItem = items.pop();
+                    nextCursor = nextItem!.id;
+                }
+
+                return {
+                    items,
+                    nextCursor,
+                };
             });
-
-            let nextCursor: typeof cursor | undefined;
-            if (items.length > limit) {
-                const nextItem = items.pop();
-                nextCursor = nextItem!.id;
-            }
-
-            return {
-                items,
-                nextCursor,
-            };
         }),
 
     getById: publicProcedure
@@ -146,7 +157,7 @@ export const locationRouter = router({
             isActive: z.boolean().default(true),
             odRegionId: z.string().optional().nullable(),
         }))
-        .mutation(({
+        .mutation(async ({
             ctx, input,
         }) => {
             const session = ctx.session as any;
@@ -170,7 +181,7 @@ export const locationRouter = router({
                 assignedOdRegion = session.odRegionId;
             }
 
-            return ctx.prisma.location.create({
+            const location = await ctx.prisma.location.create({
                 data: {
                     name: input.name,
                     address: input.address,
@@ -178,6 +189,11 @@ export const locationRouter = router({
                     odRegionId: assignedOdRegion,
                 },
             });
+
+            await invalidateCache('locations:list');
+            await invalidateCache('teams:list');
+
+            return location;
         }),
 
     update: protectedProcedure
@@ -190,7 +206,7 @@ export const locationRouter = router({
             isActive: z.boolean().optional(),
             odRegionId: z.string().optional().nullable(),
         }))
-        .mutation(({
+        .mutation(async ({
             ctx, input,
         }) => {
             const session = ctx.session as any;
@@ -212,12 +228,17 @@ export const locationRouter = router({
                 });
             }
 
-            return ctx.prisma.location.update({
+            const updated = await ctx.prisma.location.update({
                 where: {
                     id,
                 },
                 data: dataToUpdate,
             });
+
+            await invalidateCache('locations:list');
+            await invalidateCache('teams:list');
+
+            return updated;
         }),
 
     delete: protectedProcedure
@@ -249,11 +270,16 @@ export const locationRouter = router({
             }
 
             try {
-                return await ctx.prisma.location.delete({
+                const deleted = await ctx.prisma.location.delete({
                     where: {
                         id: input.id,
                     },
                 });
+
+                await invalidateCache('locations:list');
+                await invalidateCache('teams:list');
+
+                return deleted;
             }
             catch (error: any) {
                 if (error.code === 'P2003') {

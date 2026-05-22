@@ -11,6 +11,9 @@ import bcrypt from 'bcryptjs';
 import {
     getOdRegionFilter, hasRole,
 } from '@/lib/rbac';
+import {
+    getCached, invalidateCache,
+} from '@/lib/cache';
 
 export const odRegionRouter = router({
     list: publicProcedure
@@ -19,14 +22,15 @@ export const odRegionRouter = router({
             cursor: z.string().nullish(),
             search: z.string().optional(),
         }).optional())
-        .query(async ({
+        .query(({
             ctx, input,
         }) => {
             const limit = input?.limit ?? 50;
             const cursor = input?.cursor;
             const search = input?.search;
+            const session = ctx.session as any;
 
-            const securityFilter = getOdRegionFilter(ctx.session as any);
+            const securityFilter = getOdRegionFilter(session);
 
             if (securityFilter.id === 'UNAUTHORIZED') {
                 throw new TRPCError({
@@ -34,40 +38,47 @@ export const odRegionRouter = router({
                 });
             }
 
-            const where: any = {
-                ...securityFilter,
-            };
-            if (search) {
-                where.name = {
-                    contains: search,
-                    mode: 'insensitive',
+            const role = session?.role || 'anonymous';
+            const userOd = session?.odRegionId || 'null';
+
+            const cacheKey = `odRegions:list:role_${role}:od_${userOd}:s_${search || ''}:c_${cursor || ''}:${limit}`;
+
+            return getCached(cacheKey, 60 * 60 * 1000, async () => {
+                const where: any = {
+                    ...securityFilter,
                 };
-            }
+                if (search) {
+                    where.name = {
+                        contains: search,
+                        mode: 'insensitive',
+                    };
+                }
 
-            const items = await ctx.prisma.odRegion.findMany({
-                take: limit + 1,
-                cursor: cursor ? {
-                    id: cursor,
-                } : undefined,
-                where,
-                include: {
-                    locations: true,
-                },
-                orderBy: {
-                    name: 'asc',
-                },
+                const items = await ctx.prisma.odRegion.findMany({
+                    take: limit + 1,
+                    cursor: cursor ? {
+                        id: cursor,
+                    } : undefined,
+                    where,
+                    include: {
+                        locations: true,
+                    },
+                    orderBy: {
+                        name: 'asc',
+                    },
+                });
+
+                let nextCursor: typeof cursor | undefined;
+                if (items.length > limit) {
+                    const nextItem = items.pop();
+                    nextCursor = nextItem!.id;
+                }
+
+                return {
+                    items,
+                    nextCursor,
+                };
             });
-
-            let nextCursor: typeof cursor | undefined;
-            if (items.length > limit) {
-                const nextItem = items.pop();
-                nextCursor = nextItem!.id;
-            }
-
-            return {
-                items,
-                nextCursor,
-            };
         }),
 
     getById: publicProcedure
@@ -93,7 +104,7 @@ export const odRegionRouter = router({
             name: z.string().min(1),
             isActive: z.boolean().optional(),
         }))
-        .mutation(({
+        .mutation(async ({
             ctx, input,
         }) => {
             if (!hasRole(ctx.session as any, 'ADMIN')) {
@@ -103,12 +114,15 @@ export const odRegionRouter = router({
                 });
             }
 
-            return ctx.prisma.odRegion.create({
+            const region = await ctx.prisma.odRegion.create({
                 data: {
                     name: input.name,
                     isActive: input.isActive ?? true,
                 },
             });
+
+            await invalidateCache('odRegions:list');
+            return region;
         }),
 
     update: protectedProcedure
@@ -119,7 +133,7 @@ export const odRegionRouter = router({
             name: z.string().min(1).optional(),
             isActive: z.boolean().optional(),
         }))
-        .mutation(({
+        .mutation(async ({
             ctx, input,
         }) => {
             const session = ctx.session as any;
@@ -147,12 +161,18 @@ export const odRegionRouter = router({
                 });
             }
 
-            return ctx.prisma.odRegion.update({
+            const updated = await ctx.prisma.odRegion.update({
                 where: {
                     id,
                 },
                 data: dataToUpdate,
             });
+
+            await invalidateCache('odRegions:list');
+            await invalidateCache('locations:list');
+            await invalidateCache('teams:list');
+
+            return updated;
         }),
 
     delete: protectedProcedure
@@ -188,11 +208,17 @@ export const odRegionRouter = router({
             }
 
             try {
-                return await ctx.prisma.odRegion.delete({
+                const deleted = await ctx.prisma.odRegion.delete({
                     where: {
                         id: input.id,
                     },
                 });
+
+                await invalidateCache('odRegions:list');
+                await invalidateCache('locations:list');
+                await invalidateCache('teams:list');
+
+                return deleted;
             }
             catch (error: any) {
                 if (error.code === 'P2003') {

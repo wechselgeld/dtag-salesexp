@@ -919,6 +919,9 @@ export const adminRouter = router({
                     },
                 });
 
+                // Invalidate news active cache keys
+                await invalidateCache('news:active');
+
                 // Emit the newly created news to SSE subscribers
                 import('@/lib/news-emitter').then(({
                     publishNewsEvent,
@@ -974,11 +977,16 @@ export const adminRouter = router({
                     });
                 }
 
-                return (prisma.news as any).delete({
+                const deleted = await (prisma.news as any).delete({
                     where: {
                         id: input.id,
                     },
                 });
+
+                // Invalidate news active cache keys
+                await invalidateCache('news:active');
+
+                return deleted;
             }),
     }),
 
