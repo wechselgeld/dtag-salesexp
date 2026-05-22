@@ -166,6 +166,14 @@ mode: 'insensitive',
                 where: {
                     id: input.id,
                 },
+                include: {
+                    team: {
+                        include: {
+                            location: true,
+                        },
+                    },
+                    location: true,
+                },
             });
             if (!targetUser) {
                 throw new TRPCError({
@@ -173,13 +181,16 @@ mode: 'insensitive',
                 });
             }
 
-            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, targetUser.odRegionId, targetUser.locationId)) {
+            const effectiveLocationId = targetUser.locationId || targetUser.team?.locationId || null;
+            const effectiveOdRegionId = targetUser.odRegionId || targetUser.location?.odRegionId || targetUser.team?.location?.odRegionId || null;
+
+            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, effectiveOdRegionId, effectiveLocationId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Dieser Nutzer gehört nicht zu deinem Bereich.',
                 });
             }
-            if (input.role && !canManageUser(session, input.role, targetUser.odRegionId, targetUser.locationId)) {
+            if (input.role && !canManageUser(session, input.role, effectiveOdRegionId, effectiveLocationId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du kannst diese Rolle nicht vergeben.',
@@ -391,13 +402,24 @@ mode: 'insensitive',
                 where: {
                     id: input.id,
                 },
+                include: {
+                    team: {
+                        include: {
+                            location: true,
+                        },
+                    },
+                    location: true,
+                },
             });
             if (!target) {
                 throw new TRPCError({
                     code: 'NOT_FOUND',
                 });
             }
-            if (!canManageUser(ctx.session as any, target.role, target.odRegionId, target.locationId)) {
+            const effectiveLocationId = target.locationId || target.team?.locationId || null;
+            const effectiveOdRegionId = target.odRegionId || target.location?.odRegionId || target.team?.location?.odRegionId || null;
+
+            if (!canManageUser(ctx.session as any, target.role, effectiveOdRegionId, effectiveLocationId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du hast keine Berechtigung, diesen Account zu löschen.',
@@ -449,16 +471,27 @@ mode: 'insensitive',
 
             const targetUser = await prisma.user.findUnique({
                 where: {
- id: input.id,
-},
+                    id: input.id,
+                },
+                include: {
+                    team: {
+                        include: {
+                            location: true,
+                        },
+                    },
+                    location: true,
+                },
             });
             if (!targetUser) {
                 throw new TRPCError({
- code: 'NOT_FOUND',
-});
+                    code: 'NOT_FOUND',
+                });
             }
 
-            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, targetUser.odRegionId, targetUser.locationId)) {
+            const effectiveLocationId = targetUser.locationId || targetUser.team?.locationId || null;
+            const effectiveOdRegionId = targetUser.odRegionId || targetUser.location?.odRegionId || targetUser.team?.location?.odRegionId || null;
+
+            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, effectiveOdRegionId, effectiveLocationId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du hast keine Berechtigung, diesen Account zu verwalten.',
@@ -500,16 +533,27 @@ mode: 'insensitive',
 
             const targetUser = await prisma.user.findUnique({
                 where: {
- id: input.id,
-},
+                    id: input.id,
+                },
+                include: {
+                    team: {
+                        include: {
+                            location: true,
+                        },
+                    },
+                    location: true,
+                },
             });
             if (!targetUser) {
                 throw new TRPCError({
- code: 'NOT_FOUND',
-});
+                    code: 'NOT_FOUND',
+                });
             }
 
-            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, targetUser.odRegionId, targetUser.locationId)) {
+            const effectiveLocationId = targetUser.locationId || targetUser.team?.locationId || null;
+            const effectiveOdRegionId = targetUser.odRegionId || targetUser.location?.odRegionId || targetUser.team?.location?.odRegionId || null;
+
+            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, effectiveOdRegionId, effectiveLocationId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du hast keine Berechtigung, diesen Account zu verwalten.',
@@ -546,16 +590,27 @@ mode: 'insensitive',
 
             const targetUser = await prisma.user.findUnique({
                 where: {
- id: input.id,
-},
+                    id: input.id,
+                },
+                include: {
+                    team: {
+                        include: {
+                            location: true,
+                        },
+                    },
+                    location: true,
+                },
             });
             if (!targetUser) {
                 throw new TRPCError({
- code: 'NOT_FOUND',
-});
+                    code: 'NOT_FOUND',
+                });
             }
 
-            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, targetUser.odRegionId, targetUser.locationId)) {
+            const effectiveLocationId = targetUser.locationId || targetUser.team?.locationId || null;
+            const effectiveOdRegionId = targetUser.odRegionId || targetUser.location?.odRegionId || targetUser.team?.location?.odRegionId || null;
+
+            if (session.id !== targetUser.id && !canManageUser(session, targetUser.role, effectiveOdRegionId, effectiveLocationId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du hast keine Berechtigung, diesen Account zu verwalten.',

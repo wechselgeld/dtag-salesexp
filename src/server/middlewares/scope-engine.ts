@@ -57,12 +57,22 @@ export const withHierarchicalScope = (entityType: HierarchicalEntity) =>
                 odRegionId: true,
               },
             },
+            team: {
+              select: {
+                locationId: true,
+                location: {
+                  select: {
+                    odRegionId: true,
+                  },
+                },
+              },
+            },
           },
         });
         if (u) {
           lineage = {
-            odRegionId: u.odRegionId || u.location?.odRegionId || null,
-            locationId: u.locationId || null,
+            odRegionId: u.odRegionId || u.location?.odRegionId || u.team?.location?.odRegionId || null,
+            locationId: u.locationId || u.team?.locationId || null,
             teamId: u.teamId || null,
           };
         }

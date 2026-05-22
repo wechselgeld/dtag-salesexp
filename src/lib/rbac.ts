@@ -182,7 +182,7 @@ export function getUserFilter(user: SessionUser | undefined | null) {
             id: 'UNAUTHORIZED',
         };
     }
-    if (hasPermission(user.role, 'users:read') || hasRole(user, 'ADMIN')) {
+    if (hasRole(user, 'ADMIN')) {
         return {
         };
     }
@@ -197,12 +197,32 @@ export function getUserFilter(user: SessionUser | undefined | null) {
                         odRegionId: user.odRegionId,
                     },
                 },
+                {
+                    team: {
+                        location: {
+                            odRegionId: user.odRegionId,
+                        },
+                    },
+                },
             ],
         };
     }
     if (user.role === 'LOCATION_MANAGER' && user.locationId) {
         return {
-            locationId: user.locationId,
+            OR: [
+                {
+                    locationId: user.locationId,
+                },
+                {
+                    team: {
+                        locationId: user.locationId,
+                    },
+                },
+            ],
+        };
+    }
+    if (hasPermission(user.role, 'users:read')) {
+        return {
         };
     }
     return {
@@ -290,14 +310,13 @@ export function canManageUser(currentUser: SessionUser, targetRole: string, targ
 
     if (currentUser.role === 'OD_MANAGER') {
         if (!currentUser.odRegionId) return false;
-        if (targetOdRegionId && targetOdRegionId !== currentUser.odRegionId) return false;
+        if (!targetOdRegionId || targetOdRegionId !== currentUser.odRegionId) return false;
         return true;
     }
 
     if (currentUser.role === 'LOCATION_MANAGER') {
         if (!currentUser.locationId) return false;
-        if (targetOdRegionId) return false;
-        if (targetLocationId && targetLocationId !== currentUser.locationId) return false;
+        if (!targetLocationId || targetLocationId !== currentUser.locationId) return false;
         return true;
     }
 
