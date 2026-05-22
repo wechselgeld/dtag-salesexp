@@ -300,3 +300,43 @@ model Passkey {
 
   @@index([email])
 }
+
+model ErrorLog {
+  id        String   @id @default(cuid())
+  traceId   String
+  path      String?
+  type      String?
+  message   String
+  stack     String?
+  details   Json?
+  userId    String?
+  userEmail String?
+  userRole  String?
+  clientIp  String?
+  createdAt DateTime @default(now())
+
+  @@index([traceId])
+  @@index([type, createdAt])
+  @@index([userId, createdAt])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  action         String   // e.g. "CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", "REVERT"
+  entityType     String?  // e.g. "Product", "Addon", "SpecialPrice", "User", "Team", "Location", "OdRegion", "OneTimeCredit", "News", "SystemSetting"
+  entityId       String?  // Primary key identifier of the affected record
+  message        String   // Friendly German description of the action
+  details        Json?    // Stores `{ oldValue: ..., newValue: ... }` for comparison
+  userId         String?  // Performing user's ID
+  userEmail      String?  // Performing user's email
+  userRole       String?  // Performing user's role
+  clientIp       String?  // Performing user's IP
+  revertedFromId String?  // ID of the audit log that was reverted, if this is a revert action
+  createdAt      DateTime @default(now())
+
+  @@index([action, createdAt])
+  @@index([entityType, entityId])
+  @@index([userId, createdAt])
+}
+
+

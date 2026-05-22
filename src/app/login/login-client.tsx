@@ -145,9 +145,18 @@ setShowSetupPassword,
 ] = useState(false);
 
 	// Passkey setup state
-	const [showPasskeyStep, setShowPasskeyStep] = useState(false);
-	const [passkeyEmail, setPasskeyEmail] = useState('');
-	const [isEnrollingPasskey, setIsEnrollingPasskey] = useState(false);
+	const [
+ showPasskeyStep,
+setShowPasskeyStep,
+] = useState(false);
+	const [
+ passkeyEmail,
+setPasskeyEmail,
+] = useState('');
+	const [
+ isEnrollingPasskey,
+setIsEnrollingPasskey,
+] = useState(false);
 
 	// tRPC WebAuthn mutations
 	const getRegOptions = trpc.webauthn.generateRegistrationOptions.useMutation();
@@ -159,7 +168,8 @@ setShowSetupPassword,
 			if (data.suggestPasskey) {
 				setPasskeyEmail(setupEmail || '');
 				setShowPasskeyStep(true);
-			} else {
+			}
+ else {
 				router.push('/admin/products');
 				router.refresh();
 			}
@@ -201,7 +211,8 @@ setShowSetupPassword,
 			if (data.suggestPasskey) {
 				setPasskeyEmail(watch('email') || '');
 				setShowPasskeyStep(true);
-			} else {
+			}
+ else {
 				router.push('/admin/products');
 				router.refresh();
 			}
@@ -223,7 +234,9 @@ setShowSetupPassword,
 		}
 		setIsEnrollingPasskey(true);
 		try {
-			const { startRegistration } = await import('@simplewebauthn/browser');
+			const {
+ startRegistration,
+} = await import('@simplewebauthn/browser');
 			const options = await getRegOptions.mutateAsync({
 				email: targetEmail,
 			});
@@ -237,10 +250,12 @@ setShowSetupPassword,
 			alert('Passkey erfolgreich eingerichtet!');
 			router.push('/admin/products');
 			router.refresh();
-		} catch (err: any) {
+		}
+ catch (err: any) {
 			console.error('Passkey failed', err);
 			alert(`Fehler bei der Passkey-Einrichtung: ${err.message}`);
-		} finally {
+		}
+ finally {
 			setIsEnrollingPasskey(false);
 		}
 	};
@@ -399,7 +414,10 @@ setIsPasskeyLoading,
 				>
 					<div ref={cardRef} className="p-8 sm:p-12">
 						<div className="flex justify-center gap-2 mb-8">
-							{[1, 2].map((step) => {
+							{[
+ 1,
+2,
+].map((step) => {
 								const isCurrent = (showPasskeyStep ? 2 : 1) === step;
 								const isCompleted = (showPasskeyStep ? 2 : 1) > step;
 								return (

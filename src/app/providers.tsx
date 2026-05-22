@@ -20,6 +20,9 @@ import {
 import {
 	useSettingsStore,
 } from '@/hooks/use-settings-store';
+import {
+	showErrorToast,
+} from '@/components/shared/error-toast';
 
 function SettingsWrapper({
 	children,
@@ -60,24 +63,33 @@ export default function Providers({
 		queryClient,
 	] = useState(
 		() => {
-			const handleUnauthorized = (error: any) => {
-				if (
+			const handleGlobalError = (error: any) => {
+				const isUnauthorized =
 					error?.data?.code === 'UNAUTHORIZED' ||
 					error?.message === 'UNAUTHORIZED' ||
-					error?.message?.includes('UNAUTHORIZED')
-				) {
+					error?.message?.includes('UNAUTHORIZED');
+
+				if (isUnauthorized) {
 					if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/setup')) {
 						window.location.href = '/api/auth/logout';
 					}
+					return;
 				}
+
+				// Capture the traceId from the formatted tRPC server error
+				const traceId = error?.data?.traceId || error?.shape?.data?.traceId;
+				const message = error?.message || 'Ein unerwarteter Fehler ist aufgetreten.';
+
+				// Trigger visual sliding error toast with separate traceId parameter
+				showErrorToast('Systemfehler', message, traceId);
 			};
 
 			return new QueryClient({
 				queryCache: new QueryCache({
-					onError: handleUnauthorized,
+					onError: handleGlobalError,
 				}),
 				mutationCache: new MutationCache({
-					onError: handleUnauthorized,
+					onError: handleGlobalError,
 				}),
 				defaultOptions: {
 					queries: {

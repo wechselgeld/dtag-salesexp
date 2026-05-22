@@ -40,6 +40,12 @@ import {
 import {
 	webauthnRouter,
 } from './webauthn';
+import {
+	adminErrorsRouter,
+} from './adminErrors';
+import {
+	adminAuditRouter,
+} from './adminAudit';
 
 export const appRouter = router({
 	health: publicProcedure.query(() => {
@@ -54,6 +60,8 @@ export const appRouter = router({
 	addon: addonRouter,
 	settings: settingsRouter,
 	adminUsers: adminUsersRouter,
+	adminErrors: adminErrorsRouter,
+	adminAudit: adminAuditRouter,
 	location: locationRouter,
 	odRegion: odRegionRouter,
 	feedback: feedbackRouter,

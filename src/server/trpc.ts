@@ -18,28 +18,132 @@ import {
 } from '@/lib/cache';
 import pc from 'picocolors';
 
-const t = initTRPC.context<Context>().create();
+async function logErrorToDatabase(params: {
+  traceId: string;
+  path?: string;
+  type?: string;
+  message: string;
+  stack?: string;
+  details?: any;
+  userId?: string | null;
+  userEmail?: string | null;
+  userRole?: string | null;
+  clientIp?: string;
+}) {
+  try {
+    await prisma.errorLog.create({
+      data: {
+        traceId: params.traceId,
+        path: params.path || null,
+        type: params.type || null,
+        message: params.message,
+        stack: params.stack || null,
+        details: params.details || null,
+        userId: params.userId || null,
+        userEmail: params.userEmail || null,
+        userRole: params.userRole || null,
+        clientIp: params.clientIp || null,
+      },
+    });
+  }
+  catch (dbErr) {
+    console.error('Failed to write to ErrorLog database table:', dbErr);
+  }
+}
+
+const t = initTRPC.context<Context>().create({
+  errorFormatter({
+    shape, error, ctx,
+  }) {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const isAdmin = ctx?.session?.role === 'ADMIN';
+
+    const cause = error.cause && typeof error.cause === 'object' ? (error.cause as Record<string, any>) : null;
+    const errorType = cause?.type || error.code || 'UNKNOWN';
+
+    if (ctx?.traceId) {
+      logErrorToDatabase({
+        traceId: ctx.traceId,
+        path: shape.data.path,
+        type: errorType,
+        message: error.message,
+        stack: error.stack,
+        details: cause,
+        userId: (ctx.session as any)?.id || ctx.session?.sub || null,
+        userEmail: ctx.session?.email || null,
+        userRole: ctx.session?.role || null,
+        clientIp: ctx.ip,
+      }).catch(console.error);
+    }
+
+    const diagnostics = {
+      traceId: ctx?.traceId || 'tr_unknown',
+      path: shape.data.path,
+      timestamp: new Date().toISOString(),
+      user: ctx?.session ? {
+        id: (ctx.session as any)?.id || ctx.session.sub,
+        role: ctx.session.role,
+        email: ctx.session.email,
+      } : null,
+      clientIp: ctx?.ip,
+      details: cause,
+    };
+
+    return {
+      ...shape,
+      data: {
+        ...shape.data,
+        traceId: ctx?.traceId,
+        diagnostics: (isDevelopment || isAdmin) ? diagnostics : {
+          traceId: ctx?.traceId,
+          message: 'An error occurred. Please contact support with this Trace ID.',
+        },
+        stack: (isDevelopment && error.stack) ? error.stack : undefined,
+      },
+    };
+  },
+});
+
+import {
+	auditContextStorage,
+} from '@/lib/audit-context';
+
+const auditContextMiddleware = t.middleware(({
+	ctx,
+	next,
+}) => {
+	const session = ctx.session;
+	const context = {
+		userId: session?.sub || (session as any)?.id || null,
+		userEmail: session?.email || null,
+		userRole: session?.role || null,
+		clientIp: ctx.ip || null,
+	};
+	return auditContextStorage.run(context, () => next());
+});
 
 const loggerMiddleware = t.middleware(async (opts) => {
   const start = Date.now();
   const {
-    path, type,
+    path, type, ctx,
   } = opts;
   const result = await opts.next();
   const duration = Date.now() - start;
   const typeStr = pc.bold(pc.magenta(type.toUpperCase()));
+  const traceId = (ctx as any).traceId || 'tr_unknown';
+  const traceStr = pc.gray(`[${traceId}]`);
 
   if (result.ok) {
-    httpLogger.info(`${typeStr} ${pc.white(path)} ${pc.green('200')} ${pc.gray(`in ${formatDuration(duration)}`)}`);
+    httpLogger.info(`${traceStr} ${typeStr} ${pc.white(path)} ${pc.green('200')} ${pc.gray(`in ${formatDuration(duration)}`)}`);
   }
   else {
-    httpLogger.error(`${typeStr} ${pc.white(path)} ${pc.red(result.error.code)} ${pc.gray(`in ${formatDuration(duration)}`)}`);
+    httpLogger.error(`${traceStr} ${typeStr} ${pc.white(path)} ${pc.red(result.error.code)} ${pc.gray(`in ${formatDuration(duration)}`)}`);
   }
   return result;
 });
 
 export const router = t.router;
-export const publicProcedure = t.procedure.use(loggerMiddleware);
+export const publicProcedure = t.procedure.use(auditContextMiddleware).use(loggerMiddleware);
 
 const isAuthed = t.middleware(async ({
   ctx, next, type,
@@ -119,7 +223,7 @@ const isAuthed = t.middleware(async ({
   });
 });
 
-export const protectedProcedure = t.procedure.use(loggerMiddleware).use(isAuthed);
+export const protectedProcedure = t.procedure.use(auditContextMiddleware).use(loggerMiddleware).use(isAuthed);
 
 import type {
   Permission,
@@ -144,6 +248,12 @@ export const requirePermission = (permission: Permission) =>
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: `Du hast keine Berechtigung für diese Aktion (${permission}).`,
+        cause: {
+          type: 'PERMISSION_DENIED',
+          permission,
+          role,
+          isEditor,
+        },
       });
     }
     return next({

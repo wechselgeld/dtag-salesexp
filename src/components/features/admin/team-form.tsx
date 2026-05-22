@@ -19,6 +19,9 @@ import {
 import {
 	Save, Loader2, Users, MapPin,
 } from 'lucide-react';
+import {
+	showErrorToast,
+} from '@/components/shared/error-toast';
 
 import clsx from 'clsx';
 import {
@@ -101,6 +104,10 @@ export function TeamForm({
 			router.push('/admin/teams');
 			router.refresh();
 		},
+		onError: (error) => {
+			const traceId = error?.data?.traceId || (error as any)?.shape?.data?.traceId;
+			showErrorToast('Fehler beim Erstellen', error.message, traceId);
+		},
 	});
 
 	const updateMutation = trpc.team.update.useMutation({
@@ -111,6 +118,10 @@ export function TeamForm({
 			});
 			router.push('/admin/teams');
 			router.refresh();
+		},
+		onError: (error) => {
+			const traceId = error?.data?.traceId || (error as any)?.shape?.data?.traceId;
+			showErrorToast('Fehler beim Speichern', error.message, traceId);
 		},
 	});
 

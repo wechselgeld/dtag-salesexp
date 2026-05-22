@@ -108,6 +108,24 @@ export const authRouter = router({
         },
       });
 
+      const {
+          writeAuditLog,
+      } = await import('@/lib/audit-logger');
+      await writeAuditLog({
+        action: 'LOGIN',
+        entityType: 'User',
+        entityId: user.id,
+        message: `Erfolgreiche Anmeldung für Administrator "${user.firstName || ''} ${user.lastName || ''}".`,
+        details: {
+            email: user.email,
+            role: user.role,
+        },
+        userId: user.id,
+        userEmail: user.email,
+        userRole: user.role,
+        clientIp,
+      });
+
       const passkeyCount = await prisma.passkey.count({
         where: {
           email: user.email,
@@ -261,14 +279,33 @@ export const authRouter = router({
         },
       });
 
+      // 4 hours for admin login
       await prisma.userSession.create({
         data: {
           userId: updatedUser.id,
           deviceId,
           ip: clientIp,
           userAgent: ctx.req?.headers.get('user-agent'),
-          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 4), // 4 hours for admin login
+          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 4),
         },
+      });
+
+      const {
+          writeAuditLog,
+      } = await import('@/lib/audit-logger');
+      await writeAuditLog({
+        action: 'LOGIN',
+        entityType: 'User',
+        entityId: updatedUser.id,
+        message: `Administrator-Konto eingerichtet und angemeldet für "${updatedUser.firstName || ''} ${updatedUser.lastName || ''}".`,
+        details: {
+            email: updatedUser.email,
+            role: updatedUser.role,
+        },
+        userId: updatedUser.id,
+        userEmail: updatedUser.email,
+        userRole: updatedUser.role,
+        clientIp,
       });
 
       const passkeyCount = await prisma.passkey.count({
@@ -284,6 +321,18 @@ export const authRouter = router({
     }),
 
   logout: publicProcedure.mutation(async () => {
+    try {
+      const {
+          writeAuditLog,
+      } = await import('@/lib/audit-logger');
+      await writeAuditLog({
+        action: 'LOGOUT',
+        message: 'Administrator hat sich erfolgreich abgemeldet.',
+      });
+    }
+    catch (err) {
+      console.error('[Logout Log Error]', err);
+    }
     await logout();
     return {
       success: true,

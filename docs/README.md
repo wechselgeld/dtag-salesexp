@@ -17,6 +17,7 @@ Die technische Dokumentation ist in folgende Bereiche gegliedert:
 ### 2. Software-Architektur
 
 - **[architecture/rbac-architecture.md](./architecture/rbac-architecture.md)**: Das Berechtigungssystem (RBAC), die Row-Level Security (RLS) via Prisma Extension, die hierarchische Scope-Validierung und Session-Revocation-Mechanismen.
+- **[architecture/audit-log.md](./architecture/audit-log.md)**: Das Audit-Log-System (Aktivitätslog), die request-scoped Session-Erfassung via AsyncLocalStorage, der Prisma Interceptor und die transaktionssichere Revert Engine.
 - **[architecture/design-system.md](./architecture/design-system.md)**: Der Design-Leitfaden basierend auf der Telekom-Identität (TeleNeo Schriftart, Farbvariablen, Abrundungen, Framer Motion Motion-Timings).
 
 ### 3. Betrieb & Infrastruktur

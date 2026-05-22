@@ -69,7 +69,8 @@ export function ResolutionGuard({
 		window.addEventListener('resize', checkResolution);
 		return () =>
 			window.removeEventListener('resize', checkResolution);
-	}, []);
+	}, [
+]);
 
 	if (!mounted) {
 		return <>{children}</>;

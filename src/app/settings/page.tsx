@@ -11,12 +11,10 @@ import {
 	Check,
 	FileText,
 	Search,
-	Sparkles,
 	MapPin,
 	Lock,
 	CheckCircle2,
 	ArrowRight,
-	ArrowUpDown,
 } from 'lucide-react';
 
 import {
@@ -50,7 +48,6 @@ import {
 	SelectionTile,
 	ScreenHeader,
 	ErrorBanner,
-	InfoCard,
 } from '@/components/shared/form/form-suite';
 import {
  PremiumPinInput,
@@ -143,9 +140,18 @@ export default function SettingsPage() {
 	// --- Passkey (WebAuthn) Enrollment ---
 	const getRegOptions = trpc.webauthn.generateRegistrationOptions.useMutation();
 	const verifyReg = trpc.webauthn.verifyRegistration.useMutation();
-	const [isPasskeyRegistering, setIsPasskeyRegistering] = useState(false);
-	const [passkeyError, setPasskeyError] = useState<string | null>(null);
-	const [passkeySuccess, setPasskeySuccess] = useState(false);
+	const [
+ isPasskeyRegistering,
+setIsPasskeyRegistering,
+] = useState(false);
+	const [
+ passkeyError,
+setPasskeyError,
+] = useState<string | null>(null);
+	const [
+ passkeySuccess,
+setPasskeySuccess,
+] = useState(false);
 
 	const handleRegisterPasskey = async () => {
 		if (!session?.email) {
@@ -156,7 +162,9 @@ export default function SettingsPage() {
 		setPasskeyError(null);
 		setPasskeySuccess(false);
 		try {
-			const { startRegistration } = await import('@simplewebauthn/browser');
+			const {
+ startRegistration,
+} = await import('@simplewebauthn/browser');
 			const options = await getRegOptions.mutateAsync({
 				email: session.email,
 			});
@@ -168,10 +176,12 @@ export default function SettingsPage() {
 				response: resp,
 			});
 			setPasskeySuccess(true);
-		} catch (err: any) {
+		}
+ catch (err: any) {
 			console.error('Passkey registration failed', err);
 			setPasskeyError(err.message || 'Fehler bei der Passkey-Registrierung.');
-		} finally {
+		}
+ finally {
 			setIsPasskeyRegistering(false);
 		}
 	};
@@ -413,7 +423,8 @@ setIsPinSaving,
 		navigator.clipboard.writeText(text);
 		setCopiedField(field);
 		setTimeout(() => setCopiedField(null), 2000);
-	}, []);
+	}, [
+]);
 
 	// Render profile details & actions
 	const renderProfileView = () => {
@@ -982,11 +993,31 @@ x: -15,
 
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
 						{[
-							{ id: 'default', label: 'Standard', description: 'Behält die herstellerspezifische Sortierung bei.' },
-							{ id: 'price-asc', label: 'Preis (günstigst zuerst)', description: 'Sortiert Tarife nach dem niedrigsten monatlichen Preis.' },
-							{ id: 'price-desc', label: 'Preis (teuerst zuerst)', description: 'Sortiert Tarife nach dem höchsten monatlichen Preis.' },
-							{ id: 'name-asc', label: 'Name (A bis Z)', description: 'Sortiert Tarife alphabetisch nach dem Namen.' },
-							{ id: 'speed-desc', label: 'Geschwindigkeit (schnellste zuerst)', description: 'Sortiert Tarife nach der maximalen Übertragungsrate.' },
+							{
+ id: 'default',
+label: 'Standard',
+description: 'Behält die herstellerspezifische Sortierung bei.',
+},
+							{
+ id: 'price-asc',
+label: 'Preis (günstigst zuerst)',
+description: 'Sortiert Tarife nach dem niedrigsten monatlichen Preis.',
+},
+							{
+ id: 'price-desc',
+label: 'Preis (teuerst zuerst)',
+description: 'Sortiert Tarife nach dem höchsten monatlichen Preis.',
+},
+							{
+ id: 'name-asc',
+label: 'Name (A bis Z)',
+description: 'Sortiert Tarife alphabetisch nach dem Namen.',
+},
+							{
+ id: 'speed-desc',
+label: 'Geschwindigkeit (schnellste zuerst)',
+description: 'Sortiert Tarife nach der maximalen Übertragungsrate.',
+},
 						].map((option, index) => (
 							<SelectionTile
 								key={option.id}
@@ -1049,7 +1080,7 @@ x: -15,
 					<span className="text-[0.75rem] font-bold text-[#888] uppercase tracking-wider flex items-center gap-1.5 pl-1 font-sans">
 						<FileText className="w-3.5 h-3.5 text-[#e20074]" /> Live-Vorschau E-Mail
 					</span>
-					
+
 					{/* Simulated Email Client Container */}
 					<div className="border border-[#eaedf0] rounded-2xl overflow-hidden bg-white shadow-sm flex flex-col">
 						{/* Email Header Bar */}
@@ -1062,7 +1093,7 @@ x: -15,
 							<span className="text-[0.72rem] font-bold text-[#888] tracking-wider uppercase">Vorschau</span>
 							<div className="w-12" /> {/* Balancing spacing */}
 						</div>
-						
+
 						{/* Email Meta Information */}
 						<div className="px-5 py-3 border-b border-[#eaedf0] text-[0.75rem] space-y-1 bg-white flex flex-col gap-0.5">
 							<div className="flex items-baseline gap-2">

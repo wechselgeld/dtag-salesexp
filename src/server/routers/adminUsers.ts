@@ -188,12 +188,35 @@ mode: 'insensitive',
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Dieser Nutzer gehört nicht zu deinem Bereich.',
+                    cause: {
+                        type: 'SCOPE_MISMATCH',
+                        managerRole: session.role,
+                        managerLocationId: session.locationId,
+                        managerOdRegionId: session.odRegionId,
+                        targetUser: {
+                            id: targetUser.id,
+                            role: targetUser.role,
+                            locationId: effectiveLocationId,
+                            odRegionId: effectiveOdRegionId,
+                        },
+                    },
                 });
             }
             if (input.role && !canManageUser(session, input.role, effectiveOdRegionId, effectiveLocationId)) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du kannst diese Rolle nicht vergeben.',
+                    cause: {
+                        type: 'ROLE_ASSIGNMENT_FORBIDDEN',
+                        managerRole: session.role,
+                        requestedRole: input.role,
+                        targetUser: {
+                            id: targetUser.id,
+                            role: targetUser.role,
+                            locationId: effectiveLocationId,
+                            odRegionId: effectiveOdRegionId,
+                        },
+                    },
                 });
             }
 
@@ -423,6 +446,18 @@ mode: 'insensitive',
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du hast keine Berechtigung, diesen Account zu löschen.',
+                    cause: {
+                        type: 'SCOPE_MISMATCH',
+                        managerRole: (ctx.session as any).role,
+                        managerLocationId: (ctx.session as any).locationId,
+                        managerOdRegionId: (ctx.session as any).odRegionId,
+                        targetUser: {
+                            id: target.id,
+                            role: target.role,
+                            locationId: effectiveLocationId,
+                            odRegionId: effectiveOdRegionId,
+                        },
+                    },
                 });
             }
 
@@ -495,6 +530,18 @@ mode: 'insensitive',
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du hast keine Berechtigung, diesen Account zu verwalten.',
+                    cause: {
+                        type: 'SCOPE_MISMATCH',
+                        managerRole: session.role,
+                        managerLocationId: session.locationId,
+                        managerOdRegionId: session.odRegionId,
+                        targetUser: {
+                            id: targetUser.id,
+                            role: targetUser.role,
+                            locationId: effectiveLocationId,
+                            odRegionId: effectiveOdRegionId,
+                        },
+                    },
                 });
             }
 
@@ -557,6 +604,18 @@ mode: 'insensitive',
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du hast keine Berechtigung, diesen Account zu verwalten.',
+                    cause: {
+                        type: 'SCOPE_MISMATCH',
+                        managerRole: session.role,
+                        managerLocationId: session.locationId,
+                        managerOdRegionId: session.odRegionId,
+                        targetUser: {
+                            id: targetUser.id,
+                            role: targetUser.role,
+                            locationId: effectiveLocationId,
+                            odRegionId: effectiveOdRegionId,
+                        },
+                    },
                 });
             }
 
@@ -614,6 +673,18 @@ mode: 'insensitive',
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du hast keine Berechtigung, diesen Account zu verwalten.',
+                    cause: {
+                        type: 'SCOPE_MISMATCH',
+                        managerRole: session.role,
+                        managerLocationId: session.locationId,
+                        managerOdRegionId: session.odRegionId,
+                        targetUser: {
+                            id: targetUser.id,
+                            role: targetUser.role,
+                            locationId: effectiveLocationId,
+                            odRegionId: effectiveOdRegionId,
+                        },
+                    },
                 });
             }
 

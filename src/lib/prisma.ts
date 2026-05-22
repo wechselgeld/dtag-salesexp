@@ -65,9 +65,49 @@ const prismaClientSingleton = () => {
   return client.$extends({
     query: {
       $allModels: {
-        $allOperations({
+        async $allOperations({
           model, operation, args, query,
         }) {
+          // Intercept single-row creations, updates, and deletions for audited models
+          const isWrite = [
+ 'create',
+'update',
+'delete',
+].includes(operation);
+          if (model && isWrite) {
+            try {
+              const {
+                isAuditedModel,
+                fetchCurrentState,
+                fetchCurrentStateWithRelations,
+                logAutomaticAction,
+              } = await import('./audit-logger');
+
+              if (isAuditedModel(model)) {
+                if (operation === 'create') {
+                  const result = await query(args);
+                  await logAutomaticAction('CREATE', model, result);
+                  return result;
+                }
+                if (operation === 'update') {
+                  const oldValue = await fetchCurrentState(model, args.where);
+                  const result = await query(args);
+                  await logAutomaticAction('UPDATE', model, result, oldValue);
+                  return result;
+                }
+                if (operation === 'delete') {
+                  const oldValue = await fetchCurrentStateWithRelations(model, args.where);
+                  const result = await query(args);
+                  await logAutomaticAction('DELETE', model, result, oldValue);
+                  return result;
+                }
+              }
+            }
+ catch (err) {
+              console.error('[Audit Interceptor Error]', err);
+            }
+          }
+
           // Pass writes through directly — the caller is responsible for retry
           // semantics within explicit transactions when needed.
           if (!READ_OPERATIONS.has(operation)) {

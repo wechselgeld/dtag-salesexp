@@ -18,6 +18,8 @@ import {
 	Shield,
 	MapPin,
 	Globe,
+	Terminal,
+	History,
 } from 'lucide-react';
 import type {
 	LucideIcon,
@@ -210,6 +212,16 @@ export default function AdminLayout({
 						href: '/admin/settings',
 						label: 'Einstellungen',
 						icon: Settings,
+					},
+					{
+						href: '/admin/errors',
+						label: 'Fehlerprotokoll',
+						icon: Terminal,
+					},
+					{
+						href: '/admin/audit',
+						label: 'Aktivitätslog',
+						icon: History,
 					},
 				] : [
 				]),

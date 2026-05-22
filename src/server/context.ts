@@ -25,6 +25,7 @@ export const createContext = async ({
 }: { req?: Request }) => {
     const session = await getSession();
     const ip = req ? extractClientIp(req) : undefined;
+    const traceId = `tr_${globalThis.crypto.randomUUID().replace(/-/g, '').substring(0, 16)}`;
 
     const sessionUser = session ? {
         id: session.sub,
@@ -41,6 +42,7 @@ export const createContext = async ({
         prisma: getScopedPrisma(sessionUser),
         req,
         ip,
+        traceId,
     };
 };
 
