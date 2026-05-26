@@ -562,11 +562,16 @@ return {
 						basketCredits: firstBasket.basketCredits,
 					};
 				}
-				// Normalize basket names upon store load
+				// Normalize basket names and ensure basketCredits array exists upon store load
 				if (state && Array.isArray(state.baskets)) {
 					state = {
 						...state,
-						baskets: updateBasketNames(state.baskets),
+						baskets: updateBasketNames(
+							state.baskets.map((b: any) => ({
+								...b,
+								basketCredits: b.basketCredits || [],
+							}))
+						),
 					};
 				}
 				return state;

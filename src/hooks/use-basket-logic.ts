@@ -22,8 +22,8 @@ export function useBasketLogic(basketId?: string) {
 	const storeItems = useBasketStore((state) => state.items);
 	const storeBasketCredits = useBasketStore((state) => state.basketCredits);
 
-	const items = basket ? basket.items : storeItems;
-	const basketCredits = basket ? basket.basketCredits : storeBasketCredits;
+	const items = (basket ? basket.items : storeItems) || [];
+	const basketCredits = (basket ? basket.basketCredits : storeBasketCredits) || [];
 	const addNotification = useNewsNotificationStore((state) => state.addNotification);
 	const lastNudgeRef = useRef<string | null>(null);
 

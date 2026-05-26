@@ -26,9 +26,10 @@ interface CreditSelectorProps {
 }
 
 export function CreditSelector({
-	basketCredits,
+	basketCredits: inputBasketCredits,
 	setBasketCredits,
 }: CreditSelectorProps) {
+	const basketCredits = inputBasketCredits || [];
 	const {
 		data: credits, isLoading,
 	} =

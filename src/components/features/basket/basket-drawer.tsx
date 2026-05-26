@@ -807,8 +807,8 @@ setRandomNotice,
 		settings,
 	} = useBasketLogic(basket.id);
 
-	const items = basket.items;
-	const basketCredits = basket.basketCredits;
+	const items = basket.items || [];
+	const basketCredits = basket.basketCredits || [];
 	const totalMonthly = totals.monthly;
 
 	const isMultiColumn = isComparisonMode && basketsCount > 1;
