@@ -130,7 +130,7 @@ export function CreditSelector({
 			)}
 
 			{/* Add Credit Custom Dropdown */}
-			{availableCredits.length > 0 && (
+			{activeCredits.length > 0 && (
 				<div className="relative pt-1" ref={dropdownRef}>
 					<button
 						onClick={() => setIsOpen(!isOpen)}
@@ -178,20 +178,26 @@ export function CreditSelector({
 								className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white border border-[#eaedf0] rounded-xl shadow-xl overflow-hidden"
 							>
 								<div className="max-h-[250px] overflow-y-auto py-1.5 flex flex-col scrollbar-thin scrollbar-thumb-[#eaedf0] scrollbar-track-transparent">
-									{availableCredits.map((c) => (
-										<button
-											key={c.id}
-											onClick={() => handleAdd(c.id)}
-											className="w-full flex items-center justify-between px-3.5 py-2.5 text-left hover:bg-[#f7f8fa] transition-colors cursor-pointer border-none outline-none group"
-										>
-											<span className="text-[0.75rem] font-bold text-[#1a1a2e] group-hover:text-[#00a878] transition-colors">
-												{c.name}
-											</span>
-											<span className="text-[0.7rem] font-bold text-[#00a878] group-hover:scale-105 transition-transform">
-												-{c.value.toFixed(2)} €
-											</span>
-										</button>
-									))}
+									{availableCredits.length > 0 ? (
+										availableCredits.map((c) => (
+											<button
+												key={c.id}
+												onClick={() => handleAdd(c.id)}
+												className="w-full flex items-center justify-between px-3.5 py-2.5 text-left hover:bg-[#f7f8fa] transition-colors cursor-pointer border-none outline-none group"
+											>
+												<span className="text-[0.75rem] font-bold text-[#1a1a2e] group-hover:text-[#00a878] transition-colors">
+													{c.name}
+												</span>
+												<span className="text-[0.7rem] font-bold text-[#00a878] group-hover:scale-105 transition-transform">
+													-{c.value.toFixed(2)} €
+												</span>
+											</button>
+										))
+									) : (
+										<div className="px-3.5 py-3 text-center text-[0.72rem] text-[#aaa] font-medium">
+											Keine weiteren Gutschriften verfügbar
+										</div>
+									)}
 								</div>
 							</motion.div>
 						)}

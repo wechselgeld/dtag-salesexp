@@ -1923,7 +1923,7 @@
       "source_file": "scratch/test-create.ts",
       "source_location": "L1",
       "id": "scratch_test_create_ts",
-      "community": 11,
+      "community": 12,
       "norm_label": "test-create.ts"
     },
     {
@@ -1932,7 +1932,7 @@
       "source_file": "scratch/test-create.ts",
       "source_location": "L5",
       "id": "scratch_test_create_main",
-      "community": 11,
+      "community": 12,
       "norm_label": "main()"
     },
     {
@@ -3876,7 +3876,7 @@
       "source_file": "src/app/products/[category]/[id]/page.tsx",
       "source_location": "L1",
       "id": "src_app_products_category_id_page_tsx",
-      "community": 11,
+      "community": 12,
       "norm_label": "page.tsx"
     },
     {
@@ -3885,7 +3885,7 @@
       "source_file": "src/app/products/[category]/[id]/page.tsx",
       "source_location": "L9",
       "id": "id_page_props",
-      "community": 11,
+      "community": 12,
       "norm_label": "props"
     },
     {
@@ -3894,7 +3894,7 @@
       "source_file": "src/app/products/[category]/[id]/page.tsx",
       "source_location": "L13",
       "id": "id_page_generatemetadata",
-      "community": 11,
+      "community": 12,
       "norm_label": "generatemetadata()"
     },
     {
@@ -3903,7 +3903,7 @@
       "source_file": "src/app/products/[category]/[id]/page.tsx",
       "source_location": "L31",
       "id": "id_page_page",
-      "community": 11,
+      "community": 12,
       "norm_label": "page()"
     },
     {
@@ -4774,7 +4774,7 @@
       "label": "BasketItemCard",
       "file_type": "code",
       "source_file": "src/components/features/basket/basket-drawer.tsx",
-      "source_location": "L1269",
+      "source_location": "L1270",
       "id": "basket_basket_drawer_basketitemcard",
       "community": 37,
       "norm_label": "basketitemcard"
@@ -7881,7 +7881,7 @@
       "source_file": "src/lib/logger.ts",
       "source_location": "L6",
       "id": "lib_logger_logger",
-      "community": 12,
+      "community": 3,
       "norm_label": "logger"
     },
     {
@@ -7935,7 +7935,7 @@
       "source_file": "src/lib/logger.ts",
       "source_location": "L39",
       "id": "lib_logger_formatquery",
-      "community": 11,
+      "community": 12,
       "norm_label": "formatquery()"
     },
     {
@@ -8115,7 +8115,7 @@
       "source_file": "src/lib/prisma.ts",
       "source_location": "L1",
       "id": "src_lib_prisma_ts",
-      "community": 11,
+      "community": 12,
       "norm_label": "prisma.ts"
     },
     {
@@ -8124,7 +8124,7 @@
       "source_file": "src/lib/prisma.ts",
       "source_location": "L14",
       "id": "lib_prisma_retryable_error_codes",
-      "community": 11,
+      "community": 12,
       "norm_label": "retryable_error_codes"
     },
     {
@@ -8133,7 +8133,7 @@
       "source_file": "src/lib/prisma.ts",
       "source_location": "L25",
       "id": "lib_prisma_read_operations",
-      "community": 11,
+      "community": 12,
       "norm_label": "read_operations"
     },
     {
@@ -8142,7 +8142,7 @@
       "source_file": "src/lib/prisma.ts",
       "source_location": "L36",
       "id": "lib_prisma_prismaclientsingleton",
-      "community": 11,
+      "community": 12,
       "norm_label": "prismaclientsingleton()"
     },
     {
@@ -8151,7 +8151,7 @@
       "source_file": "src/lib/prisma.ts",
       "source_location": "L160",
       "id": "lib_prisma_globalforprisma",
-      "community": 11,
+      "community": 12,
       "norm_label": "globalforprisma"
     },
     {
@@ -10914,7 +10914,7 @@
       "source_file": ".agents/skills/taste-skill/cinematic-product/skill.md",
       "source_location": "L84",
       "id": "cinematic_product_skill_4_creative_proactivity_motion_and_performance",
-      "community": 40,
+      "community": 121,
       "norm_label": "4. creative proactivity, motion, and performance"
     },
     {
@@ -10923,7 +10923,7 @@
       "source_file": ".agents/skills/taste-skill/cinematic-product/skill.md",
       "source_location": "L86",
       "id": "cinematic_product_skill_creative_proactivity",
-      "community": 40,
+      "community": 121,
       "norm_label": "creative proactivity"
     },
     {
@@ -10932,7 +10932,7 @@
       "source_file": ".agents/skills/taste-skill/cinematic-product/skill.md",
       "source_location": "L97",
       "id": "cinematic_product_skill_motion_and_interaction",
-      "community": 40,
+      "community": 121,
       "norm_label": "motion and interaction"
     },
     {
@@ -10941,7 +10941,7 @@
       "source_file": ".agents/skills/taste-skill/cinematic-product/skill.md",
       "source_location": "L112",
       "id": "cinematic_product_skill_performance_guardrails",
-      "community": 40,
+      "community": 121,
       "norm_label": "performance guardrails"
     },
     {
@@ -12705,7 +12705,7 @@
       "source_file": ".agents/skills/taste-skill/dashboards/skill.md",
       "source_location": "L84",
       "id": "dashboards_skill_4_creative_proactivity_motion_and_performance",
-      "community": 123,
+      "community": 40,
       "norm_label": "4. creative proactivity, motion, and performance"
     },
     {
@@ -12714,7 +12714,7 @@
       "source_file": ".agents/skills/taste-skill/dashboards/skill.md",
       "source_location": "L86",
       "id": "dashboards_skill_creative_proactivity",
-      "community": 123,
+      "community": 40,
       "norm_label": "creative proactivity"
     },
     {
@@ -12723,7 +12723,7 @@
       "source_file": ".agents/skills/taste-skill/dashboards/skill.md",
       "source_location": "L97",
       "id": "dashboards_skill_motion_and_interaction",
-      "community": 123,
+      "community": 40,
       "norm_label": "motion and interaction"
     },
     {
@@ -12732,7 +12732,7 @@
       "source_file": ".agents/skills/taste-skill/dashboards/skill.md",
       "source_location": "L112",
       "id": "dashboards_skill_performance_guardrails",
-      "community": 123,
+      "community": 40,
       "norm_label": "performance guardrails"
     },
     {
@@ -14460,7 +14460,7 @@
       "source_file": ".agents/skills/taste-skill/minimalism/skill.md",
       "source_location": "L84",
       "id": "minimalism_skill_4_creative_proactivity_motion_and_performance",
-      "community": 125,
+      "community": 52,
       "norm_label": "4. creative proactivity, motion, and performance"
     },
     {
@@ -14469,7 +14469,7 @@
       "source_file": ".agents/skills/taste-skill/minimalism/skill.md",
       "source_location": "L86",
       "id": "minimalism_skill_creative_proactivity",
-      "community": 125,
+      "community": 52,
       "norm_label": "creative proactivity"
     },
     {
@@ -14478,7 +14478,7 @@
       "source_file": ".agents/skills/taste-skill/minimalism/skill.md",
       "source_location": "L97",
       "id": "minimalism_skill_motion_and_interaction",
-      "community": 125,
+      "community": 52,
       "norm_label": "motion and interaction"
     },
     {
@@ -14487,7 +14487,7 @@
       "source_file": ".agents/skills/taste-skill/minimalism/skill.md",
       "source_location": "L112",
       "id": "minimalism_skill_performance_guardrails",
-      "community": 125,
+      "community": 52,
       "norm_label": "performance guardrails"
     },
     {
@@ -15045,7 +15045,7 @@
       "source_file": ".agents/skills/taste-skill/monochrome-modern/skill.md",
       "source_location": "L84",
       "id": "monochrome_modern_skill_4_creative_proactivity_motion_and_performance",
-      "community": 148,
+      "community": 208,
       "norm_label": "4. creative proactivity, motion, and performance"
     },
     {
@@ -15054,7 +15054,7 @@
       "source_file": ".agents/skills/taste-skill/monochrome-modern/skill.md",
       "source_location": "L86",
       "id": "monochrome_modern_skill_creative_proactivity",
-      "community": 148,
+      "community": 208,
       "norm_label": "creative proactivity"
     },
     {
@@ -15063,7 +15063,7 @@
       "source_file": ".agents/skills/taste-skill/monochrome-modern/skill.md",
       "source_location": "L97",
       "id": "monochrome_modern_skill_motion_and_interaction",
-      "community": 148,
+      "community": 208,
       "norm_label": "motion and interaction"
     },
     {
@@ -15072,7 +15072,7 @@
       "source_file": ".agents/skills/taste-skill/monochrome-modern/skill.md",
       "source_location": "L112",
       "id": "monochrome_modern_skill_performance_guardrails",
-      "community": 148,
+      "community": 208,
       "norm_label": "performance guardrails"
     },
     {
@@ -16215,7 +16215,7 @@
       "source_file": ".agents/skills/taste-skill/quiet-luxury/skill.md",
       "source_location": "L84",
       "id": "quiet_luxury_skill_4_creative_proactivity_motion_and_performance",
-      "community": 52,
+      "community": 127,
       "norm_label": "4. creative proactivity, motion, and performance"
     },
     {
@@ -16224,7 +16224,7 @@
       "source_file": ".agents/skills/taste-skill/quiet-luxury/skill.md",
       "source_location": "L86",
       "id": "quiet_luxury_skill_creative_proactivity",
-      "community": 52,
+      "community": 127,
       "norm_label": "creative proactivity"
     },
     {
@@ -16233,7 +16233,7 @@
       "source_file": ".agents/skills/taste-skill/quiet-luxury/skill.md",
       "source_location": "L97",
       "id": "quiet_luxury_skill_motion_and_interaction",
-      "community": 52,
+      "community": 127,
       "norm_label": "motion and interaction"
     },
     {
@@ -16242,7 +16242,7 @@
       "source_file": ".agents/skills/taste-skill/quiet-luxury/skill.md",
       "source_location": "L112",
       "id": "quiet_luxury_skill_performance_guardrails",
-      "community": 52,
+      "community": 127,
       "norm_label": "performance guardrails"
     },
     {
@@ -41587,9 +41587,9 @@
       "source_file": "src/server/routers/addon.ts",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_server_routers_addon_ts",
-      "target": "src_lib_cache_ts",
-      "confidence_score": 1.0
+      "target": "src_lib_cache_ts"
     },
     {
       "relation": "imports_from",
@@ -41862,9 +41862,9 @@
       "source_file": "src/server/routers/addon.ts",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_server_routers_addon_ts",
-      "target": "lib_cache_invalidatecache",
-      "confidence_score": 1.0
+      "target": "lib_cache_invalidatecache"
     },
     {
       "relation": "imports",
@@ -60445,5 +60445,5 @@
       "source_file": "public/se-logo.svg"
     }
   ],
-  "built_at_commit": "eabb7aeea52e75ef3d45dc1e5a9ba17abdc7c746"
+  "built_at_commit": "fb395c78b281a401d2cb642c63a05a341193d0c9"
 }

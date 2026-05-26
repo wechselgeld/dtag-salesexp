@@ -927,7 +927,8 @@ marginTop: 0,
  duration: 0.2,
 ease: 'easeInOut',
 }}
-										className="overflow-hidden pl-1"
+										className="pl-1"
+										style={{ overflow: creditsOpen ? 'visible' : 'hidden' }}
 									>
 										<CreditSelector
 											basketCredits={basketCredits}
