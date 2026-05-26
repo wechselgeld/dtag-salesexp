@@ -6,7 +6,7 @@ import type {
 import clsx from 'clsx';
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
 	useMediaQuery,
 } from '@/hooks/use-media-query';
@@ -144,7 +144,7 @@ export function SpecialPriceSelector({
 						{/* Main row */}
 						<div className={clsx(
 							'flex gap-4 p-4',
-							isSqueezed ? 'flex-col items-stretch' : 'flex-row items-center justify-between'
+							isSqueezed ? 'flex-col items-stretch' : 'flex-row items-center justify-between',
 						)}>
 							<div className="flex items-center gap-3 flex-1 min-w-0">
 								{/* Radio circle with Checkmark */}
@@ -198,7 +198,7 @@ export function SpecialPriceSelector({
 							{/* Price */}
 							<div className={clsx(
 								'flex flex-col shrink-0',
-								isSqueezed ? 'items-start ml-8' : 'items-end ml-4'
+								isSqueezed ? 'items-start ml-8' : 'items-end ml-4',
 							)}>
 								<div className="flex items-center gap-1.5 mt-0.5">
 									{basePrice !== undefined && lowestPrice < basePrice && (

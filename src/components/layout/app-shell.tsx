@@ -11,8 +11,7 @@ import {
 } from '@/components/features/basket/basket-drawer';
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
-import clsx from 'clsx';
+} from '@/lib/store/basket-store';
 import {
 	IntroSplash,
 } from '@/components/features/auth-intro/intro-splash';
@@ -27,7 +26,7 @@ import {
 } from '@/components/features/onboarding/onboarding-tutorial';
 import {
 	useModalStore,
-} from '@/hooks/use-modal-store';
+} from '@/lib/store/modal-store';
 import {
 	StreamingCalculatorModal,
 } from '@/components/features/calculator/streaming-calculator-modal';
@@ -76,6 +75,10 @@ export function AppShell({
 		setFeedbackOpen,
 	} = useModalStore();
 
+	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
+	const basketsCount = useBasketStore((state) => (state.baskets || [
+]).length);
+
 	const isLoginOrAdmin = pathname.startsWith('/admin') || pathname === '/login';
 
 	if (
@@ -86,11 +89,9 @@ export function AppShell({
 		return <MaintenanceSplash />;
 	}
 
-	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
-	const basketsCount = useBasketStore((state) => (state.baskets || []).length);
 	const showComparison = isComparisonMode && basketsCount > 1;
-	const basketWidth = showComparison 
-		? `${basketsCount === 2 ? 780 : 1120}px` 
+	const basketWidth = showComparison
+		? `${basketsCount === 2 ? 780 : 1120}px`
 		: '340px';
 
 	const shellContent = isStandalone ? (

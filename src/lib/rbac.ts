@@ -190,7 +190,12 @@ export function getUserFilter(user: SessionUser | undefined | null) {
     }
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
         return {
-            role: { notIn: ['ADMIN', 'OD_MANAGER'] },
+            role: {
+ notIn: [
+ 'ADMIN',
+'OD_MANAGER',
+],
+},
             OR: [
                 {
                     odRegionId: user.odRegionId,
@@ -212,7 +217,13 @@ export function getUserFilter(user: SessionUser | undefined | null) {
     }
     if (user.role === 'LOCATION_MANAGER' && user.locationId) {
         return {
-            role: { notIn: ['ADMIN', 'OD_MANAGER', 'LOCATION_MANAGER'] },
+            role: {
+ notIn: [
+ 'ADMIN',
+'OD_MANAGER',
+'LOCATION_MANAGER',
+],
+},
             OR: [
                 {
                     locationId: user.locationId,

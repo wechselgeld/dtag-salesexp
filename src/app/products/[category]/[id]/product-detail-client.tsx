@@ -66,10 +66,7 @@ import React, {
 import clsx from 'clsx';
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
-import {
-	useMediaQuery,
-} from '@/hooks/use-media-query';
+} from '@/lib/store/basket-store';
 import {
 	SearchBar,
 } from '@/components/features/search/search-bar';
@@ -113,7 +110,6 @@ function ProductPageContent() {
 	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
 	const basketsCount = useBasketStore((state) => state.baskets.length);
 	const isComparing = isOpen && isComparisonMode && basketsCount > 1;
-	const isNarrowViewport = useMediaQuery('(max-width: 1024px)');
 
 	const detailGridClass = (() => {
 		if (isComparing) {
@@ -525,7 +521,7 @@ function ProductPageContent() {
 					</div>
 				</div>
 
-				<div className={clsx("grid gap-6 items-start pb-10", detailGridClass)}>
+				<div className={clsx('grid gap-6 items-start pb-10', detailGridClass)}>
 					<div className="space-y-4">
 						<Skeleton className="h-32 w-full rounded-2xl" />
 						<Skeleton className="h-48 w-full rounded-2xl" />
@@ -1016,7 +1012,7 @@ function ProductPageContent() {
 			</motion.div>
 
 			{/* ── Configuration + Summary ── */}
-			<div className={clsx("grid gap-4 items-start pb-10", detailGridClass)}>
+			<div className={clsx('grid gap-4 items-start pb-10', detailGridClass)}>
 				{/* LEFT: Configuration Flow */}
 				<div className="space-y-4">
 					{/* Sales Script Assistant */}

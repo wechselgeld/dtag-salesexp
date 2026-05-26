@@ -8,7 +8,7 @@ import {
 } from 'framer-motion';
 import {
 	useSettingsStore,
-} from '@/hooks/use-settings-store';
+} from '@/lib/store/settings-store';
 
 interface AnimatedNumberProps {
 	value: number;
@@ -22,11 +22,15 @@ export function AnimatedNumber({
 	className,
 }: AnimatedNumberProps) {
 	const reduceAnimations = useSettingsStore((state) => state.reduceAnimations);
-	const [hydrated, setHydrated] = useState(false);
+	const [
+		hydrated,
+		setHydrated,
+	] = useState(false);
 
 	useEffect(() => {
 		setHydrated(true);
-	}, []);
+	}, [
+	]);
 
 	const motionValue = useMotionValue(value);
 	const springValue = useSpring(motionValue, {

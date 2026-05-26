@@ -17,7 +17,7 @@ import {
 } from '@/components/shared/global-footer';
 import {
 	useSettingsStore,
-} from '@/hooks/use-settings-store';
+} from '@/lib/store/settings-store';
 import {
 	PremiumButton,
 } from '@/components/shared/form/form-suite';

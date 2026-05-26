@@ -38,7 +38,13 @@ export interface Basket {
 }
 
 const getBaseProductName = (fullName: string): string => {
-	const prefixes = ['MagentaZuhause', 'MagentaMobil', 'Young', 'MagentaTV', 'Glasfaser'];
+	const prefixes = [
+ 'MagentaZuhause',
+'MagentaMobil',
+'Young',
+'MagentaTV',
+'Glasfaser',
+];
 	for (const prefix of prefixes) {
 		if (fullName.startsWith(prefix)) {
 			return prefix;
@@ -53,7 +59,8 @@ const updateBasketNames = (basketsList: Basket[]): Basket[] => {
 			return basket;
 		}
 
-		const items = basket.items || [];
+		const items = basket.items || [
+];
 		if (items.length === 0) {
 			const configNum = index + 1;
 			return {
@@ -66,7 +73,7 @@ const updateBasketNames = (basketsList: Basket[]): Basket[] => {
 			const singleName = items[0].product.name;
 			let name = getBaseProductName(singleName);
 			if (name.length > 25) {
-				name = name.slice(0, 22) + '...';
+				name = `${name.slice(0, 22) }...`;
 			}
 			return {
 				...basket,
@@ -89,7 +96,7 @@ const updateBasketNames = (basketsList: Basket[]): Basket[] => {
 		}
 
 		if (name.length > 25) {
-			name = name.slice(0, 22) + '...';
+			name = `${name.slice(0, 22) }...`;
 		}
 
 		return {
@@ -126,21 +133,27 @@ interface BasketState {
 export const useBasketStore = create<BasketState>()(
 	persist(
 		(set) => ({
-			items: [],
+			items: [
+],
 			isOpen: false,
-			basketCredits: [], // Global credits for active basket
+			basketCredits: [
+], // Global credits for active basket
 			baskets: [
 				{
 					id: 'default',
 					name: 'Konfiguration 1',
-					items: [],
-					basketCredits: [],
+					items: [
+],
+					basketCredits: [
+],
 				},
 			],
 			activeBasketId: 'default',
 			isComparisonMode: false,
 
-			setIsComparisonMode: (isComparisonMode) => set({ isComparisonMode }),
+			setIsComparisonMode: (isComparisonMode) => set({
+ isComparisonMode,
+}),
 
 			addItem: (product, config) => {
 				const newId = crypto.randomUUID();
@@ -153,16 +166,29 @@ export const useBasketStore = create<BasketState>()(
 
 				set((state) => {
 					const activeId = state.activeBasketId || 'default';
-					let currentBaskets = state.baskets || [];
+					let currentBaskets = state.baskets || [
+];
 					if (currentBaskets.length === 0) {
-						currentBaskets = [{ id: 'default', name: 'Konfiguration 1', items: [], basketCredits: [] }];
+						currentBaskets = [
+ {
+ id: 'default',
+name: 'Konfiguration 1',
+items: [
+],
+basketCredits: [
+],
+},
+];
 					}
 
 					const updatedBaskets = currentBaskets.map((b) => {
 						if (b.id === activeId) {
 							return {
 								...b,
-								items: [...b.items, newItem],
+								items: [
+ ...b.items,
+newItem,
+],
 							};
 						}
 						return b;
@@ -173,7 +199,8 @@ export const useBasketStore = create<BasketState>()(
 
 					return {
 						baskets: namedBaskets,
-						items: activeBasket ? activeBasket.items : [],
+						items: activeBasket ? activeBasket.items : [
+],
 						isOpen: true,
 					};
 				});
@@ -197,7 +224,8 @@ export const useBasketStore = create<BasketState>()(
 					const activeBasket = namedBaskets.find((b) => b.id === activeId);
 					return {
 						baskets: namedBaskets,
-						items: activeBasket ? activeBasket.items : [],
+						items: activeBasket ? activeBasket.items : [
+],
 					};
 				});
 			},
@@ -209,7 +237,10 @@ export const useBasketStore = create<BasketState>()(
 						if (b.id === activeId) {
 							return {
 								...b,
-								items: [...b.items, item].sort((a, b2) => a.addedAt - b2.addedAt),
+								items: [
+ ...b.items,
+item,
+].sort((a, b2) => a.addedAt - b2.addedAt),
 							};
 						}
 						return b;
@@ -218,7 +249,8 @@ export const useBasketStore = create<BasketState>()(
 					const activeBasket = namedBaskets.find((b) => b.id === activeId);
 					return {
 						baskets: namedBaskets,
-						items: activeBasket ? activeBasket.items : [],
+						items: activeBasket ? activeBasket.items : [
+],
 						isOpen: true,
 					};
 				});
@@ -250,7 +282,8 @@ export const useBasketStore = create<BasketState>()(
 					const activeBasket = namedBaskets.find((b) => b.id === activeId);
 					return {
 						baskets: namedBaskets,
-						items: activeBasket ? activeBasket.items : [],
+						items: activeBasket ? activeBasket.items : [
+],
 					};
 				});
 			},
@@ -281,8 +314,10 @@ export const useBasketStore = create<BasketState>()(
 						if (b.id === activeId) {
 							return {
 								...b,
-								items: [],
-								basketCredits: [],
+								items: [
+],
+								basketCredits: [
+],
 							};
 						}
 						return b;
@@ -290,8 +325,10 @@ export const useBasketStore = create<BasketState>()(
 					const namedBaskets = updateBasketNames(updatedBaskets);
 					return {
 						baskets: namedBaskets,
-						items: [],
-						basketCredits: [],
+						items: [
+],
+						basketCredits: [
+],
 					};
 				});
 			},
@@ -302,11 +339,13 @@ export const useBasketStore = create<BasketState>()(
 
 			addBasket: () => {
 				const newId = crypto.randomUUID();
-				let createdId = newId;
+				const createdId = newId;
 				set((state) => {
-					const currentBaskets = state.baskets || [];
+					const currentBaskets = state.baskets || [
+];
 					if (currentBaskets.length >= 3) {
-						return {};
+						return {
+};
 					}
 					// Find next configuration number based on existing baskets
 					const existingNums = currentBaskets
@@ -320,16 +359,23 @@ export const useBasketStore = create<BasketState>()(
 					const newBasket: Basket = {
 						id: newId,
 						name: `Konfiguration ${nextNum}`,
-						items: [],
-						basketCredits: [],
+						items: [
+],
+						basketCredits: [
+],
 					};
-					const updatedBaskets = [...currentBaskets, newBasket];
+					const updatedBaskets = [
+ ...currentBaskets,
+newBasket,
+];
 					const namedBaskets = updateBasketNames(updatedBaskets);
 					return {
 						baskets: namedBaskets,
 						activeBasketId: newId,
-						items: [],
-						basketCredits: [],
+						items: [
+],
+						basketCredits: [
+],
 						isOpen: true,
 					};
 				});
@@ -344,14 +390,19 @@ export const useBasketStore = create<BasketState>()(
 					let finalBaskets = updatedBaskets;
 					if (finalBaskets.length === 0) {
 						const newId = 'default';
-						finalBaskets = [{
+						finalBaskets = [
+ {
 							id: newId,
 							name: 'Konfiguration 1',
-							items: [],
-							basketCredits: [],
-						}];
+							items: [
+],
+							basketCredits: [
+],
+						},
+];
 						activeId = newId;
-					} else {
+					}
+ else {
 						if (activeId === id) {
 							activeId = finalBaskets[0].id;
 						}
@@ -359,10 +410,12 @@ export const useBasketStore = create<BasketState>()(
 						if (finalBaskets.length === 1) {
 							const lastBasket = finalBaskets[0];
 							if (/^Konfiguration\s+\d+$/i.test(lastBasket.name)) {
-								finalBaskets = [{
+								finalBaskets = [
+ {
 									...lastBasket,
 									name: 'Konfiguration 1',
-								}];
+								},
+];
 							}
 						}
 					}
@@ -381,7 +434,10 @@ export const useBasketStore = create<BasketState>()(
 			setActiveBasketId: (id) => {
 				set((state) => {
 					const activeBasket = state.baskets.find((b) => b.id === id);
-					if (!activeBasket) return {};
+					if (!activeBasket) {
+return {
+};
+}
 					return {
 						activeBasketId: id,
 						items: activeBasket.items,
@@ -424,7 +480,8 @@ export const useBasketStore = create<BasketState>()(
 					const activeBasket = namedBaskets.find((b) => b.id === state.activeBasketId);
 					return {
 						baskets: namedBaskets,
-						items: activeBasket ? activeBasket.items : [],
+						items: activeBasket ? activeBasket.items : [
+],
 					};
 				});
 			},
@@ -435,8 +492,10 @@ export const useBasketStore = create<BasketState>()(
 						if (b.id === basketId) {
 							return {
 								...b,
-								items: [],
-								basketCredits: [],
+								items: [
+],
+								basketCredits: [
+],
 							};
 						}
 						return b;
@@ -445,8 +504,10 @@ export const useBasketStore = create<BasketState>()(
 					const activeBasket = namedBaskets.find((b) => b.id === state.activeBasketId);
 					return {
 						baskets: namedBaskets,
-						items: activeBasket ? activeBasket.items : [],
-						basketCredits: activeBasket ? activeBasket.basketCredits : [],
+						items: activeBasket ? activeBasket.items : [
+],
+						basketCredits: activeBasket ? activeBasket.basketCredits : [
+],
 					};
 				});
 			},
@@ -465,7 +526,8 @@ export const useBasketStore = create<BasketState>()(
 					const activeBasket = updatedBaskets.find((b) => b.id === state.activeBasketId);
 					return {
 						baskets: updatedBaskets,
-						basketCredits: activeBasket ? activeBasket.basketCredits : [],
+						basketCredits: activeBasket ? activeBasket.basketCredits : [
+],
 					};
 				});
 			},
@@ -482,7 +544,8 @@ export const useBasketStore = create<BasketState>()(
 								id: 'default',
 								name: 'Konfiguration 1',
 								items: state.items,
-								basketCredits: state.basketCredits || [],
+								basketCredits: state.basketCredits || [
+],
 							},
 						],
 						activeBasketId: 'default',

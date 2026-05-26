@@ -28,7 +28,7 @@ import {
 } from '@/components/shared/skeleton';
 import {
 	useSettingsStore,
-} from '@/hooks/use-settings-store';
+} from '@/lib/store/settings-store';
 
 interface HeroHeaderProps {
 	firstName: string;

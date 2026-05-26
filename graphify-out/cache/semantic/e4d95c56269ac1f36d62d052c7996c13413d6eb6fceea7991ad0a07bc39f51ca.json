@@ -1,0 +1,1 @@
+{"nodes": [], "edges": [{"source": "src_lib_pdf_generator_tsx", "target": "public_deutsche_telekom_svg", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "src/lib/pdf-generator.tsx", "source_location": {"start_line": 67, "end_line": 67}, "weight": 1.0}], "hyperedges": []}

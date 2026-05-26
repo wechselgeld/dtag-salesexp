@@ -12,7 +12,7 @@ import {
 import clsx from 'clsx';
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
 	useMediaQuery,
 } from '@/hooks/use-media-query';
@@ -438,9 +438,9 @@ export function AddonSelector({
 							{/* Row Content */}
 							<div className={clsx(
 								'relative z-10 flex gap-4 px-4 py-3.5',
-								isSqueezed 
-									? 'flex-col items-stretch' 
-									: 'flex-row items-center justify-between'
+								isSqueezed
+									? 'flex-col items-stretch'
+									: 'flex-row items-center justify-between',
 							)}>
 								<div className="flex items-center gap-4 flex-1 min-w-0">
 									{/* Toggle checkbox — always present */}

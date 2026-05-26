@@ -2,10 +2,10 @@
 
 import type {
 	BasketItem,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
 	calculateProductCosts,
 	DEFAULT_PRICING,
@@ -48,14 +48,12 @@ export function CombinedTimeline({
 	activeLoadingIndex?: number;
 	onLoadFinished?: () => void;
 }) {
-	const [isChartReady, setIsChartReady] = useState(false);
+	const [
+ isChartReady,
+setIsChartReady,
+] = useState(false);
 	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
 	const prevComparisonRef = useRef(isComparisonMode);
-	const prevComparisonMode = prevComparisonRef.current;
-
-	useEffect(() => {
-		prevComparisonRef.current = isComparisonMode;
-	}, [isComparisonMode]);
 
 	useEffect(() => {
 		// Case A: Comparison mode is active (Multi-basket view)
@@ -87,7 +85,10 @@ export function CombinedTimeline({
 		// Case B: Comparison mode is inactive (Single-basket view)
 		// If we just collapsed comparison mode (transitioned from true to false),
 		// we delay showing the chart by 550ms to let the 500ms drawer collapse complete at high FPS.
-		if (prevComparisonMode === true && !isComparisonMode) {
+		const wasComparisonMode = prevComparisonRef.current;
+		prevComparisonRef.current = isComparisonMode;
+
+		if (wasComparisonMode === true && !isComparisonMode) {
 			setIsChartReady(false);
 			const timer = setTimeout(() => {
 				setIsChartReady(true);
@@ -101,12 +102,12 @@ export function CombinedTimeline({
 		columnIndex,
 		activeLoadingIndex,
 		isComparisonMode,
-		prevComparisonMode,
 		onLoadFinished,
 	]);
 
 	const storeItems = useBasketStore((state) => propItems !== undefined ? null : state.items);
-	const items = propItems !== undefined ? propItems : (storeItems || []);
+	const items = propItems !== undefined ? propItems : (storeItems || [
+]);
 	const uniqueId = useId().replace(/:/g, '');
 	const {
 		data: pricingSettings,
@@ -191,8 +192,23 @@ export function CombinedTimeline({
 			<div className="h-[100px] w-full transition-all duration-500 relative flex items-end">
 				{!isChartReady ? (
 					<div className="w-full h-full flex items-end justify-between gap-1 px-1 pb-1">
-						{Array.from({ length: 12 }).map((_, i) => {
-							const heights = ['h-1/3', 'h-1/2', 'h-2/3', 'h-3/4', 'h-2/5', 'h-1/2', 'h-3/5', 'h-4/5', 'h-1/2', 'h-2/3', 'h-3/4', 'h-1/3'];
+						{Array.from({
+ length: 12,
+}).map((_, i) => {
+							const heights = [
+ 'h-1/3',
+'h-1/2',
+'h-2/3',
+'h-3/4',
+'h-2/5',
+'h-1/2',
+'h-3/5',
+'h-4/5',
+'h-1/2',
+'h-2/3',
+'h-3/4',
+'h-1/3',
+];
 							const height = heights[i % heights.length];
 							return (
 								<Skeleton
@@ -230,7 +246,16 @@ export function CombinedTimeline({
 							}}
 							content={({
 								active, payload,
-							}: { active?: boolean; payload?: readonly any[] }) => {
+							}: {
+								active?: boolean;
+								payload?: readonly {
+									payload: {
+										month: number;
+										total: number;
+										details: { name: string; cost: number }[];
+									};
+								}[];
+							}) => {
 								if (active && payload && payload.length) {
 									const data = payload[0].payload;
 									return (

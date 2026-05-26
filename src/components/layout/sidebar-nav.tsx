@@ -21,10 +21,10 @@ import {
 
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
 	useModalStore,
-} from '@/hooks/use-modal-store';
+} from '@/lib/store/modal-store';
 
 import {
 	SidebarWorkflow,

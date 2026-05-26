@@ -39,10 +39,10 @@ import {
 } from '@/components/features/search/search-bar';
 import {
 	useSettingsStore,
-} from '@/hooks/use-settings-store';
+} from '@/lib/store/settings-store';
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
 	useMediaQuery,
 } from '@/hooks/use-media-query';
@@ -679,7 +679,7 @@ export default function ProductListPage() {
 			{/* Product Grid */}
 			<div className="pb-10">
 				{isLoading ? (
-					<div className={clsx("grid gap-6", gridColsClass)}>
+					<div className={clsx('grid gap-6', gridColsClass)}>
 						{[
 							1,
 							2,
@@ -731,7 +731,7 @@ export default function ProductListPage() {
 						))}
 					</div>
 				) : (
-					<div className={clsx("grid gap-6", gridColsClass)}>
+					<div className={clsx('grid gap-6', gridColsClass)}>
 						<AnimatePresence mode="popLayout">
 							{filteredProducts.map((product, index) => {
 								const isFocused = session?.team?.highlights.some(

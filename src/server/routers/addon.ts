@@ -13,6 +13,9 @@ import {
 import type {
     Prisma,
 } from '@prisma/client';
+import {
+    invalidateCache,
+} from '@/lib/cache';
 
 const addonFormSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -132,19 +135,19 @@ export const addonRouter = router({
             };
         }),
 
-    create: editorProcedure
+     create: editorProcedure
         .input(addonFormSchema.extend({
             productIds: z.array(z.string()),
             tiers: z.array(tierSchema),
         }))
-        .mutation(({
+        .mutation(async ({
             input,
         }) => {
             const {
                 productIds, tiers, ...data
             } = input;
 
-            return prisma.addon.create({
+            const result = await prisma.addon.create({
                 data: {
                     ...data,
                     compatibleProducts: {
@@ -160,6 +163,8 @@ export const addonRouter = router({
                     },
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     update: editorProcedure
@@ -182,7 +187,7 @@ export const addonRouter = router({
                 },
             });
 
-            return prisma.addon.update({
+            const result = await prisma.addon.update({
                 where: {
                     id,
                 },
@@ -201,6 +206,8 @@ export const addonRouter = router({
                     },
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     delete: editorProcedure
@@ -226,10 +233,12 @@ export const addonRouter = router({
                     message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
                 });
             }
-            return prisma.addon.delete({
+            const result = await prisma.addon.delete({
                 where: {
                     id: input.id,
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 });

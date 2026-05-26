@@ -555,13 +555,13 @@ export const adminRouter = router({
 
     createSpecialPrice: pricesProcedure
         .input(specialPriceSchema)
-        .mutation(({
+        .mutation(async ({
             input,
         }) => {
             const {
                 tiers, productIds, ...data
             } = input;
-            return prisma.specialPrice.create({
+            const result = await prisma.specialPrice.create({
                 data: {
                     ...data,
                     products: {
@@ -578,6 +578,8 @@ export const adminRouter = router({
                     products: true,
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     updateSpecialPrice: pricesProcedure
@@ -595,7 +597,7 @@ export const adminRouter = router({
                     specialPriceId: id,
                 },
             });
-            return prisma.specialPrice.update({
+            const result = await prisma.specialPrice.update({
                 where: {
                     id,
                 },
@@ -615,6 +617,8 @@ export const adminRouter = router({
                     products: true,
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     deleteSpecialPrice: pricesProcedure
@@ -640,11 +644,13 @@ export const adminRouter = router({
                     message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
                 });
             }
-            await prisma.specialPrice.delete({
+            const result = await prisma.specialPrice.delete({
                 where: {
                     id: input.id,
                 },
             });
+            invalidateCache('product');
+            return result;
         }),
 
     // One-Time Credits Management
@@ -724,12 +730,14 @@ export const adminRouter = router({
                 value: z.number().min(0, 'Value must be positive'),
                 isActive: z.boolean().default(true),
             }))
-            .mutation(({
+            .mutation(async ({
                 input,
             }) => {
-                return prisma.oneTimeCredit.create({
+                const result = await prisma.oneTimeCredit.create({
                     data: input,
                 });
+                invalidateCache('product');
+                return result;
             }),
 
         update: creditsProcedure
@@ -739,18 +747,20 @@ export const adminRouter = router({
                 value: z.number().min(0, 'Value must be positive'),
                 isActive: z.boolean(),
             }))
-            .mutation(({
+            .mutation(async ({
                 input,
             }) => {
                 const {
                     id, ...data
                 } = input;
-                return prisma.oneTimeCredit.update({
+                const result = await prisma.oneTimeCredit.update({
                     where: {
                         id,
                     },
                     data,
                 });
+                invalidateCache('product');
+                return result;
             }),
 
         delete: creditsProcedure
@@ -764,23 +774,25 @@ export const adminRouter = router({
                 const bcrypt = await import('bcryptjs');
                 const session = ctx.session as any;
                 if (!session.password) {
-                throw new TRPCError({
-                    code: 'FORBIDDEN',
-                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
-                });
-            }
-            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
-            if (!isSudoValid) {
                     throw new TRPCError({
                         code: 'FORBIDDEN',
                         message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
                     });
                 }
-                return prisma.oneTimeCredit.delete({
+                const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
+                if (!isSudoValid) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
+                    });
+                }
+                const result = await prisma.oneTimeCredit.delete({
                     where: {
                         id: input.id,
                     },
                 });
+                invalidateCache('product');
+                return result;
             }),
     }),
 

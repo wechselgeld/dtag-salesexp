@@ -133,16 +133,13 @@ export function calculateProductCosts({
 	if (activationFee > 0) {
 		oneTimeTotal += activationFee;
 		const fullName = `Bereitstellungspauschale ${product.name}`;
-		let displayName = fullName;
-		if (fullName.length > 42) {
-			let shortTariff = product.name;
-			shortTariff = shortTariff
+		const displayName = fullName.length > 42
+			? `Bereitstellungspauschale ${product.name
 				.replace(/MagentaZuhause/g, 'MZ')
 				.replace(/MagentaMobil/g, 'MM')
 				.replace(/Glasfaser/g, 'GF')
-				.replace(/MagentaTV/g, 'MTV');
-			displayName = `Bereitstellungspauschale ${shortTariff}`;
-		}
+				.replace(/MagentaTV/g, 'MTV')}`
+			: fullName;
 		oneTimeBreakdown.push({
 			name: displayName,
 			cost: activationFee,

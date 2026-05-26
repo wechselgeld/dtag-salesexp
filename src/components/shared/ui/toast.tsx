@@ -29,10 +29,16 @@ export function Toast({
 	style,
 }: ToastProps) {
 	const uniqueId = useId().replace(/:/g, '');
-	const [isPaused, setIsPaused] = useState(false);
+	const [
+ isPaused,
+setIsPaused,
+] = useState(false);
 
+	const [
+ remainingTime,
+setRemainingTime,
+] = useState(duration);
 	const startTimeRef = useRef(0);
-	const remainingTimeRef = useRef(duration);
 	const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
@@ -42,7 +48,7 @@ export function Toast({
 			startTimeRef.current = Date.now();
 			timeoutIdRef.current = setTimeout(() => {
 				onDismiss();
-			}, remainingTimeRef.current);
+			}, remainingTime);
 		}
 
 		return () => {
@@ -51,13 +57,18 @@ export function Toast({
 			}
 			if (!isPaused) {
 				const elapsed = Date.now() - startTimeRef.current;
-				remainingTimeRef.current = Math.max(0, remainingTimeRef.current - elapsed);
+				setRemainingTime((prev) => Math.max(0, prev - elapsed));
 			}
 		};
-	}, [isPaused, duration, onDismiss]);
+	}, [
+		isPaused,
+		duration,
+		onDismiss,
+		remainingTime,
+	]);
 
 	const circumference = 2 * Math.PI * 8; // ~50.265
-	const currentProgressPercent = duration > 0 ? (duration - remainingTimeRef.current) / duration : 0;
+	const currentProgressPercent = duration > 0 ? (duration - remainingTime) / duration : 0;
 	const currentOffset = circumference * currentProgressPercent;
 	const animationName = `toast-progress-${uniqueId}`;
 
@@ -128,7 +139,7 @@ export function Toast({
 								fill="none"
 								strokeDasharray={circumference}
 								style={{
-									animation: isPaused ? 'none' : `${animationName} ${remainingTimeRef.current}ms linear forwards`,
+									animation: isPaused ? 'none' : `${animationName} ${remainingTime}ms linear forwards`,
 									strokeDashoffset: isPaused ? circumference - currentOffset : undefined,
 								}}
 								className="transition-none"

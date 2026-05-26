@@ -28,11 +28,11 @@ import {
  motion, AnimatePresence,
 } from 'framer-motion';
 import {
- useBasketStore,
-} from '@/hooks/use-basket-store';
+	useBasketStore,
+} from '@/lib/store/basket-store';
 import {
- useSettingsStore,
-} from '@/hooks/use-settings-store';
+	useSettingsStore,
+} from '@/lib/store/settings-store';
 import {
  useRouter,
 } from 'next/navigation';

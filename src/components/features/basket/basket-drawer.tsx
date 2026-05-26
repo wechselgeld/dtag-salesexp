@@ -1,5 +1,8 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-use-before-define */
+
+
 import {
 	generateOfferPdf,
 } from '@/lib/pdf-generator';
@@ -10,13 +13,12 @@ import {
 import type {
 	BasketItem,
 	Basket,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
 	calculateProductCosts,
-	DEFAULT_PRICING,
 } from '@/hooks/use-cost-calculator';
 import {
 	MAGENTA_TV_PACKAGES,
@@ -68,7 +70,7 @@ import {
 } from 'framer-motion';
 import {
 	useSettingsStore,
-} from '@/hooks/use-settings-store';
+} from '@/lib/store/settings-store';
 import {
 	Tooltip,
 } from '@/components/shared/ui/tooltip';
@@ -132,7 +134,11 @@ function TabCard({
 					delay: isComparison ? 0.15 : 0,
 				}}
 				className="text-[0.72rem] flex items-center justify-between transition-colors duration-300 border shadow-sm w-full px-3 py-1.5 rounded-xl border-[#eaedf0] gap-1.5 shrink-0"
-				style={{ backgroundColor: '#ffffff', borderColor: catColor, color: '#1a1a2e' }}
+				style={{
+ backgroundColor: '#ffffff',
+borderColor: catColor,
+color: '#1a1a2e',
+}}
 				onClick={(e) => e.stopPropagation()}
 			>
 				<input
@@ -147,7 +153,8 @@ function TabCard({
 						if (e.key === 'Enter') {
 							renameBasket(basket.id, editName);
 							setEditingId(null);
-						} else if (e.key === 'Escape') {
+						}
+ else if (e.key === 'Escape') {
 							setEditingId(null);
 						}
 					}}
@@ -184,8 +191,16 @@ function TabCard({
 			className="group/tab text-[0.72rem] flex items-center justify-between transition-colors duration-300 select-none border cursor-pointer font-semibold shadow-sm w-full px-3 py-1.5 rounded-xl border-[#eaedf0] gap-1.5 shrink-0"
 			style={
 				isActive
-					? { backgroundColor: catColor, borderColor: catColor, color: '#ffffff' }
-					: { backgroundColor: '#f7f8fa', borderColor: '#eaedf0', color: '#555555' }
+					? {
+ backgroundColor: catColor,
+borderColor: catColor,
+color: '#ffffff',
+}
+					: {
+ backgroundColor: '#f7f8fa',
+borderColor: '#eaedf0',
+color: '#555555',
+}
 			}
 		>
 			<span className={clsx('flex items-center gap-1 min-w-0 flex-1', !isComparison && 'max-w-[80px]')}>
@@ -227,8 +242,6 @@ const EMPTY_NOTICES = [
 	'Hier ist noch ganz viel Luft nach oben (und nach unten).',
 ];
 
-const NOOP = () => {};
-
 export function BasketDrawer() {
 	const {
 		baskets,
@@ -243,10 +256,22 @@ export function BasketDrawer() {
 
 	const showComparison = isComparisonMode && baskets.length > 1;
 
-	const [editingId, setEditingId] = useState<string | null>(null);
-	const [editName, setEditName] = useState('');
-	const [showLeftFade, setShowLeftFade] = useState(false);
-	const [showRightFade, setShowRightFade] = useState(false);
+	const [
+ editingId,
+setEditingId,
+] = useState<string | null>(null);
+	const [
+ editName,
+setEditName,
+] = useState('');
+	const [
+ showLeftFade,
+setShowLeftFade,
+] = useState(false);
+	const [
+ showRightFade,
+setShowRightFade,
+] = useState(false);
 
 	const {
 		data: session,
@@ -259,13 +284,18 @@ export function BasketDrawer() {
 		setIsMounted,
 	] = useState(false);
 
-	const [activeLoadingIndex, setActiveLoadingIndex] = useState(0);
+	const [
+ activeLoadingIndex,
+setActiveLoadingIndex,
+] = useState(0);
 
 	useEffect(() => {
 		if (isComparisonMode) {
 			setActiveLoadingIndex(0);
 		}
-	}, [isComparisonMode]);
+	}, [
+ isComparisonMode,
+]);
 
 	// Auto-skip columns that have no items/timeline to load
 	useEffect(() => {
@@ -275,7 +305,11 @@ export function BasketDrawer() {
 				setActiveLoadingIndex((prev) => prev + 1);
 			}
 		}
-	}, [activeLoadingIndex, baskets, isComparisonMode]);
+	}, [
+ activeLoadingIndex,
+baskets,
+isComparisonMode,
+]);
 
 	const teamEmail = session?.team?.email || 'team06@telekom.de';
 	const salesRepName = session
@@ -301,10 +335,12 @@ export function BasketDrawer() {
 	const registerScrollContainer = useCallback((id: string, el: HTMLDivElement | null) => {
 		if (el) {
 			scrollContainersRef.current.set(id, el);
-		} else {
+		}
+ else {
 			scrollContainersRef.current.delete(id);
 		}
-	}, []);
+	}, [
+]);
 
 	const handleColumnScroll = useCallback((scrolledId: string, scrollTop: number) => {
 		if (isSyncScrolling.current) return;
@@ -319,17 +355,19 @@ export function BasketDrawer() {
 		requestAnimationFrame(() => {
 			isSyncScrolling.current = false;
 		});
-	}, []);
+	}, [
+]);
 
 	const handleLoadFinished = useCallback(() => {
 		setActiveLoadingIndex((prev) => prev + 1);
-	}, []);
-
+	}, [
+]);
 
 
 	useEffect(() => {
 		setIsMounted(true);
-	}, []);
+	}, [
+]);
 
 	useEffect(() => {
 		const el = tabsRef.current;
@@ -355,7 +393,11 @@ export function BasketDrawer() {
 			window.removeEventListener('resize', handleScroll);
 			clearTimeout(timeoutId);
 		};
-	}, [baskets, activeBasketId, showComparison]);
+	}, [
+ baskets,
+activeBasketId,
+showComparison,
+]);
 
 	useEffect(() => {
 		const el = tabsRef.current;
@@ -377,7 +419,8 @@ export function BasketDrawer() {
 						left: Math.max(0, tabLeft - padding),
 						behavior: 'smooth',
 					});
-				} else if (tabLeft + tabWidth > scrollLeft + containerWidth - padding) {
+				}
+ else if (tabLeft + tabWidth > scrollLeft + containerWidth - padding) {
 					el.scrollTo({
 						left: Math.min(el.scrollWidth - containerWidth, tabLeft + tabWidth - containerWidth + padding),
 						behavior: 'smooth',
@@ -387,7 +430,10 @@ export function BasketDrawer() {
 		}, 50);
 
 		return () => clearTimeout(timeoutId);
-	}, [activeBasketId, showComparison]);
+	}, [
+ activeBasketId,
+showComparison,
+]);
 
 	useEffect(() => {
 		const el = tabsRef.current;
@@ -403,7 +449,8 @@ export function BasketDrawer() {
 				currentScrollLeft += diff * 0.15;
 				el.scrollLeft = currentScrollLeft;
 				animationFrameId = requestAnimationFrame(updateScroll);
-			} else {
+			}
+ else {
 				el.scrollLeft = targetScrollLeft;
 				currentScrollLeft = targetScrollLeft;
 				animationFrameId = null;
@@ -428,14 +475,20 @@ export function BasketDrawer() {
 			}
 		};
 
-		el.addEventListener('wheel', handleWheel, { passive: false });
+		el.addEventListener('wheel', handleWheel, {
+ passive: false,
+});
 		return () => {
 			el.removeEventListener('wheel', handleWheel);
 			if (animationFrameId !== null) {
 				cancelAnimationFrame(animationFrameId);
 			}
 		};
-	}, [baskets, activeBasketId, showComparison]);
+	}, [
+ baskets,
+activeBasketId,
+showComparison,
+]);
 
 	const activeBasket = baskets.find((b) => b.id === activeBasketId) || baskets[0];
 
@@ -473,16 +526,19 @@ export function BasketDrawer() {
 									ref={tabsRef}
 									className={clsx(
 										'relative flex items-center scrollbar-none py-1 flex-1 pr-1',
-										showComparison ? 'gap-4' : 'gap-1.5 overflow-x-auto'
+										showComparison ? 'gap-4' : 'gap-1.5 overflow-x-auto',
 									)}
-									style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+									style={{
+ scrollbarWidth: 'none',
+msOverflowStyle: 'none',
+}}
 								>
 									{baskets.map((basket) => (
 										<motion.div
 											layout
 											key={basket.id}
 											className={clsx(
-												showComparison ? 'flex-1 min-w-[310px] max-w-[330px]' : 'shrink-0 w-[120px]'
+												showComparison ? 'flex-1 min-w-[310px] max-w-[330px]' : 'shrink-0 w-[120px]',
 											)}
 											transition={{
 												type: 'spring',
@@ -514,7 +570,7 @@ export function BasketDrawer() {
 							<div
 								className={clsx(
 									'absolute left-0 top-0 bottom-0 w-12 pointer-events-none z-10 transition-opacity duration-300',
-									showLeftFade && !showComparison ? 'opacity-100' : 'opacity-0'
+									showLeftFade && !showComparison ? 'opacity-100' : 'opacity-0',
 								)}
 								style={{
 									background: 'linear-gradient(to right, #ffffff 0%, rgba(255, 255, 255, 0) 100%)',
@@ -525,7 +581,7 @@ export function BasketDrawer() {
 							<div
 								className={clsx(
 									'absolute right-0 top-0 bottom-0 w-12 pointer-events-none z-10 transition-opacity duration-300',
-									showRightFade && !showComparison ? 'opacity-100' : 'opacity-0'
+									showRightFade && !showComparison ? 'opacity-100' : 'opacity-0',
 								)}
 								style={{
 									background: 'linear-gradient(to left, #ffffff 0%, rgba(255, 255, 255, 0) 100%)',
@@ -560,7 +616,10 @@ export function BasketDrawer() {
 								<button
 									onClick={() => setIsComparisonMode(!isComparisonMode)}
 									className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 shrink-0 cursor-pointer active:scale-95 border bg-[#e20074] text-white border-[#e20074] shadow-sm hover:opacity-90"
-									style={{ backgroundColor: catColor, borderColor: catColor }}
+									style={{
+ backgroundColor: catColor,
+borderColor: catColor,
+}}
 									title="Vergleichsmodus beenden"
 								>
 									<Columns className="w-4 h-4" />
@@ -577,7 +636,11 @@ export function BasketDrawer() {
 										? 'bg-[#e20074] text-white border-[#e20074] shadow-sm hover:opacity-90'
 										: 'bg-[#f7f8fa] text-[#555] border-[#eaedf0] hover:bg-[#eaeaea]',
 								)}
-								style={isComparisonMode ? { backgroundColor: catColor, borderColor: catColor } : {}}
+								style={isComparisonMode ? {
+ backgroundColor: catColor,
+borderColor: catColor,
+} : {
+}}
 								title={isComparisonMode ? 'Vergleichsmodus beenden' : 'Vergleichsmodus aktivieren'}
 							>
 								<Columns className="w-4 h-4" />
@@ -599,7 +662,10 @@ export function BasketDrawer() {
 						<Skeleton className="h-[120px] rounded-xl" />
 						<Skeleton className="h-10 rounded-xl" />
 						<div className="flex flex-col gap-3">
-							{[1, 2].map((i) => (
+							{[
+ 1,
+2,
+].map((i) => (
 								<Skeleton key={i} className="h-28 rounded-xl" />
 							))}
 						</div>
@@ -609,7 +675,7 @@ export function BasketDrawer() {
 						layout
 						className={clsx(
 							'flex-1 flex overflow-x-auto scrollbar-none bg-[#f7f8fa] h-full relative',
-							showComparison ? 'px-4 py-4' : ''
+							showComparison ? 'px-4 py-4' : '',
 						)}
 						transition={{
 							type: 'spring',
@@ -640,7 +706,7 @@ export function BasketDrawer() {
 									}}
 									className={clsx(
 										'h-full shrink-0 flex flex-col overflow-hidden',
-										!isVisible && 'pointer-events-none'
+										!isVisible && 'pointer-events-none',
 									)}
 								>
 									<BasketColumn
@@ -710,14 +776,27 @@ const BasketColumn = memo(function BasketColumn({
 		setBasketCreditsForId,
 	} = useBasketStore();
 
-	const [creditsOpen, setCreditsOpen] = useState(false);
-	const [oneTimeOpen, setOneTimeOpen] = useState(false);
-	const [isGenerating, setIsGenerating] = useState<'idle' | 'generating' | 'success'>('idle');
-	const [randomNotice, setRandomNotice] = useState('');
+	const [
+ creditsOpen,
+setCreditsOpen,
+] = useState(false);
+	const [
+ oneTimeOpen,
+setOneTimeOpen,
+] = useState(false);
+	const [
+ isGenerating,
+setIsGenerating,
+] = useState<'idle' | 'generating' | 'success'>('idle');
+	const [
+ randomNotice,
+setRandomNotice,
+] = useState('');
 
 	useEffect(() => {
 		setRandomNotice(EMPTY_NOTICES[Math.floor(Math.random() * EMPTY_NOTICES.length)]);
-	}, []);
+	}, [
+]);
 
 	const {
 		totals,
@@ -725,7 +804,6 @@ const BasketColumn = memo(function BasketColumn({
 		groupedOneTimeCosts,
 		totalOneTime,
 		totalCredits,
-		hasDevice,
 		settings,
 	} = useBasketLogic(basket.id);
 
@@ -739,7 +817,7 @@ const BasketColumn = memo(function BasketColumn({
 		<div
 			className={clsx(
 				'flex flex-col h-full overflow-hidden bg-transparent relative w-full h-full',
-				isMultiColumn ? 'gap-4' : 'bg-[#f7f8fa]'
+				isMultiColumn ? 'gap-4' : 'bg-[#f7f8fa]',
 			)}
 		>
 
@@ -750,17 +828,20 @@ const BasketColumn = memo(function BasketColumn({
 					'flex-1 flex flex-col overflow-hidden bg-white relative transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]',
 					isMultiColumn ? 'shadow-sm rounded-2xl border' : 'rounded-none border-0',
 					isMultiColumn && isActive && 'z-10',
-					isMultiColumn && !isActive && 'opacity-70 hover:opacity-95 cursor-pointer bg-slate-50/20'
+					isMultiColumn && !isActive && 'opacity-70 hover:opacity-95 cursor-pointer bg-slate-50/20',
 				)}
 				style={
 					isActive && isMultiColumn
-						? { 
-							borderColor: catColor, 
-							boxShadow: `0 4px 12px rgba(0,0,0,0.05), inset 0 0 0 1.5px ${catColor}` 
+						? {
+							borderColor: catColor,
+							boxShadow: `0 4px 12px rgba(0,0,0,0.05), inset 0 0 0 1.5px ${catColor}`,
 						}
 						: isMultiColumn
-							? { borderColor: '#eaedf0' }
-							: {}
+							? {
+ borderColor: '#eaedf0',
+}
+							: {
+}
 				}
 				onClick={() => {
 					if (isMultiColumn && !isActive) {
@@ -781,8 +862,8 @@ const BasketColumn = memo(function BasketColumn({
 						}
 					}}
 					className={clsx(
-						"flex-1 overflow-y-auto scrollbar-none",
-						isMultiColumn ? "px-4 py-4" : "px-5 py-4"
+						'flex-1 overflow-y-auto scrollbar-none',
+						isMultiColumn ? 'px-4 py-4' : 'px-5 py-4',
 					)}
 				>
 					{/* Chart */}
@@ -827,10 +908,25 @@ const BasketColumn = memo(function BasketColumn({
 							<AnimatePresence initial={false}>
 								{creditsOpen && (
 									<motion.div
-										initial={{ height: 0, opacity: 0, marginTop: 0 }}
-										animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
-										exit={{ height: 0, opacity: 0, marginTop: 0 }}
-										transition={{ duration: 0.2, ease: 'easeInOut' }}
+										initial={{
+ height: 0,
+opacity: 0,
+marginTop: 0,
+}}
+										animate={{
+ height: 'auto',
+opacity: 1,
+marginTop: 8,
+}}
+										exit={{
+ height: 0,
+opacity: 0,
+marginTop: 0,
+}}
+										transition={{
+ duration: 0.2,
+ease: 'easeInOut',
+}}
 										className="overflow-hidden pl-1"
 									>
 										<CreditSelector
@@ -849,10 +945,27 @@ const BasketColumn = memo(function BasketColumn({
 							{items.length === 0 ? (
 								<motion.div
 									key="empty"
-									initial={{ opacity: 0, y: 10 }}
-									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: -10 }}
-									transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+									initial={{
+ opacity: 0,
+y: 10,
+}}
+									animate={{
+ opacity: 1,
+y: 0,
+}}
+									exit={{
+ opacity: 0,
+y: -10,
+}}
+									transition={{
+ duration: 0.4,
+ease: [
+ 0.16,
+1,
+0.3,
+1,
+],
+}}
 									className="bg-white min-h-[220px] flex flex-col items-center justify-center p-6 text-center"
 								>
 									<div
@@ -894,10 +1007,10 @@ const BasketColumn = memo(function BasketColumn({
 			{items.length > 0 && (
 				<div
 					className={clsx(
-						"bg-white shrink-0 rounded-2xl border border-[#eaedf0] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
-						isMultiColumn 
-							? "w-full p-4" 
-							: "p-4 mx-4 mb-4 mt-2 w-[calc(100%-32px)]"
+						'bg-white shrink-0 rounded-2xl border border-[#eaedf0] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]',
+						isMultiColumn
+							? 'w-full p-4'
+							: 'p-4 mx-4 mb-4 mt-2 w-[calc(100%-32px)]',
 					)}
 				>
 					{/* Costs */}
@@ -905,7 +1018,7 @@ const BasketColumn = memo(function BasketColumn({
 						<div
 							className={clsx(
 								'flex justify-between items-center select-none',
-								Object.keys(groupedOneTimeCosts).length > 0 ? 'cursor-pointer group/onetime' : ''
+								Object.keys(groupedOneTimeCosts).length > 0 ? 'cursor-pointer group/onetime' : '',
 							)}
 							onClick={() => {
 								if (Object.keys(groupedOneTimeCosts).length > 0) {
@@ -919,7 +1032,7 @@ const BasketColumn = memo(function BasketColumn({
 									<ChevronDown
 										className={clsx(
 											'w-3 h-3 text-[#bbb] transition-transform duration-200 group-hover/onetime:text-[#999]',
-											oneTimeOpen && 'rotate-180'
+											oneTimeOpen && 'rotate-180',
 										)}
 									/>
 								)}
@@ -936,9 +1049,18 @@ const BasketColumn = memo(function BasketColumn({
 								<AnimatePresence mode="popLayout">
 									<motion.span
 										key={totalOneTime}
-										initial={{ opacity: 0, y: -15 }}
-										animate={{ opacity: 1, y: 0 }}
-										exit={{ opacity: 0, y: 15 }}
+										initial={{
+ opacity: 0,
+y: -15,
+}}
+										animate={{
+ opacity: 1,
+y: 0,
+}}
+										exit={{
+ opacity: 0,
+y: 15,
+}}
 										transition={{
 											duration: 0.2,
 											type: 'spring',
@@ -957,13 +1079,31 @@ const BasketColumn = memo(function BasketColumn({
 						<AnimatePresence initial={false}>
 							{oneTimeOpen && Object.keys(groupedOneTimeCosts).length > 0 && (
 								<motion.div
-									initial={{ height: 0, opacity: 0, marginTop: 0 }}
-									animate={{ height: 'auto', opacity: 1, marginTop: 4 }}
-									exit={{ height: 0, opacity: 0, marginTop: 0 }}
-									transition={{ duration: 0.2, ease: 'easeInOut' }}
+									initial={{
+ height: 0,
+opacity: 0,
+marginTop: 0,
+}}
+									animate={{
+ height: 'auto',
+opacity: 1,
+marginTop: 4,
+}}
+									exit={{
+ height: 0,
+opacity: 0,
+marginTop: 0,
+}}
+									transition={{
+ duration: 0.2,
+ease: 'easeInOut',
+}}
 									className="overflow-hidden space-y-1 pl-1"
 								>
-									{Object.entries(groupedOneTimeCosts).map(([name, cost]: [string, number]) => (
+									{Object.entries(groupedOneTimeCosts).map(([
+ name,
+cost ]: [string, number
+]) => (
 										<div
 											key={name}
 											className="flex justify-between items-center text-[0.72rem] text-[#aaa] pr-1.5"
@@ -1027,12 +1167,16 @@ const BasketColumn = memo(function BasketColumn({
 							</div>
 							<span
 								className="text-[1.2rem] font-extrabold tracking-tight flex items-center leading-none transition-colors duration-500"
-								style={{ color: catColor }}
+								style={{
+ color: catColor,
+}}
 							>
 								<AnimatedNumber value={totalMonthly} />
 								<span
 									className="ml-[3px] text-[0.75rem] font-normal transition-colors duration-500"
-									style={{ color: `${catColor}99` }}
+									style={{
+ color: `${catColor}99`,
+}}
 								>
 									€
 								</span>
@@ -1086,18 +1230,19 @@ const BasketColumn = memo(function BasketColumn({
 							style={
 								isGenerating === 'idle'
 									? isMultiColumn && !isActive
-										? { 
-											borderColor: catColor, 
-											color: catColor, 
+										? {
+											borderColor: catColor,
+											color: catColor,
 											backgroundColor: '#ffffff',
 											'--btn-color': catColor,
 										} as React.CSSProperties
-										: { 
-											backgroundColor: catColor, 
+										: {
+											backgroundColor: catColor,
 											borderColor: 'transparent',
 											'--btn-color': catColor,
 										} as React.CSSProperties
-									: {}
+									: {
+}
 							}
 						>
 							{isGenerating === 'idle' && (
@@ -1149,7 +1294,10 @@ const BasketItemCard = memo(function BasketItemCard({
 			settings,
 			customBasePrice: item.config.customBasePrice,
 		});
-	}, [item, settings]);
+	}, [
+ item,
+settings,
+]);
 
 	const catColor = CATEGORY_COLORS[item.product.category] || '#e20074';
 	const catLabel =
@@ -1217,7 +1365,7 @@ const BasketItemCard = memo(function BasketItemCard({
 						>
 							{catLabel}
 						</span>
-						<h4 
+						<h4
 							className="font-bold text-[0.85rem] text-[#1a1a2e] leading-tight m-0 mt-0.5 truncate max-w-full"
 							title={fullItemTitle}
 						>

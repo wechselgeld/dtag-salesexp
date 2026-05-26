@@ -46,7 +46,7 @@ import {
 } from '@/components/layout/sidebar/sidebar-account';
 import {
 	AdminPasskeyPrompt,
-} from '@/components/admin/passkey-prompt';
+} from '@/components/features/admin/passkey-prompt';
 
 interface MenuItem {
 	href: string;
@@ -60,7 +60,9 @@ interface MenuGroup {
 	items: MenuItem[];
 }
 
-function SidebarGroupSkeleton({ collapsed }: { collapsed: boolean }) {
+function SidebarGroupSkeleton({
+ collapsed,
+}: { collapsed: boolean }) {
 	return (
 		<div className="px-3 w-full mb-6 animate-pulse">
 			{!collapsed && (
@@ -73,7 +75,11 @@ function SidebarGroupSkeleton({ collapsed }: { collapsed: boolean }) {
 					collapsed && 'items-center gap-2',
 				)}
 			>
-				{[1, 2, 3].map((i) => (
+				{[
+ 1,
+2,
+3,
+].map((i) => (
 					<div
 						key={i}
 						className={clsx(

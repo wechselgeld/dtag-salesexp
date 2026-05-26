@@ -1,4 +1,6 @@
-import { prisma } from '../src/lib/prisma';
+import {
+ prisma,
+} from '../src/lib/prisma';
 
 async function main() {
   console.log('Creating a test Location to trigger the audit logger...');
@@ -14,7 +16,9 @@ async function main() {
 
   console.log('Fetching the latest audit log entry...');
   const latestLog = await prisma.auditLog.findFirst({
-    orderBy: { createdAt: 'desc' },
+    orderBy: {
+ createdAt: 'desc',
+},
   });
 
   console.log('Latest Audit Log Entry:');
@@ -23,7 +27,9 @@ async function main() {
   // Clean up the created location
   console.log('Cleaning up the test location...');
   await prisma.location.delete({
-    where: { id: location.id },
+    where: {
+ id: location.id,
+},
   });
 }
 

@@ -4,7 +4,7 @@ import {
 import React from 'react';
 import type {
  BasketItem,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
  DEFAULT_PRICING,
 } from '@/hooks/use-cost-calculator';

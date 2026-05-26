@@ -27,13 +27,13 @@ import {
 } from './settings';
 import {
 	adminUsersRouter,
-} from './adminUsers';
+} from './admin-users';
 import {
 	locationRouter,
 } from './location';
 import {
 	odRegionRouter,
-} from './odRegion';
+} from './od-region';
 import {
 	feedbackRouter,
 } from './feedback';
@@ -42,10 +42,10 @@ import {
 } from './webauthn';
 import {
 	adminErrorsRouter,
-} from './adminErrors';
+} from './admin-errors';
 import {
 	adminAuditRouter,
-} from './adminAudit';
+} from './admin-audit';
 
 export const appRouter = router({
 	health: publicProcedure.query(() => {

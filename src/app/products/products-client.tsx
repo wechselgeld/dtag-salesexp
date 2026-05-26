@@ -29,7 +29,7 @@ import {
 } from 'react';
 import {
 	useSettingsStore,
-} from '@/hooks/use-settings-store';
+} from '@/lib/store/settings-store';
 
 /* ──────────────────────────────────────────────
    Constants

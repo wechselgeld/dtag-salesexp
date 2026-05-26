@@ -19,7 +19,7 @@ import {
 } from 'framer-motion';
 import {
 	useSettingsStore,
-} from '@/hooks/use-settings-store';
+} from '@/lib/store/settings-store';
 import {
 	showErrorToast,
 } from '@/components/shared/error-toast';

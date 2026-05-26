@@ -8,7 +8,7 @@ import {
 } from '@react-pdf/renderer';
 import type {
 	BasketItem,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import type {
 	Credit,
 	PricingSettings,

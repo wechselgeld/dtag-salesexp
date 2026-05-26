@@ -34,7 +34,7 @@ import {
 } from 'next/navigation';
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 
 /* ──────────────────────────────────────────────
    Constants

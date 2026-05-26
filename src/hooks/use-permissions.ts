@@ -10,7 +10,9 @@ import {
   hasPermission,
 } from '@/lib/permissions';
 
-import { useEffect, useState } from 'react';
+import {
+ useEffect, useState,
+} from 'react';
 
 interface CachedSession {
   role: string;
@@ -25,14 +27,18 @@ export function usePermissions() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const [cached, setCached] = useState<CachedSession | null>(() => {
+  const [
+ cached,
+setCached,
+] = useState<CachedSession | null>(() => {
     if (typeof window !== 'undefined') {
       try {
         const item = window.sessionStorage.getItem('saleshelper_session');
         if (item) {
           return JSON.parse(item) as CachedSession;
         }
-      } catch (e) {
+      }
+ catch (e) {
         console.error('Failed to parse cached session', e);
       }
     }
@@ -48,18 +54,23 @@ export function usePermissions() {
       setCached(sessionData);
       try {
         window.sessionStorage.setItem('saleshelper_session', JSON.stringify(sessionData));
-      } catch (e) {
+      }
+ catch (e) {
         console.error('Failed to save session to storage', e);
       }
-    } else if (currentUser === null) {
+    }
+ else if (currentUser === null) {
       setCached(null);
       try {
         window.sessionStorage.removeItem('saleshelper_session');
-      } catch (e) {
+      }
+ catch (e) {
         console.error('Failed to clear session from storage', e);
       }
     }
-  }, [currentUser]);
+  }, [
+ currentUser,
+]);
 
   const activeRole = currentUser?.role || cached?.role || 'USER';
   const activeIsEditor = currentUser?.isEditor ?? cached?.isEditor ?? false;

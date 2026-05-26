@@ -3,7 +3,7 @@ import {
 } from 'react';
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
 	useNewsNotificationStore,
 } from '@/lib/store/news-notification-store';
@@ -16,7 +16,8 @@ import {
 
 export function useBasketLogic(basketId?: string) {
 	const basket = useBasketStore((state) =>
-		basketId ? (state.baskets || []).find((b) => b.id === basketId) : null
+		basketId ? (state.baskets || [
+]).find((b) => b.id === basketId) : null,
 	);
 	const storeItems = useBasketStore((state) => state.items);
 	const storeBasketCredits = useBasketStore((state) => state.basketCredits);
@@ -106,7 +107,10 @@ export function useBasketLogic(basketId?: string) {
 				costs,
 			};
 		});
-	}, [items, settings]);
+	}, [
+ items,
+settings,
+]);
 
 	// Aggregated Totals
 	const totals = useMemo(() => {
@@ -119,11 +123,16 @@ export function useBasketLogic(basketId?: string) {
 			monthly: 0,
 			daily: 0,
 		});
-	}, [itemsWithCosts]);
+	}, [
+ itemsWithCosts,
+]);
 
 	// Monthly steps calculation (24 months)
 	const combinedSteps = useMemo(() => {
-		if (itemsWithCosts.length === 0) return [];
+		if (itemsWithCosts.length === 0) {
+return [
+];
+}
 
 		const monthlyTotals = Array(24).fill(0);
 		itemsWithCosts.forEach((entry) => {
@@ -132,7 +141,8 @@ export function useBasketLogic(basketId?: string) {
 			});
 		});
 
-		const steps: { start: number; end: number; total: number }[] = [];
+		const steps: { start: number; end: number; total: number }[] = [
+];
 		let currentStep = {
 			start: 1,
 			end: 1,
@@ -156,48 +166,71 @@ export function useBasketLogic(basketId?: string) {
 		}
 		steps.push(currentStep);
 		return steps;
-	}, [itemsWithCosts]);
+	}, [
+ itemsWithCosts,
+]);
 
 	// One-time costs breakdown
 	const oneTimeBreakdowns = useMemo(() => {
 		return itemsWithCosts.flatMap((entry) => entry.costs.oneTimeCosts.breakdown);
-	}, [itemsWithCosts]);
+	}, [
+ itemsWithCosts,
+]);
 
 	const oneTimeBreakdownNoShipping = useMemo(() => {
 		return oneTimeBreakdowns.filter(c => c.name !== 'Versand Hardware');
-	}, [oneTimeBreakdowns]);
+	}, [
+ oneTimeBreakdowns,
+]);
 
 	const totalOneTimeItems = useMemo(() => {
 		return oneTimeBreakdownNoShipping.reduce((acc, curr) => acc + curr.cost, 0);
-	}, [oneTimeBreakdownNoShipping]);
+	}, [
+ oneTimeBreakdownNoShipping,
+]);
 
 	const hasDevice = useMemo(() => {
 		return items.some((i) => i.product.category === 'DEVICE');
-	}, [items]);
+	}, [
+ items,
+]);
 
 	const globalShippingFee = useMemo(() => {
 		return hasDevice ? settings.shipping_hardware_fee : 0;
-	}, [hasDevice, settings.shipping_hardware_fee]);
+	}, [
+ hasDevice,
+settings.shipping_hardware_fee,
+]);
 
 	const groupedOneTimeCosts = useMemo(() => {
 		const grouped = oneTimeBreakdownNoShipping.reduce((acc, curr) => {
 			acc[curr.name] = (acc[curr.name] || 0) + curr.cost;
 			return acc;
-		}, {} as Record<string, number>);
+		}, {
+} as Record<string, number>);
 
 		if (globalShippingFee > 0) {
 			grouped['Versand Hardware'] = globalShippingFee;
 		}
 		return grouped;
-	}, [oneTimeBreakdownNoShipping, globalShippingFee]);
+	}, [
+ oneTimeBreakdownNoShipping,
+globalShippingFee,
+]);
 
 	const totalCredits = useMemo(() => {
 		return basketCredits.reduce((acc, credit) => acc + credit.value, 0);
-	}, [basketCredits]);
+	}, [
+ basketCredits,
+]);
 
 	const totalOneTime = useMemo(() => {
 		return (totalOneTimeItems + globalShippingFee) - totalCredits;
-	}, [totalOneTimeItems, globalShippingFee, totalCredits]);
+	}, [
+ totalOneTimeItems,
+globalShippingFee,
+totalCredits,
+]);
 
 	return {
 		totals,

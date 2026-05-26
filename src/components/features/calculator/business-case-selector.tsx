@@ -13,7 +13,7 @@ import {
 } from 'framer-motion';
 import {
 	useBasketStore,
-} from '@/hooks/use-basket-store';
+} from '@/lib/store/basket-store';
 import {
 	useMediaQuery,
 } from '@/hooks/use-media-query';
@@ -97,7 +97,7 @@ export function BusinessCaseSelector({
 	] as const;
 
 	return (
-		<div className={clsx("grid gap-4", gridClass)}>
+		<div className={clsx('grid gap-4', gridClass)}>
 			{cases.map((item) => {
 				if (!item.allowed) { return null; }
 				const isSelected = selectedCase === item.id;
