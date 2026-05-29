@@ -12,6 +12,7 @@ import {
 import {
 	AddonSelector,
 } from '@/components/features/calculator/addon-selector';
+import type { SpecialPrice } from '@/types/product';
 import type {
 	MagentaTVPackageKey,
 } from '@/hooks/use-cost-calculator';
@@ -638,11 +639,11 @@ function ProductPageContent() {
 								(h) =>
 									h.productId === product.id || h.category === product.category,
 							) && (
-								<div className="w-fit bg-[rgba(255,213,79,0.15)] text-[#b78900] px-3 py-1 rounded-md text-[0.7rem] font-bold tracking-widest uppercase flex items-center gap-1.5 border border-[rgba(255,213,79,0.3)] shadow-sm whitespace-nowrap">
-									<Star className="w-3.5 h-3.5 fill-current" />
-									TEAM-FOKUS
-								</div>
-							)}
+									<div className="w-fit bg-[rgba(255,213,79,0.15)] text-[#b78900] px-3 py-1 rounded-md text-[0.7rem] font-bold tracking-widest uppercase flex items-center gap-1.5 border border-[rgba(255,213,79,0.3)] shadow-sm whitespace-nowrap">
+										<Star className="w-3.5 h-3.5 fill-current" />
+										TEAM-FOKUS
+									</div>
+								)}
 							<h1 className="text-[1.8rem] md:text-[2.2rem] font-extrabold text-[#1a1a2e] tracking-tight leading-[1.1] m-0">
 								{displayName}
 							</h1>
@@ -680,15 +681,15 @@ function ProductPageContent() {
 								)}
 							{(product.downloadSpeed ?? 0) > 0 &&
 								product.category !== 'DEVICE' && (
-								<div className="flex items-center gap-2">
-									<Zap className="w-4 h-4" style={{
-										color: catColor,
-									}} />
-									<span className="text-[0.85rem] font-semibold text-[#555]">
-										{product.downloadSpeed} Mbit/s
-									</span>
-								</div>
-							)}
+									<div className="flex items-center gap-2">
+										<Zap className="w-4 h-4" style={{
+											color: catColor,
+										}} />
+										<span className="text-[0.85rem] font-semibold text-[#555]">
+											{product.downloadSpeed} Mbit/s
+										</span>
+									</div>
+								)}
 							{product.contractDuration && (
 								<span className="text-[0.72rem] font-medium text-[#b0b0b0] uppercase tracking-wider">
 									{product.contractDuration}M Laufzeit
@@ -783,31 +784,31 @@ function ProductPageContent() {
 											)}
 											{((product as any).rentalPrice || product.basePrice) >
 												0 && (
-												<div className="flex items-baseline gap-1.5">
-													<span
-														className={clsx(
-															'font-extrabold tracking-tight leading-none',
-															(product as any).purchasePrice > 0
-																? 'text-[1.2rem]'
-																: 'text-[1.4rem]',
-														)}
-														style={{
-															color: catColor,
-														}}
-													>
-														<AnimatedNumber
-															value={
-																(product as any).rentalPrice ||
-																product.basePrice
-															}
-														/>{' '}
-														€
-													</span>
-													<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
-														Miete
-													</span>
-												</div>
-											)}
+													<div className="flex items-baseline gap-1.5">
+														<span
+															className={clsx(
+																'font-extrabold tracking-tight leading-none',
+																(product as any).purchasePrice > 0
+																	? 'text-[1.2rem]'
+																	: 'text-[1.4rem]',
+															)}
+															style={{
+																color: catColor,
+															}}
+														>
+															<AnimatedNumber
+																value={
+																	(product as any).rentalPrice ||
+																	product.basePrice
+																}
+															/>{' '}
+															€
+														</span>
+														<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
+															Miete
+														</span>
+													</div>
+												)}
 										</div>
 									</div>
 								) : (
@@ -888,11 +889,11 @@ function ProductPageContent() {
 															<AlertTriangle className="w-6 h-6 text-amber-700" />
 														</div>
 														<p className="text-[0.75rem] leading-snug font-bold text-amber-900 m-0">
-																Historische Preise
+															Historische Preise
 															<span className="block font-medium text-amber-800/70 mt-0.6">
-																	Nicht für Neubereitstellungen empfohlen.
-																	Sonderpreise & Optionen könnten nicht dazu
-																	passen.
+																Nicht für Neubereitstellungen empfohlen.
+																Sonderpreise & Optionen könnten nicht dazu
+																passen.
 															</span>
 														</p>
 													</div>
@@ -904,10 +905,10 @@ function ProductPageContent() {
 															<Edit2 className="w-5 h-5 text-[#555]" />
 														</div>
 														<p className="text-[0.75rem] leading-snug font-bold text-[#1a1a2e] m-0 mt-0.5">
-																Preis anpassen
+															Preis anpassen
 															<span className="block font-medium text-[#666] mt-0.6">
-																	Nicht für Neubereitstellungen empfohlen. Sonderpreise & Optionen könnten nicht dazu
-																	passen.
+																Nicht für Neubereitstellungen empfohlen. Sonderpreise & Optionen könnten nicht dazu
+																passen.
 															</span>
 														</p>
 													</div>
@@ -924,9 +925,9 @@ function ProductPageContent() {
 													)}
 													style={{
 														color:
-																customBasePrice === undefined
-																	? catColor
-																	: undefined,
+															customBasePrice === undefined
+																? catColor
+																: undefined,
 														...(customBasePrice === undefined
 															? {
 																backgroundColor: `${catColor}12`,
@@ -940,7 +941,7 @@ function ProductPageContent() {
 													}}
 												>
 													<span className="tracking-tight">
-															Aktueller Preis
+														Aktueller Preis
 													</span>
 													<span className="font-bold opacity-90">
 														{product.basePrice.toFixed(2).replace('.', ',')} €
@@ -961,9 +962,9 @@ function ProductPageContent() {
 																)}
 																style={{
 																	color:
-																			customBasePrice === ph.price
-																				? catColor
-																				: undefined,
+																		customBasePrice === ph.price
+																			? catColor
+																			: undefined,
 																	...(customBasePrice === ph.price
 																		? {
 																			backgroundColor: `${catColor}12`,
@@ -1104,22 +1105,22 @@ function ProductPageContent() {
 							{!items.some(
 								(i) => i.product.category === 'DEVICE' && i.id !== basketItemId,
 							) && (
-								<div className="mb-4 bg-[#00a8781c] border border-[#00a8787c] text-[#00a878] px-4 py-3 rounded-xl text-[1.3rem] flex items-start gap-3">
-									<Info
-										className="w-8 h-8 transition-all duration-400 text-[#00a878] group-hover:text-(--card-color) group-hover:scale-110"
-										strokeWidth={1.5}
-									/>
-									<div className="leading-snug mt-0.5">
-										Für Hardware fällt einmalig eine{' '}
-										<strong>
-											Bereitstellungspauschale i. H. v.{' '}
-											<AnimatedNumber value={settings.shipping_hardware_fee} />{' '}
-											€
-										</strong>{' '}
-										an.
+									<div className="mb-4 bg-[#00a8781c] border border-[#00a8787c] text-[#00a878] px-4 py-3 rounded-xl text-[1.3rem] flex items-start gap-3">
+										<Info
+											className="w-8 h-8 transition-all duration-400 text-[#00a878] group-hover:text-(--card-color) group-hover:scale-110"
+											strokeWidth={1.5}
+										/>
+										<div className="leading-snug mt-0.5">
+											Für Hardware fällt einmalig eine{' '}
+											<strong>
+												Bereitstellungspauschale i. H. v.{' '}
+												<AnimatedNumber value={settings.shipping_hardware_fee} />{' '}
+												€
+											</strong>{' '}
+											an.
+										</div>
 									</div>
-								</div>
-							)}
+								)}
 							<div
 								className={clsx(
 									'grid gap-3',
@@ -1289,8 +1290,8 @@ function ProductPageContent() {
 							<div
 								className={clsx(
 									customBasePrice !== undefined &&
-										!isHistoryWarningAccepted &&
-										'opacity-40 pointer-events-none transition-opacity duration-300',
+									!isHistoryWarningAccepted &&
+									'opacity-40 pointer-events-none transition-opacity duration-300',
 								)}
 							>
 								<p className="text-[0.75rem] text-[#888] mb-4 -mt-3.5 leading-relaxed">
@@ -1318,8 +1319,8 @@ function ProductPageContent() {
 							<div
 								className={clsx(
 									customBasePrice !== undefined &&
-										!isHistoryWarningAccepted &&
-										'opacity-40 pointer-events-none transition-opacity duration-300',
+									!isHistoryWarningAccepted &&
+									'opacity-40 pointer-events-none transition-opacity duration-300',
 								)}
 							>
 								{/* Main Toggle */}
@@ -1340,8 +1341,8 @@ function ProductPageContent() {
 										session?.team?.highlights.some(
 											(h) => h.category === 'MAGENTA_TV_OTT',
 										) &&
-											!isMagentaTVSelected &&
-											'highlight-glow bg-white',
+										!isMagentaTVSelected &&
+										'highlight-glow bg-white',
 										isMagentaTVSelected &&
 											!designSettings?.magentatv_background_image
 											? 'bg-white'
@@ -1352,12 +1353,12 @@ function ProductPageContent() {
 											? catColor
 											: session?.team?.highlights.some(
 												(h) => h.category === 'MAGENTA_TV_OTT',
-												  )
+											)
 												? catColor
 												: '#eaedf0',
 										backgroundColor:
 											isMagentaTVSelected &&
-											!designSettings?.magentatv_background_image
+												!designSettings?.magentatv_background_image
 												? `${catColor}06`
 												: 'white',
 									}}
@@ -1414,11 +1415,11 @@ function ProductPageContent() {
 												(h) => h.category === 'MAGENTA_TV_OTT',
 											) &&
 												!isMagentaTVSelected && (
-												<div className="bg-[#fffcf0] text-[#b78900] px-1.5 py-0.5 rounded text-[0.55rem] font-bold tracking-widest uppercase flex items-center gap-0.5 border border-[#fde68a] shadow-sm whitespace-nowrap">
-													<Star className="w-2.5 h-2.5 fill-[#fde047]" />
+													<div className="bg-[#fffcf0] text-[#b78900] px-1.5 py-0.5 rounded text-[0.55rem] font-bold tracking-widest uppercase flex items-center gap-0.5 border border-[#fde68a] shadow-sm whitespace-nowrap">
+														<Star className="w-2.5 h-2.5 fill-[#fde047]" />
 														TEAM-FOKUS
-												</div>
-											)}
+													</div>
+												)}
 										</div>
 										<p
 											className={clsx(
@@ -1480,6 +1481,24 @@ function ProductPageContent() {
 											pkg,
 										]) => {
 											const isSelected = magentaTVPackage === key;
+											const matchingSpecialPrices = product.specialPrices?.filter((sp: SpecialPrice) => {
+												const isPkgMatch =
+													(key === 'smart' && sp.magentaTVRequirement === 'ONLY_SMART') ||
+													(key === 'smartstream' && sp.magentaTVRequirement === 'ONLY_SMARTSTREAM') ||
+													(key === 'megastream' && sp.magentaTVRequirement === 'ONLY_MEGASTREAM');
+												if (!isPkgMatch) { return false; }
+
+												if (!sp.isActive) { return false; }
+
+												if (sp.requiresMove || sp.requiresNewActivation || sp.requiresSpeedUp) {
+													if (businessCase === 'MOVE' && !sp.requiresMove) { return false; }
+													if (businessCase === 'NEW_ACTIVATION' && !sp.requiresNewActivation) { return false; }
+													if (businessCase === 'SPEED_UP' && !sp.requiresSpeedUp) { return false; }
+													if (businessCase === 'PLAN_CHANGE') { return false; }
+												}
+												return true;
+											}) || [];
+
 											return (
 												<motion.div
 													key={key}
@@ -1512,9 +1531,21 @@ function ProductPageContent() {
 														</div>
 
 														<div className="flex-1 min-w-0">
-															<span className="text-[0.85rem] font-semibold text-[#1a1a2e]">
+															<span className="text-[0.85rem] font-semibold text-[#1a1a2e] block">
 																{pkg.shortName}
 															</span>
+															{matchingSpecialPrices.length > 0 && (
+																<div className="flex items-center flex items-start gap-1.5 text-[0.8rem] text-[#666]">
+																	<Star
+																		className="w-3 h-3 shrink-0 mt-0.5"
+																		style={{
+																			color: catColor,
+																		}}
+																		strokeWidth={2.5}
+																	/>
+																	<span className="truncate">Sonderpreis verfügbar: <span className="font-semibold">{matchingSpecialPrices[0].name}</span></span>
+																</div>
+															)}
 														</div>
 
 														<span
@@ -1594,8 +1625,8 @@ function ProductPageContent() {
 						<div
 							className={clsx(
 								customBasePrice !== undefined &&
-									!isHistoryWarningAccepted &&
-									'opacity-40 pointer-events-none transition-opacity duration-300',
+								!isHistoryWarningAccepted &&
+								'opacity-40 pointer-events-none transition-opacity duration-300',
 							)}
 						>
 							<SpecialPriceSelector
@@ -1603,6 +1634,7 @@ function ProductPageContent() {
 								selectedIds={selectedSpecialPriceIds}
 								onChange={setSelectedSpecialPriceIds}
 								isMagentaTVSelected={isMagentaTVSelected}
+								magentaTVPackage={magentaTVPackage}
 								businessCase={businessCase}
 								accentColor={catColor}
 								basePrice={product.basePrice}
@@ -1632,8 +1664,8 @@ function ProductPageContent() {
 							<div
 								className={clsx(
 									customBasePrice !== undefined &&
-										!isHistoryWarningAccepted &&
-										'opacity-40 pointer-events-none transition-opacity duration-300',
+									!isHistoryWarningAccepted &&
+									'opacity-40 pointer-events-none transition-opacity duration-300',
 								)}
 							>
 								<AddonSelector
@@ -1641,6 +1673,7 @@ function ProductPageContent() {
 									selectedIds={selectedAddonIds}
 									onChange={setSelectedAddonIds}
 									isMagentaTVSelected={isMagentaTVSelected}
+									magentaTVPackage={magentaTVPackage}
 									catColor={catColor}
 								/>
 							</div>
@@ -1939,66 +1972,66 @@ function ProductPageContent() {
 					{(category === 'MOBILE' ||
 						category === 'FIBER' ||
 						category === 'DSL') && (
-						<motion.div
-							initial={{
-								opacity: 0,
-								y: 8,
-							}}
-							animate={{
-								opacity: 1,
-								y: 0,
-							}}
-							transition={{
-								delay: 0.45,
-								duration: 0.35,
-							}}
-							className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
-							style={{
-								backgroundColor: `${catColor}0D`,
-								borderColor: `${catColor}33`,
-							}}
-						>
-							<div
-								className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
-								style={{
-									backgroundColor: `${catColor}1A`,
+							<motion.div
+								initial={{
+									opacity: 0,
+									y: 8,
 								}}
-							/>
-							<div
-								className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+								animate={{
+									opacity: 1,
+									y: 0,
+								}}
+								transition={{
+									delay: 0.45,
+									duration: 0.35,
+								}}
+								className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
 								style={{
-									backgroundColor: `${catColor}1A`,
+									backgroundColor: `${catColor}0D`,
+									borderColor: `${catColor}33`,
 								}}
 							>
-								<Smartphone className="w-4 h-4" style={{
-									color: catColor,
-								}} />
-							</div>
-							<div>
-								<h4
-									className="text-[0.85rem] font-bold mb-1 leading-tight"
+								<div
+									className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
 									style={{
-										color: catColor,
+										backgroundColor: `${catColor}1A`,
+									}}
+								/>
+								<div
+									className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+									style={{
+										backgroundColor: `${catColor}1A`,
 									}}
 								>
-									Neues Endgerät dazu?
-								</h4>
-								<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
-									Perfektioniere den Tarif mit einem neuen Smartphone oder
-									Router.
-								</p>
-								<Link
-									href="/products/DEVICE"
-									className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold transition-opacity hover:opacity-80"
-									style={{
+									<Smartphone className="w-4 h-4" style={{
 										color: catColor,
-									}}
-								>
-									Zu den Geräten <ChevronRight className="w-3.5 h-3.5" />
-								</Link>
-							</div>
-						</motion.div>
-					)}
+									}} />
+								</div>
+								<div>
+									<h4
+										className="text-[0.85rem] font-bold mb-1 leading-tight"
+										style={{
+											color: catColor,
+										}}
+									>
+										Neues Endgerät dazu?
+									</h4>
+									<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
+										Perfektioniere den Tarif mit einem neuen Smartphone oder
+										Router.
+									</p>
+									<Link
+										href="/products/DEVICE"
+										className="inline-flex items-center gap-1.5 text-[0.75rem] font-bold transition-opacity hover:opacity-80"
+										style={{
+											color: catColor,
+										}}
+									>
+										Zu den Geräten <ChevronRight className="w-3.5 h-3.5" />
+									</Link>
+								</div>
+							</motion.div>
+						)}
 
 					{/* Cross-Sell: Tarif for Devices */}
 					{category === 'DEVICE' && (

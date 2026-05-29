@@ -40,7 +40,7 @@ export interface SpecialPrice {
     name: string;
     description?: string | null;
     internalNote?: string | null;
-    magentaTVRequirement: 'REQUIRED' | 'NOT_ALLOWED' | 'NONE';
+    magentaTVRequirement: 'REQUIRED' | 'NOT_ALLOWED' | 'NONE' | 'ONLY_SMART' | 'ONLY_SMARTSTREAM' | 'ONLY_MEGASTREAM';
     requiresSpeedUp: boolean;
     requiresMove: boolean;
     requiresNewActivation: boolean;
@@ -62,7 +62,7 @@ export interface Addon {
     id: string;
     name: string;
     description: string | null;
-    magentaTVRequirement: 'REQUIRED' | 'NOT_ALLOWED' | 'NONE';
+    magentaTVRequirement: 'REQUIRED' | 'NOT_ALLOWED' | 'NONE' | 'ONLY_SMART' | 'ONLY_SMARTSTREAM' | 'ONLY_MEGASTREAM';
     tiers: AddonTier[];
     imageUrl?: string | null;
     isGlobal?: boolean;

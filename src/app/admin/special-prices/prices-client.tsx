@@ -72,7 +72,14 @@ export default function AdminSpecialPricesPage() {
 	const filteredPrices = useMemo(() => {
 		if (activeFilterId === 'ALL') { return searchedPrices; }
 		return searchedPrices.filter((sp: any) => {
-			if (activeFilterId === 'MAGENTA_TV_REQUIRED') { return sp.magentaTVRequirement === 'REQUIRED'; }
+			if (activeFilterId === 'MAGENTA_TV_REQUIRED') {
+				return [
+					'REQUIRED',
+					'ONLY_SMART',
+					'ONLY_SMARTSTREAM',
+					'ONLY_MEGASTREAM',
+				].includes(sp.magentaTVRequirement);
+			}
 			if (activeFilterId === 'MAGENTA_TV_NOT_ALLOWED') { return sp.magentaTVRequirement === 'NOT_ALLOWED'; }
 			if (activeFilterId === 'HIGH_PRIO') { return sp.priority >= 5; }
 			return true;
@@ -246,6 +253,21 @@ color: '#ff6b00',
 													{sp.magentaTVRequirement === 'REQUIRED' && (
 														<div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#e20074]/5 border border-[#e20074]/10 text-[0.65rem] font-bold text-[#e20074]">
 															MagentaTV erforderlich
+														</div>
+													)}
+													{sp.magentaTVRequirement === 'ONLY_SMART' && (
+														<div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#e20074]/5 border border-[#e20074]/10 text-[0.65rem] font-bold text-[#e20074]">
+															Nur Smart
+														</div>
+													)}
+													{sp.magentaTVRequirement === 'ONLY_SMARTSTREAM' && (
+														<div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#e20074]/5 border border-[#e20074]/10 text-[0.65rem] font-bold text-[#e20074]">
+															Nur SmartStream
+														</div>
+													)}
+													{sp.magentaTVRequirement === 'ONLY_MEGASTREAM' && (
+														<div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#e20074]/5 border border-[#e20074]/10 text-[0.65rem] font-bold text-[#e20074]">
+															Nur MegaStream
 														</div>
 													)}
 													{sp.magentaTVRequirement === 'NOT_ALLOWED' && (

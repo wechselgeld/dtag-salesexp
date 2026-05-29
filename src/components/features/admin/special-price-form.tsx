@@ -67,6 +67,9 @@ const specialPriceSchema = z.object({
 		'REQUIRED',
 		'NOT_ALLOWED',
 		'NONE',
+		'ONLY_SMART',
+		'ONLY_SMARTSTREAM',
+		'ONLY_MEGASTREAM',
 	]).default('NONE'),
 	requiresSpeedUp: z.boolean().default(false),
 	requiresMove: z.boolean().default(false),
@@ -410,6 +413,27 @@ export function SpecialPriceForm({
 									desc: 'Aktiv nur ohne TV.',
 									color: 'bg-[#ff6b00]/5',
 									activeColor: 'border-[#ff6b00] bg-[#ff6b00]/5',
+								},
+								{
+									id: 'ONLY_SMART',
+									label: 'Nur MagentaTV Smart',
+									desc: 'Voraussetzung: MagentaTV Smart.',
+									color: 'bg-[#e20074]/5',
+									activeColor: 'border-[#e20074] bg-[#e20074]/5',
+								},
+								{
+									id: 'ONLY_SMARTSTREAM',
+									label: 'Nur MTV SmartStream',
+									desc: 'Voraussetzung: MTV SmartStream.',
+									color: 'bg-[#e20074]/5',
+									activeColor: 'border-[#e20074] bg-[#e20074]/5',
+								},
+								{
+									id: 'ONLY_MEGASTREAM',
+									label: 'Nur MTV MegaStream',
+									desc: 'Voraussetzung: MTV MegaStream.',
+									color: 'bg-[#e20074]/5',
+									activeColor: 'border-[#e20074] bg-[#e20074]/5',
 								},
 							].map((opt) => {
 								const isSelected = watch('magentaTVRequirement') === opt.id;

@@ -22,6 +22,7 @@ interface Props {
 	selectedIds: string[];
 	onChange: (ids: string[]) => void;
 	isMagentaTVSelected: boolean;
+	magentaTVPackage: string | null;
 	businessCase: string;
 	accentColor?: string;
 	basePrice?: number;
@@ -33,6 +34,7 @@ export function SpecialPriceSelector({
 	selectedIds,
 	onChange,
 	isMagentaTVSelected,
+	magentaTVPackage,
 	businessCase,
 	accentColor = '#e20074',
 	basePrice,
@@ -48,9 +50,15 @@ export function SpecialPriceSelector({
 	const availablePrices = specialPrices.filter((sp) => {
 		if (sp.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
 		if (sp.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
-		if (sp.requiresMove && businessCase !== 'MOVE') { return false; }
-		if (sp.requiresNewActivation && businessCase !== 'NEW_ACTIVATION') { return false; }
-		if (sp.requiresSpeedUp && businessCase !== 'SPEED_UP') { return false; }
+		if (sp.magentaTVRequirement === 'ONLY_SMART' && magentaTVPackage !== 'smart') { return false; }
+		if (sp.magentaTVRequirement === 'ONLY_SMARTSTREAM' && magentaTVPackage !== 'smartstream') { return false; }
+		if (sp.magentaTVRequirement === 'ONLY_MEGASTREAM' && magentaTVPackage !== 'megastream') { return false; }
+		if (sp.requiresMove || sp.requiresNewActivation || sp.requiresSpeedUp) {
+			if (businessCase === 'MOVE' && !sp.requiresMove) { return false; }
+			if (businessCase === 'NEW_ACTIVATION' && !sp.requiresNewActivation) { return false; }
+			if (businessCase === 'SPEED_UP' && !sp.requiresSpeedUp) { return false; }
+			if (businessCase === 'PLAN_CHANGE') { return false; }
+		}
 		return true;
 	});
 
@@ -166,7 +174,7 @@ export function SpecialPriceSelector({
 										{sp.name}
 									</div>
 									{sp.description && (
-										<div className="text-[0.72rem] text-[#888] line-clamp-1 mt-0.5">
+										<div className="text-[0.72rem] text-[#888] mt-0.5 whitespace-normal break-words leading-relaxed">
 											{sp.description}
 										</div>
 									)}

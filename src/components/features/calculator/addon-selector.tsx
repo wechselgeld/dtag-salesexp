@@ -34,6 +34,7 @@ interface Props {
 	selectedIds: string[];
 	onChange: (ids: string[]) => void;
 	isMagentaTVSelected: boolean;
+	magentaTVPackage: string | null;
 	catColor?: string;
 }
 
@@ -254,6 +255,7 @@ export function AddonSelector({
 	selectedIds,
 	onChange,
 	isMagentaTVSelected,
+	magentaTVPackage,
 	catColor = '#e20074',
 }: Props) {
 	const isOpen = useBasketStore((state) => state.isOpen);
@@ -286,6 +288,15 @@ export function AddonSelector({
 			if (addon.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) {
 				return false;
 			}
+			if (addon.magentaTVRequirement === 'ONLY_SMART' && magentaTVPackage !== 'smart') {
+				return false;
+			}
+			if (addon.magentaTVRequirement === 'ONLY_SMARTSTREAM' && magentaTVPackage !== 'smartstream') {
+				return false;
+			}
+			if (addon.magentaTVRequirement === 'ONLY_MEGASTREAM' && magentaTVPackage !== 'megastream') {
+				return false;
+			}
 			if (!addon.tiers || addon.tiers.length === 0) { return false; }
 
 			if (searchQuery.trim()) {
@@ -301,6 +312,7 @@ export function AddonSelector({
 	}, [
 		addons,
 		isMagentaTVSelected,
+		magentaTVPackage,
 		searchQuery,
 	]);
 

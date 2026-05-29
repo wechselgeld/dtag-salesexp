@@ -54,6 +54,9 @@ const addonSchema = z.object({
 		'REQUIRED',
 		'NOT_ALLOWED',
 		'NONE',
+		'ONLY_SMART',
+		'ONLY_SMARTSTREAM',
+		'ONLY_MEGASTREAM',
 	]).default('NONE'),
 	tiers: z
 		.array(
@@ -319,6 +322,30 @@ export function AddonForm({
 											color: '#f97316',
 											bgColor: '#fff8f1',
 											borderColor: '#ffedd5',
+										},
+										{
+											id: 'ONLY_SMART',
+											label: 'Nur MagentaTV Smart',
+											desc: 'Nur mit Tarif MagentaTV Smart buchbar.',
+											color: '#e20074',
+											bgColor: '#fff1f2',
+											borderColor: '#ffe4e6',
+										},
+										{
+											id: 'ONLY_SMARTSTREAM',
+											label: 'Nur MTV SmartStream',
+											desc: 'Nur mit Tarif MagentaTV SmartStream buchbar.',
+											color: '#e20074',
+											bgColor: '#fff1f2',
+											borderColor: '#ffe4e6',
+										},
+										{
+											id: 'ONLY_MEGASTREAM',
+											label: 'Nur MTV MegaStream',
+											desc: 'Nur mit Tarif MagentaTV MegaStream buchbar.',
+											color: '#e20074',
+											bgColor: '#fff1f2',
+											borderColor: '#ffe4e6',
 										},
 									].map((opt) => {
 										const isSelected = watch('magentaTVRequirement') === opt.id;

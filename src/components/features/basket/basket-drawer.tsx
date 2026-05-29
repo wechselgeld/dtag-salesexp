@@ -1209,7 +1209,7 @@ cost ]: [string, number
 									offerTemplateText.replace(/\{\{salesRepName\}\}/g, salesRepName),
 								);
 
-								window.location.href = `mailto:${teamEmail}?subject=${subject}?body=${bodyText}`;
+								window.location.href = `mailto:${teamEmail}?subject=${subject}&body=${bodyText}`;
 
 								setIsGenerating('success');
 								if (clearAfterExport) {

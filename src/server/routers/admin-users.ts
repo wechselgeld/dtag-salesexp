@@ -223,7 +223,8 @@ mode: 'insensitive',
 
             // Inline input scope validators to enforce horizontal boundaries
             if (session.role === 'OD_MANAGER') {
-                if (input.odRegionId && input.odRegionId !== session.odRegionId) {
+                const userOdId = session.effectiveOdRegionId || session.odRegionId;
+                if (input.odRegionId && input.odRegionId !== userOdId) {
                     throw new TRPCError({
                         code: 'FORBIDDEN',
                         message: 'Du kannst keinen Nutzer außerhalb deiner OD-Region zuweisen.',
@@ -232,13 +233,13 @@ mode: 'insensitive',
                 if (input.locationId) {
                     const loc = await prisma.location.findUnique({
                         where: {
- id: input.locationId,
-},
+                            id: input.locationId,
+                        },
                         select: {
- odRegionId: true,
-},
+                            odRegionId: true,
+                        },
                     });
-                    if (!loc || loc.odRegionId !== session.odRegionId) {
+                    if (!loc || loc.odRegionId !== userOdId) {
                         throw new TRPCError({
                             code: 'FORBIDDEN',
                             message: 'Dieser Standort liegt außerhalb deiner OD-Region.',
@@ -248,17 +249,17 @@ mode: 'insensitive',
                 if (input.teamId) {
                     const team = await prisma.team.findUnique({
                         where: {
- id: input.teamId,
-},
+                            id: input.teamId,
+                        },
                         select: {
                             location: {
                                 select: {
- odRegionId: true,
-},
+                                    odRegionId: true,
+                                },
                             },
                         },
                     });
-                    if (!team || team.location?.odRegionId !== session.odRegionId) {
+                    if (!team || team.location?.odRegionId !== userOdId) {
                         throw new TRPCError({
                             code: 'FORBIDDEN',
                             message: 'Dieses Team liegt außerhalb deiner OD-Region.',
@@ -266,9 +267,9 @@ mode: 'insensitive',
                     }
                 }
             }
- else if (session.role === 'LOCATION_MANAGER') {
+            else if (session.role === 'LOCATION_MANAGER') {
+                const userLocId = session.effectiveLocationId || session.locationId;
                 if (input.odRegionId) {
-                    const userLocId = session.effectiveLocationId || session.locationId;
                     if (!userLocId) {
                         throw new TRPCError({
                             code: 'FORBIDDEN',
@@ -286,7 +287,7 @@ mode: 'insensitive',
                         });
                     }
                 }
-                if (input.locationId && input.locationId !== session.locationId) {
+                if (input.locationId && input.locationId !== userLocId) {
                     throw new TRPCError({
                         code: 'FORBIDDEN',
                         message: 'Du kannst keinen Nutzer außerhalb deines Standorts zuweisen.',
@@ -295,13 +296,13 @@ mode: 'insensitive',
                 if (input.teamId) {
                     const team = await prisma.team.findUnique({
                         where: {
- id: input.teamId,
-},
+                            id: input.teamId,
+                        },
                         select: {
- locationId: true,
-},
+                            locationId: true,
+                        },
                     });
-                    if (!team || team.locationId !== session.locationId) {
+                    if (!team || team.locationId !== userLocId) {
                         throw new TRPCError({
                             code: 'FORBIDDEN',
                             message: 'Dieses Team gehört nicht zu deinem Standort.',
@@ -309,7 +310,7 @@ mode: 'insensitive',
                     }
                 }
             }
- else if (session.role === 'TEAM_LEADER') {
+            else if (session.role === 'TEAM_LEADER') {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'Du hast keine Berechtigung, Benutzer-Hierarchien zu verwalten.',

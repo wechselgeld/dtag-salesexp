@@ -28,6 +28,9 @@ const addonFormSchema = z.object({
         'REQUIRED',
         'NOT_ALLOWED',
         'NONE',
+        'ONLY_SMART',
+        'ONLY_SMARTSTREAM',
+        'ONLY_MEGASTREAM',
     ]).default('NONE'),
 });
 

@@ -352,9 +352,15 @@ export function useCostCalculator(
 			if (!sp) { return false; }
 			if (sp.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
 			if (sp.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
-			if (sp.requiresMove && businessCase !== 'MOVE') { return false; }
-			if (sp.requiresNewActivation && businessCase !== 'NEW_ACTIVATION') { return false; }
-			if (sp.requiresSpeedUp && businessCase !== 'SPEED_UP') { return false; }
+			if (sp.magentaTVRequirement === 'ONLY_SMART' && magentaTVPackage !== 'smart') { return false; }
+			if (sp.magentaTVRequirement === 'ONLY_SMARTSTREAM' && magentaTVPackage !== 'smartstream') { return false; }
+			if (sp.magentaTVRequirement === 'ONLY_MEGASTREAM' && magentaTVPackage !== 'megastream') { return false; }
+			if (sp.requiresMove || sp.requiresNewActivation || sp.requiresSpeedUp) {
+				if (businessCase === 'MOVE' && !sp.requiresMove) { return false; }
+				if (businessCase === 'NEW_ACTIVATION' && !sp.requiresNewActivation) { return false; }
+				if (businessCase === 'SPEED_UP' && !sp.requiresSpeedUp) { return false; }
+				if (businessCase === 'PLAN_CHANGE') { return false; }
+			}
 			return true;
 		});
 
@@ -363,6 +369,7 @@ export function useCostCalculator(
 		}
 	}, [
 		isMagentaTVSelected,
+		magentaTVPackage,
 		businessCase,
 		product,
 		selectedSpecialPriceIds,
@@ -378,6 +385,9 @@ export function useCostCalculator(
 			if (!addon) { return false; }
 			if (addon.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
 			if (addon.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
+			if (addon.magentaTVRequirement === 'ONLY_SMART' && magentaTVPackage !== 'smart') { return false; }
+			if (addon.magentaTVRequirement === 'ONLY_SMARTSTREAM' && magentaTVPackage !== 'smartstream') { return false; }
+			if (addon.magentaTVRequirement === 'ONLY_MEGASTREAM' && magentaTVPackage !== 'megastream') { return false; }
 			return true;
 		});
 
@@ -386,6 +396,7 @@ export function useCostCalculator(
 		}
 	}, [
 		isMagentaTVSelected,
+		magentaTVPackage,
 		product,
 		selectedAddonIds,
 	]);
@@ -444,9 +455,15 @@ export function useCostCalculator(
 			if (!sp) { return false; }
 			if (sp.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
 			if (sp.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
-			if (sp.requiresMove && businessCase !== 'MOVE') { return false; }
-			if (sp.requiresNewActivation && businessCase !== 'NEW_ACTIVATION') { return false; }
-			if (sp.requiresSpeedUp && businessCase !== 'SPEED_UP') { return false; }
+			if (sp.magentaTVRequirement === 'ONLY_SMART' && magentaTVPackage !== 'smart') { return false; }
+			if (sp.magentaTVRequirement === 'ONLY_SMARTSTREAM' && magentaTVPackage !== 'smartstream') { return false; }
+			if (sp.magentaTVRequirement === 'ONLY_MEGASTREAM' && magentaTVPackage !== 'megastream') { return false; }
+			if (sp.requiresMove || sp.requiresNewActivation || sp.requiresSpeedUp) {
+				if (businessCase === 'MOVE' && !sp.requiresMove) { return false; }
+				if (businessCase === 'NEW_ACTIVATION' && !sp.requiresNewActivation) { return false; }
+				if (businessCase === 'SPEED_UP' && !sp.requiresSpeedUp) { return false; }
+				if (businessCase === 'PLAN_CHANGE') { return false; }
+			}
 			return true;
 		});
 
@@ -456,6 +473,9 @@ export function useCostCalculator(
 			if (!addon) { return false; }
 			if (addon.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
 			if (addon.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
+			if (addon.magentaTVRequirement === 'ONLY_SMART' && magentaTVPackage !== 'smart') { return false; }
+			if (addon.magentaTVRequirement === 'ONLY_SMARTSTREAM' && magentaTVPackage !== 'smartstream') { return false; }
+			if (addon.magentaTVRequirement === 'ONLY_MEGASTREAM' && magentaTVPackage !== 'megastream') { return false; }
 			return true;
 		});
 

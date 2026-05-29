@@ -74,7 +74,14 @@ export default function AddonsPage() {
 		return searchedAddons.filter((addon: any) => {
 			if (activeFilterId === 'ACTIVE') { return addon.isActive; }
 			if (activeFilterId === 'INACTIVE') { return !addon.isActive; }
-			if (activeFilterId === 'MAGENTA_TV_REQUIRED') { return addon.magentaTVRequirement === 'REQUIRED'; }
+			if (activeFilterId === 'MAGENTA_TV_REQUIRED') {
+				return [
+					'REQUIRED',
+					'ONLY_SMART',
+					'ONLY_SMARTSTREAM',
+					'ONLY_MEGASTREAM',
+				].includes(addon.magentaTVRequirement);
+			}
 			if (activeFilterId === 'MAGENTA_TV_NOT_ALLOWED') { return addon.magentaTVRequirement === 'NOT_ALLOWED'; }
 			return true;
 		});
@@ -254,6 +261,21 @@ color: '#7b61ff',
 														{addon.magentaTVRequirement === 'REQUIRED' && (
 															<span className="text-[0.65rem] text-[#e20074] bg-[#fff1f2] border border-[#ffe4e6] px-1.5 py-0.5 rounded font-bold">
 																Mit MagentaTV
+															</span>
+														)}
+														{addon.magentaTVRequirement === 'ONLY_SMART' && (
+															<span className="text-[0.65rem] text-[#e20074] bg-[#fff1f2] border border-[#ffe4e6] px-1.5 py-0.5 rounded font-bold">
+																Nur Smart
+															</span>
+														)}
+														{addon.magentaTVRequirement === 'ONLY_SMARTSTREAM' && (
+															<span className="text-[0.65rem] text-[#e20074] bg-[#fff1f2] border border-[#ffe4e6] px-1.5 py-0.5 rounded font-bold">
+																Nur SmartStream
+															</span>
+														)}
+														{addon.magentaTVRequirement === 'ONLY_MEGASTREAM' && (
+															<span className="text-[0.65rem] text-[#e20074] bg-[#fff1f2] border border-[#ffe4e6] px-1.5 py-0.5 rounded font-bold">
+																Nur MegaStream
 															</span>
 														)}
 														{addon.internalNote && (
