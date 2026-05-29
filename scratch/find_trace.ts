@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -12,22 +14,9 @@ async function main() {
     },
   });
 
-  console.log('\n--- Error Logs ---');
-  console.log(JSON.stringify(errorLogs, null, 2));
-
-  const auditLogs = await prisma.auditLog.findMany({
-    where: {
-      details: {
-        path: ['traceId'],
-        equals: traceId,
-      },
-    },
-  });
-  
-  if (auditLogs.length > 0) {
-    console.log('\n--- Audit Logs ---');
-    console.log(JSON.stringify(auditLogs, null, 2));
-  }
+  const outputPath = path.join(__dirname, 'trace_results.json');
+  fs.writeFileSync(outputPath, JSON.stringify(errorLogs, null, 2), 'utf-8');
+  console.log('Results written to:', outputPath);
 }
 
 main()
