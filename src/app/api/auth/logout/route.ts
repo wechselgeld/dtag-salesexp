@@ -12,5 +12,10 @@ export async function GET(request: Request) {
     const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || url.host;
     const protocol = request.headers.get('x-forwarded-proto') || (url.protocol.startsWith('https') ? 'https' : 'http');
 
-    return NextResponse.redirect(new URL('/login', `${protocol}://${host}`));
+    const targetUrl = new URL('/login', `${protocol}://${host}`);
+    url.searchParams.forEach((value, key) => {
+        targetUrl.searchParams.set(key, value);
+    });
+
+    return NextResponse.redirect(targetUrl);
 }

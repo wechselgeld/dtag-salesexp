@@ -19,6 +19,7 @@ export const ROLE_RANKS = {
     OD_MANAGER: 3,
     LOCATION_MANAGER: 2,
     TEAM_LEADER: 1,
+    USER: 0,
 } as const;
 
 export type Role = keyof typeof ROLE_RANKS;
@@ -140,16 +141,19 @@ export function getNewsVisibilityFilter(user: SessionUser | undefined | null) {
         }, // Global News
     ];
 
-    if (user.odRegionId) {
+    const odId = user.effectiveOdRegionId || user.odRegionId;
+    const locId = user.effectiveLocationId || user.locationId;
+
+    if (odId) {
         orConditions.push({
-            odRegionId: user.odRegionId,
+            odRegionId: odId,
             locationId: null,
             teamId: null,
         });
     }
-    if (user.locationId) {
+    if (locId) {
         orConditions.push({
-            locationId: user.locationId,
+            locationId: locId,
             teamId: null,
         });
     }
@@ -172,8 +176,11 @@ export function isNewsVisible(user: SessionUser | undefined | null, news: { odRe
 
     if (news.teamId && user.teamId && news.teamId === user.teamId) return true;
 
-    if (news.locationId && user.locationId && news.locationId === user.locationId && !news.teamId) return true;
-    if (news.odRegionId && user.odRegionId && news.odRegionId === user.odRegionId && !news.locationId && !news.teamId) return true;
+    const odId = user.effectiveOdRegionId || user.odRegionId;
+    const locId = user.effectiveLocationId || user.locationId;
+
+    if (news.locationId && locId && news.locationId === locId && !news.teamId) return true;
+    if (news.odRegionId && odId && news.odRegionId === odId && !news.locationId && !news.teamId) return true;
 
     return false;
 }
@@ -258,8 +265,9 @@ export function canEditTeam(user: SessionUser | undefined | null, targetLocation
         return true;
     }
     if (user.role === 'LOCATION_MANAGER') {
-        if (!user.locationId) return false;
-        if (targetLocationId && targetLocationId !== user.locationId) return false;
+        const locId = user.effectiveLocationId || user.locationId;
+        if (!locId) return false;
+        if (targetLocationId && targetLocationId !== locId) return false;
         return true;
     }
     if (user.role === 'TEAM_LEADER') {
@@ -275,8 +283,9 @@ export function canManageLocation(user: SessionUser, targetLocationOdRegionId?: 
     if (!hasPermission(user.role, 'locations:manage')) return false;
 
     if (user.role === 'OD_MANAGER') {
-        if (!user.odRegionId) return false;
-        if (targetLocationOdRegionId && targetLocationOdRegionId !== user.odRegionId) return false;
+        const odId = user.effectiveOdRegionId || user.odRegionId;
+        if (!odId) return false;
+        if (targetLocationOdRegionId && targetLocationOdRegionId !== odId) return false;
         return true;
     }
     if (user.role === 'LOCATION_MANAGER') {
@@ -289,18 +298,21 @@ export function canCreateNews(user: SessionUser, scope: { odRegionId?: string | 
     if (hasRole(user, 'ADMIN')) return true;
     if (!hasPermission(user.role, 'news:create')) return false;
 
+    const userOdId = user.effectiveOdRegionId || user.odRegionId;
+    const userLocId = user.effectiveLocationId || user.locationId;
+
     if (user.role === 'OD_MANAGER') {
-        if (!user.odRegionId) return false;
+        if (!userOdId) return false;
         if (!scope.odRegionId && !scope.locationId && !scope.teamId) return false;
-        if (scope.odRegionId && scope.odRegionId !== user.odRegionId) return false;
+        if (scope.odRegionId && scope.odRegionId !== userOdId) return false;
         return true;
     }
 
     if (user.role === 'LOCATION_MANAGER') {
-        if (!user.locationId) return false;
+        if (!userLocId) return false;
         if (!scope.locationId && !scope.teamId) return false;
         if (scope.odRegionId) return false;
-        if (scope.locationId && scope.locationId !== user.locationId) return false;
+        if (scope.locationId && scope.locationId !== userLocId) return false;
         return true;
     }
 
@@ -324,14 +336,16 @@ export function canManageUser(currentUser: SessionUser, targetRole: string, targ
     if (targetRank >= currentRank) return false;
 
     if (currentUser.role === 'OD_MANAGER') {
-        if (!currentUser.odRegionId) return false;
-        if (!targetOdRegionId || targetOdRegionId !== currentUser.odRegionId) return false;
+        const odId = currentUser.effectiveOdRegionId || currentUser.odRegionId;
+        if (!odId) return false;
+        if (!targetOdRegionId || targetOdRegionId !== odId) return false;
         return true;
     }
 
     if (currentUser.role === 'LOCATION_MANAGER') {
-        if (!currentUser.locationId) return false;
-        if (!targetLocationId || targetLocationId !== currentUser.locationId) return false;
+        const locId = currentUser.effectiveLocationId || currentUser.locationId;
+        if (!locId) return false;
+        if (!targetLocationId || targetLocationId !== locId) return false;
         return true;
     }
 

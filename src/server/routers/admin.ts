@@ -905,6 +905,55 @@ export const adminRouter = router({
                     });
                 }
 
+                const userLocId = session.effectiveLocationId || session.locationId;
+                const userOdId = session.effectiveOdRegionId || session.odRegionId;
+
+                if (session.role === 'LOCATION_MANAGER') {
+                    if (teamId) {
+                        const team = await prisma.team.findUnique({
+                            where: { id: teamId },
+                            select: { locationId: true },
+                        });
+                        if (!team || team.locationId !== userLocId) {
+                            throw new TRPCError({
+                                code: 'FORBIDDEN',
+                                message: 'Das ausgewählte Team gehört nicht zu Deinem Standort.',
+                            });
+                        }
+                    }
+                    if (locationId && locationId !== userLocId) {
+                        throw new TRPCError({
+                            code: 'FORBIDDEN',
+                            message: 'Die ausgewählte Filiale gehört nicht zu Deinem Standort.',
+                        });
+                    }
+                } else if (session.role === 'OD_MANAGER') {
+                    if (locationId) {
+                        const loc = await prisma.location.findUnique({
+                            where: { id: locationId },
+                            select: { odRegionId: true },
+                        });
+                        if (!loc || loc.odRegionId !== userOdId) {
+                            throw new TRPCError({
+                                code: 'FORBIDDEN',
+                                message: 'Die ausgewählte Filiale gehört nicht zu Deiner Vertriebsdirektion.',
+                            });
+                        }
+                    }
+                    if (teamId) {
+                        const team = await prisma.team.findUnique({
+                            where: { id: teamId },
+                            include: { location: { select: { odRegionId: true } } },
+                        });
+                        if (!team || team.location?.odRegionId !== userOdId) {
+                            throw new TRPCError({
+                                code: 'FORBIDDEN',
+                                message: 'Das ausgewählte Team gehört nicht zu Deiner Vertriebsdirektion.',
+                            });
+                        }
+                    }
+                }
+
                 const news = await (prisma.news as any).create({
                     data: {
                         ...data,

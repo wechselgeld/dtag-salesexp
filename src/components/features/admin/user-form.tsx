@@ -51,6 +51,7 @@ const userSchema = z.object({
 		'OD_MANAGER',
 		'LOCATION_MANAGER',
 		'TEAM_LEADER',
+		'USER',
 	]),
 	isEditor: z.boolean().default(false).optional(),
 	isActive: z.boolean().default(true).optional(),
@@ -66,7 +67,7 @@ interface UserFormProps {
 	userId?: string;
 	initialData?: {
 		email: string;
-		role: 'ADMIN' | 'OD_MANAGER' | 'LOCATION_MANAGER' | 'TEAM_LEADER';
+		role: 'ADMIN' | 'OD_MANAGER' | 'LOCATION_MANAGER' | 'TEAM_LEADER' | 'USER';
 		isEditor?: boolean;
 		isActive?: boolean;
 		odRegionId?: string | null;
@@ -187,7 +188,7 @@ export function UserForm({
 		const finalData = {
  ...data,
 };
-		if (data.role === 'TEAM_LEADER' && data.teamId) {
+		if ((data.role === 'TEAM_LEADER' || data.role === 'USER') && data.teamId) {
 			const team = teams?.find(t => t.id === data.teamId);
 			if (team) {
 				finalData.locationId = team.locationId;
@@ -374,6 +375,13 @@ export function UserForm({
 										Teamleiter (Eingeschränkt)
 									</option>
 									)}
+									{(currentUser?.role === 'ADMIN' ||
+										currentUser?.role === 'OD_MANAGER' ||
+										currentUser?.role === 'LOCATION_MANAGER') && (
+									<option value="USER">
+										Vertriebsmitarbeiter (Standard-Nutzer)
+									</option>
+									)}
 								</select>
 								<div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#bbb]">
 									<svg
@@ -442,7 +450,8 @@ export function UserForm({
 
 					{(selectedRole === 'OD_MANAGER' ||
 						selectedRole === 'LOCATION_MANAGER' ||
-						selectedRole === 'TEAM_LEADER') && (
+						selectedRole === 'TEAM_LEADER' ||
+						selectedRole === 'USER') && (
 						<AdminFormSection
 							title="Hierarchie-Zuordnung"
 							description="Definiere den Zuständigkeitsbereich des Benutzers."
@@ -521,7 +530,7 @@ export function UserForm({
 									</div>
 								)}
 
-								{selectedRole === 'TEAM_LEADER' && (
+								{(selectedRole === 'TEAM_LEADER' || selectedRole === 'USER') && (
 									<div className="flex flex-col gap-1.5">
 										<label className="text-[0.8rem] font-bold text-[#1a1a2e]">
 											Zugeordnetes Vertriebsteam

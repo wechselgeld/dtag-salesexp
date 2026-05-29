@@ -11,6 +11,9 @@ import {
 import {
 	ResolutionGuard,
 } from '@/components/layout/resolution-guard';
+import {
+	GlobalErrorToast,
+} from '@/components/shared/error-toast';
 
 const teleNeo = localFont({
 	src: [
@@ -116,6 +119,7 @@ export default function RootLayout({
 					<ResolutionGuard>
 						<AppShell>{children}</AppShell>
 					</ResolutionGuard>
+					<GlobalErrorToast />
 				</Providers>
 			</body>
 		</html>

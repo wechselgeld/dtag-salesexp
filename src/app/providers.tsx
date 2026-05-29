@@ -71,7 +71,9 @@ export default function Providers({
 
 				if (isUnauthorized) {
 					if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/setup')) {
-						window.location.href = '/api/auth/logout';
+						const traceId = error?.data?.traceId || error?.shape?.data?.traceId;
+						const queryStr = traceId ? `?error_id=${encodeURIComponent(traceId)}` : '';
+						window.location.href = `/api/auth/logout${queryStr}`;
 					}
 					return;
 				}

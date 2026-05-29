@@ -151,6 +151,7 @@ mode: 'insensitive',
                 'OD_MANAGER',
                 'LOCATION_MANAGER',
                 'TEAM_LEADER',
+                'USER',
             ]).optional(),
             isEditor: z.boolean().optional(),
             isActive: z.boolean().optional(),
@@ -267,10 +268,23 @@ mode: 'insensitive',
             }
  else if (session.role === 'LOCATION_MANAGER') {
                 if (input.odRegionId) {
-                    throw new TRPCError({
-                        code: 'FORBIDDEN',
-                        message: 'Du kannst keine OD-Region zuweisen.',
+                    const userLocId = session.effectiveLocationId || session.locationId;
+                    if (!userLocId) {
+                        throw new TRPCError({
+                            code: 'FORBIDDEN',
+                            message: 'Du kannst keine OD-Region zuweisen.',
+                        });
+                    }
+                    const managerLocation = await prisma.location.findUnique({
+                        where: { id: userLocId },
+                        select: { odRegionId: true },
                     });
+                    if (!managerLocation || input.odRegionId !== managerLocation.odRegionId) {
+                        throw new TRPCError({
+                            code: 'FORBIDDEN',
+                            message: 'Du kannst keine OD-Region zuweisen.',
+                        });
+                    }
                 }
                 if (input.locationId && input.locationId !== session.locationId) {
                     throw new TRPCError({
@@ -344,7 +358,7 @@ mode: 'insensitive',
                     updateProps.odRegionId = null;
                     updateProps.teamId = null;
                 }
-                else if (input.role === 'TEAM_LEADER') {
+                else if (input.role === 'TEAM_LEADER' || input.role === 'USER') {
                     updateProps.odRegionId = null;
                     updateProps.locationId = null;
                 }

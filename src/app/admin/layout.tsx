@@ -29,9 +29,6 @@ import {
 	DeleteConfirmToast,
 } from '@/components/shared/delete-confirm-toast';
 import {
-	GlobalErrorToast,
-} from '@/components/shared/error-toast';
-import {
 	usePermissions,
 } from '@/hooks/use-permissions';
 import {
@@ -329,7 +326,6 @@ export default function AdminLayout({
 			</main>
 
 			<DeleteConfirmToast />
-			<GlobalErrorToast />
 			<AdminPasskeyPrompt />
 		</div>
 	);

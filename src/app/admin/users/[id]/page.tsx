@@ -77,7 +77,8 @@ export default async function EditUserPage({
 						| 'ADMIN'
 						| 'OD_MANAGER'
 						| 'LOCATION_MANAGER'
-						| 'TEAM_LEADER',
+						| 'TEAM_LEADER'
+						| 'USER',
 					isEditor: user.isEditor,
 					odRegionId: user.odRegionId,
 					locationId: user.locationId,

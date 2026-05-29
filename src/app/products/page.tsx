@@ -32,10 +32,12 @@ export default async function Page() {
 	}
  catch (error: any) {
 		if (error?.code === 'UNAUTHORIZED') {
+			const traceId = error?.data?.traceId || error?.shape?.data?.traceId;
+			const queryStr = traceId ? `?error_id=${encodeURIComponent(traceId)}` : '';
 			const {
  redirect,
 } = await import('next/navigation');
-			redirect('/api/auth/logout');
+			redirect(`/api/auth/logout${queryStr}`);
 		}
 	}
 
