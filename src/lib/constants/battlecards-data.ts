@@ -70,9 +70,9 @@ export const COMPETITORS: Competitor[] = [
 		telekomArguments: [
 			{
 				icon: Star,
-				title: '💛 Emotionaler Marker: Zuverlässigkeit',
+				title: '💛 Emotionaler Marker: Kein Frust mehr am Feierabend',
 				detail:
-					'"Wenn Sie abends einen Film schauen oder im Homeoffice arbeiten, wollen Sie sich auf Ihre Verbindung verlassen können. Bei Kabel schwankt die Leitung, wenn die Nachbarn auch online sind – bei Glasfaser nicht."',
+					'"Stellen Sie sich vor, Sie kommen gestresst von der Arbeit, wollen nur noch Netflix schauen – und das Bild ruckelt wieder. Wollen Sie sich wirklich jeden Abend ärgern, nur um 5 Euro zu sparen? Bei der Telekom haben Sie Ihre eigene Leitung, da gibt es dieses Nachbarschafts-Problem nicht."',
 			},
 			{
 				icon: Trophy,
@@ -89,9 +89,14 @@ export const COMPETITORS: Competitor[] = [
 			},
 			{
 				icon: Headphones,
-				title: 'Service aus Deutschland – persönlich',
+				title: 'Testsieger Service statt Warteschleifen',
 				detail:
-					'Über 500 Telekom-Shops, Rückruf-Service und telefonische Beratung aus deutschen Standorten. Vodafone hat Service-Teile ins Ausland verlagert. Kunden berichten von Sprachbarrieren und fehlender Lösungskompetenz.',
+					'Im aktuellen connect Festnetz-Hotline-Test hat die Telekom mit Platz 1 ("sehr gut") abgeschnitten. Vodafone landete mit großem Abstand dahinter. Bei der Telekom spricht man mit echten Menschen in Deutschland, nicht mit Bots oder Call-Centern im Ausland.',
+			},
+			{
+				icon: Shield,
+				title: 'Garantierte Stabilität vs Shared Medium',
+				detail: 'Gerade im Homeoffice oder beim Online-Gaming zählt Stabilität. Das Kabelnetz ist fehleranfällig und extrem abhängig von der Auslastung im Quartier. Telekom Glasfaser bietet durchgehend die gebuchte Geschwindigkeit, selbst wenn ganz Deutschland streamt.',
 			},
 			{
 				icon: Shield,
@@ -148,9 +153,9 @@ export const COMPETITORS: Competitor[] = [
 		telekomArguments: [
 			{
 				icon: Star,
-				title: '💛 Emotionaler Marker: Auf dem Land versorgt',
+				title: '💛 Emotionaler Marker: Erreichbarkeit ist Sicherheit',
 				detail:
-					'Frage Deinen Kunden: Fährt er manchmal raus aufs Land? Zu Verwandten, in den Urlaub? Mit o2 hat er dort oft kein Netz. Mit der Telekom ist er auch auf der Landstraße erreichbar.',
+					'"Was bringt Ihnen der günstigste Tarif, wenn Sie im Notfall auf der Landstraße stehen oder Ihre Kinder im Urlaub nicht erreichen können? O2 hat auf dem Land oft Funklöcher. Die Telekom bedeutet Sicherheit für Sie und Ihre Familie überall in Deutschland."',
 			},
 			{
 				icon: Signal,
@@ -161,10 +166,15 @@ export const COMPETITORS: Competitor[] = [
 			},
 			{
 				icon: Trophy,
-				title: 'Dauerhaft Platz 1 vs. Platz 3',
+				title: 'CHIP Netztest: Klarer Testsieger vs. Platz 3',
 				detail:
-					'Im connect Netztest 2026 schafft es o2 erstmals gleichauf mit Vodafone – aber immer noch deutlich hinter der Telekom. In 15 Jahren Tests war o2 nie besser als Platz 3.',
-				source: 'connect Netztest 11/2025',
+					'Im CHIP Netztest bleibt die Telekom mit großem Abstand Testsieger, während o2 den letzten Platz belegt. Besonders auf dem Land und in Gebäuden merken Sie diesen Unterschied jeden Tag.',
+				source: 'CHIP Netztest 2025',
+			},
+			{
+				icon: Headphones,
+				title: 'Echte Hilfe bei Problemen',
+				detail: 'Die Telekom bietet hunderte Shops und einen Testsieger-Support. Bei o2 landen Kunden oft in endlosen Warteschleifen oder Chatbots, wenn es wirklich mal Probleme gibt.',
 			},
 			{
 				icon: Zap,
@@ -220,9 +230,9 @@ export const COMPETITORS: Competitor[] = [
 		telekomArguments: [
 			{
 				icon: Headphones,
-				title: '💛 Emotionaler Marker: Sicherheit',
+				title: '💛 Emotionaler Marker: Das Original, keine Kopie',
 				detail:
-					'“Stellen Sie sich vor, Ihr Internet fällt aus und Sie warten Wochen auf einen Techniker. Bei uns gibt\'s das nicht – wir kommen direkt, weil es unser Netz ist.”',
+					'"1&1 mietet Leitungen nur an. Wenn etwas kaputt geht, müssen die erst uns als Leitungseigentümer anrufen. Wollen Sie wirklich über den Mittelsmann gehen, wenn Sie das Original zum ähnlichen Preis haben können? Direkt bei der Telekom heißt: Direkte Hilfe ohne Wartezeit."',
 			},
 			{
 				icon: Shield,
@@ -302,9 +312,9 @@ export const COMPETITORS: Competitor[] = [
 			},
 			{
 				icon: Zap,
-				title: '💛 Emotionaler Marker: Mehr verdient',
+				title: '💛 Emotionaler Marker: Vom Holzklasse- zum First-Class-Service',
 				detail:
-					'“congstar ist gut für den Einstieg – aber Sie verdienen mehr als Discount. Premium-Netz, persönlicher Service und Geräte nach Wahl: Das ist der Telekom-Unterschied.”',
+					'"Congstar ist unsere Discount-Tochter – super für den Einstieg. Aber irgendwann wächst man da raus. Sie wollen echten Service in einem Shop vor Ort, das volle 5G-Netz ohne Drosselung und das neueste Smartphone? Dann sind Sie reif für das Original."',
 			},
 		],
 	},
@@ -354,9 +364,9 @@ export const COMPETITORS: Competitor[] = [
 		telekomArguments: [
 			{
 				icon: Zap,
-				title: '💛 Emotionaler Marker: Vertrauen',
+				title: '💛 Emotionaler Marker: Kein Risiko bei Großprojekten',
 				detail:
-					'“Deutsche Glasfaser ist ein junges Unternehmen. Die Telekom baut seit über 25 Jahren Netze – Sie wissen, dass wir auch in 10 Jahren noch da sind.”',
+					'"Sie reißen für den Glasfaseranschluss Ihren Vorgarten auf – da wollen Sie doch einen Partner, der Erfahrung hat und morgen noch existiert. Bei der Deutschen Glasfaser häufen sich Baustopps. Die Telekom baut zuverlässig und mit regionalen Partnern."',
 			},
 			{
 				icon: Signal,
@@ -424,9 +434,9 @@ export const COMPETITORS: Competitor[] = [
 		telekomArguments: [
 			{
 				icon: Zap,
-				title: '💛 Emotionaler Marker: Frustfrei',
+				title: '💛 Emotionaler Marker: Schluss mit der Kabel-Lotterie',
 				detail:
-					'“Viele PYUR-Kunden kommen zu uns, weil sie am Abend kaum noch surfen konnten. Mit Telekom-Glasfaser ist Schluss mit Shared Medium – Ihre Leitung gehört nur Ihnen.”',
+					'"Jeden Abend hoffen, dass die Nachbarn nicht zu viel streamen, damit das eigene Internet noch geht? Das ist Kabel. Mit einem Wechsel zur Telekom kaufen Sie sich Ihren Seelenfrieden zurück: Ihre eigene Leitung, konstante Leistung."',
 			},
 			{
 				icon: Trophy,
@@ -494,15 +504,15 @@ export const COMPETITORS: Competitor[] = [
 		telekomArguments: [
 			{
 				icon: Star,
-				title: '💛 Emotionaler Marker: Klarheit',
+				title: '💛 Emotionaler Marker: Keine bösen Überraschungen',
 				detail:
-					'“Bei uns gibt\'s keine versteckten Kosten und keine Netz-Lotterie. Sie bekommen das beste Netz Deutschlands – direkt, ohne Mittelsmann.”',
+					'"Freenet lockt oft mit extrem niedrigen Einstiegspreisen, die dann stillschweigend steigen. Wollen Sie ständig Ihre Rechnungen kontrollieren müssen? Bei der Telekom haben Sie einen klaren, fairen Vertrag beim Netzbetreiber selbst."',
 			},
 			{
 				icon: Shield,
-				title: 'Transparenz: Sie wissen, was Sie bekommen',
+				title: 'Echtes Telekom-Netz statt Reseller-Labyrinth',
 				detail:
-					'Bei der Telekom buchen Sie das Telekom-Netz – garantiert. Bei freenet wissen Kunden oft nicht, ob sie im Telekom-, Vodafone- oder o2-Netz landen. Und bei Problemen ist niemand zuständig.',
+					'Freenet verkauft Tarife in verschiedenen Netzen (Telekom, Vodafone, o2). Kunden wissen oft gar nicht, wo sie landen. Bei der Telekom haben Sie zu 100 % das prämierte Telekom-Netz mit voller Netzpriorität.',
 			},
 			{
 				icon: Signal,
@@ -562,9 +572,9 @@ export const COMPETITORS: Competitor[] = [
 		telekomArguments: [
 			{
 				icon: Shield,
-				title: '💛 Emotionaler Marker: Qualität zahlt sich aus',
+				title: '💛 Emotionaler Marker: Wer billig kauft, kauft zweimal',
 				detail:
-					'“Billig ist nicht günstig. Was nützt ein 5€-Tarif im o2-Netz, wenn man auf dem Land kein Netz hat? Für wenige Euro mehr gibt\'s das beste Netz Deutschlands und echten Service.”',
+					'"Was nützt Ihnen der 5-Euro-Tarif von Drillisch, wenn Sie Google Maps in der Pampa nicht laden können oder der Support nicht ans Telefon geht? Gutes Netz ist wie gute Reifen am Auto: daran sollte man nicht sparen."',
 			},
 			{
 				icon: Trophy,
@@ -626,9 +636,9 @@ export const COMPETITORS: Competitor[] = [
 		telekomArguments: [
 			{
 				icon: Headphones,
-				title: '💛 Emotionaler Marker: Einer für alles',
+				title: '💛 Emotionaler Marker: Alles aus einem Guss',
 				detail:
-					'“Warum drei verschiedene Anbieter für Handy, Internet und TV? Bei der Telekom bekommen Sie alles aus einer Hand – einen Vertrag, eine Rechnung, ein Ansprechpartner.”',
+					'"Sie haben Ihr Festnetz bei der Telekom, aber Handy bei Klarmobil? Da verschenken Sie jeden Monat Geld! Mit dem MagentaEINS-Vorteil bündeln wir das. Sie sparen bares Geld, bekommen doppeltes Datenvolumen und haben nur noch eine Rechnung."',
 			},
 			{
 				icon: Shield,
@@ -690,15 +700,15 @@ export const COMPETITORS: Competitor[] = [
 		telekomArguments: [
 			{
 				icon: Zap,
-				title: '💛 Emotionaler Marker: Das Beste für die Familie',
+				title: '💛 Emotionaler Marker: Sicherheit für Ihre Liebsten',
 				detail:
-					'“Für sich selbst könnte man Discount nehmen. Aber für die Familie will man Verlässlichkeit – dass die Kinder im Notfall anrufen können, dass das Homeoffice nicht abbricht. Das ist die Telekom.”',
+					'"Ein Discounter-Tarif ist okay für das Zweithandy. Aber für Ihre Familie wollen Sie 100 % Zuverlässigkeit. Dass die Kinder Sie auf dem Nachhauseweg immer erreichen können und Sie im Homeoffice keine Abbrüche haben. Das ist das Telekom-Gefühl."',
 			},
 			{
 				icon: Trophy,
-				title: 'Premium-Netz für den Alltag',
+				title: 'Vorfahrt im besten Netz',
 				detail:
-					'Discount-Marken nutzen immer die schwächsten Netz-Kapazitäten. Telekom-Kunden surfen mit voller Priorität auf Deutschlands bestem Netz – der Unterschied zeigt sich bei Großevents, in der Stadt und auf Reisen.',
+					'Bei Discounter-Marken (wie ALDI oder Blau) sind Sie Kunde zweiter Klasse und surfen mit der niedrigsten Priorität. Wenn das Netz bei einem Konzert oder in der Bahn voll ist, fliegen Sie als Erstes raus. Telekom-Direktkunden haben immer Vorfahrt.',
 			},
 			{
 				icon: Headphones,
@@ -771,5 +781,38 @@ export const OBJECTIONS: Objection[] = [
 			'“Da haben Sie recht, auf dem Papier sieht das günstiger aus. Aber wissen Sie auch, woran dort gespart wird? Oft ist es die Netzqualität am Abend oder der Kundenservice. Welcher Anbieter ist es denn genau?”',
 		tip: 'Sofort in die Analyse gehen (\'Welcher Anbieter?\') und dann ins Battlecard-Panel (Tab: Wettbewerb) wechseln.',
 		icon: AlertTriangle,
+	},
+
+	{
+		id: 'no-time',
+		title: '„Habe gerade keine Zeit“',
+		coreArgument: 'Künstliche Verknappung, 60-Sekunden-Lösung',
+		exampleText: '„Verstehe ich absolut, Zeit ist Geld. Genau deshalb mache ich es ganz kurz: Ich sehe hier gerade, dass Ihre Leitung für einen Bruchteil mehr auf die doppelte Leistung hochgestuft werden kann – und ich kann Ihnen die Bereitstellungsgebühr heute komplett erlassen. Das dauert zum Buchen weniger als 60 Sekunden. Sollen wir das direkt für Sie absichern, bevor das Angebot morgen ausläuft?“',
+		tip: 'Die „keine Zeit“-Ausrede ernst nehmen, aber eine sofortige Lösung in 60 Sekunden anbieten. Verknappung zwingt zur Entscheidung.',
+		icon: Clock,
+	},
+	{
+		id: 'bad-experience',
+		title: '„Schlechte Erfahrungen mit der Telekom gemacht“',
+		coreArgument: 'Validierung des Schmerzes, Neuanfang, Premium-Argument',
+		exampleText: '„Ich verstehe Ihren Ärger vollkommen, das würde mir genauso gehen. Genau aus diesen Fehlern der Vergangenheit haben wir gelernt. Deswegen bin ich heute Ihr persönlicher Ansprechpartner. Unser Netz wurde nicht ohne Grund wieder als das beste Deutschlands ausgezeichnet. Lassen Sie uns die alte Geschichte abhaken: Ich richte Ihnen das System jetzt so ein, dass es ab Tag 1 stabil läuft. Welchen Namen darf ich für die Auftragsbestätigung eintragen?“',
+		tip: 'Den Schmerz validieren, aber sofort einen Schlussstrich ziehen („alte Geschichte abhaken“) und in die Abschlussfrage übergehen. Nicht als Bittsteller auftreten.',
+		icon: AlertTriangle,
+	},
+	{
+		id: 'too-much-effort',
+		title: '„Ein Wechsel ist mir zu viel Aufwand“',
+		coreArgument: 'Rundum-Sorglos-Paket, psychologische Entlastung',
+		exampleText: '„Genau deshalb rufen Sie mich an – den Papierkram tut sich heute keiner mehr freiwillig an. Das läuft bei uns so: Sie lehnen sich zurück, ich klicke hier auf "Rundum-Sorglos". Wir kündigen für Sie, wir nehmen Ihre Rufnummer mit und wir garantieren, dass das Internet ohne einen einzigen Tag Unterbrechung weiterläuft. Sie müssen nichts tun, außer am Schalttag den neuen Router einzustecken. Brauche ich für den Wechsel Ihre aktuelle Anbieternummer, oder soll ich die kurz für Sie heraussuchen?“',
+		tip: 'Das Bild im Kopf von „Arbeit“ auf „Urlaub“ umschalten („Sie lehnen sich zurück“). Die Alternativfrage am Ende führt direkt in den Buchungsprozess.',
+		icon: CheckCircle2,
+	},
+	{
+		id: 'partner-decides',
+		title: '„Das muss ich mit meinem Partner besprechen“',
+		coreArgument: 'Risk Reversal (Widerrufsrecht), Einbeziehung des Partners',
+		exampleText: '„Absolut verständlich, wichtige Entscheidungen trifft man zusammen. Wenn Ihr Partner jetzt neben Ihnen stünde: Würde er eher sagen "Hauptsache das Internet läuft endlich stabil" oder "Hauptsache wir sparen beim TV-Paket"? ... Perfekt, genau so habe ich das Angebot nämlich auch konfiguriert. Ich buche Ihnen das jetzt mit einem 14-tägigen Widerrufsrecht ein. Sie besprechen das heute Abend entspannt bei einem Glas Wein – wenn Ihr Partner wider Erwarten "Nein" sagt, reicht ein Klick und alles ist hinfällig. Aber den aktuellen Aktionsrabatt haben Sie sich erst mal gesichert. Schicke ich die Bestätigung an Ihre E-Mail-Adresse?“',
+		tip: 'Kunden zum Entscheider machen und das 14-tägige Widerrufsrecht als Sicherheitsnetz nutzen („Risk Reversal“). Abschluss risikofrei machen.',
+		icon: UserX,
 	},
 ];
