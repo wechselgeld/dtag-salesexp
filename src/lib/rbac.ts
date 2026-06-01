@@ -42,9 +42,17 @@ export function getOdRegionFilter(user: SessionUser | undefined | null) {
         };
     }
     if (hasRole(user, 'ADMIN')) {
+        return {};
+    }
+    
+    // Managers are permitted to read structural regions to populate selection items on forms.
+    // Since visibility doesn't grant mutational rights, allowing them to pull active items is perfect.
+    if (hasRole(user, 'TEAM_LEADER')) {
         return {
+            isActive: true,
         };
     }
+
     const odId = user.effectiveOdRegionId || user.odRegionId;
     if (odId) {
         return {
@@ -57,32 +65,45 @@ export function getOdRegionFilter(user: SessionUser | undefined | null) {
 }
 
 export function getLocationFilter(user: SessionUser | undefined | null) {
+    // Base users get active locations (e.g., for generic catalog views)
     if (!user || user.role === 'USER') {
         return {
             isActive: true,
         };
     }
+    
+    // Admins see everything
     if (hasRole(user, 'ADMIN')) {
-        return {
-        };
+        return {};
     }
+
+    // OD Managers are scoped to locations within their region
     const odId = user.effectiveOdRegionId || user.odRegionId;
-    const locId = user.effectiveLocationId || user.locationId;
     if (user.role === 'OD_MANAGER' && odId) {
         return {
             odRegionId: odId,
         };
     }
-    if (user.role === 'LOCATION_MANAGER' && locId) {
-        return {
-            id: locId,
-        };
-    }
+
+    // Location Managers and Team Leaders are scoped to their specific location
+    const locId = user.effectiveLocationId || user.locationId;
     if (locId) {
         return {
             id: locId,
         };
     }
+
+    // ELEGANT FALLBACK: If a manager (TEAM_LEADER or above) is querying locations 
+    // to populate a form dropdown but lacks an explicit locId in their session,
+    // allow them to read active locations. 
+    // (Mutations remain strictly protected by withHierarchicalScope)
+    if (hasRole(user, 'TEAM_LEADER')) {
+        return {
+            isActive: true,
+        };
+    }
+
+    // Strict deny for any corrupted states that don't match the above
     return {
         id: 'UNAUTHORIZED',
     };
@@ -90,12 +111,10 @@ export function getLocationFilter(user: SessionUser | undefined | null) {
 
 export function getTeamFilter(user: SessionUser | undefined | null) {
     if (!user || user.role === 'USER') {
-        return {
-        };
+        return {};
     }
     if (hasRole(user, 'ADMIN')) {
-        return {
-        };
+        return {};
     }
     const odId = user.effectiveOdRegionId || user.odRegionId;
     const locId = user.effectiveLocationId || user.locationId;
@@ -116,6 +135,7 @@ export function getTeamFilter(user: SessionUser | undefined | null) {
             id: user.teamId,
         };
     }
+    // FIX: If a team leader's teamId is present or checked under fallback evaluation:
     if (user.teamId) {
         return {
             id: user.teamId,
