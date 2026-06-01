@@ -71,8 +71,7 @@ export const COMPETITORS: Competitor[] = [
 			{
 				icon: Star,
 				title: '💛 Emotionaler Marker: Kein Frust mehr am Feierabend',
-				detail:
-					'"Stellen Sie sich vor, Sie kommen gestresst von der Arbeit, wollen nur noch Netflix schauen – und das Bild ruckelt wieder. Wollen Sie sich wirklich jeden Abend ärgern, nur um 5 Euro zu sparen? Bei der Telekom haben Sie Ihre eigene Leitung, da gibt es dieses Nachbarschafts-Problem nicht."',
+				detail: '"Feierabend, Sofa, Netflix – und das Bild hängt. Kennen Sie, oder? Das ist Kabelnetz-Alltag, weil die Nachbarn mitsurfen. Warum für 5 Euro Ersparnis den eigenen Feierabend ruinieren? Ich setz Sie jetzt auf Ihre eigene Glasfaser-Leitung. Da ruckelt nichts mehr. Geht das auf die bestehende Bankverbindung?"',
 			},
 			{
 				icon: Trophy,
@@ -154,8 +153,7 @@ export const COMPETITORS: Competitor[] = [
 			{
 				icon: Star,
 				title: '💛 Emotionaler Marker: Erreichbarkeit ist Sicherheit',
-				detail:
-					'"Was bringt Ihnen der günstigste Tarif, wenn Sie im Notfall auf der Landstraße stehen oder Ihre Kinder im Urlaub nicht erreichen können? O2 hat auf dem Land oft Funklöcher. Die Telekom bedeutet Sicherheit für Sie und Ihre Familie überall in Deutschland."',
+				detail: '"Billig bringt gar nichts, wenn Sie auf der Landstraße im Notfall keinen Balken Empfang haben. Bei o2 ist auf dem Land oft Schicht im Schacht. Die Telekom bedeutet: Sie sind immer erreichbar. Punkt. Ich leg das jetzt für Sie an, damit die Funklöcher ab morgen Geschichte sind. Schick ich die Bestätigung an die alte Mailadresse?"',
 			},
 			{
 				icon: Signal,
@@ -231,8 +229,7 @@ export const COMPETITORS: Competitor[] = [
 			{
 				icon: Headphones,
 				title: '💛 Emotionaler Marker: Das Original, keine Kopie',
-				detail:
-					'"1&1 mietet Leitungen nur an. Wenn etwas kaputt geht, müssen die erst uns als Leitungseigentümer anrufen. Wollen Sie wirklich über den Mittelsmann gehen, wenn Sie das Original zum ähnlichen Preis haben können? Direkt bei der Telekom heißt: Direkte Hilfe ohne Wartezeit."',
+				detail: '"1&1 mietet die Leitungen doch nur von uns. Wenn was ausfällt, hängen Sie beim Mittelsmann in der Schleife, während der uns anrufen muss. Wahnsinn, oder? Kommen Sie direkt zum Chef. Wir machen das jetzt sauber, ohne Umwege. Sollen wir die Rufnummer direkt mitnehmen?"',
 			},
 			{
 				icon: Shield,
@@ -313,8 +310,7 @@ export const COMPETITORS: Competitor[] = [
 			{
 				icon: Zap,
 				title: '💛 Emotionaler Marker: Vom Holzklasse- zum First-Class-Service',
-				detail:
-					'"Congstar ist unsere Discount-Tochter – super für den Einstieg. Aber irgendwann wächst man da raus. Sie wollen echten Service in einem Shop vor Ort, das volle 5G-Netz ohne Drosselung und das neueste Smartphone? Dann sind Sie reif für das Original."',
+				detail: '"Congstar war nett für den Anfang, aber Sie fahren doch auch nicht mehr mit Stützrädern. Sie wollen vollen 5G-Speed ohne Handbremse und echten Premium-Service. Ich stufe Sie jetzt auf das Original hoch, das kostet Sie auf den Tag gerechnet ein paar Cent. Geht das Gerät an die aktuelle Lieferadresse?"',
 			},
 		],
 	},
@@ -365,8 +361,7 @@ export const COMPETITORS: Competitor[] = [
 			{
 				icon: Zap,
 				title: '💛 Emotionaler Marker: Kein Risiko bei Großprojekten',
-				detail:
-					'"Sie reißen für den Glasfaseranschluss Ihren Vorgarten auf – da wollen Sie doch einen Partner, der Erfahrung hat und morgen noch existiert. Bei der Deutschen Glasfaser häufen sich Baustopps. Die Telekom baut zuverlässig und mit regionalen Partnern."',
+				detail: '"Sie lassen sich doch für den Ausbau nicht den Vorgarten aufreißen von einer Firma, wo morgen der Bagger stehen bleibt, weil das Geld fehlt. Da häufen sich die Baustopps. Die Telekom baut aus eigener Tasche und zieht das durch. Machen wir direkt den Haken dran, damit Ihr Anschluss gesichert ist?"',
 			},
 			{
 				icon: Signal,
@@ -435,8 +430,7 @@ export const COMPETITORS: Competitor[] = [
 			{
 				icon: Zap,
 				title: '💛 Emotionaler Marker: Schluss mit der Kabel-Lotterie',
-				detail:
-					'"Jeden Abend hoffen, dass die Nachbarn nicht zu viel streamen, damit das eigene Internet noch geht? Das ist Kabel. Mit einem Wechsel zur Telekom kaufen Sie sich Ihren Seelenfrieden zurück: Ihre eigene Leitung, konstante Leistung."',
+				detail: '"Jeden Abend Lotto spielen, ob das Internet noch geht, nur weil der Nachbar auch streamt? Das ist das Kabel-Risiko bei PYUR. Vergessen Sie das. Ich buche Ihnen jetzt Ihre eigene, exklusive Leitung. Schluss mit Shared Medium. Wann passt Ihnen der Techniker-Termin am besten?"',
 			},
 			{
 				icon: Trophy,
@@ -505,8 +499,7 @@ export const COMPETITORS: Competitor[] = [
 			{
 				icon: Star,
 				title: '💛 Emotionaler Marker: Keine bösen Überraschungen',
-				detail:
-					'"Freenet lockt oft mit extrem niedrigen Einstiegspreisen, die dann stillschweigend steigen. Wollen Sie ständig Ihre Rechnungen kontrollieren müssen? Bei der Telekom haben Sie einen klaren, fairen Vertrag beim Netzbetreiber selbst."',
+				detail: '"Freenet blendet mit Lockangeboten, und hintenrum geht die Rechnung hoch oder Sie landen in irgendeinem Restposten-Netz. Wollen Sie sich das echt antun? Ich mache das jetzt einmal vernünftig für Sie: Telekom-Direktvertrag, volle Leistung, klare Kante. Brauche ich dafür noch was von Ihrem alten Anbieter?"',
 			},
 			{
 				icon: Shield,
@@ -573,8 +566,7 @@ export const COMPETITORS: Competitor[] = [
 			{
 				icon: Shield,
 				title: '💛 Emotionaler Marker: Wer billig kauft, kauft zweimal',
-				detail:
-					'"Was nützt Ihnen der 5-Euro-Tarif von Drillisch, wenn Sie Google Maps in der Pampa nicht laden können oder der Support nicht ans Telefon geht? Gutes Netz ist wie gute Reifen am Auto: daran sollte man nicht sparen."',
+				detail: '"Was bringen 5 Euro gespart, wenn auf dem Land nicht mal WhatsApp durchgeht? Gutes Netz ist wie gute Reifen am Auto – da spart man nicht, da geht’s um Sicherheit und Nerven. Ich zieh Sie jetzt ins Premiumnetz. Das buchen wir direkt sicher ein, okay?"',
 			},
 			{
 				icon: Trophy,
@@ -637,8 +629,7 @@ export const COMPETITORS: Competitor[] = [
 			{
 				icon: Headphones,
 				title: '💛 Emotionaler Marker: Alles aus einem Guss',
-				detail:
-					'"Sie haben Ihr Festnetz bei der Telekom, aber Handy bei Klarmobil? Da verschenken Sie jeden Monat Geld! Mit dem MagentaEINS-Vorteil bündeln wir das. Sie sparen bares Geld, bekommen doppeltes Datenvolumen und haben nur noch eine Rechnung."',
+				detail: '"Sie haben Festnetz bei uns, aber Handy bei Klarmobil? Das ist weggeworfenes Geld! Ich schalte Ihnen jetzt den MagentaEINS-Vorteil frei: Damit telefonieren Sie vom Festnetz kostenlos in alle Handynetze – und ab dem M-Tarif gebe ich Ihnen unbegrenztes Datenvolumen aufs Handy. Schluss mit dem Stückwerk. Machen wir das direkt fest?"',
 			},
 			{
 				icon: Shield,
@@ -701,8 +692,7 @@ export const COMPETITORS: Competitor[] = [
 			{
 				icon: Zap,
 				title: '💛 Emotionaler Marker: Sicherheit für Ihre Liebsten',
-				detail:
-					'"Ein Discounter-Tarif ist okay für das Zweithandy. Aber für Ihre Familie wollen Sie 100 % Zuverlässigkeit. Dass die Kinder Sie auf dem Nachhauseweg immer erreichen können und Sie im Homeoffice keine Abbrüche haben. Das ist das Telekom-Gefühl."',
+				detail: '"Discount ist was fürs Zweithandy im Handschuhfach. Aber für den Alltag wollen Sie, dass die Kinder Sie immer erreichen und das Netz nicht abkackt, wenn’s drauf ankommt. Ich packe Sie jetzt ins Testsieger-Netz, fertig aus. Wer kriegt die Partnerkarte, Ihre Frau oder die Kids?"',
 			},
 			{
 				icon: Trophy,
@@ -732,8 +722,7 @@ export const OBJECTIONS: Objection[] = [
 		title: '„Zu teuer“',
 		coreArgument:
 			'Tagespreis-Rechnung, Gegenüberstellung Einzelkosten, Mehrwert',
-		exampleText:
-			'„Ich verstehe, dass der Preis im ersten Moment hoch wirkt. Wenn wir es aber mal auf den Tag herunterrechnen, sprechen wir hier von wenigen Cent. Dafür bekommen Sie das Telekom-Premiumnetz und sparen sich den Ärger. Ist das nicht den kleinen Aufpreis wert?“',
+		exampleText: '"Klar, Qualität hat ihren Preis. Aber wir reden hier runtergebrochen auf den Tag von ein paar Cent Unterschied. Wollen Sie sich für ein paar Cent am Tag wirklich weiter mit Verbindungsabbrüchen und Hotline-Warteschleifen rumschlagen? Nein, eben. Ich mach das jetzt direkt fertig für Sie, dann haben Sie Ruhe. Auf welchen Namen?"',
 		tip: 'Zuerst Verständnis zeigen. Dann von Gesamtkosten in kleinere, greifbare Einheiten (z.B. Tagespreis) wechseln.',
 		icon: DollarSign,
 	},
@@ -741,8 +730,7 @@ export const OBJECTIONS: Objection[] = [
 		id: 'dont-need-it',
 		title: '„Brauche ich nicht“',
 		coreArgument: 'Bedarfsweckung, aktuelle Nutzung hinterfragen',
-		exampleText:
-			'„Das höre ich oft. Dachte ich anfangs auch. Haben Sie schon mal erlebt, dass abends das Bild ruckelt? Genau hier hilft nämlich diese Lösung, damit das nicht mehr passiert.“',
+		exampleText: '"Dachte ich am Anfang auch. Aber ganz ehrlich: Wie oft hing bei Ihnen abends schon Netflix oder das Bild pixelte? Sehen Sie. Genau dafür ist das da. Schluss mit Kompromissen. Ich buche Ihnen das jetzt ein, Sie testen das 14 Tage risikofrei und wenn’s nichts taugt, ein Anruf genügt. Machen wir so, oder?"',
 		tip: 'Fragen stellen, statt zu argumentieren: „Wie nutzen Sie aktuell...?“, „Was machen Sie, wenn...?“',
 		icon: EyeOff,
 	},
@@ -759,8 +747,7 @@ export const OBJECTIONS: Objection[] = [
 		id: 'im-satisfied',
 		title: '„Bin zufrieden“',
 		coreArgument: 'Verbesserungspotential zeigen, Vergleich Alt vs. Neu',
-		exampleText:
-			'„Das freut mich sehr, Herr [Name]. Deswegen melde ich mich auch. Als treuer Kunde haben sich über die Jahre Ihre Konditionen etwas überholt – ich kann Ihnen heute für fast das gleiche Geld die vierfache Leistung anbieten.“',
+		exampleText: '"Das höre ich gern, Herr [Name]. Und genau deshalb ruf ich an: Wer zufrieden ist, verpasst oft die Upgrades. Ihr Tarif hat nämlich schon ordentlich Staub angesetzt. Ich schalte Ihnen jetzt für fast dasselbe Geld die vierfache Leistung frei, weil Sie das als treuer Kunde verdient haben. Da müssen Sie gar nichts weiter machen, ich drück hier nur aufs Knöpfchen. Einverstanden?"',
 		tip: 'Zufriedenheit loben, aber Weiterentwicklung (Update) schmackhaft machen.',
 		icon: CheckCircle2,
 	},
@@ -768,9 +755,8 @@ export const OBJECTIONS: Objection[] = [
 		id: 'in-contract',
 		title: '„Bin noch im Vertrag“',
 		coreArgument: 'Vormerkung, MagentaEINS-Vorteil, Wechselzeitpunkt',
-		exampleText:
-			'“Kein Problem! Das ist sogar perfekt. Wir können den Wechsel jetzt schon kostenlos reservieren, Sie sichern sich die heutigen Aktionspreise, und wir kümmern uns automatisch im Hintergrund um die problemlose Kündigung beim alten Anbieter, sobald die Zeit reif ist.”',
-		tip: 'Kunden die Angst vor dem \'Doppelt-Zahlen\' nehmen und auf Bequemlichkeit hinweisen.',
+		exampleText: '"Perfekt, das ist sogar der beste Zeitpunkt! Wir machen jetzt folgendes: Ich reserviere Ihnen den heutigen Aktionspreis unverbindlich, und wir übernehmen die Kündigung im Hintergrund. Sie zahlen keinen Cent doppelt, sichern sich aber die Rabatte von heute. Geben Sie mir kurz die Kundennummer vom alten Anbieter?"',
+		tip: 'Doppelt zahlen ist die Hauptangst. Das System "Reservierung & Wechsel-Service" nimmt den Druck und führt direkt in die Datenabfrage.',
 		icon: Lock,
 	},
 	{
