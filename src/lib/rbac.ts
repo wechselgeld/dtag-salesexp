@@ -111,13 +111,18 @@ export function getLocationFilter(user: SessionUser | undefined | null) {
 
 export function getTeamFilter(user: SessionUser | undefined | null) {
     if (!user || user.role === 'USER') {
-        return {};
+        return {
+            isActive: true,
+        };
     }
+
     if (hasRole(user, 'ADMIN')) {
         return {};
     }
+
     const odId = user.effectiveOdRegionId || user.odRegionId;
     const locId = user.effectiveLocationId || user.locationId;
+
     if (user.role === 'OD_MANAGER' && odId) {
         return {
             location: {
@@ -125,22 +130,30 @@ export function getTeamFilter(user: SessionUser | undefined | null) {
             },
         };
     }
+
     if (user.role === 'LOCATION_MANAGER' && locId) {
         return {
             locationId: locId,
         };
     }
+
+    // Explicit scope: If they have a teamId, return exactly their team.
     if (user.role === 'TEAM_LEADER' && user.teamId) {
         return {
             id: user.teamId,
         };
     }
-    // FIX: If a team leader's teamId is present or checked under fallback evaluation:
-    if (user.teamId) {
-        return {
-            id: user.teamId,
-        };
+
+    // ELEGANT FALLBACK: If a manager (TEAM_LEADER or above) lacks an explicit teamId 
+    // in their session (e.g., role was changed for testing), scope them to their location 
+    // or allow active teams to prevent form crashes.
+    if (hasRole(user, 'TEAM_LEADER')) {
+        if (locId) {
+            return { locationId: locId };
+        }
+        return { isActive: true };
     }
+
     return {
         id: 'UNAUTHORIZED',
     };
