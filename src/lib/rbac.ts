@@ -109,11 +109,12 @@ export function getLocationFilter(user: SessionUser | undefined | null) {
     };
 }
 
+// src/lib/rbac.ts
+
 export function getTeamFilter(user: SessionUser | undefined | null) {
     if (!user || user.role === 'USER') {
-        return {
-            isActive: true,
-        };
+        // CHANGED: Removed isActive: true since Team doesn't have this field
+        return {}; 
     }
 
     if (hasRole(user, 'ADMIN')) {
@@ -151,13 +152,15 @@ export function getTeamFilter(user: SessionUser | undefined | null) {
         if (locId) {
             return { locationId: locId };
         }
-        return { isActive: true };
+        // CHANGED: Removed isActive: true here as well
+        return {}; 
     }
 
     return {
         id: 'UNAUTHORIZED',
     };
 }
+
 
 export function getNewsVisibilityFilter(user: SessionUser | undefined | null) {
     if (!user) {
