@@ -10,6 +10,9 @@ import {
  trpc,
 } from '@/lib/trpc';
 import {
+	useOpenPanel,
+} from '@openpanel/nextjs';
+import {
  motion, AnimatePresence,
 } from 'framer-motion';
 import {
@@ -60,6 +63,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
 	const router = useRouter();
 	const utils = trpc.useUtils();
+	const op = useOpenPanel();
 	const [
  error,
 setError,
@@ -164,6 +168,10 @@ setIsEnrollingPasskey,
 
 	const setupMutation = trpc.auth.setupAdminPassword.useMutation({
 		onSuccess: async (data) => {
+			op.track('admin_setup_success', {
+				email: setupEmail,
+				location: 'login_page',
+			});
 			await utils.auth.me.refetch();
 			if (data.suggestPasskey) {
 				setPasskeyEmail(setupEmail || '');
@@ -175,6 +183,11 @@ setIsEnrollingPasskey,
 			}
 		},
 		onError: (err) => {
+			op.track('admin_setup_failed', {
+				email: setupEmail,
+				location: 'login_page',
+				error: err.message || String(err),
+			});
 			setSetupError(err.message);
 		},
 	});
@@ -198,6 +211,10 @@ setIsEnrollingPasskey,
 			setSetupError('Die Passwörter stimmen nicht überein.');
 			return;
 		}
+		op.track('admin_setup_started', {
+			email: setupEmail,
+			location: 'login_page',
+		});
 		setupMutation.mutate({
 			email: setupEmail,
 			pin: setupPin,
@@ -207,6 +224,11 @@ setIsEnrollingPasskey,
 
 	const loginMutation = trpc.auth.login.useMutation({
 		onSuccess: async (data) => {
+			op.track('admin_login_success', {
+				email: watch('email') || '',
+				location: 'login_page',
+				type: 'password',
+			});
 			await utils.auth.me.refetch();
 			if (data.suggestPasskey) {
 				setPasskeyEmail(watch('email') || '');
@@ -218,6 +240,12 @@ setIsEnrollingPasskey,
 			}
 		},
 		onError: (err) => {
+			op.track('admin_login_failed', {
+				email: watch('email') || '',
+				location: 'login_page',
+				type: 'password',
+				error: err.message || String(err),
+			});
 			setError(err.message);
 			if (err.message.includes('noch kein Passwort')) {
 				const currentEmail = watch('email');
@@ -233,6 +261,11 @@ setIsEnrollingPasskey,
 			return;
 		}
 		setIsEnrollingPasskey(true);
+		op.track('passkey_registration_started', {
+			email: targetEmail,
+			location: 'login_page',
+			user_role: currentUser?.role || undefined,
+		});
 		try {
 			const {
  startRegistration,
@@ -247,12 +280,23 @@ setIsEnrollingPasskey,
 				email: targetEmail,
 				response: resp,
 			});
+			op.track('passkey_registration_success', {
+				email: targetEmail,
+				location: 'login_page',
+				user_role: currentUser?.role || undefined,
+			});
 			alert('Passkey erfolgreich eingerichtet!');
 			router.push('/admin/products');
 			router.refresh();
 		}
  catch (err: any) {
 			console.error('Passkey failed', err);
+			op.track('passkey_registration_failed', {
+				email: targetEmail,
+				location: 'login_page',
+				user_role: currentUser?.role || undefined,
+				error: err.message || String(err),
+			});
 			alert(`Fehler bei der Passkey-Einrichtung: ${err.message}`);
 		}
  finally {
@@ -261,6 +305,11 @@ setIsEnrollingPasskey,
 	};
 
 	const handleSkipPasskey = () => {
+		const targetEmail = passkeyEmail || currentUser?.email || setupEmail || watch('email');
+		op.track('passkey_setup_skipped', {
+			email: targetEmail || undefined,
+			location: 'login_page',
+		});
 		router.push('/admin/products');
 		router.refresh();
 	};
@@ -299,19 +348,36 @@ setIsPasskeyLoading,
 						optionsJSON: options,
 						useBrowserAutofill: true,
 					});
+					op.track('passkey_login_started', {
+						location: 'login_page',
+						type: 'conditional_autofill',
+					});
 					const verifyResp = await verifyAuth.mutateAsync({
 						challengeId,
 						response: authResp,
 					});
 
 					if (verifyResp.success) {
+						op.track('passkey_login_success', {
+							email: verifyResp.email || undefined,
+							location: 'login_page',
+							type: 'conditional_autofill',
+							user_role: verifyResp.isAdmin ? 'ADMIN' : 'USER',
+						});
 						await utils.auth.me.refetch();
 						router.push('/admin/products');
 						router.refresh();
 					}
 				}
- catch (err: any) {
+				catch (err: any) {
 					console.log('Conditional UI autofill aborted or unavailable', err);
+					if (err.name !== 'AbortError') {
+						op.track('passkey_login_failed', {
+							location: 'login_page',
+							type: 'conditional_autofill',
+							error: err.message || String(err),
+						});
+					}
 				}
 			}
 		};
@@ -322,6 +388,10 @@ setIsPasskeyLoading,
 	const handlePasskeyLogin = async () => {
 		setError('');
 		setIsPasskeyLoading(true);
+		op.track('passkey_login_started', {
+			location: 'login_page',
+			type: 'manual',
+		});
 		try {
 			const {
  startAuthentication,
@@ -339,17 +409,28 @@ setIsPasskeyLoading,
 			});
 
 			if (verifyResp.success) {
+				op.track('passkey_login_success', {
+					email: verifyResp.email || undefined,
+					location: 'login_page',
+					type: 'manual',
+					user_role: verifyResp.isAdmin ? 'ADMIN' : 'USER',
+				});
 				await utils.auth.me.refetch();
 				router.push('/admin/products');
 				router.refresh();
 			}
 		}
- catch (err: any) {
+		catch (err: any) {
 			console.error('Passkey login failed', err);
+			op.track('passkey_login_failed', {
+				location: 'login_page',
+				type: 'manual',
+				error: err.message || String(err),
+			});
 			if (err.message?.includes('No passkeys registered')) {
 				setError('Für diese E-Mail ist noch kein Passkey registriert.');
 			}
- else {
+			else {
 				setError('Passkey-Login fehlgeschlagen. Bitte verwende Dein Passwort.');
 			}
 		}
@@ -360,6 +441,11 @@ setIsPasskeyLoading,
 
 	const onSubmit = (data: LoginFormData) => {
 		setError('');
+		op.track('admin_login_started', {
+			email: data.email,
+			location: 'login_page',
+			type: 'password',
+		});
 		loginMutation.mutate({
 			email: data.email,
 			password: data.password,

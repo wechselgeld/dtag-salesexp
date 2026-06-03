@@ -28,6 +28,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 	DSL: '#7b61ff',
 	MAGENTA_TV_OTT: '#ff6b00',
 	DEVICE: '#00a878',
+	ADDON: '#e67e22',
 };
 
 interface BulkUpdateDialogProps {

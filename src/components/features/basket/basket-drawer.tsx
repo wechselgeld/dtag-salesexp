@@ -135,10 +135,10 @@ function TabCard({
 				}}
 				className="text-[0.72rem] flex items-center justify-between transition-colors duration-300 border shadow-sm w-full px-3 py-1.5 rounded-xl border-[#eaedf0] gap-1.5 shrink-0"
 				style={{
- backgroundColor: '#ffffff',
-borderColor: catColor,
-color: '#1a1a2e',
-}}
+					backgroundColor: '#ffffff',
+					borderColor: catColor,
+					color: '#1a1a2e',
+				}}
 				onClick={(e) => e.stopPropagation()}
 			>
 				<input
@@ -154,7 +154,7 @@ color: '#1a1a2e',
 							renameBasket(basket.id, editName);
 							setEditingId(null);
 						}
- else if (e.key === 'Escape') {
+						else if (e.key === 'Escape') {
 							setEditingId(null);
 						}
 					}}
@@ -192,15 +192,15 @@ color: '#1a1a2e',
 			style={
 				isActive
 					? {
- backgroundColor: catColor,
-borderColor: catColor,
-color: '#ffffff',
-}
+						backgroundColor: catColor,
+						borderColor: catColor,
+						color: '#ffffff',
+					}
 					: {
- backgroundColor: '#f7f8fa',
-borderColor: '#eaedf0',
-color: '#555555',
-}
+						backgroundColor: '#f7f8fa',
+						borderColor: '#eaedf0',
+						color: '#555555',
+					}
 			}
 		>
 			<span className={clsx('flex items-center gap-1 min-w-0 flex-1', !isComparison && 'max-w-[80px]')}>
@@ -257,21 +257,21 @@ export function BasketDrawer() {
 	const showComparison = isComparisonMode && baskets.length > 1;
 
 	const [
- editingId,
-setEditingId,
-] = useState<string | null>(null);
+		editingId,
+		setEditingId,
+	] = useState<string | null>(null);
 	const [
- editName,
-setEditName,
-] = useState('');
+		editName,
+		setEditName,
+	] = useState('');
 	const [
- showLeftFade,
-setShowLeftFade,
-] = useState(false);
+		showLeftFade,
+		setShowLeftFade,
+	] = useState(false);
 	const [
- showRightFade,
-setShowRightFade,
-] = useState(false);
+		showRightFade,
+		setShowRightFade,
+	] = useState(false);
 
 	const {
 		data: session,
@@ -285,17 +285,17 @@ setShowRightFade,
 	] = useState(false);
 
 	const [
- activeLoadingIndex,
-setActiveLoadingIndex,
-] = useState(0);
+		activeLoadingIndex,
+		setActiveLoadingIndex,
+	] = useState(0);
 
 	useEffect(() => {
 		if (isComparisonMode) {
 			setActiveLoadingIndex(0);
 		}
 	}, [
- isComparisonMode,
-]);
+		isComparisonMode,
+	]);
 
 	// Auto-skip columns that have no items/timeline to load
 	useEffect(() => {
@@ -306,10 +306,10 @@ setActiveLoadingIndex,
 			}
 		}
 	}, [
- activeLoadingIndex,
-baskets,
-isComparisonMode,
-]);
+		activeLoadingIndex,
+		baskets,
+		isComparisonMode,
+	]);
 
 	const teamEmail = session?.team?.email || 'team06@telekom.de';
 	const salesRepName = session
@@ -336,11 +336,11 @@ isComparisonMode,
 		if (el) {
 			scrollContainersRef.current.set(id, el);
 		}
- else {
+		else {
 			scrollContainersRef.current.delete(id);
 		}
 	}, [
-]);
+	]);
 
 	const handleColumnScroll = useCallback((scrolledId: string, scrollTop: number) => {
 		if (isSyncScrolling.current) return;
@@ -356,18 +356,18 @@ isComparisonMode,
 			isSyncScrolling.current = false;
 		});
 	}, [
-]);
+	]);
 
 	const handleLoadFinished = useCallback(() => {
 		setActiveLoadingIndex((prev) => prev + 1);
 	}, [
-]);
+	]);
 
 
 	useEffect(() => {
 		setIsMounted(true);
 	}, [
-]);
+	]);
 
 	useEffect(() => {
 		const el = tabsRef.current;
@@ -394,10 +394,10 @@ isComparisonMode,
 			clearTimeout(timeoutId);
 		};
 	}, [
- baskets,
-activeBasketId,
-showComparison,
-]);
+		baskets,
+		activeBasketId,
+		showComparison,
+	]);
 
 	useEffect(() => {
 		const el = tabsRef.current;
@@ -420,7 +420,7 @@ showComparison,
 						behavior: 'smooth',
 					});
 				}
- else if (tabLeft + tabWidth > scrollLeft + containerWidth - padding) {
+				else if (tabLeft + tabWidth > scrollLeft + containerWidth - padding) {
 					el.scrollTo({
 						left: Math.min(el.scrollWidth - containerWidth, tabLeft + tabWidth - containerWidth + padding),
 						behavior: 'smooth',
@@ -431,9 +431,9 @@ showComparison,
 
 		return () => clearTimeout(timeoutId);
 	}, [
- activeBasketId,
-showComparison,
-]);
+		activeBasketId,
+		showComparison,
+	]);
 
 	useEffect(() => {
 		const el = tabsRef.current;
@@ -450,7 +450,7 @@ showComparison,
 				el.scrollLeft = currentScrollLeft;
 				animationFrameId = requestAnimationFrame(updateScroll);
 			}
- else {
+			else {
 				el.scrollLeft = targetScrollLeft;
 				currentScrollLeft = targetScrollLeft;
 				animationFrameId = null;
@@ -476,8 +476,8 @@ showComparison,
 		};
 
 		el.addEventListener('wheel', handleWheel, {
- passive: false,
-});
+			passive: false,
+		});
 		return () => {
 			el.removeEventListener('wheel', handleWheel);
 			if (animationFrameId !== null) {
@@ -485,10 +485,10 @@ showComparison,
 			}
 		};
 	}, [
- baskets,
-activeBasketId,
-showComparison,
-]);
+		baskets,
+		activeBasketId,
+		showComparison,
+	]);
 
 	const activeBasket = baskets.find((b) => b.id === activeBasketId) || baskets[0];
 
@@ -529,9 +529,9 @@ showComparison,
 										showComparison ? 'gap-4' : 'gap-1.5 overflow-x-auto',
 									)}
 									style={{
- scrollbarWidth: 'none',
-msOverflowStyle: 'none',
-}}
+										scrollbarWidth: 'none',
+										msOverflowStyle: 'none',
+									}}
 								>
 									{baskets.map((basket) => (
 										<motion.div
@@ -617,9 +617,9 @@ msOverflowStyle: 'none',
 									onClick={() => setIsComparisonMode(!isComparisonMode)}
 									className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 shrink-0 cursor-pointer active:scale-95 border bg-[#e20074] text-white border-[#e20074] shadow-sm hover:opacity-90"
 									style={{
- backgroundColor: catColor,
-borderColor: catColor,
-}}
+										backgroundColor: catColor,
+										borderColor: catColor,
+									}}
 									title="Vergleichsmodus beenden"
 								>
 									<Columns className="w-4 h-4" />
@@ -637,10 +637,10 @@ borderColor: catColor,
 										: 'bg-[#f7f8fa] text-[#555] border-[#eaedf0] hover:bg-[#eaeaea]',
 								)}
 								style={isComparisonMode ? {
- backgroundColor: catColor,
-borderColor: catColor,
-} : {
-}}
+									backgroundColor: catColor,
+									borderColor: catColor,
+								} : {
+								}}
 								title={isComparisonMode ? 'Vergleichsmodus beenden' : 'Vergleichsmodus aktivieren'}
 							>
 								<Columns className="w-4 h-4" />
@@ -663,9 +663,9 @@ borderColor: catColor,
 						<Skeleton className="h-10 rounded-xl" />
 						<div className="flex flex-col gap-3">
 							{[
- 1,
-2,
-].map((i) => (
+								1,
+								2,
+							].map((i) => (
 								<Skeleton key={i} className="h-28 rounded-xl" />
 							))}
 						</div>
@@ -777,26 +777,26 @@ const BasketColumn = memo(function BasketColumn({
 	} = useBasketStore();
 
 	const [
- creditsOpen,
-setCreditsOpen,
-] = useState(false);
+		creditsOpen,
+		setCreditsOpen,
+	] = useState(false);
 	const [
- oneTimeOpen,
-setOneTimeOpen,
-] = useState(false);
+		oneTimeOpen,
+		setOneTimeOpen,
+	] = useState(false);
 	const [
- isGenerating,
-setIsGenerating,
-] = useState<'idle' | 'generating' | 'success'>('idle');
+		isGenerating,
+		setIsGenerating,
+	] = useState<'idle' | 'generating' | 'success'>('idle');
 	const [
- randomNotice,
-setRandomNotice,
-] = useState('');
+		randomNotice,
+		setRandomNotice,
+	] = useState('');
 
 	useEffect(() => {
 		setRandomNotice(EMPTY_NOTICES[Math.floor(Math.random() * EMPTY_NOTICES.length)]);
 	}, [
-]);
+	]);
 
 	const {
 		totals,
@@ -838,10 +838,10 @@ setRandomNotice,
 						}
 						: isMultiColumn
 							? {
- borderColor: '#eaedf0',
-}
+								borderColor: '#eaedf0',
+							}
 							: {
-}
+							}
 				}
 				onClick={() => {
 					if (isMultiColumn && !isActive) {
@@ -909,24 +909,24 @@ setRandomNotice,
 								{creditsOpen && (
 									<motion.div
 										initial={{
- height: 0,
-opacity: 0,
-marginTop: 0,
-}}
+											height: 0,
+											opacity: 0,
+											marginTop: 0,
+										}}
 										animate={{
- height: 'auto',
-opacity: 1,
-marginTop: 8,
-}}
+											height: 'auto',
+											opacity: 1,
+											marginTop: 8,
+										}}
 										exit={{
- height: 0,
-opacity: 0,
-marginTop: 0,
-}}
+											height: 0,
+											opacity: 0,
+											marginTop: 0,
+										}}
 										transition={{
- duration: 0.2,
-ease: 'easeInOut',
-}}
+											duration: 0.2,
+											ease: 'easeInOut',
+										}}
 										className="pl-1"
 										style={{ overflow: creditsOpen ? 'visible' : 'hidden' }}
 									>
@@ -947,26 +947,26 @@ ease: 'easeInOut',
 								<motion.div
 									key="empty"
 									initial={{
- opacity: 0,
-y: 10,
-}}
+										opacity: 0,
+										y: 10,
+									}}
 									animate={{
- opacity: 1,
-y: 0,
-}}
+										opacity: 1,
+										y: 0,
+									}}
 									exit={{
- opacity: 0,
-y: -10,
-}}
+										opacity: 0,
+										y: -10,
+									}}
 									transition={{
- duration: 0.4,
-ease: [
- 0.16,
-1,
-0.3,
-1,
-],
-}}
+										duration: 0.4,
+										ease: [
+											0.16,
+											1,
+											0.3,
+											1,
+										],
+									}}
 									className="bg-white min-h-[220px] flex flex-col items-center justify-center p-6 text-center"
 								>
 									<div
@@ -1051,17 +1051,17 @@ ease: [
 									<motion.span
 										key={totalOneTime}
 										initial={{
- opacity: 0,
-y: -15,
-}}
+											opacity: 0,
+											y: -15,
+										}}
 										animate={{
- opacity: 1,
-y: 0,
-}}
+											opacity: 1,
+											y: 0,
+										}}
 										exit={{
- opacity: 0,
-y: 15,
-}}
+											opacity: 0,
+											y: 15,
+										}}
 										transition={{
 											duration: 0.2,
 											type: 'spring',
@@ -1081,30 +1081,30 @@ y: 15,
 							{oneTimeOpen && Object.keys(groupedOneTimeCosts).length > 0 && (
 								<motion.div
 									initial={{
- height: 0,
-opacity: 0,
-marginTop: 0,
-}}
+										height: 0,
+										opacity: 0,
+										marginTop: 0,
+									}}
 									animate={{
- height: 'auto',
-opacity: 1,
-marginTop: 4,
-}}
+										height: 'auto',
+										opacity: 1,
+										marginTop: 4,
+									}}
 									exit={{
- height: 0,
-opacity: 0,
-marginTop: 0,
-}}
+										height: 0,
+										opacity: 0,
+										marginTop: 0,
+									}}
 									transition={{
- duration: 0.2,
-ease: 'easeInOut',
-}}
+										duration: 0.2,
+										ease: 'easeInOut',
+									}}
 									className="overflow-hidden space-y-1 pl-1"
 								>
 									{Object.entries(groupedOneTimeCosts).map(([
- name,
-cost ]: [string, number
-]) => (
+										name,
+										cost]: [string, number
+										]) => (
 										<div
 											key={name}
 											className="flex justify-between items-center text-[0.72rem] text-[#aaa] pr-1.5"
@@ -1169,15 +1169,15 @@ cost ]: [string, number
 							<span
 								className="text-[1.2rem] font-extrabold tracking-tight flex items-center leading-none transition-colors duration-500"
 								style={{
- color: catColor,
-}}
+									color: catColor,
+								}}
 							>
 								<AnimatedNumber value={totalMonthly} />
 								<span
 									className="ml-[3px] text-[0.75rem] font-normal transition-colors duration-500"
 									style={{
- color: `${catColor}99`,
-}}
+										color: `${catColor}99`,
+									}}
 								>
 									€
 								</span>
@@ -1243,7 +1243,7 @@ cost ]: [string, number
 											'--btn-color': catColor,
 										} as React.CSSProperties
 									: {
-}
+									}
 							}
 						>
 							{isGenerating === 'idle' && (
@@ -1296,9 +1296,9 @@ const BasketItemCard = memo(function BasketItemCard({
 			customBasePrice: item.config.customBasePrice,
 		});
 	}, [
- item,
-settings,
-]);
+		item,
+		settings,
+	]);
 
 	const catColor = CATEGORY_COLORS[item.product.category] || '#e20074';
 	const catLabel =
@@ -1400,92 +1400,92 @@ settings,
 				{/* Selected Addons */}
 				{item.config.selectedAddonIds?.length > 0 &&
 					item.product.compatibleAddons && (
-					<div className="flex flex-col gap-1.5 mb-3">
-						{item.config.selectedAddonIds.map((tierId) => {
-							const addon = item.product.compatibleAddons?.find((a) =>
-								(a.tiers || [
-								]).some((t) => t.id === tierId),
-							);
-							if (!addon) { return null; }
-							const tier = (addon.tiers || [
-							]).find((t) => t.id === tierId);
-							if (!tier) { return null; }
-							return (
-								<div
-									key={tierId}
-									className="flex items-center justify-between text-[0.72rem] font-medium"
-								>
+						<div className="flex flex-col gap-1.5 mb-3">
+							{item.config.selectedAddonIds.map((tierId) => {
+								const addon = item.product.compatibleAddons?.find((a) =>
+									(a.tiers || [
+									]).some((t) => t.id === tierId),
+								);
+								if (!addon) { return null; }
+								const tier = (addon.tiers || [
+								]).find((t) => t.id === tierId);
+								if (!tier) { return null; }
+								return (
 									<div
-										className="flex items-center gap-1.5"
-										style={{
-											color: catColor,
-										}}
+										key={tierId}
+										className="flex items-center justify-between text-[0.72rem] font-medium"
 									>
-										<Package className="w-3.5 h-3.5" />
-										<span>
-											{addon.name}
-											{addon.tiers.length > 1 ? ` - ${tier.name}` : ''}
+										<div
+											className="flex items-center gap-1.5"
+											style={{
+												color: catColor,
+											}}
+										>
+											<Package className="w-3.5 h-3.5" />
+											<span>
+												{addon.name}
+												{addon.tiers.length > 1 ? ` - ${tier.name}` : ''}
+											</span>
+										</div>
+										<span className="opacity-70 font-semibold text-[#1a1a2e]">
+											+{tier.price.toFixed(2)} €
 										</span>
 									</div>
-									<span className="opacity-70 font-semibold text-[#1a1a2e]">
-											+{tier.price.toFixed(2)} €
-									</span>
-								</div>
-							);
-						})}
-					</div>
-				)}
+								);
+							})}
+						</div>
+					)}
 
 				{/* Selected Special Prices */}
 				{item.config.selectedSpecialPriceIds?.length > 0 &&
 					item.product.specialPrices && (
-					<div className="flex flex-col gap-1.5 mb-3">
-						{item.config.selectedSpecialPriceIds.map((spId) => {
-							const sp = item.product.specialPrices.find(
-								(p) => p.id === spId,
-							);
-							if (!sp) { return null; }
-							return (
-								<div
-									key={spId}
-									className="flex items-center justify-between text-[0.72rem] font-medium"
-								>
+						<div className="flex flex-col gap-1.5 mb-3">
+							{item.config.selectedSpecialPriceIds.map((spId) => {
+								const sp = item.product.specialPrices.find(
+									(p) => p.id === spId,
+								);
+								if (!sp) { return null; }
+								return (
 									<div
-										className="flex items-center gap-1.5"
-										style={{
-											color: catColor,
-										}}
+										key={spId}
+										className="flex items-center justify-between text-[0.72rem] font-medium"
 									>
-										<Tag className="w-3.5 h-3.5" />
-										<span className="truncate max-w-[150px]">{sp.name}</span>
+										<div
+											className="flex items-center gap-1.5"
+											style={{
+												color: catColor,
+											}}
+										>
+											<Tag className="w-3.5 h-3.5" />
+											<span className="truncate max-w-[150px]">{sp.name}</span>
+										</div>
+										<span className="text-[#00a878] font-bold">Aktion</span>
 									</div>
-									<span className="text-[#00a878] font-bold">Aktion</span>
-								</div>
-							);
-						})}
-					</div>
-				)}
+								);
+							})}
+						</div>
+					)}
 
 				{/* PlusKarten */}
 				{item.config.plusKartenCount !== undefined &&
 					item.config.plusKartenCount > 0 && (
-					<div className="flex flex-col gap-1.5 mb-3">
-						<div className="flex items-center justify-between text-[0.72rem] font-medium">
-							<div
-								className="flex items-center gap-1.5"
-								style={{
-									color: catColor,
-								}}
-							>
-								<UserPlus className="w-3.5 h-3.5" />
-								<span>{item.config.plusKartenCount}x PlusKarte</span>
-							</div>
-							<span className="opacity-70 font-semibold text-[#1a1a2e]">
+						<div className="flex flex-col gap-1.5 mb-3">
+							<div className="flex items-center justify-between text-[0.72rem] font-medium">
+								<div
+									className="flex items-center gap-1.5"
+									style={{
+										color: catColor,
+									}}
+								>
+									<UserPlus className="w-3.5 h-3.5" />
+									<span>{item.config.plusKartenCount}x PlusKarte</span>
+								</div>
+								<span className="opacity-70 font-semibold text-[#1a1a2e]">
 									+{calculation.plusKartenCost.toFixed(2)} €
-							</span>
+								</span>
+							</div>
 						</div>
-					</div>
-				)}
+					)}
 
 				{/* Price config */}
 				<div className="flex items-center gap-3">
@@ -1539,69 +1539,69 @@ settings,
 							item.config.selectedSpecialPriceIds?.length > 0 ||
 							item.config.vouchers?.length > 0 ||
 							item.config.magentaTVPackage) && (
-							<motion.div
-								onHoverStart={() => setIsBadgeHovered(true)}
-								onHoverEnd={() => setIsBadgeHovered(false)}
-								className={clsx(
-									'overflow-hidden flex items-center h-[26px] px-2 rounded-[6px] border transition-colors duration-300 cursor-pointer',
-									isBadgeHovered
-										? 'bg-[#fff7ed] border-[#fed7aa]'
-										: 'bg-[#f0fdf4] border-[#bbf7d0]',
-								)}
-							>
-								<AnimatePresence mode="popLayout" initial={false}>
-									{!isBadgeHovered ? (
-										<motion.div
-											key="erledigt"
-											initial={{
-												opacity: 0,
-											}}
-											animate={{
-												opacity: 1,
-											}}
-											exit={{
-												opacity: 0,
-											}}
-											transition={{
-												type: 'tween',
-												ease: 'easeInOut',
-												duration: 0.2,
-											}}
-											className="flex items-center gap-1.5 whitespace-nowrap"
-										>
-											<Check className="w-[11px] h-[11px] text-[#16a34a] stroke-3" />
-											<span className="text-[0.62rem] font-bold text-[#16a34a] tracking-wide">
-												Erledigt
-											</span>
-										</motion.div>
-									) : (
-										<motion.div
-											key="editieren"
-											initial={{
-												opacity: 0,
-											}}
-											animate={{
-												opacity: 1,
-											}}
-											exit={{
-												opacity: 0,
-											}}
-											transition={{
-												type: 'tween',
-												ease: 'easeInOut',
-												duration: 0.2,
-											}}
-											className="flex items-center gap-1.5 whitespace-nowrap"
-										>
-											<Edit2 className="w-[11px] h-[11px] text-[#ea580c] stroke-[2.5]" />
-											<span className="text-[0.62rem] font-bold text-[#ea580c] tracking-wide">
-												Editieren?
-											</span>
-										</motion.div>
+								<motion.div
+									onHoverStart={() => setIsBadgeHovered(true)}
+									onHoverEnd={() => setIsBadgeHovered(false)}
+									className={clsx(
+										'overflow-hidden flex items-center h-[26px] px-2 rounded-[6px] border transition-colors duration-300 cursor-pointer',
+										isBadgeHovered
+											? 'bg-[#fff7ed] border-[#fed7aa]'
+											: 'bg-[#f0fdf4] border-[#bbf7d0]',
 									)}
-								</AnimatePresence>
-							</motion.div>
-						)}
+								>
+									<AnimatePresence mode="popLayout" initial={false}>
+										{!isBadgeHovered ? (
+											<motion.div
+												key="erledigt"
+												initial={{
+													opacity: 0,
+												}}
+												animate={{
+													opacity: 1,
+												}}
+												exit={{
+													opacity: 0,
+												}}
+												transition={{
+													type: 'tween',
+													ease: 'easeInOut',
+													duration: 0.2,
+												}}
+												className="flex items-center gap-1.5 whitespace-nowrap"
+											>
+												<Check className="w-[11px] h-[11px] text-[#16a34a] stroke-3" />
+												<span className="text-[0.62rem] font-bold text-[#16a34a] tracking-wide">
+													Erledigt
+												</span>
+											</motion.div>
+										) : (
+											<motion.div
+												key="editieren"
+												initial={{
+													opacity: 0,
+												}}
+												animate={{
+													opacity: 1,
+												}}
+												exit={{
+													opacity: 0,
+												}}
+												transition={{
+													type: 'tween',
+													ease: 'easeInOut',
+													duration: 0.2,
+												}}
+												className="flex items-center gap-1.5 whitespace-nowrap"
+											>
+												<Edit2 className="w-[11px] h-[11px] text-[#ea580c] stroke-[2.5]" />
+												<span className="text-[0.62rem] font-bold text-[#ea580c] tracking-wide">
+													Editieren?
+												</span>
+											</motion.div>
+										)}
+									</AnimatePresence>
+								</motion.div>
+							)}
 					</div>
 				</div>
 			</div>

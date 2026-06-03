@@ -16,13 +16,17 @@ import {
  trpc,
 } from '@/lib/trpc';
 import clsx from 'clsx';
+import {
+	useOpenPanel,
+} from '@openpanel/nextjs';
 
 function PasskeyPromptInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const op = useOpenPanel();
     const [
  isOpen,
-setIsOpen,
+ setIsOpen,
 ] = useState(false);
 
     const {
@@ -32,7 +36,7 @@ setIsOpen,
     const verifyReg = trpc.webauthn.verifyRegistration.useMutation();
     const [
  isPending,
-setIsPending,
+ setIsPending,
 ] = useState(false);
 
     useEffect(() => {
@@ -54,6 +58,11 @@ setIsPending,
     const handleRegister = async () => {
         if (!user?.email) return;
         setIsPending(true);
+        op.track('passkey_registration_started', {
+            email: user.email,
+            location: 'admin_passkey_prompt',
+            user_role: user.role || undefined,
+        });
         try {
             const {
  startRegistration,
@@ -69,15 +78,35 @@ setIsPending,
 response: resp,
 });
 
+            op.track('passkey_registration_success', {
+                email: user.email,
+                location: 'admin_passkey_prompt',
+                user_role: user.role || undefined,
+            });
+
             // Success! 
             handleClose();
             alert('Passkey erfolgreich registriert! Du kannst Dich nun ohne Passwort anmelden.');
         }
  catch (err: any) {
             console.error('Passkey registration failed', err);
+            op.track('passkey_registration_failed', {
+                email: user.email,
+                location: 'admin_passkey_prompt',
+                user_role: user.role || undefined,
+                error: err.message || String(err),
+            });
             alert(`Fehler bei der Passkey-Registrierung: ${ err.message}`);
             setIsPending(false);
         }
+    };
+
+    const handleSkip = () => {
+        op.track('passkey_setup_skipped', {
+            email: user?.email || undefined,
+            location: 'admin_passkey_prompt',
+        });
+        handleClose();
     };
 
     return (
@@ -94,7 +123,7 @@ response: resp,
                         exit={{
  opacity: 0,
 }}
-                        onClick={handleClose}
+                        onClick={handleSkip}
                         className="absolute inset-0 bg-[#1a1a2e]/60 backdrop-blur-sm"
                     />
 
@@ -117,7 +146,7 @@ y: 20,
                         className="relative w-full max-w-[440px] bg-white rounded-[32px] shadow-2xl overflow-hidden border border-white/20"
                     >
                         <button
-                            onClick={handleClose}
+                            onClick={handleSkip}
                             className="absolute top-6 right-6 p-2 text-[#aaa] hover:text-[#1a1a2e] hover:bg-[#f7f8fa] rounded-full transition-all"
                         >
                             <X className="w-5 h-5" />
@@ -159,7 +188,7 @@ y: 20,
                                 </button>
 
                                 <button
-                                    onClick={handleClose}
+                                    onClick={handleSkip}
                                     disabled={isPending}
                                     className="w-full h-[56px] rounded-2xl font-bold text-[#888] hover:text-[#1a1a2e] hover:bg-[#f7f8fa] transition-all"
                                 >

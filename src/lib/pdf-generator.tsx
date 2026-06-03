@@ -1,109 +1,138 @@
-import {
- pdf,
-} from '@react-pdf/renderer';
 import React from 'react';
+import {
+	pdf,
+} from '@react-pdf/renderer';
 import type {
- BasketItem,
+	BasketItem,
 } from '@/lib/store/basket-store';
 import {
- DEFAULT_PRICING,
+	DEFAULT_PRICING,
 } from '@/hooks/use-cost-calculator';
 import type {
- Credit, PricingSettings,
+	Credit, PricingSettings,
 } from '@/types/product';
 import {
- OfferDocument,
-} from '@/components/features/basket/offer-pdf/index';
+	OfferDocument,
+} from '@/components/features/basket/offer-pdf';
 
-export const getSvgAsPngBase64 = (url: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width * 4;
-            canvas.height = img.height * 4;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-                ctx.scale(4, 4);
-                ctx.drawImage(img, 0, 0);
-            }
-            resolve(canvas.toDataURL('image/png'));
-        };
-        img.onerror = reject;
-        img.src = url;
-    });
-};
+/**
+ * PDF Offer Generator Utilities
+ * 
+ * --- EXPECTED ARGUMENTS ---
+ * - items: BasketItem[]
+ *   The list of product items in the shopping basket. Each item contains product info and active selections.
+ * - basketCredits: Credit[]
+ *   The list of global credits or vouchers applied to the basket.
+ * - settings: PricingSettings (optional)
+ *   Pricing rules and custom rates, defaults to DEFAULT_PRICING.
+ * - teamEmail: string (optional)
+ *   The sales team email address, defaults to 'team06@telekom.de'.
+ * - salesRepName: string (optional)
+ *   The name of the sales representative generating this offer, defaults to an empty string.
+ * 
+ * --- HANDLED FUNCTIONALITY & OUTPUT ---
+ * - Handles: Builds the PDF document from the shopping basket, triggers a file download in the browser,
+ *   and converts the resulting Blob to a Base64-encoded data URL.
+ * - Output: Returns a Promise resolving to a Base64 data URL for `generateOfferPdf` and a `Blob` for `buildPdfBlob`.
+ */
 
-function buildFileName(items: BasketItem[]): string {
-    const dateStr = new Date().toLocaleDateString('de-DE').replace(/\./g, '-');
-    const productNames = items
-        .map((i) => i.product.name.replace(/[^a-zA-Z0-9äöüÄÖÜß ]/g, '').trim())
-        .join('_')
-        .substring(0, 60);
-    return `Angebot_Telekom_${productNames}_${dateStr}.pdf`.replace(/ /g, '_');
+export function getSvgAsPngBase64(url: string): Promise<string> {
+	return new Promise((resolve) => {
+		if (typeof window === 'undefined') {
+			resolve('');
+			return;
+		}
+		const img = new window.Image();
+		img.crossOrigin = 'anonymous';
+		img.onload = () => {
+			try {
+				const canvas = document.createElement('canvas');
+				canvas.width = img.width * 4 || 1160;
+				canvas.height = img.height * 4 || 1380;
+				const ctx = canvas.getContext('2d');
+				if (ctx) {
+					ctx.scale(4, 4);
+					ctx.drawImage(img, 0, 0);
+				}
+				resolve(canvas.toDataURL('image/png'));
+			} catch (e) {
+				console.error('Error drawing SVG to canvas:', e);
+				resolve('');
+			}
+		};
+		img.onerror = () => {
+			resolve('');
+		};
+		img.src = url;
+	});
 }
 
-function blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
-    });
-}
-
-// Pure: generates the PDF as a Blob. No side effects.
-// Use this when you need the file contents without triggering a download
-// (e.g. email attachment preview, print preview).
 export async function buildPdfBlob(
-    items: BasketItem[],
-    basketCredits: Credit[],
-    settings: PricingSettings = DEFAULT_PRICING,
-    teamEmail = 'team06@telekom.de',
-    salesRepName = '',
+	items: BasketItem[],
+	basketCredits: Credit[],
+	settings: PricingSettings = DEFAULT_PRICING,
+	teamEmail = 'team06@telekom.de',
+	salesRepName = '',
 ): Promise<Blob> {
-    let logoData: string | undefined;
-    try {
-        logoData = await getSvgAsPngBase64('/Deutsche_Telekom.svg');
-    }
- catch {
-        // Logo is decorative — PDF generation continues without it.
-    }
+	let logoData = '';
+	try {
+		logoData = await getSvgAsPngBase64('/Deutsche_Telekom.svg');
+	} catch (e) {
+		console.error('Error fetching logo data:', e);
+	}
 
-    return pdf(
-        <OfferDocument
-            items={items}
-            basketCredits={basketCredits}
-            settings={settings}
-            teamEmail={teamEmail}
-            salesRepName={salesRepName}
-            logoData={logoData}
-        />,
-    ).toBlob();
+	const doc = (
+		<OfferDocument
+			items={items}
+			basketCredits={basketCredits}
+			settings={settings}
+			teamEmail={teamEmail}
+			salesRepName={salesRepName}
+			logoData={logoData || undefined}
+		/>
+	);
+
+	return pdf(doc).toBlob();
 }
 
-// Side effect: triggers a browser file download. Call only from user gesture handlers.
 export function downloadBlob(blob: Blob, fileName: string): void {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+	if (typeof window === 'undefined') {
+		return;
+	}
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement('a');
+	link.href = url;
+	link.download = fileName;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	URL.revokeObjectURL(url);
 }
 
-// Composite: generates, downloads, and returns base64 for any callers that
-// need all three behaviors (the original use case: download + email preview).
 export async function generateOfferPdf(
-    items: BasketItem[],
-    basketCredits: Credit[],
-    settings: PricingSettings = DEFAULT_PRICING,
-    teamEmail = 'team06@telekom.de',
-    salesRepName = '',
+	items: BasketItem[],
+	basketCredits: Credit[],
+	settings: PricingSettings = DEFAULT_PRICING,
+	teamEmail = 'team06@telekom.de',
+	salesRepName = '',
 ): Promise<string> {
-    const blob = await buildPdfBlob(items, basketCredits, settings, teamEmail, salesRepName);
-    downloadBlob(blob, buildFileName(items));
-    return blobToBase64(blob);
+	try {
+		const blob = await buildPdfBlob(items, basketCredits, settings, teamEmail, salesRepName);
+		downloadBlob(blob, 'Telekom-Angebot.pdf');
+
+		return new Promise<string>((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				resolve(reader.result as string);
+			};
+			reader.onerror = () => {
+				reject(new Error('Failed to read PDF blob as Base64 Data URL'));
+			};
+			reader.readAsDataURL(blob);
+		});
+	}
+	catch (error) {
+		console.error('Error compiling or downloading PDF offer document:', error);
+		return '';
+	}
 }

@@ -174,86 +174,78 @@ v,
         // Restore nested relations if applicable
         if (entityType === 'Product') {
           if (oldValue.salesArguments && Array.isArray(oldValue.salesArguments)) {
-            for (const arg of oldValue.salesArguments) {
-              await tx.salesArgument.create({
-                data: {
-                  id: arg.id,
-                  productId: cleanData.id,
-                  text: arg.text,
-                  sortOrder: arg.sortOrder,
-                  isActive: arg.isActive,
-                },
-              });
-            }
+            await tx.salesArgument.createMany({
+              data: oldValue.salesArguments.map((arg: any) => ({
+                id: arg.id,
+                productId: cleanData.id,
+                text: arg.text,
+                sortOrder: arg.sortOrder,
+                isActive: arg.isActive,
+              })),
+            });
           }
           if (oldValue.priceHistory && Array.isArray(oldValue.priceHistory)) {
-            for (const ph of oldValue.priceHistory) {
-              await tx.priceHistory.create({
-                data: {
-                  id: ph.id,
-                  productId: cleanData.id,
-                  price: ph.price,
-                  label: ph.label,
-                  createdAt: ph.createdAt ? new Date(ph.createdAt) : undefined,
-                },
-              });
-            }
+            await tx.priceHistory.createMany({
+              data: oldValue.priceHistory.map((ph: any) => ({
+                id: ph.id,
+                productId: cleanData.id,
+                price: ph.price,
+                label: ph.label,
+                createdAt: ph.createdAt ? new Date(ph.createdAt) : undefined,
+              })),
+            });
           }
         }
- else if (entityType === 'SpecialPrice') {
+        else if (entityType === 'SpecialPrice') {
           if (oldValue.tiers && Array.isArray(oldValue.tiers)) {
-            for (const tier of oldValue.tiers) {
-              await tx.specialPriceTier.create({
-                data: {
-                  id: tier.id,
-                  specialPriceId: cleanData.id,
-                  price: tier.price,
-                  fromMonth: tier.fromMonth,
-                  toMonth: tier.toMonth,
-                  discountTarget: tier.discountTarget,
-                  discountType: tier.discountType,
-                },
-              });
-            }
+            await tx.specialPriceTier.createMany({
+              data: oldValue.tiers.map((tier: any) => ({
+                id: tier.id,
+                specialPriceId: cleanData.id,
+                price: tier.price,
+                fromMonth: tier.fromMonth,
+                toMonth: tier.toMonth,
+                discountTarget: tier.discountTarget,
+                discountType: tier.discountType,
+              })),
+            });
           }
           if (oldValue.products && Array.isArray(oldValue.products)) {
             await tx.specialPrice.update({
               where: {
- id: cleanData.id,
-},
+                id: cleanData.id,
+              },
               data: {
                 products: {
                   connect: oldValue.products.map((p: any) => ({
- id: p.id,
-})),
+                    id: p.id,
+                  })),
                 },
               },
             });
           }
         }
- else if (entityType === 'Addon') {
+        else if (entityType === 'Addon') {
           if (oldValue.tiers && Array.isArray(oldValue.tiers)) {
-            for (const tier of oldValue.tiers) {
-              await tx.addonTier.create({
-                data: {
-                  id: tier.id,
-                  addonId: cleanData.id,
-                  name: tier.name,
-                  price: tier.price,
-                },
-              });
-            }
+            await tx.addonTier.createMany({
+              data: oldValue.tiers.map((tier: any) => ({
+                id: tier.id,
+                addonId: cleanData.id,
+                name: tier.name,
+                price: tier.price,
+              })),
+            });
           }
           if (oldValue.compatibleProducts && Array.isArray(oldValue.compatibleProducts)) {
             await tx.addon.update({
               where: {
- id: cleanData.id,
-},
+                id: cleanData.id,
+              },
               data: {
                 compatibleProducts: {
                   connect: oldValue.compatibleProducts.map((p: any) => ({
- id: p.id,
-})),
+                    id: p.id,
+                  })),
                 },
               },
             });

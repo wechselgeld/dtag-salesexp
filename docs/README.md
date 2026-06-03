@@ -25,7 +25,7 @@ Die Dokumentation ist in folgende Abschnitte unterteilt:
 * **[operations/database.md](./operations/database.md)**: PostgreSQL-Schema-Setup, Dragonfly-Redis (Caching-Topologie) und tRPC-Query-Performance-Optimierungen.
 * **[operations/hosting.md](./operations/hosting.md)**: Deployment über Coolify (Docker), PM2-Prozessmanager, Nginx-Reverse-Proxy-Konfiguration und SMTP/Resend-Integration.
 * **[operations/automation.md](./operations/automation.md)**: Wartungsroutinen, Mitarbeiter-Verifizierung und automatisierte PostgreSQL-Datenbankbereinigungen.
-* **[operations/privacy.md](./operations/privacy.md)**: Technische DSGVO-Checkliste, Datensparsamkeit und Cookie-Spezifikationen.
+* **[operations/privacy.md](./operations/privacy.md)**: Technische DSGVO-Checkliste, Datensparsamkeit, Cookie-Spezifikationen und OpenPanel-Ereignistracking.
 
 ---
 

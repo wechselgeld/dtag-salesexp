@@ -19,6 +19,9 @@ import clsx from 'clsx';
 import {
 	fuzzySearch,
 } from '@/lib/fuzzy-search';
+import {
+	useDebounce,
+} from '@/hooks/use-debounce';
 
 interface SearchBarProps {
 	compact?: boolean;
@@ -76,6 +79,7 @@ export function SearchBar({
 		query,
 		setQuery,
 	] = useState('');
+	const debouncedQuery = useDebounce(query, 150);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
@@ -85,12 +89,12 @@ export function SearchBar({
 	} = trpc.product.getAllProducts.useQuery();
 	const products = productsData?.items;
 
-	// Filter results
+	// Filter results using debounced query to optimize CPU cycles
 	const filteredCategories = useMemo(() => {
-		if (!query.trim()) { return CATEGORY_LIST; }
+		if (!debouncedQuery.trim()) { return CATEGORY_LIST; }
 		const results = fuzzySearch(
 			CATEGORY_LIST,
-			query,
+			debouncedQuery,
 			(c) => [
 				CATEGORY_NAMES[c.id] || '',
 				c.id,
@@ -99,7 +103,7 @@ export function SearchBar({
 		);
 		return results.map(r => r.item);
 	}, [
-		query,
+		debouncedQuery,
 	]);
 
 	const filteredProducts = useMemo(() => {
@@ -107,10 +111,10 @@ export function SearchBar({
 			return [
 			];
 		}
-		if (!query.trim()) { return products.slice(0, 6); }
+		if (!debouncedQuery.trim()) { return products.slice(0, 6); }
 		const results = fuzzySearch(
 			products,
-			query,
+			debouncedQuery,
 			(p) => [
 				p.name,
 				p.category,
@@ -122,7 +126,7 @@ export function SearchBar({
 		return results.map(r => r.item);
 	}, [
 		products,
-		query,
+		debouncedQuery,
 	]);
 
 	// Close on click outside
@@ -198,9 +202,8 @@ export function SearchBar({
 				}}
 			>
 				<Search
-					className={`mr-3 shrink-0 transition-colors duration-400 ${
-						open ? 'text-[#e20074]' : 'text-[#b0b0b0]'
-					} ${compact ? 'w-4 h-4' : 'w-5 h-5'}`}
+					className={`mr-3 shrink-0 transition-colors duration-400 ${open ? 'text-[#e20074]' : 'text-[#b0b0b0]'
+						} ${compact ? 'w-4 h-4' : 'w-5 h-5'}`}
 				/>
 				<input
 					ref={inputRef}
@@ -209,9 +212,8 @@ export function SearchBar({
 					onChange={(e) => setQuery(e.target.value)}
 					onFocus={() => setOpen(true)}
 					placeholder="Tarif, Produkt oder Kategorie suchen..."
-					className={`border-none outline-none w-full font-sans text-[#1a1a2e] bg-transparent placeholder:text-[#b0b0b0] placeholder:font-normal ${
-						compact ? 'text-[0.9rem]' : 'text-[1rem]'
-					}`}
+					className={`border-none outline-none w-full font-sans text-[#1a1a2e] bg-transparent placeholder:text-[#b0b0b0] placeholder:font-normal ${compact ? 'text-[0.9rem]' : 'text-[1rem]'
+						}`}
 				/>
 				{open && query && (
 					<button
@@ -286,7 +288,7 @@ export function SearchBar({
 							{!hasResults && (
 								<div className="py-10 text-center">
 									<p className="text-[0.85rem] text-[#bbb] m-0">
-										Keine Ergebnisse für „{query}"
+										Keine Ergebnisse für „{debouncedQuery}"
 									</p>
 								</div>
 							)}
@@ -317,7 +319,7 @@ export function SearchBar({
 								<div className="p-3 pt-2">
 									<div className="text-[0.6rem] uppercase tracking-[0.15em] text-[#ccc] font-semibold px-2 mb-2">
 										Tarife{' '}
-										{query && (
+										{debouncedQuery && (
 											<span className="normal-case tracking-normal text-[#ddd]">
 												· {filteredProducts.length} Ergebnis
 												{filteredProducts.length !== 1 ? 'se' : ''}

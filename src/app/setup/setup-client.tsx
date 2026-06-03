@@ -13,6 +13,9 @@ import {
  startRegistration, startAuthentication,
 } from '@simplewebauthn/browser';
 import {
+	useOpenPanel,
+} from '@openpanel/nextjs';
+import {
  motion, AnimatePresence,
 } from 'framer-motion';
 import {
@@ -118,6 +121,7 @@ export default function SetupPage({
     initialSession?: any;
 }) {
     const router = useRouter();
+    const op = useOpenPanel();
 
     const [
         currentStep,
@@ -329,13 +333,28 @@ refetchOnWindowFocus: false,
 
     const finalizeLogin = trpc.session.finalizeLogin.useMutation({
         onSuccess: (data) => {
+            op.track('agent_setup_success', {
+                email: data.email?.trim() || '',
+                location: 'setup_page',
+                firstName: data.firstName?.trim() || '',
+                lastName: data.lastName?.trim() || '',
+                locationId: selectedLocationId ?? '',
+                teamId: selectedTeamId ?? '',
+            });
             persistName(data.firstName?.trim() || '', data.lastName?.trim() || '', data.email?.trim() || '');
             markSetupComplete();
             refetchCurrentSession().then(() => {
                 setCurrentStep(4);
             });
         },
-        onError: console.error,
+        onError: (error) => {
+            console.error(error);
+            op.track('agent_setup_failed', {
+                email: email || undefined,
+                location: 'setup_page',
+                error: error.message || String(error),
+            });
+        },
     });
 
     const requestVerification = trpc.session.requestVerification.useMutation({
@@ -352,6 +371,11 @@ refetchOnWindowFocus: false,
         },
         onError: (error) => {
             console.error('Setup failed', error);
+            op.track('agent_setup_failed', {
+                email: email || undefined,
+                location: 'setup_page',
+                error: error.message || String(error),
+            });
             setIsSubmitting(false);
             setFormErrors({
                 general: error.message,
@@ -386,6 +410,11 @@ refetchOnWindowFocus: false,
                 if (isAutoCheckRef.current) {
                     setIsSilentSuccess(true);
                 }
+                op.track('agent_login_success', {
+                    email: data.email || loginEmail || '',
+                    location: 'setup_page',
+                    type: 'pin',
+                });
                 persistName(data.firstName?.trim() || '', data.lastName?.trim() || '', data.email?.trim() || '');
                 markSetupComplete();
                 refetchCurrentSession().then(() => {
@@ -399,6 +428,12 @@ refetchOnWindowFocus: false,
             if (isAutoCheckRef.current) {
                 return;
             }
+            op.track('agent_login_failed', {
+                email: loginEmail,
+                location: 'setup_page',
+                type: 'pin',
+                error: error.message || String(error),
+            });
             const errMsg = error.message || 'PIN oder E-Mail ist falsch.';
             setReloginError(errMsg);
             setLoginError(errMsg);
@@ -423,6 +458,11 @@ refetchOnWindowFocus: false,
 
         if (!isAuto) {
             setIsLoggingIn(true);
+            op.track('agent_login_started', {
+                email: loginEmail,
+                location: 'setup_page',
+                type: 'pin',
+            });
         }
 
         reloginReturningUser.mutate({
@@ -444,6 +484,11 @@ refetchOnWindowFocus: false,
     const handleLoginWithPasskey = async () => {
         setLoginError(null);
         setIsLoggingIn(true);
+        op.track('passkey_login_started', {
+            email: loginEmail || undefined,
+            location: 'setup_page',
+            type: 'manual',
+        });
         try {
             const {
                 options,
@@ -458,6 +503,12 @@ refetchOnWindowFocus: false,
                 response: authResp,
             });
             if (verifyResp.success) {
+                op.track('passkey_login_success', {
+                    email: loginEmail || verifyResp.email || undefined,
+                    location: 'setup_page',
+                    type: 'manual',
+                    user_role: verifyResp.isAdmin ? 'ADMIN' : 'USER',
+                });
                 if ('isAdmin' in verifyResp && verifyResp.isAdmin) {
                     router.push('/admin/products');
                     return;
@@ -471,8 +522,14 @@ refetchOnWindowFocus: false,
                 });
             }
         }
-        catch (err) {
+        catch (err: any) {
             console.error('Passkey auth failed', err);
+            op.track('passkey_login_failed', {
+                email: loginEmail || undefined,
+                location: 'setup_page',
+                type: 'manual',
+                error: err.message || String(err),
+            });
             setLoginError('Passkey-Anmeldung fehlgeschlagen oder nicht registriert.');
         }
         finally {
@@ -639,12 +696,23 @@ userExistsData,
  optionsJSON: options,
 useBrowserAutofill: true,
 });
+                    op.track('passkey_login_started', {
+                        email: email || undefined,
+                        location: 'setup_page',
+                        type: 'conditional_autofill',
+                    });
                     const verifyResp = await verifyAuth.mutateAsync({
  email,
 challengeId,
 response: authResp,
 });
                     if (verifyResp.success) {
+                        op.track('passkey_login_success', {
+                            email: email || verifyResp.email || undefined,
+                            location: 'setup_page',
+                            type: 'conditional_autofill',
+                            user_role: verifyResp.isAdmin ? 'ADMIN' : 'USER',
+                        });
                         if ('isAdmin' in verifyResp && verifyResp.isAdmin) {
                             router.push('/admin/products');
                             return;
@@ -660,6 +728,14 @@ response: authResp,
                 }
  catch (err: any) {
                     console.log('Setup conditional UI autofill aborted or unavailable', err);
+                    if (err.name !== 'AbortError') {
+                        op.track('passkey_login_failed', {
+                            email: email || undefined,
+                            location: 'setup_page',
+                            type: 'conditional_autofill',
+                            error: err.message || String(err),
+                        });
+                    }
                 }
             }
         };
@@ -721,6 +797,10 @@ email,
         }
 
         setIsSubmitting(true);
+        op.track('agent_setup_started', {
+            email: result.data.email,
+            location: 'setup_page',
+        });
         requestVerification.mutate({
             locationId: result.data.locationId,
             teamId: result.data.teamId,
@@ -740,12 +820,18 @@ lastName,
 email,
 pin,
 requestVerification,
+op,
 ]);
 
     const handlePasskeyEnrollment = async () => {
+        const targetEmail = email || existingSession?.email || '';
+        if (!targetEmail) return;
+        op.track('passkey_registration_started', {
+            email: targetEmail,
+            location: 'setup_page',
+            user_role: existingSession?.role || undefined,
+        });
         try {
-            const targetEmail = email || existingSession?.email || '';
-            if (!targetEmail) return;
             const options = await getRegOptions.mutateAsync({
  email: targetEmail,
 });
@@ -756,12 +842,23 @@ requestVerification,
  email: targetEmail,
 response: resp,
 });
+            op.track('passkey_registration_success', {
+                email: targetEmail,
+                location: 'setup_page',
+                user_role: existingSession?.role || undefined,
+            });
             alert('Passkey erfolgreich eingerichtet!');
             router.push('/products');
             router.refresh();
         }
- catch (e: any) {
+        catch (e: any) {
             console.error('Passkey failed', e);
+            op.track('passkey_registration_failed', {
+                email: targetEmail,
+                location: 'setup_page',
+                user_role: existingSession?.role || undefined,
+                error: e.message || String(e),
+            });
             alert(`Fehler bei der Passkey-Einrichtung: ${e.message}`);
         }
     };
@@ -930,7 +1027,7 @@ x: -15,
                 <div className="flex flex-col gap-6 mt-6">
                     <div className="flex flex-col gap-2.5">
                         <CheckboxRow checked={acceptedTerms} onChange={() => setAcceptedTerms(!acceptedTerms)} label="Nutzungshinweis akzeptiert" />
-                        <CheckboxRow checked={acceptedPrivacy} onChange={() => setAcceptedPrivacy(!acceptedPrivacy)} label={<><Link href="/privacy" className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2">Datenschutz</Link> akzeptiert</>} />
+                        <CheckboxRow checked={acceptedPrivacy} onChange={() => setAcceptedPrivacy(!acceptedPrivacy)} label={<><Link href="/privacy" className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2">Datenschutzerklärung</Link> gelesen und zur Kenntnis genommen</>} />
                     </div>
                     <div className="flex gap-3">
                         <PremiumButton onClick={handlePrevStep} variant="secondary" className="flex-1">
