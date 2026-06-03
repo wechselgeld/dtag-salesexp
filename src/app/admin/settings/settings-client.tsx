@@ -7,6 +7,9 @@ import {
 	trpc,
 } from '@/lib/trpc';
 import {
+	useOpenPanel,
+} from '@openpanel/nextjs';
+import {
 	Lock,
 	Shield,
 	User,
@@ -239,10 +242,10 @@ function ProfilePanel({
 		</motion.div>
 	);
 }
-
 function SecurityPanel({
 	isAdmin, user,
 }: { isAdmin: boolean, user: any }) {
+	const op = useOpenPanel();
 	const [
 		oldPassword,
 		setOldPassword,
@@ -307,12 +310,17 @@ function SecurityPanel({
 	const verifyReg = trpc.webauthn.verifyRegistration.useMutation();
 	const [
  isPasskeyRegistering,
-setIsPasskeyRegistering,
+ setIsPasskeyRegistering,
 ] = useState(false);
 
 	const handleRegisterPasskey = async () => {
 		if (!user?.email) return;
 		setIsPasskeyRegistering(true);
+		op.track('passkey_registration_started', {
+			email: user.email,
+			location: 'admin_settings_page',
+			user_role: user.role || undefined,
+		});
 		try {
 			const {
  startRegistration,
@@ -327,13 +335,24 @@ setIsPasskeyRegistering,
  email: user.email,
 response: resp,
 });
+			op.track('passkey_registration_success', {
+				email: user.email,
+				location: 'admin_settings_page',
+				user_role: user.role || undefined,
+			});
 			alert('Passkey erfolgreich registriert!');
 		}
- catch (err: any) {
+		catch (err: any) {
 			console.error('Passkey registration failed', err);
+			op.track('passkey_registration_failed', {
+				email: user.email,
+				location: 'admin_settings_page',
+				user_role: user.role || undefined,
+				error: err.message || String(err),
+			});
 			alert(`Fehler bei der Passkey-Registrierung: ${ err.message}`);
 		}
- finally {
+		finally {
 			setIsPasskeyRegistering(false);
 		}
 	};

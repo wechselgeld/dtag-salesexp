@@ -63,7 +63,7 @@ export default function PrivacyPage() {
 							Eulitzstr. 1
 							<br />
 							09112 Chemnitz
-							<br/><br/>
+							<br /><br />
 							Besuchen Sie Buff Interactive gern auf ihrer Website unter <a href="https://buffinteractive.net">buffinteractive.net</a>.
 						</p>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
@@ -133,10 +133,9 @@ export default function PrivacyPage() {
 						<p className="text-[0.95rem] text-[#555] leading-relaxed mt-2 p-4 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl">
 							Es findet{' '}
 							<strong>
-								kein serverseitiges Tracking Ihrer personenbezogenen
-								Nutzungsdaten
+								ein funktionales und sicherheitsbezogenes Tracking
 							</strong>{' '}
-							statt. Das System nutzt lediglich ein datenschutzfreundliches Statistik-Skript, welches anonymisiert erfasst, welche Kategorien aufgerufen werden, um die Performance des Tools allgemein zu bewerten. IP-Adressen oder individuelles Klickverhalten von Einzelpersonen werden dabei nicht mit Ihrer Identität verknüpft.
+							über eine selbstgehostete Instanz des Analysedienstes <strong>OpenPanel</strong> statt. Der Dienst erfasst Interaktionen wie Seitenaufrufe, Klicks sowie Ereignisse im Zusammenhang mit dem Login, der Einrichtung des Accounts und der Nutzung von Passkeys. Dies dient ausschließlich der Systemsicherheit, der Analyse technischer Fehler und der bedarfsgerechten Optimierung unseres Tools. IP-Adressen werden dabei datenschutzfreundlich verarbeitet und Klickdaten nicht für werbliche Zwecke genutzt.
 						</p>
 
 					</section>
@@ -145,7 +144,7 @@ export default function PrivacyPage() {
 						<div className="flex items-center gap-2 mb-2">
 							<Info className="w-5 h-5 text-[#e20074]" />
 							<h2 className="text-xl font-bold text-[#1a1a2e]">
-								3. Drittanbieter und Hosting
+								3. Drittanbieter, Analysen und Hosting
 							</h2>
 						</div>
 
@@ -210,6 +209,12 @@ export default function PrivacyPage() {
 							ausschließlich nach unseren Weisungen und unter Einhaltung der
 							DSGVO verarbeiten.
 						</p>
+						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
+							OpenPanel (selbstgehostet via Serve)
+						</h3>
+						<p className="text-[0.95rem] text-[#555] leading-relaxed">
+							Zur kontinuierlichen Verbesserung der Plattform, zur Fehleranalyse sowie zur Erkennung von Sicherheitsvorfällen (z. B. wiederholte fehlgeschlagene Anmeldeversuche) nutzen wir eine selbstgehostete Instanz des Analysedienstes "OpenPanel". Die Datenverarbeitung erfolgt auf von uns (der Buff Germany UG) gemieteten Servern bei der Hetzner Online GmbH (in Deutschland/EU) unter der Domain buffinteractive.net. Es findet keine Übermittlung an Drittländer (wie die USA) statt. OpenPanel erfasst Nutzungsdaten wie aufgerufene Seiten, Interaktionen mit der Benutzeroberfläche (Klicks) sowie sicherheitsrelevante Ereignisse (Login, Kontoeinrichtung, Passkey-Registrierung und -Nutzung). Hierbei werden im Falle von Authentifizierungsvorgängen Ihre dienstliche E-Mail-Adresse und Benutzerrolle verarbeitet, um den Erfolg der Vorgänge nachzuvollziehen. Die Nutzung erfolgt auf Grundlage unseres berechtigten Interesses an der Stabilität, Sicherheit und bedarfsgerechten Gestaltung des Tools (Art. 6 Abs. 1 lit. f DSGVO i.V.m. § 26 BDSG).
+						</p>
 					</section>
 
 					<section className="space-y-4">
@@ -233,12 +238,13 @@ export default function PrivacyPage() {
 						</h3>
 						<ul className="list-disc list-inside text-[0.95rem] text-[#555] space-y-1 ml-2">
 							<li>
-								<strong>auth-token:</strong> Speichert die Anmeldeinformationen
-								für Administratoren (Dauer: 24 Std.).
+								<strong>auth-token:</strong> Speichert die Anmeldeinformationen und Sitzungsdaten für alle angemeldeten Benutzer (Dauer: 4 Std. für administrative Rollen / 30 Tage für Vertriebsmitarbeiter).
 							</li>
 							<li>
-								<strong>sales-session-id:</strong> Verknüpft Ihren Browser mit
-								Ihrer aktuellen Beratungs-Sitzung (Dauer: 30 Tage).
+								<strong>sales-session-id:</strong> Verknüpft Ihren Browser mit Ihrer aktuellen Beratungs-Sitzung (Dauer: 30 Tage).
+							</li>
+							<li>
+								<strong>sales-device-id:</strong> Identifiziert verifizierte Endgeräte zur Erhöhung der Sicherheit und zur Vermeidung wiederholter E-Mail-Verifizierungen (Dauer: 365 Tage).
 							</li>
 						</ul>
 
@@ -291,7 +297,7 @@ export default function PrivacyPage() {
 						</p>
 						<ul className="list-disc list-inside text-[0.95rem] text-[#555] space-y-1 ml-2">
 							<li>
-								<strong>Seitenaufrufe:</strong> Es wird lediglich anonymisiert erfasst, welche Seiten aufgerufen werden, ohne Rückschluss auf Ihre Person.
+								<strong>saleshelper_session:</strong> Speichert temporär die zugewiesene Benutzerrolle und Berechtigungen, um die korrekten Funktionen auf der Benutzeroberfläche freizugeben.
 							</li>
 						</ul>
 

@@ -18,14 +18,14 @@ import {
 } from 'lucide-react';
 
 import {
- TelekomLogo,
+	TelekomLogo,
 } from '@/components/shared/telekom-logo';
 import {
- GlobalFooter,
+	GlobalFooter,
 } from '@/components/shared/global-footer';
 import clsx from 'clsx';
 import {
- motion, AnimatePresence,
+	motion, AnimatePresence,
 } from 'framer-motion';
 import {
 	useBasketStore,
@@ -34,13 +34,16 @@ import {
 	useSettingsStore,
 } from '@/lib/store/settings-store';
 import {
- useRouter,
+	useRouter,
 } from 'next/navigation';
 import {
- trpc,
+	trpc,
 } from '@/lib/trpc';
 import {
- useState, useCallback, useEffect, useRef,
+	useOpenPanel,
+} from '@openpanel/nextjs';
+import {
+	useState, useCallback, useEffect, useRef,
 } from 'react';
 import {
 	PremiumInput,
@@ -50,41 +53,41 @@ import {
 	ErrorBanner,
 } from '@/components/shared/form/form-suite';
 import {
- PremiumPinInput,
+	PremiumPinInput,
 } from '@/components/shared/premium-pin-input';
 import {
- Skeleton,
+	Skeleton,
 } from '@/components/shared/skeleton';
 import {
- Textarea,
+	Textarea,
 } from '@/components/shared/ui/textarea';
 
 const TABS = [
 	{
- id: 'profile',
-label: 'Profil & Team',
-icon: <Users className="w-4 h-4" />,
-},
+		id: 'profile',
+		label: 'Profil & Team',
+		icon: <Users className="w-4 h-4" />,
+	},
 	{
- id: 'security',
-label: 'Sicherheit',
-icon: <Lock className="w-4 h-4" />,
-},
+		id: 'security',
+		label: 'Sicherheit',
+		icon: <Lock className="w-4 h-4" />,
+	},
 	{
- id: 'interface',
-label: 'Interface',
-icon: <Palette className="w-4 h-4" />,
-},
+		id: 'interface',
+		label: 'Interface',
+		icon: <Palette className="w-4 h-4" />,
+	},
 	{
 		id: 'templates',
 		label: 'Vorlagen & Verkauf',
 		icon: <FileText className="w-4 h-4" />,
 	},
 	{
- id: 'system',
-label: 'System & Hilfe',
-icon: <RotateCcw className="w-4 h-4" />,
-},
+		id: 'system',
+		label: 'System & Hilfe',
+		icon: <RotateCcw className="w-4 h-4" />,
+	},
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
@@ -103,6 +106,7 @@ interface TeamItem {
 }
 
 export default function SettingsPage() {
+	const op = useOpenPanel();
 	const clearBasket = useBasketStore((state) => state.clearBasket);
 	const {
 		compactView,
@@ -139,17 +143,17 @@ export default function SettingsPage() {
 	const getRegOptions = trpc.webauthn.generateRegistrationOptions.useMutation();
 	const verifyReg = trpc.webauthn.verifyRegistration.useMutation();
 	const [
- isPasskeyRegistering,
-setIsPasskeyRegistering,
-] = useState(false);
+		isPasskeyRegistering,
+		setIsPasskeyRegistering,
+	] = useState(false);
 	const [
- passkeyError,
-setPasskeyError,
-] = useState<string | null>(null);
+		passkeyError,
+		setPasskeyError,
+	] = useState<string | null>(null);
 	const [
- passkeySuccess,
-setPasskeySuccess,
-] = useState(false);
+		passkeySuccess,
+		setPasskeySuccess,
+	] = useState(false);
 
 	const handleRegisterPasskey = async () => {
 		if (!session?.email) {
@@ -159,10 +163,15 @@ setPasskeySuccess,
 		setIsPasskeyRegistering(true);
 		setPasskeyError(null);
 		setPasskeySuccess(false);
+		op.track('passkey_registration_started', {
+			email: session.email,
+			location: 'settings_page',
+			user_role: session.role || undefined,
+		});
 		try {
 			const {
- startRegistration,
-} = await import('@simplewebauthn/browser');
+				startRegistration,
+			} = await import('@simplewebauthn/browser');
 			const options = await getRegOptions.mutateAsync({
 				email: session.email,
 			});
@@ -173,79 +182,90 @@ setPasskeySuccess,
 				email: session.email,
 				response: resp,
 			});
+			op.track('passkey_registration_success', {
+				email: session.email,
+				location: 'settings_page',
+				user_role: session.role || undefined,
+			});
 			setPasskeySuccess(true);
 		}
- catch (err: any) {
+		catch (err: any) {
 			console.error('Passkey registration failed', err);
+			op.track('passkey_registration_failed', {
+				email: session.email,
+				location: 'settings_page',
+				user_role: session.role || undefined,
+				error: err.message || String(err),
+			});
 			setPasskeyError(err.message || 'Fehler bei der Passkey-Registrierung.');
 		}
- finally {
+		finally {
 			setIsPasskeyRegistering(false);
 		}
 	};
 
 	const [
- activeTab,
-setActiveTab,
-] = useState<TabId>('profile');
+		activeTab,
+		setActiveTab,
+	] = useState<TabId>('profile');
 	const [
- copiedField,
-setCopiedField,
-] = useState<string | null>(null);
+		copiedField,
+		setCopiedField,
+	] = useState<string | null>(null);
 
 	// Card height morphing variables
 	const cardRef = useRef<HTMLDivElement>(null);
 	const [
- cardHeight,
-setCardHeight,
-] = useState<number | 'auto'>('auto');
+		cardHeight,
+		setCardHeight,
+	] = useState<number | 'auto'>('auto');
 
 	useEffect(() => {
 		if (!cardRef.current) return;
 		const observer = new ResizeObserver((entries) => {
 			setCardHeight(
 				entries[0].borderBoxSize?.[0]?.blockSize ??
-					entries[0].target.getBoundingClientRect().height,
+				entries[0].target.getBoundingClientRect().height,
 			);
 		});
 		observer.observe(cardRef.current);
 		return () => observer.disconnect();
 	}, [
-]);
+	]);
 
 	// --- Team/Location Switcher States ---
 	const [
- isSwitcherOpen,
-setIsSwitcherOpen,
-] = useState(false);
+		isSwitcherOpen,
+		setIsSwitcherOpen,
+	] = useState(false);
 	const [
- switcherStep,
-setSwitcherStep,
-] = useState<1 | 2>(1);
+		switcherStep,
+		setSwitcherStep,
+	] = useState<1 | 2>(1);
 	const [
- locationSearch,
-setLocationSearch,
-] = useState('');
+		locationSearch,
+		setLocationSearch,
+	] = useState('');
 	const [
- debouncedSearch,
-setDebouncedSearch,
-] = useState('');
+		debouncedSearch,
+		setDebouncedSearch,
+	] = useState('');
 	const [
- selectedLocationId,
-setSelectedLocationId,
-] = useState<string | null>(null);
+		selectedLocationId,
+		setSelectedLocationId,
+	] = useState<string | null>(null);
 	const [
- selectedTeamId,
-setSelectedTeamId,
-] = useState<string | null>(null);
+		selectedTeamId,
+		setSelectedTeamId,
+	] = useState<string | null>(null);
 	const [
- isSwitcherSaving,
-setIsSwitcherSaving,
-] = useState(false);
+		isSwitcherSaving,
+		setIsSwitcherSaving,
+	] = useState(false);
 	const [
- switcherError,
-setSwitcherError,
-] = useState<string | null>(null);
+		switcherError,
+		setSwitcherError,
+	] = useState<string | null>(null);
 
 	// Debounce location search
 	useEffect(() => {
@@ -254,8 +274,8 @@ setSwitcherError,
 		}, 300);
 		return () => clearTimeout(timer);
 	}, [
- locationSearch,
-]);
+		locationSearch,
+	]);
 
 	// Fetch locations (enabled only when switcher is open)
 	const {
@@ -294,9 +314,9 @@ setSwitcherError,
 			setSelectedTeamId(session.teamId || null);
 		}
 	}, [
- isSwitcherOpen,
-session,
-]);
+		isSwitcherOpen,
+		session,
+	]);
 
 	const handleSaveTeamChange = async () => {
 		if (!selectedTeamId) return;
@@ -311,35 +331,35 @@ session,
 			setSwitcherStep(1);
 			setLocationSearch('');
 		}
- catch (err: any) {
+		catch (err: any) {
 			setSwitcherError(err.message || 'Fehler beim Aktualisieren des Standorts/Teams.');
 		}
- finally {
+		finally {
 			setIsSwitcherSaving(false);
 		}
 	};
 
 	// --- PIN Changer States ---
 	const [
- newPin,
-setNewPin,
-] = useState('');
+		newPin,
+		setNewPin,
+	] = useState('');
 	const [
- newPinConfirm,
-setNewPinConfirm,
-] = useState('');
+		newPinConfirm,
+		setNewPinConfirm,
+	] = useState('');
 	const [
- pinError,
-setPinError,
-] = useState<string | null>(null);
+		pinError,
+		setPinError,
+	] = useState<string | null>(null);
 	const [
- pinSuccess,
-setPinSuccess,
-] = useState(false);
+		pinSuccess,
+		setPinSuccess,
+	] = useState(false);
 	const [
- isPinSaving,
-setIsPinSaving,
-] = useState(false);
+		isPinSaving,
+		setIsPinSaving,
+	] = useState(false);
 
 	const updatePinMutation = trpc.session.updatePin.useMutation();
 
@@ -370,10 +390,10 @@ setIsPinSaving,
 				setPinSuccess(false);
 			}, 3000);
 		}
- catch (err: any) {
+		catch (err: any) {
 			setPinError(err.message || 'Fehler beim Speichern der neuen PIN.');
 		}
- finally {
+		finally {
 			setIsPinSaving(false);
 		}
 	};
@@ -422,7 +442,7 @@ setIsPinSaving,
 		setCopiedField(field);
 		setTimeout(() => setCopiedField(null), 2000);
 	}, [
-]);
+	]);
 
 	// Render profile details & actions
 	const renderProfileView = () => {
@@ -574,17 +594,17 @@ setIsPinSaving,
 		<motion.div
 			key="switcher-step-1"
 			initial={{
- opacity: 0,
-x: 15,
-}}
+				opacity: 0,
+				x: 15,
+			}}
 			animate={{
- opacity: 1,
-x: 0,
-}}
+				opacity: 1,
+				x: 0,
+			}}
 			exit={{
- opacity: 0,
-x: -15,
-}}
+				opacity: 0,
+				x: -15,
+			}}
 			className="flex flex-col gap-6"
 		>
 			<ScreenHeader
@@ -596,9 +616,9 @@ x: -15,
 			{/* Sub-step indicator */}
 			<div className="flex justify-center gap-1.5 mb-2">
 				{[
- 1,
-2,
-].map((step) => (
+					1,
+					2,
+				].map((step) => (
 					<div
 						key={step}
 						className={clsx(
@@ -624,8 +644,8 @@ x: -15,
 			{isLocationsLoading ? (
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
 					{Array.from({
- length: 4,
-}).map((_, i) => (
+						length: 4,
+					}).map((_, i) => (
 						<Skeleton key={i} className="h-[52px] w-full rounded-xl" />
 					))}
 				</div>
@@ -682,17 +702,17 @@ x: -15,
 		<motion.div
 			key="switcher-step-2"
 			initial={{
- opacity: 0,
-x: 15,
-}}
+				opacity: 0,
+				x: 15,
+			}}
 			animate={{
- opacity: 1,
-x: 0,
-}}
+				opacity: 1,
+				x: 0,
+			}}
 			exit={{
- opacity: 0,
-x: -15,
-}}
+				opacity: 0,
+				x: -15,
+			}}
 			className="flex flex-col gap-6"
 		>
 			<ScreenHeader
@@ -704,9 +724,9 @@ x: -15,
 			{/* Sub-step indicator */}
 			<div className="flex justify-center gap-1.5 mb-2">
 				{[
- 1,
-2,
-].map((step) => (
+					1,
+					2,
+				].map((step) => (
 					<div
 						key={step}
 						className={clsx(
@@ -722,8 +742,8 @@ x: -15,
 			{isTeamsLoading ? (
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
 					{Array.from({
- length: 4,
-}).map((_, i) => (
+						length: 4,
+					}).map((_, i) => (
 						<Skeleton key={i} className="h-[52px] w-full rounded-xl" />
 					))}
 				</div>
@@ -992,30 +1012,30 @@ x: -15,
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
 						{[
 							{
- id: 'default',
-label: 'Standard',
-description: 'Behält die herstellerspezifische Sortierung bei.',
-},
+								id: 'default',
+								label: 'Standard',
+								description: 'Behält die herstellerspezifische Sortierung bei.',
+							},
 							{
- id: 'price-asc',
-label: 'Preis (günstigst zuerst)',
-description: 'Sortiert Tarife nach dem niedrigsten monatlichen Preis.',
-},
+								id: 'price-asc',
+								label: 'Preis (günstigst zuerst)',
+								description: 'Sortiert Tarife nach dem niedrigsten monatlichen Preis.',
+							},
 							{
- id: 'price-desc',
-label: 'Preis (teuerst zuerst)',
-description: 'Sortiert Tarife nach dem höchsten monatlichen Preis.',
-},
+								id: 'price-desc',
+								label: 'Preis (teuerst zuerst)',
+								description: 'Sortiert Tarife nach dem höchsten monatlichen Preis.',
+							},
 							{
- id: 'name-asc',
-label: 'Name (A bis Z)',
-description: 'Sortiert Tarife alphabetisch nach dem Namen.',
-},
+								id: 'name-asc',
+								label: 'Name (A bis Z)',
+								description: 'Sortiert Tarife alphabetisch nach dem Namen.',
+							},
 							{
- id: 'speed-desc',
-label: 'Geschwindigkeit (schnellste zuerst)',
-description: 'Sortiert Tarife nach der maximalen Übertragungsrate.',
-},
+								id: 'speed-desc',
+								label: 'Geschwindigkeit (schnellste zuerst)',
+								description: 'Sortiert Tarife nach der maximalen Übertragungsrate.',
+							},
 						].map((option, index) => (
 							<SelectionTile
 								key={option.id}
@@ -1113,7 +1133,7 @@ description: 'Sortiert Tarife nach der maximalen Übertragungsrate.',
 					</div>
 				</div>
 
-				<div className="mt-2">
+				<div className="mt-1">
 					<SelectionTile
 						name="Warenkorb nach Export leeren"
 						subtitle="Leert den Warenkorb automatisch, sobald ein PDF-Angebot erstellt und heruntergeladen wurde."
@@ -1130,17 +1150,17 @@ description: 'Sortiert Tarife nach der maximalen Übertragungsrate.',
 		<motion.div
 			key="system-view"
 			initial={{
- opacity: 0,
-x: 15,
-}}
+				opacity: 0,
+				x: 15,
+			}}
 			animate={{
- opacity: 1,
-x: 0,
-}}
+				opacity: 1,
+				x: 0,
+			}}
 			exit={{
- opacity: 0,
-x: -15,
-}}
+				opacity: 0,
+				x: -15,
+			}}
 			className="flex flex-col gap-6"
 		>
 			<ScreenHeader
@@ -1212,16 +1232,16 @@ x: -15,
 				{/* ─── Header / Branding ─── */}
 				<motion.div
 					initial={{
- opacity: 0,
-y: 12,
-}}
+						opacity: 0,
+						y: 12,
+					}}
 					animate={{
- opacity: 1,
-y: 0,
-}}
+						opacity: 1,
+						y: 0,
+					}}
 					transition={{
- duration: 0.5,
-}}
+						duration: 0.5,
+					}}
 					className="flex flex-col items-center mb-10 text-center"
 				>
 					<TelekomLogo className="w-12 h-12 text-[#e20074] mb-8" />
@@ -1236,17 +1256,17 @@ y: 0,
 				{/* ─── Main Card with height-morphing ─── */}
 				<motion.div
 					initial={{
- opacity: 0,
-y: 15,
-}}
+						opacity: 0,
+						y: 15,
+					}}
 					animate={{
 						opacity: 1,
 						y: 0,
 						height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
 					}}
 					transition={{
- duration: 0.4,
-}}
+						duration: 0.4,
+					}}
 					className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] overflow-hidden relative"
 				>
 					<div ref={cardRef} className="p-8 sm:p-12 space-y-8">
@@ -1304,16 +1324,16 @@ y: 15,
 				{/* Footnote matching Onboarding */}
 				<motion.div
 					initial={{
- opacity: 0,
-y: 12,
-}}
+						opacity: 0,
+						y: 12,
+					}}
 					animate={{
- opacity: 1,
-y: 0,
-}}
+						opacity: 1,
+						y: 0,
+					}}
 					transition={{
- duration: 0.5,
-}}
+						duration: 0.5,
+					}}
 					className="flex flex-col items-center mt-5 text-center"
 				>
 					<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">

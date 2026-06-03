@@ -178,16 +178,21 @@ export const adminRouter = router({
         }),
 
     getSecuritySettings: adminProcedure.query(async () => {
-        const setting = await prisma.systemSetting.findUnique({
-            where: {
-                key: 'allowed_ips',
-            },
-        });
-        const requireEmail = await prisma.systemSetting.findUnique({
-            where: {
-                key: 'require_email_verification',
-            },
-        });
+        const [
+            setting,
+            requireEmail,
+        ] = await Promise.all([
+            prisma.systemSetting.findUnique({
+                where: {
+                    key: 'allowed_ips',
+                },
+            }),
+            prisma.systemSetting.findUnique({
+                where: {
+                    key: 'require_email_verification',
+                },
+            }),
+        ]);
         return {
             allowedIps: setting?.value || '',
             requireEmailVerification: requireEmail?.value !== 'false',

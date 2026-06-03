@@ -38,6 +38,10 @@ model User {
   @@index([email, isVerified, createdAt])
   @@index([isVerified, createdAt])
   @@index([deviceId])
+  @@index([teamId])
+  @@index([locationId])
+  @@index([odRegionId])
+  @@index([role, isActive])
 }
 
 model OdRegion {
@@ -153,6 +157,8 @@ model SpecialPrice {
   updatedAt             DateTime           @updatedAt
   tiers                 SpecialPriceTier[]
   products              Product[]          @relation("ProductSpecialPrices")
+
+  @@index([isActive, priority])
 }
 
 model SpecialPriceTier {
@@ -182,6 +188,8 @@ model Addon {
   tiers                AddonTier[]
   highlights           TeamHighlight[]
   compatibleProducts   Product[]       @relation("ProductAddons")
+
+  @@index([isGlobal, isActive])
 }
 
 model AddonTier {

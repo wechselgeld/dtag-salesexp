@@ -14,6 +14,9 @@ import {
 import {
 	GlobalErrorToast,
 } from '@/components/shared/error-toast';
+import {
+	OpenPanelComponent,
+} from '@openpanel/nextjs';
 
 const teleNeo = localFont({
 	src: [
@@ -110,10 +113,15 @@ export default function RootLayout({
 						strategy="beforeInteractive"
 					/>
 				)}
-				<Script
-					src="https://analytics.buffinteractive.net/api/script.js"
-					data-site-id="2c42a2b44317"
-					strategy="afterInteractive"
+				<OpenPanelComponent
+					clientId="d077ad27-d43d-4edd-9b11-65d103aa66c4"
+					trackScreenViews={true}
+					apiUrl="https://track.serve.buffinteractive.net"
+					scriptUrl="https://analytics.serve.buffinteractive.net/op1.js"
+				// trackAttributes={true}
+				// trackOutgoingLinks={true}
+				// If you have a user id, you can pass it here to identify the user
+				// profileId={'123'}
 				/>
 				<Providers>
 					<ResolutionGuard>

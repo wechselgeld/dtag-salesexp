@@ -206,7 +206,7 @@ export default function ProductListPage() {
 	} =
 		trpc.product.getProductsByCategory.useQuery({
 			category,
-	});
+		});
 
 	const categoryNames: Record<string, string> = {
 		MOBILE: 'Mobilfunk',
@@ -218,12 +218,12 @@ export default function ProductListPage() {
 	};
 
 	const categoryColors: Record<string, string> = {
-		MOBILE: '#e20074',
-		FIBER: '#0090d0',
-		DSL: '#7b61ff',
-		MAGENTA_TV_OTT: '#ff6b00',
-		DEVICE: '#00a878',
-		ADDON: '#e67e22',
+		MOBILE: '#a49df1',
+		FIBER: '#4dd1e0',
+		DSL: '#74e281',
+		MAGENTA_TV_OTT: '#efdc34',
+		DEVICE: '#a8b8ff',
+		ADDON: '#ffb08c',
 	};
 
 	const catColor = categoryColors[category] || '#e20074';
@@ -350,7 +350,7 @@ export default function ProductListPage() {
 		document.addEventListener('mousedown', handleClickOutside);
 		return () => document.removeEventListener('mousedown', handleClickOutside);
 	}, [
-]);
+	]);
 
 
 	const filteredProducts = useMemo(() => {
@@ -359,7 +359,7 @@ export default function ProductListPage() {
 				if (!activeFilter) { return true; }
 				return activeFilter.predicate(p);
 			}) || [
-];
+			];
 
 		if (sortOption === 'default') { return filtered; }
 
@@ -367,20 +367,20 @@ export default function ProductListPage() {
 			...filtered,
 		].sort((a, b) => {
 			switch (sortOption) {
-			case 'name-asc':
-				return a.name.localeCompare(b.name, 'de');
-			case 'name-desc':
-				return b.name.localeCompare(a.name, 'de');
-			case 'price-asc':
-				return (a.basePrice ?? 0) - (b.basePrice ?? 0);
-			case 'price-desc':
-				return (b.basePrice ?? 0) - (a.basePrice ?? 0);
-			case 'speed-asc':
-				return (a.downloadSpeed ?? 0) - (b.downloadSpeed ?? 0);
-			case 'speed-desc':
-				return (b.downloadSpeed ?? 0) - (a.downloadSpeed ?? 0);
-			default:
-				return 0;
+				case 'name-asc':
+					return a.name.localeCompare(b.name, 'de');
+				case 'name-desc':
+					return b.name.localeCompare(a.name, 'de');
+				case 'price-asc':
+					return (a.basePrice ?? 0) - (b.basePrice ?? 0);
+				case 'price-desc':
+					return (b.basePrice ?? 0) - (a.basePrice ?? 0);
+				case 'speed-asc':
+					return (a.downloadSpeed ?? 0) - (b.downloadSpeed ?? 0);
+				case 'speed-desc':
+					return (b.downloadSpeed ?? 0) - (a.downloadSpeed ?? 0);
+				default:
+					return 0;
 			}
 		});
 	}, [
@@ -815,46 +815,46 @@ export default function ProductListPage() {
 
 													{/* Speed / Volume Visualizer */}
 													{product.category === 'MOBILE' &&
-													product.dataVolume ? (
-															<div
-																className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold text-[0.7rem] uppercase tracking-wide group-hover:scale-[1.02] transition-transform shrink-0"
-																style={{
-																	backgroundColor: `${catColor}0d`,
-																	borderColor: `${catColor}25`,
-																	color: catColor,
-																}}
-															>
-																<VolumeBars
-																	percentage={
-																		productMetrics.volumes[product.id] || 0
-																	}
-																	color={catColor}
-																/>
-																<span className="mt-0.5">
-																	{product.dataVolume}
-																</span>
-															</div>
-														) : product.category !== 'DEVICE' &&
-													  product.downloadSpeed ? (
-																<div
-																	className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold text-[0.7rem] uppercase tracking-wide group-hover:scale-[1.02] transition-transform shrink-0"
-																	style={{
-																		backgroundColor: `${catColor}0d`,
-																		borderColor: `${catColor}25`,
-																		color: catColor,
-																	}}
-																>
-																	<SpeedTacho
-																		percentage={
-																			productMetrics.speeds[product.id] || 0
-																		}
-																		color={catColor}
-																	/>
-																	<span className="mt-0.5">
-																		{product.downloadSpeed} Mbit/s
-																	</span>
-																</div>
-															) : null}
+														product.dataVolume ? (
+														<div
+															className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold text-[0.7rem] uppercase tracking-wide group-hover:scale-[1.02] transition-transform shrink-0"
+															style={{
+																backgroundColor: `${catColor}0d`,
+																borderColor: `${catColor}25`,
+																color: catColor,
+															}}
+														>
+															<VolumeBars
+																percentage={
+																	productMetrics.volumes[product.id] || 0
+																}
+																color={catColor}
+															/>
+															<span className="mt-0.5">
+																{product.dataVolume}
+															</span>
+														</div>
+													) : product.category !== 'DEVICE' &&
+														product.downloadSpeed ? (
+														<div
+															className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold text-[0.7rem] uppercase tracking-wide group-hover:scale-[1.02] transition-transform shrink-0"
+															style={{
+																backgroundColor: `${catColor}0d`,
+																borderColor: `${catColor}25`,
+																color: catColor,
+															}}
+														>
+															<SpeedTacho
+																percentage={
+																	productMetrics.speeds[product.id] || 0
+																}
+																color={catColor}
+															/>
+															<span className="mt-0.5">
+																{product.downloadSpeed} Mbit/s
+															</span>
+														</div>
+													) : null}
 												</div>
 												{product.contractDuration && (
 													<span className="text-[0.68rem] font-medium text-[#c0c0c0] uppercase tracking-wider ml-1 shrink-0 mt-0.5">
@@ -873,95 +873,95 @@ export default function ProductListPage() {
 											{/* Specs - compact inline (REMOVED: Now displayed beside the title) */}
 											{product.category === 'DEVICE' &&
 												(product as any).deviceManufacturer && (
-												<div className="flex items-center gap-4 text-[0.8rem] text-[#888]">
-													<div className="flex items-center gap-1.5">
-														<Smartphone className="w-3.5 h-3.5 text-[#bbb]" />
-														<span className="font-medium text-[#666]">
-															{(product as any).deviceManufacturer}
-														</span>
+													<div className="flex items-center gap-4 text-[0.8rem] text-[#888]">
+														<div className="flex items-center gap-1.5">
+															<Smartphone className="w-3.5 h-3.5 text-[#bbb]" />
+															<span className="font-medium text-[#666]">
+																{(product as any).deviceManufacturer}
+															</span>
+														</div>
 													</div>
-												</div>
-											)}
+												)}
 
 											{/* Sales Arguments (Collapsible) */}
 											{(product as any).salesArguments &&
 												(product as any).salesArguments.length > 0 && (
-												<div className="mt-1 pt-1">
-													<button
-														onClick={(e) => {
-															e.preventDefault();
-															e.stopPropagation();
-															setExpandedArgId(
-																expandedArgId === product.id
-																	? null
-																	: product.id,
-															);
-														}}
-														className="flex items-center justify-between w-full text-[0.8rem] font-medium transition-colors cursor-pointer group/args"
-														style={{
-															color: catColor,
-														}}
-													>
-														<span className="flex items-center gap-1.5">
-															<MessageSquareQuote className="w-3.5 h-3.5 opacity-80" />
-															{(product as any).salesArguments.length}{' '}
+													<div className="mt-1 pt-1">
+														<button
+															onClick={(e) => {
+																e.preventDefault();
+																e.stopPropagation();
+																setExpandedArgId(
+																	expandedArgId === product.id
+																		? null
+																		: product.id,
+																);
+															}}
+															className="flex items-center justify-between w-full text-[0.8rem] font-medium transition-colors cursor-pointer group/args"
+															style={{
+																color: catColor,
+															}}
+														>
+															<span className="flex items-center gap-1.5">
+																<MessageSquareQuote className="w-3.5 h-3.5 opacity-80" />
+																{(product as any).salesArguments.length}{' '}
 																Verkaufsargument(e)
-														</span>
-														<ChevronDown
-															className={clsx(
-																'w-3.5 h-3.5 transition-transform duration-300',
-																expandedArgId === product.id
-																	? 'rotate-180'
-																	: '',
-															)}
-														/>
-													</button>
+															</span>
+															<ChevronDown
+																className={clsx(
+																	'w-3.5 h-3.5 transition-transform duration-300',
+																	expandedArgId === product.id
+																		? 'rotate-180'
+																		: '',
+																)}
+															/>
+														</button>
 
-													<AnimatePresence>
-														{expandedArgId === product.id && (
-															<motion.div
-																initial={{
-																	height: 0,
-																	opacity: 0,
-																}}
-																animate={{
-																	height: 'auto',
-																	opacity: 1,
-																}}
-																exit={{
-																	height: 0,
-																	opacity: 0,
-																}}
-																transition={{
-																	duration: 0.2,
-																}}
-																className="overflow-hidden"
-															>
-																<div className="pt-3 pb-1 flex flex-wrap gap-x-2.5 gap-y-2">
-																	{(product as any).salesArguments.map(
-																		(arg: any) => (
-																			<div
-																				key={arg.id}
-																				className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#f7f8fa] border border-[#eaedf0] text-[0.78rem] font-semibold text-[#555] shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-default transition-all hover:bg-white hover:border-[#d1d5db]"
-																			>
-																				<Sparkles
-																					className="w-3.5 h-3.5 shrink-0"
-																					style={{
-																						color: catColor,
-																					}}
-																				/>
-																				<span className="leading-tight">
-																					{arg.text}
-																				</span>
-																			</div>
-																		),
-																	)}
-																</div>
-															</motion.div>
-														)}
-													</AnimatePresence>
-												</div>
-											)}
+														<AnimatePresence>
+															{expandedArgId === product.id && (
+																<motion.div
+																	initial={{
+																		height: 0,
+																		opacity: 0,
+																	}}
+																	animate={{
+																		height: 'auto',
+																		opacity: 1,
+																	}}
+																	exit={{
+																		height: 0,
+																		opacity: 0,
+																	}}
+																	transition={{
+																		duration: 0.2,
+																	}}
+																	className="overflow-hidden"
+																>
+																	<div className="pt-3 pb-1 flex flex-wrap gap-x-2.5 gap-y-2">
+																		{(product as any).salesArguments.map(
+																			(arg: any) => (
+																				<div
+																					key={arg.id}
+																					className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#f7f8fa] border border-[#eaedf0] text-[0.78rem] font-semibold text-[#555] shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-default transition-all hover:bg-white hover:border-[#d1d5db]"
+																				>
+																					<Sparkles
+																						className="w-3.5 h-3.5 shrink-0"
+																						style={{
+																							color: catColor,
+																						}}
+																					/>
+																					<span className="leading-tight">
+																						{arg.text}
+																					</span>
+																				</div>
+																			),
+																		)}
+																	</div>
+																</motion.div>
+															)}
+														</AnimatePresence>
+													</div>
+												)}
 										</div>
 
 										{/* Bottom: Price + CTA */}
@@ -989,26 +989,26 @@ export default function ProductListPage() {
 														)}
 														{((product as any).rentalPrice ||
 															product.basePrice) > 0 && (
-															<div className="flex items-baseline mt-0.5">
-																<span
-																	className={clsx(
-																		'font-extrabold text-[#1a1a2e] tracking-tight leading-none',
-																		(product as any).purchasePrice > 0
-																			? 'text-[1.1rem]'
-																			: 'text-[1.35rem]',
-																	)}
-																>
-																	{(
-																		(product as any).rentalPrice ||
-																		product.basePrice
-																	).toFixed(2)}{' '}
-																	€
-																</span>
-																<span className="text-[0.65rem] text-[#b0b0b0] font-bold ml-1.5 uppercase tracking-wide">
-																	Miete
-																</span>
-															</div>
-														)}
+																<div className="flex items-baseline mt-0.5">
+																	<span
+																		className={clsx(
+																			'font-extrabold text-[#1a1a2e] tracking-tight leading-none',
+																			(product as any).purchasePrice > 0
+																				? 'text-[1.1rem]'
+																				: 'text-[1.35rem]',
+																		)}
+																	>
+																		{(
+																			(product as any).rentalPrice ||
+																			product.basePrice
+																		).toFixed(2)}{' '}
+																		€
+																	</span>
+																	<span className="text-[0.65rem] text-[#b0b0b0] font-bold ml-1.5 uppercase tracking-wide">
+																		Miete
+																	</span>
+																</div>
+															)}
 													</div>
 												) : (
 													<>
@@ -1046,7 +1046,7 @@ export default function ProductListPage() {
 															hardwarePurchaseType:
 																product.category === 'DEVICE'
 																	? ((product as any).rentalPrice ||
-																			product.basePrice) > 0
+																		product.basePrice) > 0
 																		? 'RENT'
 																		: 'BUY'
 																	: undefined,

@@ -44,7 +44,7 @@ export function getOdRegionFilter(user: SessionUser | undefined | null) {
     if (hasRole(user, 'ADMIN')) {
         return {};
     }
-    
+
     // Managers are permitted to read structural regions to populate selection items on forms.
     // Since visibility doesn't grant mutational rights, allowing them to pull active items is perfect.
     if (hasRole(user, 'TEAM_LEADER')) {
@@ -71,7 +71,7 @@ export function getLocationFilter(user: SessionUser | undefined | null) {
             isActive: true,
         };
     }
-    
+
     // Admins see everything
     if (hasRole(user, 'ADMIN')) {
         return {};
@@ -112,7 +112,9 @@ export function getLocationFilter(user: SessionUser | undefined | null) {
 export function getTeamFilter(user: SessionUser | undefined | null) {
     if (!user || user.role === 'USER') {
         return {
-            isActive: true,
+            location: {
+                isActive: true,
+            },
         };
     }
 
@@ -151,7 +153,11 @@ export function getTeamFilter(user: SessionUser | undefined | null) {
         if (locId) {
             return { locationId: locId };
         }
-        return { isActive: true };
+        return {
+            location: {
+                isActive: true,
+            },
+        };
     }
 
     return {
@@ -231,11 +237,11 @@ export function getUserFilter(user: SessionUser | undefined | null) {
     if (user.role === 'OD_MANAGER' && user.odRegionId) {
         return {
             role: {
- notIn: [
- 'ADMIN',
-'OD_MANAGER',
-],
-},
+                notIn: [
+                    'ADMIN',
+                    'OD_MANAGER',
+                ],
+            },
             OR: [
                 {
                     odRegionId: user.odRegionId,
@@ -258,12 +264,12 @@ export function getUserFilter(user: SessionUser | undefined | null) {
     if (user.role === 'LOCATION_MANAGER' && user.locationId) {
         return {
             role: {
- notIn: [
- 'ADMIN',
-'OD_MANAGER',
-'LOCATION_MANAGER',
-],
-},
+                notIn: [
+                    'ADMIN',
+                    'OD_MANAGER',
+                    'LOCATION_MANAGER',
+                ],
+            },
             OR: [
                 {
                     locationId: user.locationId,

@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@openpanel/nextjs": "^1.5.1",
     "@prisma/adapter-pg": "6.1.0",
     "@prisma/client": "6.1.0",
     "@react-email/components": "^1.0.8",

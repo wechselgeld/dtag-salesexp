@@ -1,16 +1,16 @@
-# Graph Report - dts_saleshelper  (2026-05-29)
+# Graph Report - dts_saleshelper  (2026-06-03)
 
 ## Corpus Check
-- 249 files · ~269,652 words
+- 245 files · ~269,902 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2538 nodes · 3627 edges · 216 communities (179 shown, 37 thin omitted)
+- 2549 nodes · 3642 edges · 214 communities (177 shown, 37 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 63 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d794a740`
+- Built from commit: `a885728c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -202,7 +202,6 @@
 - [[_COMMUNITY_Community 187|Community 187]]
 - [[_COMMUNITY_Community 188|Community 188]]
 - [[_COMMUNITY_Community 189|Community 189]]
-- [[_COMMUNITY_Community 190|Community 190]]
 - [[_COMMUNITY_Community 191|Community 191]]
 - [[_COMMUNITY_Community 192|Community 192]]
 - [[_COMMUNITY_Community 193|Community 193]]
@@ -216,17 +215,16 @@
 - [[_COMMUNITY_Community 201|Community 201]]
 - [[_COMMUNITY_Community 202|Community 202]]
 - [[_COMMUNITY_Community 203|Community 203]]
-- [[_COMMUNITY_Community 204|Community 204]]
 - [[_COMMUNITY_Community 205|Community 205]]
-- [[_COMMUNITY_Community 206|Community 206]]
-- [[_COMMUNITY_Community 207|Community 207]]
+- [[_COMMUNITY_Community 208|Community 208]]
 - [[_COMMUNITY_Community 209|Community 209]]
-- [[_COMMUNITY_Community 210|Community 210]]
 - [[_COMMUNITY_Community 211|Community 211]]
 - [[_COMMUNITY_Community 212|Community 212]]
 - [[_COMMUNITY_Community 213|Community 213]]
 - [[_COMMUNITY_Community 214|Community 214]]
 - [[_COMMUNITY_Community 215|Community 215]]
+- [[_COMMUNITY_Community 221|Community 221]]
+- [[_COMMUNITY_Community 222|Community 222]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `clsx` - 54 edges
@@ -245,12 +243,12 @@
   src/app/admin/layout.tsx → package.json
 - `TierSelect()` --calls--> `clsx`  [INFERRED]
   src/components/features/calculator/streaming-comparison.tsx → package.json
-- `NotificationItem()` --calls--> `clsx`  [INFERRED]
-  src/components/features/news/global-news-notification.tsx → package.json
-- `InfoCard()` --calls--> `clsx`  [INFERRED]
-  src/components/shared/form/form-suite.tsx → package.json
 - `ESLint Errors Log` --references--> `Prisma Client (Extended)`  [EXTRACTED]
   eslint-errors.txt → src/lib/prisma-extended.ts
+- `Database Workflow Guide` --semantically_similar_to--> `Server Hosting & Infrastructure Setup`  [INFERRED] [semantically similar]
+  .agent/skills/DATABASE.md → docs/operations/hosting.md
+- `AdminLayout()` --calls--> `clsx`  [INFERRED]
+  src/app/admin/layout.tsx → package.json
 
 ## Hyperedges (group relationships)
 - **Audit & Revert Pipeline** — concept_audit_log, code_prisma_client, code_audit_context, code_audit_logger, code_audit_revert [EXTRACTED 1.00]
@@ -258,43 +256,43 @@
 - **High Performance Caching Architecture** — concept_thundering_herd_protection, concept_graceful_cache_degradation, code_cache_helper, code_redis_client [EXTRACTED 1.00]
 - **Deutsche Telekom Brand Design Alignment** — se_logo_svg, teleneo_font, telekom_brand_identity [INFERRED 0.85]
 
-## Communities (216 total, 37 thin omitted)
+## Communities (214 total, 37 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.05
-Nodes (33): EASE_OUT_EXPO, formatDate(), getTimeContext(), IntroSplash(), CHANGELOGS, FAQ_CATEGORIES, CheckboxRow(), ErrorBanner() (+25 more)
+Cohesion: 0.20
+Nodes (7): globalForNewsEmitter, news, subRedis, getNewsVisibilityFilter(), isNewsVisible(), getSessionContext(), newsRouter
 
 ### Community 1 - "Community 1"
-Cohesion: 0.12
-Nodes (30): BasketDrawer(), CombinedTimeline(), AddonSelector(), BusinessCaseSelector(), SpecialPriceSelector(), ProductListPage(), useBasketLogic(), useBasketStore (+22 more)
+Cohesion: 0.16
+Nodes (19): CombinedTimeline(), AddonSelector(), Props, BusinessCaseSelector(), Product, Props, Props, SpecialPriceSelector() (+11 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.04
-Nodes (46): dependencies, bcryptjs, class-variance-authority, cmdk, consola, date-fns, framer-motion, @hookform/resolvers (+38 more)
+Nodes (47): dependencies, bcryptjs, class-variance-authority, cmdk, consola, date-fns, framer-motion, @hookform/resolvers (+39 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.10
-Nodes (25): hashPin(), JwtTyp, key, login(), logout(), SessionUser, signDeviceId(), signJWT() (+17 more)
+Cohesion: 0.11
+Nodes (23): hashPin(), JwtTyp, key, login(), logout(), SessionUser, signDeviceId(), signJWT() (+15 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.05
 Nodes (44): Audit Log & Revert Engine Architecture, Automation & System Maintenance, AuditContext Storage, Audit Logger Service, Audit Revert Service, Cache Operations Helper, Email Notification Service, Prisma Client (Extended) (+36 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.18
-Nodes (10): Props, Props, Addon, AddonTier, CalculationInput, DEFAULT_PRICING, PriceHistory, PricingSettings (+2 more)
+Cohesion: 0.11
+Nodes (25): BasketColumn, BasketItemCard, CATEGORY_COLORS, CATEGORY_LABELS, EMPTY_NOTICES, CATEGORY_COLORS, CATEGORY_NAMES, MAGENTA_TV_PACKAGES (+17 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.17
-Nodes (23): BasketItem, buildCombinedSteps(), computeSteps(), CostStep, fmt(), fmtPrice(), formatDailyPrice(), getDate() (+15 more)
+Cohesion: 0.12
+Nodes (30): BasketItem, buildCombinedSteps(), computeSteps(), CostStep, fmt(), fmtPrice(), formatDailyPrice(), getDate() (+22 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.11
-Nodes (17): addonFormSchema, addonRouter, editorProcedure, tierSchema, adminErrorsRouter, SerializedErrorLog, adminErrorsRouter, SerializedErrorLog (+9 more)
+Cohesion: 0.06
+Nodes (32): EASE_OUT_EXPO, formatDate(), getTimeContext(), IntroSplash(), CHANGELOGS, FAQ_CATEGORIES, CheckboxRow(), ErrorBanner() (+24 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.15
-Nodes (7): cacheLogger, globalForNewsEmitter, news, subRedis, RateLimitOptions, RedisRateLimiter, globalForRedis
+Cohesion: 0.32
+Nodes (5): revertAuditLog(), adminAuditRouter, SerializedAuditLog, adminAuditRouter, SerializedAuditLog
 
 ### Community 9 - "Community 9"
 Cohesion: 0.08
@@ -302,19 +300,19 @@ Nodes (24): devDependencies, dotenv, dotenv-cli, eslint, eslint-config-next, @es
 
 ### Community 10 - "Community 10"
 Cohesion: 0.11
-Nodes (24): ErrorLogType, useDebounce(), PRIORITY_COLORS, PRIORITY_LABELS, CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_LABELS, AdminSearch() (+16 more)
+Nodes (25): ErrorLogType, PRIORITY_COLORS, PRIORITY_LABELS, CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_LABELS, AdminSearch(), AdminSearchProps (+17 more)
 
 ### Community 11 - "Community 11"
-Cohesion: 0.13
-Nodes (11): AuditContext, auditContextStorage, revertAuditLog(), adminAuditRouter, SerializedAuditLog, adminAuditRouter, SerializedAuditLog, auditContextMiddleware (+3 more)
+Cohesion: 0.29
+Nodes (5): UserForm(), UserFormData, UserFormProps, userSchema, metadata
 
 ### Community 12 - "Community 12"
-Cohesion: 0.15
-Nodes (13): Props, dbLogger, formatDuration(), formatQuery(), formatStatus(), httpLogger, globalForPrisma, prismaClientSingleton() (+5 more)
+Cohesion: 0.52
+Nodes (6): blobToBase64(), buildFileName(), buildPdfBlob(), downloadBlob(), generateOfferPdf(), getSvgAsPngBase64()
 
 ### Community 13 - "Community 13"
-Cohesion: 0.24
-Nodes (6): TeamForm(), TeamFormData, TeamFormProps, teamSchema, metadata, metadata
+Cohesion: 0.08
+Nodes (18): AddonForm(), AddonFormData, AddonFormProps, addonSchema, BulkUpdateDialog(), BulkUpdateDialogProps, CATEGORY_COLORS, CATEGORY_LABELS (+10 more)
 
 ### Community 14 - "Community 14"
 Cohesion: 0.10
@@ -337,12 +335,12 @@ Cohesion: 0.04
 Nodes (47): computedHash, skillPath, source, sourceType, computedHash, skillPath, source, sourceType (+39 more)
 
 ### Community 20 - "Community 20"
-Cohesion: 0.24
-Nodes (11): getAuditContext(), AUDITED_MODELS, fetchCurrentState(), fetchCurrentStateWithRelations(), GERMAN_MODEL_NAMES, getEntityLabel(), getGermanModelName(), logAutomaticAction() (+3 more)
+Cohesion: 0.19
+Nodes (13): AuditContext, auditContextStorage, getAuditContext(), AUDITED_MODELS, fetchCurrentState(), fetchCurrentStateWithRelations(), GERMAN_MODEL_NAMES, getEntityLabel() (+5 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.29
-Nodes (3): AccountResetEmail(), WelcomeEmail(), sendFeedbackEmail()
+Cohesion: 0.25
+Nodes (4): AccountResetEmail(), WelcomeEmail(), sendFeedbackEmail(), feedbackRouter
 
 ### Community 22 - "Community 22"
 Cohesion: 0.05
@@ -357,40 +355,36 @@ Cohesion: 0.12
 Nodes (15): accentText, button, buttonContainer, container, credentialLabel, credentialRow, credentialsBox, credentialValue (+7 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.17
-Nodes (11): bigramSimilarity(), FuzzyResult, fuzzySearch(), wordFuzzyMatch(), categories, CategoryGrid(), CATEGORY_COLORS, CATEGORY_LIST (+3 more)
+Cohesion: 0.14
+Nodes (12): useDebounce(), bigramSimilarity(), FuzzyResult, fuzzySearch(), wordFuzzyMatch(), categories, CategoryGrid(), CATEGORY_COLORS (+4 more)
 
 ### Community 26 - "Community 26"
-Cohesion: 0.06
-Nodes (32): AdminLayout(), MenuGroup, MenuItem, SidebarGroupSkeleton(), AdminPasskeyPrompt(), PasskeyPromptInner(), CachedSession, usePermissions() (+24 more)
+Cohesion: 0.07
+Nodes (30): AdminLayout(), MenuGroup, MenuItem, SidebarGroupSkeleton(), CachedSession, usePermissions(), Permission, PERMISSIONS (+22 more)
 
 ### Community 27 - "Community 27"
-Cohesion: 0.24
+Cohesion: 0.25
 Nodes (10): getScopedPrisma(), AppRouter, Context, createContext(), extractClientIp(), metadata, Page(), metadata (+2 more)
 
 ### Community 28 - "Community 28"
-Cohesion: 0.21
-Nodes (17): getCached(), inflight, invalidateCache(), MISSING, scanKeys(), setCache(), sendGoodbyeEmail(), canManageLocation() (+9 more)
+Cohesion: 0.10
+Nodes (33): getCached(), inflight, invalidateCache(), MISSING, scanKeys(), setCache(), sendGoodbyeEmail(), withHierarchicalScope() (+25 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.25
-Nodes (7): SavingsCalculatorModalProps, StreamingCalculatorModal(), MAGENTA_PLANS, STREAMING_SERVICES, StreamingComparison(), StreamingComparisonProps, TierSelect()
+Cohesion: 0.50
+Nodes (4): 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, Motion and Interaction, Performance Guardrails
 
 ### Community 30 - "Community 30"
-Cohesion: 0.17
-Nodes (14): metadata, teleNeo, SettingsWrapper(), useImageBrightness(), SettingsState, useSettingsStore, ResolutionGuard(), getTimeContext() (+6 more)
+Cohesion: 0.15
+Nodes (18): metadata, teleNeo, SettingsWrapper(), BasketDrawer(), useImageBrightness(), SettingsState, useSettingsStore, ResolutionGuard() (+10 more)
 
 ### Community 31 - "Community 31"
-Cohesion: 0.11
-Nodes (16): CostTimeline(), Props, CATEGORY_COLORS, CATEGORY_NAMES, HARDWARE_TIERS, NotificationItem(), PRIORITY_CONFIG, AnimatedNumber() (+8 more)
+Cohesion: 0.09
+Nodes (27): ModalState, useModalStore, AppShell(), SHELL_ROUTES, CATEGORY_COLORS, CATEGORY_NAMES, SidebarNav(), MaintenanceSplash() (+19 more)
 
 ### Community 32 - "Community 32"
 Cohesion: 0.05
 Nodes (43): 1. Logo Cover, 1. Monogram + Meaning, 2 × 3 REFERENCE-STYLE LAYOUT, 2. Logo Construction, 2. Product Action, 3. Digital Application, 3. Metaphor Fusion, 4. Brand Essence (+35 more)
-
-### Community 33 - "Community 33"
-Cohesion: 0.11
-Nodes (13): LocationForm(), OdRegionForm(), OdRegionFormData, OdRegionFormProps, odRegionSchema, NotFound(), EditLocationPage(), EditOdRegionPage() (+5 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.17
@@ -405,8 +399,8 @@ Cohesion: 0.06
 Nodes (30): 10. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, 3. DESIGN ENGINEERING DIRECTIVES (Bias Correction), 4. CREATIVE PROACTIVITY (Anti-Slop Implementation), 5. PERFORMANCE GUARDRAILS, 6. TECHNICAL REFERENCE (Dial Definitions), 7. AI TELLS (Forbidden Patterns) (+22 more)
 
 ### Community 37 - "Community 37"
-Cohesion: 0.11
-Nodes (21): BasketColumn, BasketItemCard, CATEGORY_COLORS, CATEGORY_LABELS, EMPTY_NOTICES, Product, Props, CATEGORY_COLORS (+13 more)
+Cohesion: 0.50
+Nodes (4): 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, Motion and Interaction, Performance Guardrails
 
 ### Community 38 - "Community 38"
 Cohesion: 0.09
@@ -417,8 +411,8 @@ Cohesion: 0.10
 Nodes (19): Code Quality, Color and Surfaces, Component Patterns, Content, Design Audit, Fix Priority, How This Works, Iconography (+11 more)
 
 ### Community 40 - "Community 40"
-Cohesion: 0.17
-Nodes (16): EditUserPage(), getSession(), hasPermission(), canCreateNews(), canEditTeam(), canManageUser(), getNewsVisibilityFilter(), getUserFilter() (+8 more)
+Cohesion: 0.21
+Nodes (17): EditUserPage(), getSession(), hasPermission(), canCreateNews(), canEditTeam(), canManageLocation(), canManageUser(), getLocationFilter() (+9 more)
 
 ### Community 41 - "Community 41"
 Cohesion: 0.20
@@ -445,8 +439,8 @@ Cohesion: 0.05
 Nodes (50): 1. Architectural & Design Foundations, 1. Single Responsibility Principle (SRP), 2. Clean Code & Readability Conventions, 2. Open/Closed Principle (OCP), 3. Liskov Substitution Principle (LSP), 3. Strict Type Safety & Design, 4. Interface Segregation Principle (ISP), 4. Modern Modern Syntax & Runtime Capabilities (+42 more)
 
 ### Community 48 - "Community 48"
-Cohesion: 0.05
-Nodes (40): AddonForm(), AddonFormData, AddonFormProps, addonSchema, CreditForm(), CreditFormData, CreditFormProps, creditSchema (+32 more)
+Cohesion: 0.06
+Nodes (31): CreditForm(), CreditFormData, CreditFormProps, creditSchema, NewsForm(), NewsFormProps, newsSchema, PRIORITY_COLORS (+23 more)
 
 ### Community 49 - "Community 49"
 Cohesion: 0.11
@@ -455,10 +449,6 @@ Nodes (17): 1. Meta Information & Core Directive, 2. THE "ABSOLUTE ZERO" DIRECTI
 ### Community 50 - "Community 50"
 Cohesion: 0.43
 Nodes (6): sendAccountResetEmail(), ask(), delay(), main(), prisma, rl
-
-### Community 52 - "Community 52"
-Cohesion: 0.43
-Nodes (7): blobToBase64(), buildFileName(), buildPdfBlob(), downloadBlob(), generateOfferPdf(), getSvgAsPngBase64(), Credit
 
 ### Community 53 - "Community 53"
 Cohesion: 0.38
@@ -521,8 +511,8 @@ Cohesion: 0.13
 Nodes (15): 7. STYLE DIRECTION: Cinematic Product, Component Vocabulary, Components Library, Copy Tone, Core Identity, Creative Arsenal For This Style, Current Production Priorities, Hero Direction (+7 more)
 
 ### Community 89 - "Community 89"
-Cohesion: 0.22
-Nodes (8): 1. Grundprinzipien, 2. Erfasste Mitarbeiterdaten, 3. Cookie-Spezifikationen, 4. Technische Verbindungssicherheit, 5. Technische DSGVO-Checkliste für Administratoren, Datenschutz & Datensicherheit, Tabelle `User`, Tabelle `UserSession`
+Cohesion: 0.15
+Nodes (12): 1. Grundprinzipien, 2. Erfasste Mitarbeiterdaten, 3. Analysedienst & Ereignis-Tracking (OpenPanel), 3. Cookie-Spezifikationen, 4. Cookie-Spezifikationen, 4. Technische Verbindungssicherheit, 5. Technische DSGVO-Checkliste für Administratoren, 5. Technische Verbindungssicherheit (+4 more)
 
 ### Community 90 - "Community 90"
 Cohesion: 0.25
@@ -542,7 +532,7 @@ Nodes (15): 7. STYLE DIRECTION: Dashboards, Component Vocabulary, Components Lib
 
 ### Community 94 - "Community 94"
 Cohesion: 0.07
-Nodes (21): ACTION_MAP, AuditClient(), AuditLogType, ENTITY_MAP, InspectorModal(), metadata, TabCard(), VariantDropdown() (+13 more)
+Nodes (22): ACTION_MAP, AuditClient(), AuditLogType, ENTITY_MAP, InspectorModal(), metadata, TabCard(), VariantDropdown() (+14 more)
 
 ### Community 97 - "Community 97"
 Cohesion: 0.13
@@ -661,8 +651,8 @@ Cohesion: 0.18
 Nodes (10): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, High-Agency Minimalism Frontend Skill (+2 more)
 
 ### Community 126 - "Community 126"
-Cohesion: 0.18
-Nodes (10): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, High-Agency Premium Bento Frontend Skill (+2 more)
+Cohesion: 0.29
+Nodes (6): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, High-Agency Premium Bento Frontend Skill
 
 ### Community 127 - "Community 127"
 Cohesion: 0.18
@@ -673,12 +663,12 @@ Cohesion: 0.18
 Nodes (10): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, High-Agency Soft Frontend Skill (+2 more)
 
 ### Community 129 - "Community 129"
-Cohesion: 0.29
-Nodes (6): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, High-Agency Swiss System Frontend Skill
+Cohesion: 0.18
+Nodes (10): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, High-Agency Swiss System Frontend Skill (+2 more)
 
 ### Community 130 - "Community 130"
-Cohesion: 0.18
-Nodes (10): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, High-Agency Warm Modern Frontend Skill (+2 more)
+Cohesion: 0.29
+Nodes (6): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, High-Agency Warm Modern Frontend Skill
 
 ### Community 131 - "Community 131"
 Cohesion: 0.20
@@ -745,16 +735,16 @@ Cohesion: 0.29
 Nodes (6): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, High-Agency Brutalism Frontend Skill
 
 ### Community 147 - "Community 147"
-Cohesion: 0.29
-Nodes (6): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, High-Agency Editorial Premium Frontend Skill
+Cohesion: 0.18
+Nodes (10): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, High-Agency Editorial Premium Frontend Skill (+2 more)
 
 ### Community 148 - "Community 148"
 Cohesion: 0.18
 Nodes (10): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, High-Agency Monochrome Modern Frontend Skill (+2 more)
 
 ### Community 149 - "Community 149"
-Cohesion: 0.29
-Nodes (6): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, High-Agency Soft Brutalism Frontend Skill
+Cohesion: 0.18
+Nodes (10): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, High-Agency Soft Brutalism Frontend Skill (+2 more)
 
 ### Community 150 - "Community 150"
 Cohesion: 0.33
@@ -901,8 +891,8 @@ Cohesion: 0.50
 Nodes (4): 5. TECHNICAL REFERENCE (Dial Definitions), DESIGN_VARIANCE (Level 1-10), MOTION_INTENSITY (Level 1-10), VISUAL_DENSITY (Level 1-10)
 
 ### Community 186 - "Community 186"
-Cohesion: 0.11
-Nodes (14): BulkUpdateDialog(), BulkUpdateDialogProps, CATEGORY_COLORS, CATEGORY_LABELS, CreditSelector(), CreditSelectorProps, FeedbackModal(), FeedbackModalProps (+6 more)
+Cohesion: 0.16
+Nodes (10): LocationForm(), LocationFormData, LocationFormProps, locationSchema, NotFound(), EditLocationPage(), EditOdRegionPage(), EditTeamPage() (+2 more)
 
 ### Community 187 - "Community 187"
 Cohesion: 0.50
@@ -915,10 +905,6 @@ Nodes (4): 5. TECHNICAL REFERENCE (Dial Definitions), DESIGN_VARIANCE (Level 1-1
 ### Community 189 - "Community 189"
 Cohesion: 0.50
 Nodes (4): 5. TECHNICAL REFERENCE (Dial Definitions), DESIGN_VARIANCE (Level 1-10), MOTION_INTENSITY (Level 1-10), VISUAL_DENSITY (Level 1-10)
-
-### Community 190 - "Community 190"
-Cohesion: 0.50
-Nodes (4): 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, Motion and Interaction, Performance Guardrails
 
 ### Community 191 - "Community 191"
 Cohesion: 0.50
@@ -948,37 +934,41 @@ Nodes (4): 5. TECHNICAL REFERENCE (Dial Definitions), DESIGN_VARIANCE (Level 1-1
 Cohesion: 0.50
 Nodes (4): 5. TECHNICAL REFERENCE (Dial Definitions), DESIGN_VARIANCE (Level 1-10), MOTION_INTENSITY (Level 1-10), VISUAL_DENSITY (Level 1-10)
 
-### Community 207 - "Community 207"
-Cohesion: 0.50
-Nodes (4): 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, Motion and Interaction, Performance Guardrails
+### Community 208 - "Community 208"
+Cohesion: 0.15
+Nodes (12): CostTimeline(), Props, SavingsCalculatorModalProps, StreamingCalculatorModal(), MAGENTA_PLANS, STREAMING_SERVICES, StreamingComparison(), StreamingComparisonProps (+4 more)
 
 ### Community 209 - "Community 209"
 Cohesion: 0.50
 Nodes (3): alexUser, allNewsErrors, errorLogs
 
-### Community 210 - "Community 210"
-Cohesion: 0.50
-Nodes (4): 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, Motion and Interaction, Performance Guardrails
+### Community 221 - "Community 221"
+Cohesion: 0.24
+Nodes (6): TeamForm(), TeamFormData, TeamFormProps, teamSchema, metadata, metadata
+
+### Community 222 - "Community 222"
+Cohesion: 0.09
+Nodes (18): Props, cacheLogger, dbLogger, formatDuration(), formatQuery(), formatStatus(), httpLogger, logger (+10 more)
 
 ## Knowledge Gaps
-- **1583 isolated node(s):** `$schema`, `style`, `rsc`, `tsx`, `config` (+1578 more)
+- **1593 isolated node(s):** `$schema`, `style`, `rsc`, `tsx`, `config` (+1588 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **37 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `clsx` connect `Community 94` to `Community 0`, `Community 1`, `Community 2`, `Community 33`, `Community 186`, `Community 10`, `Community 13`, `Community 48`, `Community 176`, `Community 25`, `Community 26`, `Community 29`, `Community 30`, `Community 31`?**
-  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+- **Why does `clsx` connect `Community 94` to `Community 1`, `Community 2`, `Community 7`, `Community 186`, `Community 10`, `Community 11`, `Community 13`, `Community 48`, `Community 176`, `Community 208`, `Community 25`, `Community 26`, `Community 221`, `Community 30`, `Community 31`?**
+  _High betweenness centrality (0.036) - this node is a cross-community bridge._
 - **Why does `dependencies` connect `Community 2` to `Community 94`, `Community 54`?**
-  _High betweenness centrality (0.032) - this node is a cross-community bridge._
-- **Why does `trpc` connect `Community 186` to `Community 0`, `Community 33`, `Community 194`, `Community 1`, `Community 37`, `Community 5`, `Community 10`, `Community 13`, `Community 48`, `Community 30`, `Community 25`, `Community 26`, `Community 29`, `Community 94`, `Community 31`?**
+  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+- **Why does `trpc` connect `Community 13` to `Community 1`, `Community 26`, `Community 5`, `Community 7`, `Community 10`, `Community 11`, `Community 48`, `Community 208`, `Community 30`, `Community 25`, `Community 186`, `Community 221`, `Community 94`, `Community 31`?**
   _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **Are the 53 inferred relationships involving `clsx` (e.g. with `SidebarGroupSkeleton()` and `AdminLayout()`) actually correct?**
   _`clsx` has 53 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `$schema`, `style`, `rsc` to the rest of the system?**
-  _1591 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.0525879917184265 - nodes in this community are weakly interconnected._
-- **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.12063492063492064 - nodes in this community are weakly interconnected._
+  _1601 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Community 2` be split into smaller, more focused modules?**
+  _Cohesion score 0.0425531914893617 - nodes in this community are weakly interconnected._
+- **Should `Community 3` be split into smaller, more focused modules?**
+  _Cohesion score 0.1103448275862069 - nodes in this community are weakly interconnected._
