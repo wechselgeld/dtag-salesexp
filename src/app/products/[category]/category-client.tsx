@@ -218,12 +218,12 @@ export default function ProductListPage() {
 	};
 
 	const categoryColors: Record<string, string> = {
-		MOBILE: '#a49df1',
-		FIBER: '#4dd1e0',
-		DSL: '#74e281',
-		MAGENTA_TV_OTT: '#efdc34',
-		DEVICE: '#a8b8ff',
-		ADDON: '#ffb08c',
+		MOBILE: '#e20074',
+		FIBER: '#0090d0',
+		DSL: '#7b61ff',
+		MAGENTA_TV_OTT: '#ff6b00',
+		DEVICE: '#00a878',
+		ADDON: '#e67e22',
 	};
 
 	const catColor = categoryColors[category] || '#e20074';

@@ -47,6 +47,12 @@ import {
 	SignalIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
+import {
+	useOpenPanel,
+} from '@openpanel/nextjs';
+import {
+	ScreenHeader,
+} from '@/components/shared/form/form-suite';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -832,6 +838,7 @@ interface BattlecardModalProps {
 export function BattlecardModal({
 	isOpen, onClose,
 }: BattlecardModalProps) {
+	const op = useOpenPanel();
 	const [
 		activeTab,
 		setActiveTab,
@@ -910,9 +917,13 @@ export function BattlecardModal({
 			setSelectedCompetitorId(COMPETITORS[0].id);
 			setSelectedObjectionId(OBJECTIONS[0].id);
 			setSearchQuery('');
+			op.track('battlecards_opened', {
+				tab: 'battlecards',
+			});
 		}
 	}, [
 		isOpen,
+		op,
 	]);
 
 	// Focus search on tab change to battlecards
@@ -966,7 +977,7 @@ export function BattlecardModal({
 	return createPortal(
 		<AnimatePresence>
 			{isOpen && (
-				<div className="fixed inset-0 z-9999 flex items-center justify-center p-4 md:p-8">
+				<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8 bg-black/50 backdrop-blur-sm overflow-y-auto">
 					{/* Backdrop */}
 					<motion.div
 						initial={{
@@ -979,7 +990,7 @@ export function BattlecardModal({
 							opacity: 0,
 						}}
 						onClick={onClose}
-						className="absolute inset-0 bg-white/60 backdrop-blur-md"
+						className="absolute inset-0 cursor-pointer"
 					/>
 
 					{/* Modal */}
@@ -987,7 +998,7 @@ export function BattlecardModal({
 						initial={{
 							opacity: 0,
 							scale: 0.95,
-							y: 20,
+							y: 10,
 						}}
 						animate={{
 							opacity: 1,
@@ -997,35 +1008,33 @@ export function BattlecardModal({
 						exit={{
 							opacity: 0,
 							scale: 0.95,
-							y: 20,
+							y: 10,
 						}}
 						transition={{
-							type: 'spring',
-							damping: 25,
-							stiffness: 300,
+							duration: 0.25,
+							ease: 'easeOut',
 						}}
-						className="relative w-full max-w-6xl bg-white rounded-[2.5rem] shadow-[0_30px_90px_-15px_rgba(0,0,0,0.2)] border border-[#eaedf0] overflow-hidden flex flex-col h-[85vh]"
+						className="relative w-full max-w-6xl bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[#eaedf0] overflow-hidden flex flex-col h-[85vh]"
 					>
 						{/* Header */}
-						<div className="flex items-center justify-between px-8 md:px-10 py-5 border-b border-[#f0f0f0]">
-							<div className="flex items-center gap-5">
-								<div className="w-11 h-11 rounded-2xl bg-[#e20074]/10 text-[#e20074] flex items-center justify-center shadow-sm">
-									<Swords className="w-5.5 h-5.5" />
-								</div>
-								<div>
-									<h2 className="text-[1.25rem] font-extrabold text-[#1a1a2e] mb-0 tracking-tight leading-none">
-										Battlecards
-									</h2>
-									<p className="text-[0.8rem] text-[#888] font-medium leading-none mt-2">
-										Argumentationshilfen & Strategien
-									</p>
-								</div>
-							</div>
+						<div className="flex items-center justify-between px-8 md:px-10 py-5 border-b border-[#eaedf0]">
+							<ScreenHeader
+								icon={<Swords className="w-5.5 h-5.5 text-[#e20074]" />}
+								title="Battlecards"
+								subtitle="Argumentationshilfen & Strategien"
+							/>
 
 							<div className="flex items-center gap-6">
-								<div className="flex p-1 bg-[#f0f2f5] rounded-xl">
+								<div className="flex p-1 bg-[#f7f8fa] rounded-xl border border-[#eaedf0]">
 									<button
-										onClick={() => setActiveTab('battlecards')}
+										onClick={() => {
+											if (activeTab !== 'battlecards') {
+												setActiveTab('battlecards');
+												op.track('battlecards_tab_changed', {
+													tab: 'battlecards',
+												});
+											}
+										}}
 										className={clsx(
 											'px-6 py-2 rounded-lg text-sm font-extrabold transition-all',
 											activeTab === 'battlecards'
@@ -1036,7 +1045,14 @@ export function BattlecardModal({
 										Anbieter
 									</button>
 									<button
-										onClick={() => setActiveTab('objections')}
+										onClick={() => {
+											if (activeTab !== 'objections') {
+												setActiveTab('objections');
+												op.track('battlecards_tab_changed', {
+													tab: 'objections',
+												});
+											}
+										}}
 										className={clsx(
 											'px-6 py-2 rounded-lg text-sm font-extrabold transition-all',
 											activeTab === 'objections'
@@ -1050,9 +1066,9 @@ export function BattlecardModal({
 
 								<button
 									onClick={onClose}
-									className="w-10 h-10 rounded-full bg-telekom-gray-50 border border-[#eaedf0] flex items-center justify-center text-[#888] hover:text-[#e20074] hover:bg-white hover:border-[#e20074]/20 transition-all cursor-pointer shadow-sm active:scale-95 group"
+									className="w-10 h-10 rounded-full flex items-center justify-center text-[#888] hover:bg-[#f7f8fa] hover:text-[#1a1a2e] transition-colors cursor-pointer outline-none shrink-0"
 								>
-									<X className="w-5 h-5 group-hover:scale-110 transition-transform" />
+									<X className="w-5 h-5" />
 								</button>
 							</div>
 						</div>

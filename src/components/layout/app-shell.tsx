@@ -39,6 +39,9 @@ import {
 import {
 	FeedbackModal,
 } from '@/components/features/feedback/feedback-modal';
+import {
+	TrackingConsentBanner,
+} from '@/components/shared/tracking-consent-banner';
 
 // Routes that SHOULD render WITH the sales shell (sidebar + basket)
 const SHELL_ROUTES = [
@@ -80,6 +83,10 @@ export function AppShell({
 ]).length);
 
 	const isLoginOrAdmin = pathname.startsWith('/admin') || pathname === '/login';
+	const showConsentBanner =
+		pathname !== '/setup' &&
+		pathname !== '/login' &&
+		!pathname.startsWith('/admin');
 
 	if (
 		isMaintenanceActive &&
@@ -122,6 +129,7 @@ export function AppShell({
 	return (
 		<IntroSplash>
 			{shellContent}
+			{showConsentBanner && <TrackingConsentBanner />}
 			{!isStandalone && (
 				<>
 					<OnboardingTutorial />

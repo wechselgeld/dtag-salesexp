@@ -15,8 +15,8 @@
     "semantic_hash": "0bf24011c0567d7c30bf0680150d6985"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\package.json": {
-    "mtime": 1780507763.44366,
-    "ast_hash": "d41a1101867d15a74be622f703cca5d2",
+    "mtime": 1780524081.8437693,
+    "ast_hash": "9bf1c5f577852f2e4af00c6052e567be",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\postcss.config.mjs": {
@@ -85,8 +85,8 @@
     "semantic_hash": "2819e7e8e55ef644ada02a8a491ceb9d"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\layout.tsx": {
-    "mtime": 1780512963.354453,
-    "ast_hash": "d452dbd85a3deeaf2323e5228cc87388",
+    "mtime": 1780600905.0186565,
+    "ast_hash": "3c2a82678ca2c0ec899d6c71ec42e30b",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\loading.tsx": {
@@ -240,7 +240,7 @@
     "semantic_hash": "4cb448deae9e09b0264ee5daa77e9d68"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\admin\\products\\products-client.tsx": {
-    "mtime": 1780345603.878734,
+    "mtime": 1780524081.8487916,
     "ast_hash": "74f25b9770380ae5d58177f3b98ac707",
     "semantic_hash": ""
   },
@@ -260,7 +260,7 @@
     "semantic_hash": "e91799658bd3f5564c9de2090bbe65f0"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\admin\\settings\\settings-client.tsx": {
-    "mtime": 1780509416.8093927,
+    "mtime": 1780524081.8502991,
     "ast_hash": "74c9e2b5abe5f219522a783c9179bcb8",
     "semantic_hash": ""
   },
@@ -350,7 +350,7 @@
     "semantic_hash": "3f4849dc90b2303270dd10a5eaedb7a3"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\login\\login-client.tsx": {
-    "mtime": 1780509910.3251328,
+    "mtime": 1780524081.8523006,
     "ast_hash": "8574f31fe505ac5073624f3692fd8e7a",
     "semantic_hash": ""
   },
@@ -360,8 +360,8 @@
     "semantic_hash": "0c7792a5770e33c1930aeee59f3c268a"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\privacy\\page.tsx": {
-    "mtime": 1780513585.132235,
-    "ast_hash": "431ae2ac66ad02a61c4b75d055ee833d",
+    "mtime": 1780524081.8532996,
+    "ast_hash": "9a7a479877c4293ddb20843b95d3367a",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\products\\page.tsx": {
@@ -375,8 +375,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\products\\[category]\\category-client.tsx": {
-    "mtime": 1780345252.5329812,
-    "ast_hash": "de6ae9a62fc81bbeea2c8830b1e91f73",
+    "mtime": 1780601024.8868876,
+    "ast_hash": "a78a3893832f508977457506f9a22fd7",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\products\\[category]\\page.tsx": {
@@ -390,13 +390,13 @@
     "semantic_hash": "26a45ed68e9687c0216d844e7d06380e"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\products\\[category]\\[id]\\product-detail-client.tsx": {
-    "mtime": 1780345600.6607394,
+    "mtime": 1780524081.8548088,
     "ast_hash": "547184914637420b548867cb08731ed1",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\settings\\page.tsx": {
-    "mtime": 1780509409.6190057,
-    "ast_hash": "f276c7ea53e079d5673930587c7c9324",
+    "mtime": 1780602822.6283598,
+    "ast_hash": "0159b5a47c244194c76d8cc310e0a4bc",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\setup\\page.tsx": {
@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\setup\\setup-client.tsx": {
-    "mtime": 1780510380.0611215,
-    "ast_hash": "ca9deb6f6a592d3563ec4aab0ebc1a6f",
+    "mtime": 1780602714.7866583,
+    "ast_hash": "118e8e425d03f7fdb63873984efe5487",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\verify\\[token]\\page.tsx": {
@@ -420,7 +420,7 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\admin\\bulk-update-dialog.tsx": {
-    "mtime": 1780345597.793186,
+    "mtime": 1780524081.8588989,
     "ast_hash": "bd8b370ebb62dec1f34c6e2f3ec3dd57",
     "semantic_hash": ""
   },
@@ -470,8 +470,8 @@
     "semantic_hash": "1afa206c7db5eecca96bc678a6bab70b"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\basket\\basket-drawer.tsx": {
-    "mtime": 1780348843.3085535,
-    "ast_hash": "a76563450021fe8bc934b27318583a94",
+    "mtime": 1780600348.2092562,
+    "ast_hash": "6527b00771d2792da591a82f4637db1c",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\basket\\combined-timeline.tsx": {
@@ -480,14 +480,14 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\basket\\offer-pdf\\index.tsx": {
-    "mtime": 1780349035.503329,
-    "ast_hash": "7324f1419f0a58fe04d143c8980239f3",
+    "mtime": 1780524081.8618958,
+    "ast_hash": "587bde18d6bddb27117075d160c430d8",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\battlecards\\battlecard-panel.tsx": {
-    "mtime": 1779225790.4393308,
-    "ast_hash": "c569c52b4e81f60400c3ebc7706ae7f6",
-    "semantic_hash": "c569c52b4e81f60400c3ebc7706ae7f6"
+    "mtime": 1780604301.488109,
+    "ast_hash": "4befadcc0b63458cb430dc9adcf7291f",
+    "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\calculator\\addon-selector.tsx": {
     "mtime": 1780063243.7471228,
@@ -515,13 +515,13 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\calculator\\streaming-calculator-modal.tsx": {
-    "mtime": 1779551200.877741,
-    "ast_hash": "3b82d8044ca65bbe41815d40bd0ad00f",
+    "mtime": 1780603765.2660496,
+    "ast_hash": "9e22408c4db8e5341cae71759da915d8",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\calculator\\streaming-comparison.tsx": {
-    "mtime": 1779551200.8323183,
-    "ast_hash": "74faa525a185a1641a80bf9bcaa1add9",
+    "mtime": 1780603884.847452,
+    "ast_hash": "cab1371d601ed6d07b8c609ad18ac618",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\feedback\\feedback-modal.tsx": {
@@ -560,13 +560,13 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\search\\search-bar.tsx": {
-    "mtime": 1780345586.0233226,
+    "mtime": 1780524081.8623955,
     "ast_hash": "62eca35c7c0d96abf28305854cb5a69a",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\layout\\app-shell.tsx": {
-    "mtime": 1779800293.7586057,
-    "ast_hash": "cb777a98fcbfd28a9ed8dd360a5cfd23",
+    "mtime": 1780602816.003609,
+    "ast_hash": "b4c884603ebca8af4ae1af149e33c56b",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\layout\\resolution-guard.tsx": {
@@ -575,7 +575,7 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\layout\\sidebar-nav.tsx": {
-    "mtime": 1780345583.3792593,
+    "mtime": 1780524081.8633976,
     "ast_hash": "07ddf55b6c237394e7aac56052b868a0",
     "semantic_hash": ""
   },
@@ -760,7 +760,7 @@
     "semantic_hash": "4b4da264f8d75ecdd0b97c3bf16c3691"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\hooks\\use-image-brightness.ts": {
-    "mtime": 1780335742.2188978,
+    "mtime": 1780524081.8638961,
     "ast_hash": "311350d92a257c843671fc85923f4c82",
     "semantic_hash": ""
   },
@@ -785,7 +785,7 @@
     "semantic_hash": "96aa2401961569577f4e0c573fb69891"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\lib\\audit-revert.ts": {
-    "mtime": 1780334990.207123,
+    "mtime": 1780524081.864902,
     "ast_hash": "e78978d6cec1801eaeb981d12c9004a1",
     "semantic_hash": ""
   },
@@ -820,8 +820,8 @@
     "semantic_hash": "626739efd05f16e5d4cd17af999da6b0"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\lib\\pdf-generator.tsx": {
-    "mtime": 1780348843.2710884,
-    "ast_hash": "03cd5217cf767cd529f648ab3211e388",
+    "mtime": 1780524081.8659103,
+    "ast_hash": "4aad0b2d46d7bd916b46ca170390ece7",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\lib\\permissions.ts": {
@@ -835,7 +835,7 @@
     "semantic_hash": "16980dc2fc94a8278f57166f142d4e17"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\lib\\prisma.ts": {
-    "mtime": 1780334975.9497733,
+    "mtime": 1780524081.866409,
     "ast_hash": "8be052844725c7c7a237af42b8063b8a",
     "semantic_hash": ""
   },
@@ -845,8 +845,8 @@
     "semantic_hash": "6f898894e1ce0d122d42da5e02573273"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\lib\\rbac.ts": {
-    "mtime": 1780510655.5115788,
-    "ast_hash": "15cca60a12110e308fb83953c008cd5d",
+    "mtime": 1780524129.7176642,
+    "ast_hash": "d9ebc140bc5c99c2dbed85c8370ce4c0",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\lib\\redis.ts": {
@@ -905,7 +905,7 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\server\\routers\\admin.ts": {
-    "mtime": 1780335020.7995555,
+    "mtime": 1780524081.8764424,
     "ast_hash": "c9a079fb14ed3a1292a4c0000fb9aa8e",
     "semantic_hash": ""
   },
@@ -930,7 +930,7 @@
     "semantic_hash": "60bf22044fc0ebe77ad8de45c148cb6c"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\server\\routers\\product.ts": {
-    "mtime": 1780335016.761,
+    "mtime": 1780524081.8769414,
     "ast_hash": "0eff71ff4808214ba096f167e1a5e54a",
     "semantic_hash": ""
   },
@@ -995,7 +995,7 @@
     "semantic_hash": "983b07646c20de0f6736f9934fa76e3c"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\docs\\README.md": {
-    "mtime": 1780509653.8040555,
+    "mtime": 1780524081.8176837,
     "ast_hash": "c38d3cb1837c1e350bd1ee3ed56fe8b5",
     "semantic_hash": ""
   },
@@ -1030,7 +1030,7 @@
     "semantic_hash": "337db510faa0de7ce519cf9229944b08"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\docs\\operations\\privacy.md": {
-    "mtime": 1780512131.5875554,
+    "mtime": 1780524081.8186908,
     "ast_hash": "ce3ba97a7288cc8809b27a314f2b49f7",
     "semantic_hash": ""
   },
@@ -1185,7 +1185,7 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\admin\\passkey-prompt.tsx": {
-    "mtime": 1780509391.0763967,
+    "mtime": 1780524081.8593962,
     "ast_hash": "7a5c57590aac4abcdf996c2af6cd29a9",
     "semantic_hash": ""
   },
@@ -1200,8 +1200,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\lib\\store\\settings-store.ts": {
-    "mtime": 1780347608.421878,
-    "ast_hash": "16651d627fc082ff8e45b3fd99fa57f1",
+    "mtime": 1780602803.1433773,
+    "ast_hash": "646089fcc1c46f69d844bf39d2ff1342",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\server\\routers\\admin-audit.ts": {
@@ -1262,6 +1262,21 @@
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\scratch\\trace_results.json": {
     "mtime": 1780063243.7400835,
     "ast_hash": "99a486a2e5d6855128299636f177da62",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\app\\tracking\\page.tsx": {
+    "mtime": 1780600914.2998705,
+    "ast_hash": "6f3e00e827e7babcdc25d23713f41fd1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\shared\\analytics-provider.tsx": {
+    "mtime": 1780600890.204229,
+    "ast_hash": "294fd8945e17cebc3d156f7c60662937",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\shared\\tracking-consent-banner.tsx": {
+    "mtime": 1780603318.9118905,
+    "ast_hash": "386093c5514a67759ae3529e71db0c3c",
     "semantic_hash": ""
   }
 }

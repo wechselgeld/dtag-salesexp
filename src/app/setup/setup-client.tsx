@@ -1,22 +1,22 @@
 'use client';
 
 import {
- useState, useEffect, useCallback, useRef,
+    useState, useEffect, useCallback, useRef,
 } from 'react';
 import {
- useRouter,
+    useRouter,
 } from 'next/navigation';
 import {
- trpc,
+    trpc,
 } from '@/lib/trpc';
 import {
- startRegistration, startAuthentication,
+    startRegistration, startAuthentication,
 } from '@simplewebauthn/browser';
 import {
-	useOpenPanel,
+    useOpenPanel,
 } from '@openpanel/nextjs';
 import {
- motion, AnimatePresence,
+    motion, AnimatePresence,
 } from 'framer-motion';
 import {
     ShieldAlert, ArrowRight, Users, User, Mail,
@@ -24,23 +24,26 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
- TelekomLogo,
+    TelekomLogo,
 } from '@/components/shared/telekom-logo';
 import {
- Skeleton,
+    Skeleton,
 } from '@/components/shared/skeleton';
+import {
+    useSettingsStore,
+} from '@/lib/store/settings-store';
 import Link from 'next/link';
 import {
- GlobalFooter,
+    GlobalFooter,
 } from '@/components/shared/global-footer';
 import {
- PremiumPinInput,
+    PremiumPinInput,
 } from '@/components/shared/premium-pin-input';
 import {
     PremiumInput, PremiumButton, ScreenHeader, SelectionTile, CheckboxRow, ErrorBanner,
 } from '@/components/shared/form/form-suite';
 import {
- z,
+    z,
 } from 'zod';
 
 const setupFormSchema = z.object({
@@ -57,6 +60,7 @@ const setupFormSchema = z.object({
     teamId: z.string().min(1, 'Bitte wähle ein Team aus'),
     acceptedTerms: z.literal(true),
     acceptedPrivacy: z.literal(true),
+    acceptedTracking: z.literal(true),
 });
 
 const LS_KEY_FIRST_NAME = 'setup-user-firstName';
@@ -67,10 +71,10 @@ const LS_KEY_SETUP_DONE = 'setup-completed';
 function getStoredUser(): { firstName: string; lastName: string; email: string } {
     if (typeof window === 'undefined') {
         return {
- firstName: '',
-lastName: '',
-email: '',
-};
+            firstName: '',
+            lastName: '',
+            email: '',
+        };
     }
     return {
         firstName: localStorage.getItem(LS_KEY_FIRST_NAME) ?? '',
@@ -150,64 +154,64 @@ export default function SetupPage({
 
     // Already registered / PIN reset states
     const [
- isAlreadyRegisteredFlow,
-setIsAlreadyRegisteredFlow,
-] = useState(false);
+        isAlreadyRegisteredFlow,
+        setIsAlreadyRegisteredFlow,
+    ] = useState(false);
     const [
- loginEmail,
-setLoginEmail,
-] = useState('');
+        loginEmail,
+        setLoginEmail,
+    ] = useState('');
     const [
- loginPin,
-setLoginPin,
-] = useState('');
+        loginPin,
+        setLoginPin,
+    ] = useState('');
     const [
- loginError,
-setLoginError,
-] = useState<string | null>(null);
+        loginError,
+        setLoginError,
+    ] = useState<string | null>(null);
     const [
- isLoggingIn,
-setIsLoggingIn,
-] = useState(false);
+        isLoggingIn,
+        setIsLoggingIn,
+    ] = useState(false);
 
     const [
- isPinResetFlow,
-setIsPinResetFlow,
-] = useState(false);
+        isPinResetFlow,
+        setIsPinResetFlow,
+    ] = useState(false);
     const [
- pinResetOtp,
-setPinResetOtp,
-] = useState('');
+        pinResetOtp,
+        setPinResetOtp,
+    ] = useState('');
     const [
- pinResetError,
-setPinResetError,
-] = useState<string | null>(null);
+        pinResetError,
+        setPinResetError,
+    ] = useState<string | null>(null);
 
     const [
- isSettingNewPin,
-setIsSettingNewPin,
-] = useState(false);
+        isSettingNewPin,
+        setIsSettingNewPin,
+    ] = useState(false);
     const [
- newPin,
-setNewPin,
-] = useState('');
+        newPin,
+        setNewPin,
+    ] = useState('');
     const [
- newPinConfirm,
-setNewPinConfirm,
-] = useState('');
+        newPinConfirm,
+        setNewPinConfirm,
+    ] = useState('');
     const [
- newPinError,
-setNewPinError,
-] = useState<string | null>(null);
+        newPinError,
+        setNewPinError,
+    ] = useState<string | null>(null);
 
     const [
- locationSearch,
-setLocationSearch,
-] = useState('');
+        locationSearch,
+        setLocationSearch,
+    ] = useState('');
     const [
- debouncedSearch,
-setDebouncedSearch,
-] = useState('');
+        debouncedSearch,
+        setDebouncedSearch,
+    ] = useState('');
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -215,109 +219,116 @@ setDebouncedSearch,
         }, 300);
         return () => clearTimeout(timer);
     }, [
- locationSearch,
-]);
+        locationSearch,
+    ]);
 
     const [
- selectedLocationId,
-setSelectedLocationId,
-] = useState<string | null>(null);
+        selectedLocationId,
+        setSelectedLocationId,
+    ] = useState<string | null>(null);
     const [
- selectedTeamId,
-setSelectedTeamId,
-] = useState<string | null>(null);
+        selectedTeamId,
+        setSelectedTeamId,
+    ] = useState<string | null>(null);
     const [
- acceptedTerms,
-setAcceptedTerms,
-] = useState(false);
+        acceptedTerms,
+        setAcceptedTerms,
+    ] = useState(false);
     const [
- acceptedPrivacy,
-setAcceptedPrivacy,
-] = useState(false);
+        acceptedPrivacy,
+        setAcceptedPrivacy,
+    ] = useState(false);
     const [
- isSubmitting,
-setIsSubmitting,
-] = useState(false);
+        acceptedTracking,
+        setAcceptedTracking,
+    ] = useState(false);
     const [
- pendingBindingToken,
-setPendingBindingToken,
-] = useState<string | null>(null);
+        isSubmitting,
+        setIsSubmitting,
+    ] = useState(false);
     const [
- formErrors,
-setFormErrors,
-] = useState<Record<string, string>>({
-});
+        pendingBindingToken,
+        setPendingBindingToken,
+    ] = useState<string | null>(null);
     const [
- reloginError,
-setReloginError,
-] = useState<string | null>(null);
-    const isAutoCheckRef = useRef(false);
+        formErrors,
+        setFormErrors,
+    ] = useState<Record<string, string>>({
+    });
     const [
- isSilentSuccess,
-setIsSilentSuccess,
-] = useState(false);
+        reloginError,
+        setReloginError,
+    ] = useState<string | null>(null);
+    const [
+        isAutoCheck,
+        setIsAutoCheck,
+    ] = useState(false);
+    const [
+        isSilentSuccess,
+        setIsSilentSuccess,
+    ] = useState(false);
 
     const cardRef = useRef<HTMLDivElement>(null);
     const [
- cardHeight,
-setCardHeight,
-] = useState<number | 'auto'>('auto');
+        cardHeight,
+        setCardHeight,
+    ] = useState<number | 'auto'>('auto');
 
     useEffect(() => {
         if (!cardRef.current) return;
         const observer = new ResizeObserver((entries) => {
             setCardHeight(
                 entries[0].borderBoxSize?.[0]?.blockSize ??
-                    entries[0].target.getBoundingClientRect().height,
+                entries[0].target.getBoundingClientRect().height,
             );
         });
         observer.observe(cardRef.current);
         return () => observer.disconnect();
     }, [
-]);
+    ]);
 
     const [
- hasCompletedBefore,
-setHasCompletedBefore,
-] = useState(false);
+        hasCompletedBefore,
+        setHasCompletedBefore,
+    ] = useState(false);
     const [
- showReconfigure,
-setShowReconfigure,
-] = useState(false);
+        showReconfigure,
+        setShowReconfigure,
+    ] = useState(false);
 
     const {
- data: locations, isLoading: isLocationsLoading,
-} = trpc.location.list.useQuery(
+        data: locations, isLoading: isLocationsLoading,
+    } = trpc.location.list.useQuery(
         {
- search: debouncedSearch || undefined,
-limit: debouncedSearch ? 100 : 6,
-},
+            search: debouncedSearch || undefined,
+            limit: debouncedSearch ? 100 : 6,
+        },
         {
- initialData: debouncedSearch ? undefined : initialLocations,
-refetchOnWindowFocus: false,
-},
+            initialData: debouncedSearch ? undefined : initialLocations,
+            refetchOnWindowFocus: false,
+        },
     );
 
     const {
- data: teams, isLoading: isTeamsLoading,
-} = trpc.team.list.useQuery(
+        data: teams, isLoading: isTeamsLoading,
+    } = trpc.team.list.useQuery(
         selectedLocationId ? {
- locationId: selectedLocationId,
-} : undefined,
+            locationId: selectedLocationId,
+        } : undefined,
         {
- enabled: !!selectedLocationId,
-},
+            enabled: !!selectedLocationId,
+        },
     );
 
     const isIpLoading = false;
     const isIpError = !!initialIpError;
     const ipError = initialIpError ? {
- message: initialIpError,
-} : null;
+        message: initialIpError,
+    } : null;
 
     const {
- data: existingSession, refetch: refetchCurrentSession,
-} = trpc.session.getCurrent.useQuery(undefined, {
+        data: existingSession, refetch: refetchCurrentSession,
+    } = trpc.session.getCurrent.useQuery(undefined, {
         initialData: initialSession,
         refetchOnWindowFocus: false,
     });
@@ -333,6 +344,7 @@ refetchOnWindowFocus: false,
 
     const finalizeLogin = trpc.session.finalizeLogin.useMutation({
         onSuccess: (data) => {
+            useSettingsStore.getState().setAcceptedTracking(acceptedTracking);
             op.track('agent_setup_success', {
                 email: data.email?.trim() || '',
                 location: 'setup_page',
@@ -407,7 +419,7 @@ refetchOnWindowFocus: false,
             }
 
             if (data.success && 'firstName' in data) {
-                if (isAutoCheckRef.current) {
+                if (isAutoCheck) {
                     setIsSilentSuccess(true);
                 }
                 op.track('agent_login_success', {
@@ -425,7 +437,7 @@ refetchOnWindowFocus: false,
         },
         onError: (error) => {
             console.error('Relogin failed:', error);
-            if (isAutoCheckRef.current) {
+            if (isAutoCheck) {
                 return;
             }
             op.track('agent_login_failed', {
@@ -454,7 +466,7 @@ refetchOnWindowFocus: false,
         }
 
         const isAuto = !!overridePin;
-        isAutoCheckRef.current = isAuto;
+        setIsAutoCheck(isAuto);
 
         if (!isAuto) {
             setIsLoggingIn(true);
@@ -548,8 +560,8 @@ refetchOnWindowFocus: false,
         setLoginError(null);
         try {
             await requestPinReset.mutateAsync({
- email: targetEmail,
-});
+                email: targetEmail,
+            });
             setIsPinResetFlow(true);
             setPinResetOtp('');
             setPinResetError(null);
@@ -598,8 +610,8 @@ refetchOnWindowFocus: false,
         setNewPinError(null);
         try {
             await updatePinMutation.mutateAsync({
- pin: newPin,
-});
+                pin: newPin,
+            });
 
             const targetEmail = email || loginEmail;
             persistName(firstName || 'Vertrieb', lastName || 'Berater', targetEmail);
@@ -622,28 +634,28 @@ refetchOnWindowFocus: false,
         if (stored.email) setEmail(stored.email);
         setHasCompletedBefore(isSetupAlreadyDone());
     }, [
-]);
+    ]);
 
     useEffect(() => {
         if (verificationStatus?.verified && pendingBindingToken && !finalizeLogin.isPending && !finalizeLogin.isSuccess) {
             finalizeLogin.mutate({
- bindingToken: pendingBindingToken,
-});
+                bindingToken: pendingBindingToken,
+            });
         }
     }, [
- verificationStatus?.verified,
-pendingBindingToken,
-finalizeLogin,
-]);
+        verificationStatus?.verified,
+        pendingBindingToken,
+        finalizeLogin,
+    ]);
 
     const isReturningUser = hasCompletedBefore;
 
     const {
- data: userExistsData, isLoading: isUserExistsLoading,
-} = trpc.session.checkUserExists.useQuery(
+        data: userExistsData, isLoading: isUserExistsLoading,
+    } = trpc.session.checkUserExists.useQuery(
         {
- email,
-},
+            email,
+        },
         {
             enabled: isReturningUser && !!email && !showReconfigure,
             refetchOnWindowFocus: false,
@@ -668,11 +680,11 @@ finalizeLogin,
             setCurrentStep(1);
         }
     }, [
- isReturningUser,
-showReconfigure,
-email,
-userExistsData,
-]);
+        isReturningUser,
+        showReconfigure,
+        email,
+        userExistsData,
+    ]);
 
     const autofillAttemptedRef = useRef(false);
 
@@ -685,27 +697,27 @@ userExistsData,
             if (typeof window !== 'undefined' && window.PublicKeyCredential && (await window.PublicKeyCredential.isConditionalMediationAvailable?.())) {
                 try {
                     const {
- startAuthentication,
-} = await import('@simplewebauthn/browser');
+                        startAuthentication,
+                    } = await import('@simplewebauthn/browser');
                     const {
- options, challengeId,
-} = await getAuthOptions.mutateAsync({
- email,
-});
+                        options, challengeId,
+                    } = await getAuthOptions.mutateAsync({
+                        email,
+                    });
                     const authResp = await startAuthentication({
- optionsJSON: options,
-useBrowserAutofill: true,
-});
+                        optionsJSON: options,
+                        useBrowserAutofill: true,
+                    });
                     op.track('passkey_login_started', {
                         email: email || undefined,
                         location: 'setup_page',
                         type: 'conditional_autofill',
                     });
                     const verifyResp = await verifyAuth.mutateAsync({
- email,
-challengeId,
-response: authResp,
-});
+                        email,
+                        challengeId,
+                        response: authResp,
+                    });
                     if (verifyResp.success) {
                         op.track('passkey_login_success', {
                             email: email || verifyResp.email || undefined,
@@ -726,7 +738,7 @@ response: authResp,
                         });
                     }
                 }
- catch (err: any) {
+                catch (err: any) {
                     console.log('Setup conditional UI autofill aborted or unavailable', err);
                     if (err.name !== 'AbortError') {
                         op.track('passkey_login_failed', {
@@ -741,10 +753,10 @@ response: authResp,
         };
         runConditionalAutofill();
     }, [
- isReturningUser,
-showReconfigure,
-email,
-]);
+        isReturningUser,
+        showReconfigure,
+        email,
+    ]);
 
     const anyFieldEmpty =
         !firstName.trim() ||
@@ -754,7 +766,8 @@ email,
         !selectedLocationId ||
         !selectedTeamId ||
         !acceptedTerms ||
-        !acceptedPrivacy;
+        !acceptedPrivacy ||
+        !acceptedTracking;
 
     const canSubmitClick = !anyFieldEmpty && !isSubmitting && !pendingBindingToken;
 
@@ -762,7 +775,7 @@ email,
         if (currentStep === 1 && selectedLocationId) {
             setCurrentStep(2);
         }
- else if (currentStep === 2 && selectedTeamId) {
+        else if (currentStep === 2 && selectedTeamId) {
             setCurrentStep(3);
         }
     };
@@ -773,7 +786,7 @@ email,
 
     const handleSubmit = useCallback(() => {
         setFormErrors({
-});
+        });
         const result = setupFormSchema.safeParse({
             firstName,
             lastName,
@@ -783,11 +796,12 @@ email,
             teamId: selectedTeamId ?? '',
             acceptedTerms,
             acceptedPrivacy,
+            acceptedTracking,
         });
 
         if (!result.success) {
             const errors: Record<string, string> = {
-};
+            };
             for (const issue of result.error.issues) {
                 const fieldName = String(issue.path[0]);
                 errors[fieldName] = issue.message;
@@ -811,17 +825,18 @@ email,
             acceptedTerms: true,
         });
     }, [
- selectedLocationId,
-selectedTeamId,
-acceptedTerms,
-acceptedPrivacy,
-firstName,
-lastName,
-email,
-pin,
-requestVerification,
-op,
-]);
+        selectedLocationId,
+        selectedTeamId,
+        acceptedTerms,
+        acceptedPrivacy,
+        acceptedTracking,
+        firstName,
+        lastName,
+        email,
+        pin,
+        requestVerification,
+        op,
+    ]);
 
     const handlePasskeyEnrollment = async () => {
         const targetEmail = email || existingSession?.email || '';
@@ -833,15 +848,15 @@ op,
         });
         try {
             const options = await getRegOptions.mutateAsync({
- email: targetEmail,
-});
+                email: targetEmail,
+            });
             const resp = await startRegistration({
- optionsJSON: options,
-});
+                optionsJSON: options,
+            });
             await verifyReg.mutateAsync({
- email: targetEmail,
-response: resp,
-});
+                email: targetEmail,
+                response: resp,
+            });
             op.track('passkey_registration_success', {
                 email: targetEmail,
                 location: 'setup_page',
@@ -867,15 +882,15 @@ response: resp,
         <motion.div
             key="step1"
             initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}}
+                opacity: 0,
+                x: 15,
+            }} animate={{
+                opacity: 1,
+                x: 0,
+            }} exit={{
+                opacity: 0,
+                x: -15,
+            }}
             className="space-y-6 w-full"
         >
             <ScreenHeader icon={<MapPin className="w-5 h-5 text-[#e20074]" />} title="Standort wählen" subtitle="Wähle Deinen aktuellen Standort aus." />
@@ -892,8 +907,8 @@ x: -15,
             {isLocationsLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
                     {Array.from({
- length: 6,
-}).map((_, i) => <Skeleton key={i} className="h-[52px] w-full rounded-xl" />)}
+                        length: 6,
+                    }).map((_, i) => <Skeleton key={i} className="h-[52px] w-full rounded-xl" />)}
                 </div>
             ) : locations?.items?.length === 0 ? (
                 <div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
@@ -934,23 +949,23 @@ x: -15,
     const renderStep2 = () => (
         <motion.div
             key="step2" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}}
+                opacity: 0,
+                x: 15,
+            }} animate={{
+                opacity: 1,
+                x: 0,
+            }} exit={{
+                opacity: 0,
+                x: -15,
+            }}
             className="space-y-6 w-full"
         >
             <ScreenHeader icon={<Users className="w-5 h-5 text-[#e20074]" />} title="Vertriebsteam wählen" subtitle="Welchem Team gehörst Du an?" />
             {isTeamsLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
                     {Array.from({
- length: 4,
-}).map((_, i) => <Skeleton key={i} className="h-[52px] w-full rounded-xl" />)}
+                        length: 4,
+                    }).map((_, i) => <Skeleton key={i} className="h-[52px] w-full rounded-xl" />)}
                 </div>
             ) : teams?.items?.length === 0 ? (
                 <div className="text-center p-8 text-[0.85rem] text-[#aaa] bg-[#f7f8fa] border border-dashed border-[#eaedf0] rounded-2xl mt-5">
@@ -979,15 +994,15 @@ x: -15,
     const renderStep3 = () => (
         <motion.div
             key="step3" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}}
+                opacity: 0,
+                x: 15,
+            }} animate={{
+                opacity: 1,
+                x: 0,
+            }} exit={{
+                opacity: 0,
+                x: -15,
+            }}
             className="space-y-8 w-full"
         >
             <section>
@@ -1026,8 +1041,43 @@ x: -15,
                 </div>
                 <div className="flex flex-col gap-6 mt-6">
                     <div className="flex flex-col gap-2.5">
-                        <CheckboxRow checked={acceptedTerms} onChange={() => setAcceptedTerms(!acceptedTerms)} label="Nutzungshinweis akzeptiert" />
-                        <CheckboxRow checked={acceptedPrivacy} onChange={() => setAcceptedPrivacy(!acceptedPrivacy)} label={<><Link href="/privacy" className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2">Datenschutzerklärung</Link> gelesen und zur Kenntnis genommen</>} />
+                        <CheckboxRow
+                            checked={acceptedPrivacy}
+                            onChange={() => {
+                                const nextVal = !acceptedPrivacy;
+                                setAcceptedPrivacy(nextVal);
+                                setAcceptedTerms(nextVal);
+                            }}
+                            label={(
+                                <>
+                                    Ich akzeptiere den{' '}
+                                    <span className="text-[#1a1a2e] font-bold">Nutzungshinweis</span> und habe die{' '}
+                                    <Link
+                                        href="/privacy"
+                                        className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2"
+                                    >
+                                        Datenschutzerklärung
+                                    </Link>
+                                    {' '}gelesen.
+                                </>
+                            )}
+                        />
+                        <CheckboxRow
+                            checked={acceptedTracking}
+                            onChange={() => setAcceptedTracking(!acceptedTracking)}
+                            label={(
+                                <>
+                                    Ich stimme der{' '}
+                                    <Link
+                                        href="/tracking"
+                                        className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2"
+                                    >
+                                        anonymen Nutzungsanalyse
+                                    </Link>{' '}
+                                    zur App-Optimierung zu.
+                                </>
+                            )}
+                        />
                     </div>
                     <div className="flex gap-3">
                         <PremiumButton onClick={handlePrevStep} variant="secondary" className="flex-1">
@@ -1075,14 +1125,14 @@ x: -15,
         <div className="h-screen w-full py-12 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074] scrollbar-none overflow-y-auto overflow-x-hidden fixed inset-0 bg-[#f7f8fa]">
             <div className="max-w-3xl mx-auto">
                 <motion.div initial={{
- opacity: 0,
-y: 12,
-}} animate={{
- opacity: 1,
-y: 0,
-}} transition={{
- duration: 0.5,
-}} className="flex flex-col items-center mb-10 text-center">
+                    opacity: 0,
+                    y: 12,
+                }} animate={{
+                    opacity: 1,
+                    y: 0,
+                }} transition={{
+                    duration: 0.5,
+                }} className="flex flex-col items-center mb-10 text-center">
                     <TelekomLogo className="w-12 h-12 text-[#e20074] mb-8" />
                     <h1 className="text-3xl sm:text-[2.5rem] font-extrabold text-[#1a1a2e] tracking-tight mb-3 leading-none">Sales Experience</h1>
                     <p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">
@@ -1091,24 +1141,24 @@ y: 0,
                 </motion.div>
 
                 <motion.div initial={{
- opacity: 0,
-y: 15,
-}} animate={{
- opacity: 1,
-y: 0,
-height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
-}} transition={{
- duration: 0.4,
-}} className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] overflow-hidden relative">
+                    opacity: 0,
+                    y: 15,
+                }} animate={{
+                    opacity: 1,
+                    y: 0,
+                    height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
+                }} transition={{
+                    duration: 0.4,
+                }} className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] overflow-hidden relative">
                     <div ref={cardRef} className="p-8 sm:p-12">
                         {isWizardFlow && (
                             <div className="flex justify-center gap-2 mb-8">
                                 {[
- 1,
-2,
-3,
-4,
-].map(step => (
+                                    1,
+                                    2,
+                                    3,
+                                    4,
+                                ].map(step => (
                                     <div key={step} className={clsx('h-1.5 rounded-full transition-all duration-300', currentStep === step ? 'w-8 bg-[#e20074]' : currentStep > step ? 'w-8 bg-[#e20074]/30' : 'w-2 bg-[#eaedf0]')} />
                                 ))}
                             </div>
@@ -1116,64 +1166,64 @@ height: typeof cardHeight === 'number' && cardHeight > 0 ? cardHeight : 'auto',
                         <AnimatePresence mode="wait" initial={false}>
                             {isIpLoading ? (
                                 <motion.div key="ipLoading" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}} className="flex flex-col items-center gap-4 py-12">
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }} className="flex flex-col items-center gap-4 py-12">
                                     <div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
                                     <p className="text-[#888] text-[0.9rem] font-medium">Überprüfe Zugriffsberechtigung…</p>
                                 </motion.div>
                             ) : isIpError ? (
                                 <motion.div key="ipError" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}}>
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }}>
                                     <IpBlockedCard error={ipError} />
                                 </motion.div>
                             ) : isReturningUser && !showReconfigure && isUserExistsLoading ? (
                                 <motion.div key="userExistsLoading" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}} className="flex flex-col items-center gap-4 py-12">
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }} className="flex flex-col items-center gap-4 py-12">
                                     <div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
                                     <p className="text-[#888] text-[0.9rem] font-medium">Profil wird geladen…</p>
                                 </motion.div>
                             ) : isReturningUser && !showReconfigure ? (
                                 <motion.div key="welcomeBack" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}}>
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }}>
                                     <WelcomeBackCard
                                         firstName={firstName} lastName={lastName} email={email} teamName={existingSession?.team?.name}
                                         reloginPin={reloginPin} setReloginPin={setReloginPin} reloginError={reloginError}
-                                        isReloggingIn={(reloginReturningUser.isPending && !isAutoCheckRef.current) || isSilentSuccess}
+                                        isReloggingIn={(reloginReturningUser.isPending && !isAutoCheck) || isSilentSuccess}
                                         onReloginWithPin={(overridePin?: string) => {
                                             const pinToSubmit = overridePin || reloginPin;
                                             const isAuto = !!overridePin;
-                                            isAutoCheckRef.current = isAuto;
+                                            setIsAutoCheck(isAuto);
                                             if (!pinToSubmit || pinToSubmit.length !== 6) {
                                                 if (!overridePin) {
                                                     setReloginError('Bitte gib Deine 6-stellige PIN ein.');
@@ -1223,7 +1273,7 @@ x: -15,
                                             try {
                                                 await logoutMutation.mutateAsync();
                                             }
- catch (err) {
+                                            catch (err) {
                                                 console.error('Logout during reconfigure failed:', err);
                                             }
                                             localStorage.removeItem(LS_KEY_FIRST_NAME);
@@ -1245,15 +1295,15 @@ x: -15,
                                 </motion.div>
                             ) : requestPinReset.isPending ? (
                                 <motion.div key="sendingReset" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}} className="flex flex-col items-center text-center gap-5 py-12">
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }} className="flex flex-col items-center text-center gap-5 py-12">
                                     <div className="relative flex items-center justify-center mb-1">
                                         <div className="absolute -inset-1.5 border-[3px] border-[#fdf2f8] border-t-[#e20074] rounded-full animate-spin" />
                                         <div className="w-16 h-16 bg-[#fdf2f8] rounded-full flex items-center justify-center relative z-10">
@@ -1269,15 +1319,15 @@ x: -15,
                                 </motion.div>
                             ) : isSettingNewPin ? (
                                 <motion.div key="settingNewPin" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}} className="flex flex-col gap-6 py-4">
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }} className="flex flex-col gap-6 py-4">
                                     <ScreenHeader icon={<Lock className="w-5 h-5 text-[#e20074]" />} title="Neue PIN festlegen" subtitle="Vergib eine neue 6-stellige PIN für dieses Gerät." />
                                     <form onSubmit={handleSaveNewPin} className="w-full flex flex-col gap-4">
                                         <div className="flex flex-col gap-2 text-left">
@@ -1306,15 +1356,15 @@ x: -15,
                                 </motion.div>
                             ) : isPinResetFlow ? (
                                 <motion.div key="pinResetFlow" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}} className="flex flex-col gap-6 py-4">
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }} className="flex flex-col gap-6 py-4">
                                     <ScreenHeader icon={<Mail className="w-5 h-5 text-[#e20074]" />} title="Sicherheitscode eingeben" subtitle="Wir haben einen 6-stelligen Bestätigungscode an Deine E-Mail-Adresse gesendet." />
                                     <form onSubmit={handleVerifyPinResetOtp} className="w-full flex flex-col gap-4">
                                         <div className="flex flex-col gap-2 text-left">
@@ -1357,15 +1407,15 @@ x: -15,
                                 </motion.div>
                             ) : isAlreadyRegisteredFlow ? (
                                 <motion.div key="alreadyRegistered" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}} className="flex flex-col gap-6 py-4">
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }} className="flex flex-col gap-6 py-4">
                                     <ScreenHeader icon={<User className="w-5 h-5 text-[#e20074]" />} title="Mit bestehendem Profil anmelden" subtitle="Gib Deine E-Mail-Adresse und Deine 6-stellige PIN ein, um Dich auf diesem Gerät anzumelden." />
                                     <form onSubmit={handleLoginSubmit} className="w-full flex flex-col gap-4">
                                         <PremiumInput id="loginEmail" type="email" label="E-Mail-Adresse" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="max.mustermann@telekom.de" disabled={isLoggingIn || isSilentSuccess} autoComplete="username webauthn" />
@@ -1410,15 +1460,15 @@ x: -15,
                                 </motion.div>
                             ) : pendingBindingToken ? (
                                 <motion.div key="pendingToken" initial={{
- opacity: 0,
-x: 15,
-}} animate={{
- opacity: 1,
-x: 0,
-}} exit={{
- opacity: 0,
-x: -15,
-}} className="flex flex-col items-center text-center gap-5 py-4">
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }} className="flex flex-col items-center text-center gap-5 py-4">
                                     <div className="relative flex items-center justify-center mb-1">
                                         <div className="absolute -inset-1.5 border-[3px] border-[#fdf2f8] border-t-[#e20074] rounded-full animate-spin" />
                                         <div className="w-16 h-16 bg-[#fdf2f8] rounded-full flex items-center justify-center relative z-10">
@@ -1448,14 +1498,14 @@ x: -15,
                 </motion.div>
 
                 <motion.div initial={{
- opacity: 0,
-y: 12,
-}} animate={{
- opacity: 1,
-y: 0,
-}} transition={{
- duration: 0.5,
-}} className="flex flex-col items-center mt-5 text-center">
+                    opacity: 0,
+                    y: 12,
+                }} animate={{
+                    opacity: 1,
+                    y: 0,
+                }} transition={{
+                    duration: 0.5,
+                }} className="flex flex-col items-center mt-5 text-center">
                     <p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">Mit Liebe gemacht. Aus Chemnitz, für Euch alle. ❤️</p>
                 </motion.div>
                 <GlobalFooter className="pt-8 pb-0 mt-4 text-[#bbb]" linkColor="text-[#bbb]" />
@@ -1466,7 +1516,7 @@ y: 0,
 
 
 function IpBlockedCard({
- error,
+    error,
 }: { error: { message: string } | null }) {
     return (
         <div className="flex flex-col gap-5 py-4">

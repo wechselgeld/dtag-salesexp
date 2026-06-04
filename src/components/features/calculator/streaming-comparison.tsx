@@ -280,10 +280,10 @@ function TierSelect({
 					}
 				}}
 				className={clsx(
-					'w-full flex flex-col justify-center px-6 h-[92px] rounded-2xl border transition-all duration-300 relative group text-left outline-none',
+					'w-full flex flex-col justify-center px-6 h-[92px] rounded-xl border transition-all duration-300 relative group text-left outline-none',
 					selectedId
-						? 'border-[#e20074] bg-[#e20074]/2 ring-1 ring-[#e20074]'
-						: 'border-[#eaedf0] bg-white hover:border-[#d0d0d0]',
+						? 'border-[#e20074]/40 bg-[#e20074]/5 shadow-[0_4px_20px_rgba(226,0,116,0.08)] ring-1 ring-[#e20074]/30'
+						: 'border-[#eaedf0] bg-[#f7f8fa] hover:bg-white hover:border-[#d1d5db] hover:shadow-[0_2px_10px_rgba(0,0,0,0.03)]',
 				)}
 			>
 				<div className="flex items-center justify-between w-full">
@@ -307,7 +307,7 @@ function TierSelect({
 								className="flex items-center gap-2"
 								onClick={(e) => e.stopPropagation()}
 							>
-								<div className="flex items-center bg-telekom-gray-50 px-3 py-1.5 rounded-xl border border-[#eaedf0] hover:border-[#e20074]/30 transition-all focus-within:border-[#e20074] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#e20074]/5">
+								<div className="flex items-center bg-[#f7f8fa] px-3 py-1.5 rounded-xl border border-[#eaedf0] hover:border-[#e20074]/30 transition-all focus-within:border-[#e20074] focus-within:bg-white focus-within:ring-1 focus-within:ring-[#e20074]/30">
 									<input
 										type="text"
 										value={
@@ -330,18 +330,18 @@ function TierSelect({
 						)}
 						<div
 							className={clsx(
-								'w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 border-2',
+								'w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all duration-200',
 								selectedId
-									? 'border-[#e20074] bg-[#e20074]'
-									: 'border-[#d1d5db] bg-white group-hover:border-[#999]',
+									? 'bg-[#e20074] border-[#e20074]'
+									: 'border-[#d1d5db] bg-white group-hover:border-[#a3a8b4]',
 							)}
 						>
 							{selectedId ? (
-								<Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />
+								<Check className="w-2.5 h-2.5 text-white" strokeWidth={4} />
 							) : !isSingleTier ? (
 								<ChevronDown
 									className={clsx(
-										'w-3.5 h-3.5 text-[#aaa] transition-transform',
+										'w-3 h-3 text-[#aaa] transition-transform',
 										isOpen ? 'rotate-180' : '',
 									)}
 								/>
@@ -672,25 +672,25 @@ export function StreamingComparison({
 														key={plan.id}
 														onClick={() => setSelectedPlan(plan.id)}
 														className={clsx(
-															'w-full flex flex-col p-5 rounded-2xl border text-left transition-all duration-300 relative group overflow-hidden',
+															'w-full flex flex-col p-5 rounded-xl border text-left transition-all duration-300 relative group overflow-hidden',
 															isSelected
-																? 'border-[#e20074] bg-[#e20074]/[0.02] ring-1 ring-[#e20074] shadow-md shadow-[#e20074]/5'
-																: 'border-[#eaedf0] bg-white hover:border-[#d0d0d0]',
+																? 'border-[#e20074]/40 bg-[#e20074]/5 shadow-[0_4px_20px_rgba(226,0,116,0.08)] ring-1 ring-[#e20074]/30'
+																: 'border-[#eaedf0] bg-[#f7f8fa] hover:bg-white hover:border-[#d1d5db] hover:shadow-[0_2px_10px_rgba(0,0,0,0.03)]',
 														)}
 													>
 														<div className="flex items-center justify-between mb-3 w-full">
 															<div className="flex items-center gap-3">
 																<div
 																	className={clsx(
-																		'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300',
+																		'w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200 shrink-0',
 																		isSelected
-																			? 'border-[#e20074] bg-[#e20074]'
-																			: 'border-[#d1d5db] bg-white group-hover:border-[#999]',
+																			? 'bg-[#e20074] border-[#e20074]'
+																			: 'border-[#d1d5db] bg-white group-hover:border-[#a3a8b4]',
 																	)}
 																>
 																	{isSelected && (
 																		<Check
-																			className="w-3 h-3 text-white"
+																			className="w-2.5 h-2.5 text-white"
 																			strokeWidth={4}
 																		/>
 																	)}
@@ -772,10 +772,10 @@ export function StreamingComparison({
 											{/* Main Result Card (Moved to top) */}
 											<div
 												className={clsx(
-													'rounded-3xl p-3 flex flex-col items-center text-center relative overflow-hidden transition-all duration-500',
+													'rounded-2xl p-3 flex flex-col items-center text-center relative overflow-hidden transition-all duration-500 shadow-md',
 													paysMore
-														? 'bg-[#b97010] text-white'
-														: 'bg-[#10b981] text-white',
+														? 'bg-gradient-to-br from-[#f59e0b] to-[#d97706] text-white shadow-amber-500/10'
+														: 'bg-gradient-to-br from-[#10b981] to-[#059669] text-white shadow-emerald-500/10',
 												)}
 											>
 												{/* Subtle light effect */}
@@ -834,7 +834,7 @@ export function StreamingComparison({
 											{/* Grid Stats Tiles (Only Status Quo & Wertvorteil) */}
 											<div className="grid grid-cols-2 gap-4">
 												{/* Status Quo - Normal */}
-												<div className="relative flex flex-col items-center text-center p-3.5 rounded-xl border-2 transition-all duration-200 border-[#eaedf0] bg-white">
+												<div className="relative flex flex-col items-center text-center p-3.5 rounded-xl border border-[#eaedf0] bg-[#f7f8fa]">
 													<Calculator
 														className="w-5 h-5 mb-2 text-[#bbb]"
 														strokeWidth={1.8}
@@ -849,11 +849,7 @@ export function StreamingComparison({
 
 												{/* Wertvorteil - Highlighted Green */}
 												<div
-													className="relative flex flex-col items-center text-center p-3.5 rounded-xl border-2 transition-all duration-200"
-													style={{
-														borderColor: '#10b981',
-														backgroundColor: '#10b9810a',
-													}}
+													className="relative flex flex-col items-center text-center p-3.5 rounded-xl border border-[#10b981]/30 bg-[#10b981]/5 transition-all duration-200"
 												>
 													<Info
 														className="w-5 h-5 mb-2 text-[#10b981]"
@@ -869,7 +865,7 @@ export function StreamingComparison({
 											</div>
 
 											{/* Pro Tag - Normal (Full Width) */}
-											<div className="relative flex flex-col items-center text-center p-4 rounded-xl border-2 transition-all duration-200 border-[#eaedf0] bg-white mt-auto">
+											<div className="relative flex flex-col items-center text-center p-4 rounded-xl border border-[#eaedf0] bg-[#f7f8fa] mt-auto">
 												<Coffee
 													className="w-5 h-5 mb-2 text-[#bbb]"
 													strokeWidth={1.8}

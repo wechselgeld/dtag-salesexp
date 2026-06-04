@@ -7,6 +7,9 @@ import {
 	generateOfferPdf,
 } from '@/lib/pdf-generator';
 import {
+	useOpenPanel,
+} from '@openpanel/nextjs';
+import {
 	useBasketLogic,
 } from '@/hooks/use-basket-logic';
 
@@ -243,6 +246,7 @@ const EMPTY_NOTICES = [
 ];
 
 export function BasketDrawer() {
+	const op = useOpenPanel();
 	const {
 		baskets,
 		activeBasketId,
@@ -253,6 +257,14 @@ export function BasketDrawer() {
 		setActiveBasketId,
 		renameBasket,
 	} = useBasketStore();
+
+	const handleAddBasket = () => {
+		const newId = addBasket();
+		op.track('basket_tab_created', {
+			basketId: newId,
+			totalTabs: baskets.length + 1,
+		});
+	};
 
 	const showComparison = isComparisonMode && baskets.length > 1;
 
@@ -591,7 +603,7 @@ export function BasketDrawer() {
 
 						{!showComparison && baskets.length < 3 && (
 							<button
-								onClick={addBasket}
+								onClick={handleAddBasket}
 								className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#f7f8fa] hover:bg-[#eaeaea] text-[#888] transition-all border border-[#eaedf0] shrink-0 cursor-pointer active:scale-90"
 								title="Neue Konfiguration hinzufügen"
 							>
@@ -605,7 +617,7 @@ export function BasketDrawer() {
 						<div className="w-[80px] flex items-center justify-end gap-1.5 shrink-0 ml-auto pr-1">
 							{baskets.length < 3 && (
 								<button
-									onClick={addBasket}
+									onClick={handleAddBasket}
 									className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#f7f8fa] hover:bg-[#eaeaea] text-[#888] transition-all border border-[#eaedf0] shrink-0 cursor-pointer active:scale-90"
 									title="Neue Konfiguration hinzufügen"
 								>
@@ -771,6 +783,7 @@ const BasketColumn = memo(function BasketColumn({
 	activeLoadingIndex?: number;
 	onLoadFinished?: () => void;
 }) {
+	const op = useOpenPanel();
 	const {
 		clearBasketForId,
 		setBasketCreditsForId,
@@ -807,8 +820,10 @@ const BasketColumn = memo(function BasketColumn({
 		settings,
 	} = useBasketLogic(basket.id);
 
-	const items = basket.items || [];
-	const basketCredits = basket.basketCredits || [];
+	const items = basket.items || [
+];
+	const basketCredits = basket.basketCredits || [
+];
 	const totalMonthly = totals.monthly;
 
 	const isMultiColumn = isComparisonMode && basketsCount > 1;
@@ -928,7 +943,9 @@ const BasketColumn = memo(function BasketColumn({
 											ease: 'easeInOut',
 										}}
 										className="pl-1"
-										style={{ overflow: creditsOpen ? 'visible' : 'hidden' }}
+										style={{
+ overflow: creditsOpen ? 'visible' : 'hidden',
+}}
 									>
 										<CreditSelector
 											basketCredits={basketCredits}
@@ -1103,7 +1120,7 @@ const BasketColumn = memo(function BasketColumn({
 								>
 									{Object.entries(groupedOneTimeCosts).map(([
 										name,
-										cost]: [string, number
+										cost ]: [string, number
 										]) => (
 										<div
 											key={name}
@@ -1196,6 +1213,15 @@ const BasketColumn = memo(function BasketColumn({
 						<button
 							onClick={async () => {
 								setIsGenerating('generating');
+								op.track('offer_created', {
+									basketId: basket.id,
+									itemsCount: items.length,
+									totalMonthly,
+									totalOneTime,
+									totalCredits,
+									salesRepName,
+									teamEmail,
+								});
 								await generateOfferPdf(
 									items,
 									basketCredits,

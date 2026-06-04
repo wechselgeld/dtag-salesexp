@@ -24,6 +24,7 @@ import {
 	GlobalFooter,
 } from '@/components/shared/global-footer';
 import clsx from 'clsx';
+import Link from 'next/link';
 import {
 	motion, AnimatePresence,
 } from 'framer-motion';
@@ -123,6 +124,8 @@ export default function SettingsPage() {
 		setBypassResolutionGuard,
 		sortOption,
 		setSortOption,
+		acceptedTracking,
+		setAcceptedTracking,
 	} = useSettingsStore();
 	const router = useRouter();
 
@@ -990,7 +993,23 @@ export default function SettingsPage() {
 							isSelected={bypassResolutionGuard}
 							onClick={() => setBypassResolutionGuard(!bypassResolutionGuard)}
 						/>
+						<SelectionTile
+							name="Nutzungsanalyse erlauben"
+							subtitle="Erlaubt die anonyme Analyse der App-Nutzung zur Verbesserung des Tools."
+							isSelected={!!acceptedTracking}
+							onClick={() => setAcceptedTracking(acceptedTracking !== true)}
+						/>
 					</div>
+					<p className="text-[0.75rem] text-[#888] mt-4 pl-1">
+						Weitere Details zur Datenerfassung findest Du in der{' '}
+						<Link
+							href="/tracking"
+							className="underline hover:text-[#e20074] transition-colors font-semibold"
+						>
+							Erklärung zu Tracking &amp; Analysen
+						</Link>
+						.
+					</p>
 				</div>
 
 				{/* Divider line */}
