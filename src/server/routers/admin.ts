@@ -919,8 +919,12 @@ export const adminRouter = router({
                 if (session.role === 'LOCATION_MANAGER') {
                     if (teamId) {
                         const team = await prisma.team.findUnique({
-                            where: { id: teamId },
-                            select: { locationId: true },
+                            where: {
+ id: teamId,
+},
+                            select: {
+ locationId: true,
+},
                         });
                         if (!team || team.locationId !== userLocId) {
                             throw new TRPCError({
@@ -935,11 +939,16 @@ export const adminRouter = router({
                             message: 'Die ausgewählte Filiale gehört nicht zu Deinem Standort.',
                         });
                     }
-                } else if (session.role === 'OD_MANAGER') {
+                }
+ else if (session.role === 'OD_MANAGER') {
                     if (locationId) {
                         const loc = await prisma.location.findUnique({
-                            where: { id: locationId },
-                            select: { odRegionId: true },
+                            where: {
+ id: locationId,
+},
+                            select: {
+ odRegionId: true,
+},
                         });
                         if (!loc || loc.odRegionId !== userOdId) {
                             throw new TRPCError({
@@ -950,8 +959,16 @@ export const adminRouter = router({
                     }
                     if (teamId) {
                         const team = await prisma.team.findUnique({
-                            where: { id: teamId },
-                            include: { location: { select: { odRegionId: true } } },
+                            where: {
+ id: teamId,
+},
+                            include: {
+ location: {
+ select: {
+ odRegionId: true,
+},
+},
+},
                         });
                         if (!team || team.location?.odRegionId !== userOdId) {
                             throw new TRPCError({

@@ -1,4 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import {
+ PrismaClient,
+} from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -6,16 +8,22 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('Querying Database Logs and exporting...');
-  
+
   const alexUser = await prisma.user.findUnique({
-    where: { id: 'cmpghwqpy000fmu0kj2lczck8' },
+    where: {
+ id: 'cmpghwqpy000fmu0kj2lczck8',
+},
   });
 
   const errorLogs = await prisma.errorLog.findMany({
     where: {
       OR: [
-        { userId: 'cmpghwqpy000fmu0kj2lczck8' },
-        { userEmail: 'a.geue@telekom.de' },
+        {
+ userId: 'cmpghwqpy000fmu0kj2lczck8',
+},
+        {
+ userEmail: 'a.geue@telekom.de',
+},
       ],
     },
     orderBy: {

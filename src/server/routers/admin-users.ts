@@ -277,8 +277,12 @@ mode: 'insensitive',
                         });
                     }
                     const managerLocation = await prisma.location.findUnique({
-                        where: { id: userLocId },
-                        select: { odRegionId: true },
+                        where: {
+ id: userLocId,
+},
+                        select: {
+ odRegionId: true,
+},
                     });
                     if (!managerLocation || input.odRegionId !== managerLocation.odRegionId) {
                         throw new TRPCError({

@@ -602,6 +602,20 @@ export function StreamingComparison({
 	const savings = coveredValue - (targetPlan?.price || 0);
 	const paysMore = savings < 0;
 
+		// Optimization: Pre-calculate selected service mappings to group IDs to avoid O(N*M) lookups in render loops
+		const selectedServiceByGroup = useMemo(() => {
+			const map = new Map<string, string>();
+			for (const sId of selectedServices) {
+				const service = STREAMING_SERVICES.find((s) => s.id === sId);
+				if (service) {
+					map.set(service.group, sId);
+				}
+			}
+			return map;
+		}, [
+			selectedServices,
+		]);
+
 	if (!mounted) { return null; }
 
 	return (
@@ -616,44 +630,28 @@ export function StreamingComparison({
 											</h3>
 										</div>
 										<div className="grid gap-5">
-											{groupedServices.map((group, idx) => (
-												<TierSelect
-													key={group.groupId}
-													group={group}
-													index={idx}
-													total={groupedServices.length}
-													selectedId={
-														selectedServices.find(
-															(sId) =>
-																STREAMING_SERVICES.find((s) => s.id === sId)
-																	?.group === group.groupId,
-														) || null
-													}
-													onSelect={(id) => toggleService(group.groupId, id)}
-													customPrice={
-														selectedServices.find(
-															(sId) =>
-																STREAMING_SERVICES.find((s) => s.id === sId)
-																	?.group === group.groupId,
-														)
-															? customPrices[
-																	selectedServices.find(
-																		(sId) =>
-																			STREAMING_SERVICES.find(
-																				(s) => s.id === sId,
-																			)?.group === group.groupId,
-																	)!
-															]
-															: undefined
-													}
-													onPriceChange={(id, val) =>
-														setCustomPrices((prev) => ({
-															...prev,
-															[id]: val,
-														}))
-													}
-												/>
-											))}
+												{groupedServices.map((group, idx) => {
+													const selectedServiceIdForGroup = selectedServiceByGroup.get(group.groupId);
+													return (
+														<TierSelect
+															key={group.groupId}
+															group={group}
+															index={idx}
+															total={groupedServices.length}
+															selectedId={selectedServiceIdForGroup || null}
+															onSelect={(id) => toggleService(group.groupId, id)}
+															customPrice={
+																selectedServiceIdForGroup ? customPrices[selectedServiceIdForGroup] : undefined
+															}
+															onPriceChange={(id, val) =>
+																setCustomPrices((prev) => ({
+																	...prev,
+																	[id]: val,
+																}))
+															}
+														/>
+													);
+												})}
 										</div>
 									</div>
 
@@ -721,13 +719,7 @@ export function StreamingComparison({
 														<div className="flex flex-wrap gap-1.5 mb-4 pl-8">
 															{plan.includes.map((inc, i) => {
 																const isGroupSelected =
-																	inc.group &&
-																	selectedServices.some((sId) => {
-																		const s = STREAMING_SERVICES.find(
-																			(x) => x.id === sId,
-																		);
-																		return s && s.group === inc.group;
-																	});
+																		inc.group && selectedServiceByGroup.has(inc.group);
 																return (
 																	<span
 																		key={i}

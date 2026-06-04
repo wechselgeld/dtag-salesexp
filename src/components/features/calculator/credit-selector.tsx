@@ -29,7 +29,8 @@ export function CreditSelector({
 	basketCredits: inputBasketCredits,
 	setBasketCredits,
 }: CreditSelectorProps) {
-	const basketCredits = inputBasketCredits || [];
+	const basketCredits = inputBasketCredits || [
+];
 	const {
 		data: credits, isLoading,
 	} =

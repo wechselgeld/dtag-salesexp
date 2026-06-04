@@ -569,8 +569,9 @@ return {
 						baskets: updateBasketNames(
 							state.baskets.map((b: any) => ({
 								...b,
-								basketCredits: b.basketCredits || [],
-							}))
+								basketCredits: b.basketCredits || [
+],
+							})),
 						),
 					};
 				}
