@@ -1,6 +1,7 @@
 import pc from 'picocolors';
 import {
   redis,
+  ensureRedisConnected,
 } from './redis';
 import {
   cacheLogger,
@@ -15,6 +16,7 @@ const inflight = new Map<string, Promise<unknown>>();
 
 export async function getCache<T>(key: string): Promise<T | typeof MISSING> {
   try {
+    await ensureRedisConnected();
     const cached = await redis.get(key);
     if (cached !== null) return JSON.parse(cached) as T;
   }
@@ -29,6 +31,7 @@ export async function getCache<T>(key: string): Promise<T | typeof MISSING> {
 export async function setCache<T>(key: string, value: T, ttlMs: number): Promise<void> {
   try {
     if (value !== undefined) {
+      await ensureRedisConnected();
       await redis.set(key, JSON.stringify(value), 'PX', ttlMs);
     }
   }
@@ -91,6 +94,7 @@ async function scanKeys(pattern: string): Promise<string[]> {
 export async function invalidateCache(keyPrefix: string): Promise<void> {
   const start = Date.now();
   try {
+    await ensureRedisConnected();
     const keys = await scanKeys(`${keyPrefix}*`);
     if (keys.length === 0) return;
 

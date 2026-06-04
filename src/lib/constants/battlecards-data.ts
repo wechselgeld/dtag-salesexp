@@ -46,64 +46,64 @@ export const COMPETITORS: Competitor[] = [
 				icon: Unplug,
 				title: 'Hohe Fehlerraten & Abbrüche',
 				detail:
-					'DOCSIS 3.1 Probleme in vielen Gebieten dokumentiert. Häufige Verbindungsabbrüche, besonders zur Stoßzeit.',
+					'DOCSIS 3.1 Probleme führen abends zur Stoßzeit zu extremen Latenzen und Paketverlusten (Gaming/Homeoffice ruckelt).',
 			},
 			{
 				icon: PhoneOff,
 				title: 'Service im Ausland',
 				detail:
-					'Kundenservice teils nach Indien/Rumänien ausgelagert. Sprachbarrieren und lange Wartezeiten.',
+					'Kundenservice teils nach Indien/Rumänien ausgelagert. Sprachbarrieren und lange Wartezeiten bei Störungen.',
 			},
 			{
 				icon: DollarSign,
 				title: 'Versteckte Preiserhöhungen',
 				detail:
-					'Nach der Erstvertragslaufzeit steigen die Preise oft deutlich – intransparent kommuniziert.',
+					'Nach der Erstvertragslaufzeit steigen die Preise oft deutlich und intransparent – Lockvogelangebote werden schnell teuer.',
 			},
 			{
 				icon: Construction,
-				title: 'Keine Glasfaser-Investition',
+				title: 'Kabelnetz statt echte Glasfaser (FTTH)',
 				detail:
-					'Kein eigener FTTH-Ausbau. Vodafone setzt weiter auf die Kabel-Altstruktur von Unitymedia/Kabel Deutschland und baut nur wenig aus - mit Hilfe eines Joint Ventures.',
+					'Vodafone setzt primär auf ihr Koax-Kabelnetz (Shared Medium) statt echte Glasfaser (FTTH) direkt ins Haus zu legen. Der Ausbau läuft schleppend.',
 			},
 		],
 		telekomArguments: [
 			{
 				icon: Star,
-				title: '💛 Emotionaler Marker: Zuverlässigkeit',
+				title: '💛 Emotionaler Marker: Zuverlässigkeit (Das Autobahn-Bild)',
 				detail:
-					'"Wenn Sie abends einen Film schauen oder im Homeoffice arbeiten, wollen Sie sich auf Ihre Verbindung verlassen können. Bei Kabel schwankt die Leitung, wenn die Nachbarn auch online sind – bei Glasfaser nicht."',
+					'„Ich verstehe, dass Sie bisher bei Vodafone sind. Genau das ist aber der Punkt bei Kabel-Internet: Stellen Sie sich das Kabelnetz wie eine Autobahn vor. Tagsüber haben Sie freie Fahrt, aber abends um 20 Uhr wollen alle nach Hause – Stau. Bei Vodafone teilen Sie sich die Leitung mit der Nachbarschaft, bei der Telekom haben Sie Ihre eigene Spur. So surfen Sie abends ohne Einbrüche. Nutzen Sie das Internet abends eher für Netflix oder für Videocalls?“',
 			},
 			{
 				icon: Trophy,
 				title: '15× Connect-Testsieger in Folge',
 				detail:
-					'Die Telekom holte im connect Netztest 2026 zum 15. Mal in Folge den Titel "Überragend" – Vodafone erreicht nur "Sehr gut" auf Platz 2. Kein anderer Anbieter hat diese Konstanz.',
+					'„Absolut richtig, die Netzqualität muss stimmen. Genau deshalb gewinnen wir seit 15 Jahren in Folge den connect Netztest als überragend, während Vodafone auf Platz 2 zurückbleibt. Bei uns zahlen Sie rund 30 Cent mehr am Tag für die stabilste Verbindung Deutschlands. Richten wir den Anschluss direkt auf Ihren Namen ein – nutzen wir Ihre aktuelle Adresse oder haben Sie eine abweichende?“',
 				source: 'connect Netztest 11/2025',
 			},
 			{
 				icon: Wifi,
 				title: 'Glasfaser statt Kabel-Sharing',
 				detail:
-					'Telekom FTTH ist ein dediziertes Medium – jeder Kunde hat seine eigene Faser. Bei Vodafone Kabel teilen sich bis zu 500 Haushalte ein Segment. Abends merkt man das deutlich; aber nicht bei der Telekom.',
+					'„Das verstehe ich vollkommen, man will die volle Geschwindigkeit. Genau das ist der Vorteil unserer Glasfaser: Es ist eine eigene Leitung direkt in Ihre Wohnung, kein geteiltes Kabel. So kommt Ihre gebuchte Leistung ohne Einbrüche an. Welche Schreibweise ist richtig bei Ihrem Nachnamen...?“',
 			},
 			{
 				icon: Headphones,
 				title: 'Service aus Deutschland – persönlich',
 				detail:
-					'Über 500 Telekom-Shops, Rückruf-Service und telefonische Beratung aus deutschen Standorten. Vodafone hat Service-Teile ins Ausland verlagert. Kunden berichten von Sprachbarrieren und fehlender Lösungskompetenz.',
+					'„Absolut richtig, guter Service spart Zeit. Genau deshalb bietet die Telekom echten Support aus deutschen Standorten und 500 Shops vor Ort. Wir lösen Ihr Problem direkt beim ersten Anruf, ohne Warteschleifen im Ausland. Wie lautet Ihre korrekte E-Mail-Adresse für unsere Service-Vormerkung?“',
 			},
 			{
 				icon: Shield,
 				title: 'Eigenes Netz = schnellere Hilfe',
 				detail:
-					'Bei Störungen greift die Telekom direkt auf ihr eigenes Kernnetz zu. Vodafone muss bei Kabel-Problemen teils auf Altinfrastruktur zurückgreifen – das kostet wertvolle Zeit.',
+					'„Das verstehe ich vollkommen, ein Ausfall ist extrem ärgerlich. Genau deshalb ist es entscheidend, direkt beim Netzeigentümer zu sein. Bei einer Störung schicken wir sofort eigene Techniker los, während Vodafone Dritte beauftragen muss. Lassen Sie uns Ihren Anschluss direkt zukunftssicher auf Telekom-Technik umstellen. Wie lautet Ihr Geburtsdatum?“',
 			},
 			{
 				icon: Zap,
 				title: '30 Mrd. € Glasfaser-Investment bis 2030',
 				detail:
-					'860.000 km Glasfasernetz, 12,6 Mio. buchbare Anschlüsse Ende 2025, 2,5 Mio. neue pro Jahr. Vodafone investiert kaum in FTTH und setzt weiter auf veraltetes Koax-Kabel.',
+					'„Absolut richtig, das Internet muss zukunftssicher sein. Genau deshalb investieren wir 30 Milliarden Euro in echte Glasfaser bis in die Wohnung, während Vodafone auf alte TV-Kabel setzt. Wir machen das jetzt kurz für Sie fertig, damit Sie direkt vom Ausbau profitieren. Welche Hausnummer hat Ihre Adresse?“',
 				source: 'Telekom Geschäftsbericht 2025',
 			},
 		],
@@ -118,31 +118,31 @@ export const COMPETITORS: Competitor[] = [
 				icon: MapPinOff,
 				title: 'Funklöcher auf dem Land',
 				detail:
-					'Netzabdeckung ländlich deutlich schwächer als Telekom. Große Versorgungslücken außerhalb von Städten.',
+					'Netzabdeckung ländlich deutlich schwächer als Telekom. Große Versorgungslücken außerhalb von Städten, auf Landstraßen und Zügen.',
 			},
 			{
 				icon: SignalZero,
 				title: '5G weit hinterher',
 				detail:
-					'Telekom hat 3× so viele 5G-Standorte. o2 bietet in vielen Regionen noch gar kein 5G.',
+					'Telekom hat 3× so viele 5G-Standorte. o2 bietet in vielen ländlichen Regionen noch gar kein 5G und deutlich geringere Bandbreiten.',
 			},
 			{
 				icon: Unplug,
 				title: 'Kein eigenes Festnetz',
 				detail:
-					'o2 nutzt Telekom-Leitungen als Reseller. Kein direkter Zugriff bei Festnetz-Störungen.',
+					'o2 nutzt Telekom-Leitungen als Reseller. Kein direkter Zugriff und keine eigene Netzkontrolle bei Festnetz-Störungen.',
 			},
 			{
 				icon: TrendingDown,
 				title: 'Dauerhaft Platz 3',
 				detail:
-					'In jedem großen Netztest (connect, CHIP, Stiftung Warentest) schneidet o2 als Letzter ab.',
+					'In jedem großen Netztest (connect, CHIP, Stiftung Warentest) schneidet o2 im Mobilfunk und Festnetz seit Jahren als Letzter ab.',
 			},
 			{
 				icon: Construction,
 				title: 'E-Plus-Altlasten',
 				detail:
-					'Die E-Plus-Integration verursacht teilweise noch technische Probleme im Netz.',
+					'Die E-Plus-Integration verursacht teilweise noch technische Probleme und Frequenzengpässe im Netz.',
 			},
 		],
 		telekomArguments: [
@@ -150,33 +150,33 @@ export const COMPETITORS: Competitor[] = [
 				icon: Star,
 				title: '💛 Emotionaler Marker: Auf dem Land versorgt',
 				detail:
-					'Frage Deinen Kunden: Fährt er manchmal raus aufs Land? Zu Verwandten, in den Urlaub? Mit o2 hat er dort oft kein Netz. Mit der Telekom ist er auch auf der Landstraße erreichbar.',
+					'„Absolut richtig, in der Stadt läuft das o2-Netz gut. Genau das ist aber das Problem, wenn Sie aufs Land fahren oder reisen. Mit o2 haben Sie dort oft Funklöcher, mit der Telekom sind Sie auch auf der Landstraße oder im Zug erreichbar. Sind Sie beruflich oder privat viel außerhalb der Stadt unterwegs?“',
 			},
 			{
 				icon: Signal,
 				title: '99% LTE + größtes 5G-Netz',
 				detail:
-					'Die Telekom erreicht 99% der Bevölkerung mit LTE und betreibt das größte 5G-Netz Deutschlands. o2 hat vor allem in ländlichen Gebieten deutliche Lücken – dort gibt es oft gar kein Netz.',
+					'„Das verstehe ich völlig, man will überall Netz haben. Genau deshalb betreiben wir das größte Mobilfunknetz Deutschlands mit 99% Abdeckung. Bei uns zahlen Sie die 30 Cent mehr am Tag für die Gewissheit, überall erreichbar zu sein. Lassen Sie uns das Angebot jetzt direkt sichern. Welche Rufnummer möchten Sie mitnehmen?“',
 				source: 'Bundesnetzagentur',
 			},
 			{
 				icon: Trophy,
 				title: 'Dauerhaft Platz 1 vs. Platz 3',
 				detail:
-					'Im connect Netztest 2026 schafft es o2 erstmals gleichauf mit Vodafone – aber immer noch deutlich hinter der Telekom. In 15 Jahren Tests war o2 nie besser als Platz 3.',
+					'„Absolut richtig, der Preis ist wichtig. Genau das ist aber der Punkt: Warum für fast dasselbe Geld den Drittplatzierten wählen? Die Telekom gewinnt jeden Zuverlässigkeitstest, während o2 dauerhaft auf Platz 3 landet. Ich richte Ihnen das jetzt direkt ein. Wie lautet Ihre E-Mail-Adresse?“',
 				source: 'connect Netztest 11/2025',
 			},
 			{
 				icon: Zap,
-				title: 'Echte Glasfaser statt Mietleitung',
+				title: 'Original-Leitung statt Reseller (Warteschlangen-Effekt)',
 				detail:
-					'o2 hat kein eigenes Festnetz. Kunden bekommen eine Telekom-Leitung – aber ohne den vollen Telekom-Service, ohne MagentaTV-Integration und ohne direkten Zugriff bei Störungen.',
+					'„Ich verstehe, dass o2 günstige Preise anbietet. Genau hier liegt aber der Unterschied bei Störungen. o2 mietet unsere Leitungen an. Bei Störungen hat ein Telekom-Direktkunde immer Vorrang bei der Entstörung. Als o2-Kunde stehen Sie in der Warteschlange ganz hinten. Wollen Sie die Leitung direkt aus erster Hand beziehen?“',
 			},
 			{
 				icon: Headphones,
 				title: 'Premium-Service vs. Discount-Betreuung',
 				detail:
-					'Die Telekom bietet persönliche Beratung in 500+ Shops und Rückruf-Service. o2 setzt verstärkt auf Chatbots und Self-Service – bei komplexen Problemen fehlt der persönliche Ansprechpartner.',
+					'„Das verstehe ich vollkommen, man will sich nicht mit Chatbots herumärgern. Genau deshalb bietet die Telekom echten Support am Telefon und vor Ort in 500+ Shops. Bei o2 landen Sie meist bei digitalen Assistenten. Wie schreibt sich Ihr Nachname für die Bestätigung?“',
 			},
 		],
 	},
@@ -188,65 +188,65 @@ export const COMPETITORS: Competitor[] = [
 		weaknesses: [
 			{
 				icon: Unplug,
-				title: 'Reiner Reseller',
+				title: 'Reiner Reseller im Festnetz',
 				detail:
-					'Kein eigenes Festnetz. 1&1 mietet Telekom- oder Vodafone-Leitungen und hat keinen direkten Netzzugriff.',
+					'Kein eigenes Festnetz. 1&1 mietet Telekom-Leitungen und hat keinen direkten Netzzugriff bei Störungen.',
 			},
 			{
 				icon: Clock,
 				title: 'Wochen Wartezeit',
 				detail:
-					'Berüchtigt für wochenlange Bereitstellungszeiten bei Neuanschlüssen – teils mehrere Monate.',
+					'Berüchtigt für wochenlange Bereitstellungszeiten (4 bis 8 Wochen) bei Neuanschlüssen und Technikerterminen.',
 			},
 			{
 				icon: SignalZero,
-				title: 'Mobilfunknetz im Aufbau',
+				title: 'Netzwechsel & Akku-Drain durch Roaming',
 				detail:
-					'Das 4. deutsche Mobilfunknetz hat unter 1.000 Standorte. Kaum Abdeckung außerhalb von Großstädten.',
+					'Das Mobilfunknetz ist extrem klein. Außerhalb von Städten schaltet das Handy ständig auf Vodafone-Roaming um. Das führt zu Verbindungsabbrüchen und hohem Akkuverbrauch.',
 			},
 			{
 				icon: PhoneOff,
 				title: 'Kein direkter Support',
 				detail:
-					'Bei Störungen muss 1&1 erst den Netzbetreiber kontaktieren. Kunden warten doppelt.',
+					'Bei Störungen muss 1&1 erst den Netzbetreiber kontaktieren. Das verzögert jeden Servicefall, Kunden warten doppelt.',
 			},
 			{
 				icon: Smartphone,
 				title: 'Schwache Hardware',
 				detail:
-					'Sehr begrenzte Router-Auswahl und eingeschränkte Eigenleistung bei Endgeräten.',
+					'Sehr begrenzte Router-Auswahl und eingeschränkte Eigenleistung bei Endgeräten im Vergleich zu Telekom-Mietgeräten.',
 			},
 		],
 		telekomArguments: [
 			{
 				icon: Headphones,
-				title: '💛 Emotionaler Marker: Sicherheit',
+				title: '💛 Emotionaler Marker: Der Untermieter-Effekt',
 				detail:
-					'“Stellen Sie sich vor, Ihr Internet fällt aus und Sie warten Wochen auf einen Techniker. Bei uns gibt\'s das nicht – wir kommen direkt, weil es unser Netz ist.”',
+					'„Absolut richtig, 1&1 macht viel Werbung mit Service. Genau das ist aber der Punkt: 1&1 besitzt kein eigenes Festnetz und ist nur Untermieter. Wenn Ihre Leitung gestört ist, darf 1&1 sie nicht reparieren, sondern muss uns kontaktieren. Das dauert Tage. Sparen Sie sich den Mittelsmann und gehen Sie direkt zum Netzeigentümer. Ist Ihr aktueller Vertrag schon gekündigt?“',
 			},
 			{
 				icon: Shield,
 				title: 'Eigenes Netz = keine Mittelmänner',
 				detail:
-					'Die Telekom besitzt und betreibt Deutschlands größtes Telko-Netz. 1&1 mietet nur Leitungen – bei einem Problem muss 1&1 erst den Netzbetreiber kontaktieren. Das dauert.',
+					'„Das verstehe ich völlig, man will im Ernstfall schnelle Hilfe. Genau deshalb betreiben wir unser eigenes Netz und schicken unsere eigenen Techniker direkt zu Ihnen. Bei uns zahlen Sie rund 30 Cent mehr am Tag für die Gewissheit, dass Hilfe sofort kommt. Richten wir den Anschluss direkt ein. Wie lautet Ihr Geburtsdatum?“',
 			},
 			{
 				icon: Zap,
 				title: 'Bereitstellung in Tagen, nicht Wochen',
 				detail:
-					'Als Netzbetreiber steuert die Telekom Bereitstellungen direkt. 1&1-Kunden berichten regelmäßig von 4–8 Wochen Wartezeit – im schlimmsten Fall monatelang.',
+					'„Absolut richtig, niemand will wochenlang auf Internet warten. Genau deshalb steuern wir als Netzbetreiber die Schaltungen direkt. Bei 1&1 warten Sie oft monatelang auf einen freien Technikertermin. Welches Datum für den Wechsel würde Ihnen am besten passen?“',
 			},
 			{
 				icon: Star,
-				title: 'Alles aus einer Hand',
+				title: 'Alles aus einer Hand & MagentaEINS',
 				detail:
-					'Mobilfunk + Festnetz + TV – gebündelt mit ggf. Rabatt und einem Ansprechpartner. 1&1 kann keine echte Konvergenz bieten, da das eigene Mobilfunknetz noch kaum existiert.',
+					'„Das verstehe ich vollkommen, ein Vertrag für alles ist praktischer. Genau deshalb bietet die Telekom echte Kombi-Vorteile mit MagentaEINS, bei denen Sie Mobilfunk, Festnetz und TV bündeln und sparen. 1&1 kann diese Konvergenz nicht bieten. Wie viele Handykarten nutzen Sie in Ihrer Familie?“',
 			},
 			{
 				icon: Signal,
-				title: '5G flächendeckend vs. noch im Aufbau',
+				title: 'Echtes 5G-Netz vs. im Aufbau befindliches Rumpfnetz',
 				detail:
-					'Das 1&1-Mobilfunknetz ist das 4. deutsche Netz und hat bisher unter 1.000 Standorte. Das Telekom-5G-Netz ist mit Abstand das größte und erreicht bereits über 95% der Bevölkerung.',
+					'„Ich verstehe, dass 1&1 günstige Tarife anbietet. Genau das ist aber das Problem bei der Netzabdeckung: Das eigene Netz von 1&1 hat kaum Standorte, die Telekom versorgt bereits über 97% der Bevölkerung mit echtem 5G. Lassen Sie uns das Angebot jetzt sichern. Welche E-Mail-Adresse nutzen Sie für die Bestätigung?“',
 			},
 		],
 	},
@@ -260,51 +260,51 @@ export const COMPETITORS: Competitor[] = [
 				icon: TrendingDown,
 				title: 'Gedrosselte Netzpriorität',
 				detail:
-					'Discount-Marke der Telekom – gleiche Leitung, aber nachrangig behandelt im Netz.',
+					'Discount-Marke der Telekom – gleiche Leitung, aber bei hoher Netzauslastung (Stoßzeit/Events) nachrangig behandelt.',
 			},
 			{
 				icon: SignalZero,
-				title: 'Kein 5G',
+				title: 'Kein 5G Standalone',
 				detail:
-					'Nur LTE verfügbar, oft auf 50 Mbit/s gedrosselt. Kein Zugang zum 5G-Netz.',
+					'Nur LTE oder gedrosseltes 5G verfügbar (oft auf 50 Mbit/s beschränkt). Kein Zugang zu neuen Netzinnovationen.',
 			},
 			{
 				icon: UserX,
-				title: 'Kein Ansprechpartner',
+				title: 'Eingeschränkter Vor-Ort-Support',
 				detail:
-					'Kein persönlicher Berater – nur Online-Self-Service und App. Keine Shops.',
+					'Reine Digital-Marke ohne eigene Shops. Support läuft primär online oder per App. Telekom-Shops bieten für Congstar-Kunden nur sehr eingeschränkte Hilfe.',
 			},
 			{
 				icon: Smartphone,
-				title: 'Eingeschränkte Geräteauswahl',
+				title: 'Kein Smartwatch-Support (eSIM-MultiSIM)',
 				detail:
-					'Keine Premium-Endgeräte mit Ratenzahlung. Nur eine Handvoll Geräte verfügbar.',
+					'Unterstützt keine MultiSIM für Smartwatches (Apple Watch LTE). Zudem fehlen echte Familienrabatte und die MagentaEINS Kombivorteile.',
 			},
 		],
 		telekomArguments: [
 			{
+				icon: Zap,
+				title: '💛 Emotionaler Marker: Die Holzklasse-Metapher',
+				detail:
+					'„Klasse, Congstar ist eine gute Marke für den Einstieg. Genau das ist aber der Punkt: Congstar nutzt zwar unser Netz, aber Sie fahren dort Holzklasse. Bei hoher Netzauslastung werden Congstar-Kunden gedrosselt, damit die Premium-Kunden der Telekom freie Fahrt haben. Gönnen Sie sich das Original mit 5G und voller Netzpriorität. Nutzen Sie Ihr Smartphone hauptsächlich unterwegs für Social Media oder Navigation?“',
+			},
+			{
 				icon: Headphones,
 				title: 'Persönliche Beratung in 500+ Shops',
 				detail:
-					'Telekom-Kunden haben einen echten Ansprechpartner – in jedem Shop, am Telefon oder per Rückruf. congstar bietet nur Online-Self-Service. Wenn\'s mal komplex wird, steht man allein da.',
+					'„Das verstehe ich vollkommen, Congstar ist günstig. Genau deshalb wird dort aber am Service gespart: Sie haben keine Shops vor Ort und keine Hotline bei Störungen. Bei der Telekom haben Sie echte Ansprechpartner an Ihrer Seite. Sollen wir Ihren Vertrag auf Premium-Service umstellen? Wie schreibt sich Ihr Nachname?“',
 			},
 			{
 				icon: Star,
-				title: '5G SA + volle Netzpriorität',
+				title: 'Volle Netzpriorität & 5G SA',
 				detail:
-					'Telekom-Tarife surfen mit voller Netzpriorität und 5G Standalone. congstar ist auf LTE beschränkt und wird im Netz nachrangig behandelt. Der Unterschied ist in der Stadt zur Stoßzeit deutlich spürbar.',
+					'„Absolut richtig, das Handy muss schnell sein. Genau deshalb bieten die Original-Telekom-Tarife volle Netzpriorität und 5G Standalone ohne künstliche Bremsen. Wir machen das jetzt kurz für Sie fertig, damit Sie ohne Verzögerung surfen. Wie lautet Ihre E-Mail-Adresse?“',
 			},
 			{
 				icon: Shield,
 				title: 'Premium-Geräte & MagentaTV-Bundles',
 				detail:
-					'Apple iPhone, Samsung Galaxy, Google Pixel – sogar mit Ratenzahlung. congstar bietet nur eine Handvoll Geräte an, keine Premium-Geräte.',
-			},
-			{
-				icon: Zap,
-				title: '💛 Emotionaler Marker: Mehr verdient',
-				detail:
-					'“congstar ist gut für den Einstieg – aber Sie verdienen mehr als Discount. Premium-Netz, persönlicher Service und Geräte nach Wahl: Das ist der Telekom-Unterschied.”',
+					'„Ich verstehe, dass Sie sparen möchten. Genau deshalb lohnt sich das Telekom-Ökosystem: Nur hier bekommen Sie echte Kombi-Rabatte mit MagentaTV und Mobilfunk aus einer Hand. Congstar bietet keine echten TV-Pakete. Welche Fernsehprogramme schauen Sie am liebsten?“',
 			},
 		],
 	},
@@ -318,64 +318,63 @@ export const COMPETITORS: Competitor[] = [
 				icon: MapPinOff,
 				title: 'Begrenztes Ausbaugebiet',
 				detail:
-					'Nur in ausgewählten ländlichen Regionen verfügbar. Kein bundesweites Netz.',
+					'Nur in ausgewählten, vorab gebündelten ländlichen Regionen verfügbar. Kein flächendeckendes Netz.',
 			},
 			{
 				icon: Clock,
-				title: '1–5 Jahre Wartezeit',
+				title: '1–5 Jahre Wartezeit (Bauverzögerung)',
 				detail:
-					'Zwischen Vertragsabschluss und Anschluss vergehen oft ein bis fünf Jahre.',
+					'Zwischen Vertragsabschluss und tatsächlichem Anschluss vergehen oft Jahre – viele Projekte werden verschoben.',
 			},
 			{
 				icon: PhoneOff,
 				title: 'Schlechter Kundenservice',
 				detail:
-					'Schwer erreichbar, wenig kompetent. Tickets werden teils ohne Lösung geschlossen.',
+					'Schwer erreichbar, Tickets werden oft unbearbeitet oder ungelöst geschlossen. Mangelnde Kommunikation auf Baustellen.',
 			},
 			{
 				icon: Lock,
 				title: 'Monopolstellung',
 				detail:
-					'In Ausbaugebieten oft einziger Glasfaser-Anbieter. Keine Alternative bei Problemen.',
+					'In Ausbaugebieten oft der einzige Glasfaser-Betreiber. Keine Wahlfreiheit bei Problemen oder Tariferhöhungen.',
 			},
 			{
 				icon: Ban,
 				title: 'Kein Mobilfunk',
 				detail:
-					'Kein Mobilfunkangebot – keine Konvergenz möglich. Kunden brauchen einen zweiten Vertrag.',
+					'Kein Mobilfunkangebot – keine Konvergenzrabatte möglich. Kunden müssen Verträge bei mehreren Anbietern verwalten.',
 			},
 			{
 				icon: Construction,
 				title: 'Baustellenprobleme',
 				detail:
-					'Beschwerden über schlecht reparierte Straßen und lange Bauzeiten in Gemeinden.',
+					'Häufige Beschwerden über schlecht reparierte Straßen, beschädigte Einfahrten und unkoordinierte Tiefbauarbeiten.',
 			},
 		],
 		telekomArguments: [
 			{
 				icon: Zap,
-				title: '💛 Emotionaler Marker: Vertrauen',
+				title: '💛 Emotionaler Marker: Das Luftschloss',
 				detail:
-					'“Deutsche Glasfaser ist ein junges Unternehmen. Die Telekom baut seit über 25 Jahren Netze – Sie wissen, dass wir auch in 10 Jahren noch da sind.”',
+					'„Verstehe ich absolut, Glasfaser klingt super. Genau das ist aber das Problem bei Deutsche Glasfaser: Die sammeln Verträge und bauen oft erst Jahre später – wenn überhaupt. Lassen Sie uns Ihre Versorgung jetzt sichern: Wir liefern Ihnen sofort stabiles Internet und stornieren den DG-Vertrag wegen Fristüberschreitung für Sie. Wie lautet Ihre genaue Adresse?“',
 			},
 			{
 				icon: Signal,
-				title: 'Glasfaser + Mobilfunk + TV = ein Anbieter',
+				title: 'Glasfaser + Mobilfunk + TV = MagentaEINS',
 				detail:
-					'Die Telekom bietet Glasfaser, Mobilfunk und MagentaTV aus einer Hand mit einem Ansprechpartner. Deutsche Glasfaser hat kein Mobilfunkangebot – Kunden brauchen einen zweiten Vertrag.',
+					'„Ich verstehe, dass Sie schnelles Internet möchten. Genau das ist der Vorteil bei der Telekom: Sie bekommen Internet, Mobilfunk und MagentaTV aus einer Hand und sparen monatlich durch MagentaEINS. DG bietet keinen Mobilfunk an. Welche Mobilfunkverträge laufen aktuell in Ihrem Haushalt?“',
 			},
 			{
 				icon: Shield,
-				title: 'Das größte Glasfasernetz Deutschlands',
+				title: 'Größtes und zuverlässigstes Glasfasernetz',
 				detail:
-					'860.000 km Glasfasernetz, 12,6 Mio. buchbare Anschlüsse, 2,5 Mio. neue pro Jahr. Die Telekom baut deutschlandweit – Deutsche Glasfaser nur in ausgewählten Gebieten.',
-				source: 'Telekom Geschäftsbericht 2025',
+					'„Das verstehe ich vollkommen, der Bau soll schnell gehen. Genau deshalb baut die Telekom seit Jahrzehnten zuverlässig Netze und repariert Baustellen sofort. DG hat oft mit Baustopps zu kämpfen. Sichern wir Ihnen die Original-Leitung der Telekom. Wie lautet Ihr Geburtsdatum?“',
 			},
 			{
 				icon: Headphones,
-				title: 'Erreichbarer, kompetenter Service',
+				title: 'Erreichbarer, kompetenter Service vor Ort',
 				detail:
-					'Deutsche Glasfaser kämpft mit Service-Beschwerden: lange Wartezeiten, Tickets die ohne Lösung geschlossen werden. Die Telekom bietet 500+ Shops und telefonischen Rückruf-Service.',
+					'„Absolut richtig, bei Störungen braucht man schnelle Hilfe. Genau das ist der Punkt: DG hat keinen Support vor Ort. Wir haben über 500 Shops und Techniker direkt in Ihrer Nähe. Wir machen das jetzt unkompliziert fertig. Wie lautet Ihre E-Mail-Adresse?“',
 			},
 		],
 	},
@@ -389,36 +388,37 @@ export const COMPETITORS: Competitor[] = [
 				icon: MapPinOff,
 				title: 'Nur regional verfügbar',
 				detail:
-					'Kleines Kabelnetz – nur in Ostdeutschland, Berlin und Teilen von NRW.',
+					'Kleines Kabelnetz – vorwiegend in Ostdeutschland, Berlin und Teilen von NRW verfügbar. Problem bei Umzügen.',
 			},
 			{
 				icon: TrendingDown,
 				title: '-40% TV-Kunden verloren',
-				detail: 'Massiver Kundenverlust nach Wegfall des Nebenkostenprivilegs.',
+				detail:
+					'Massiver Kundenverlust nach Wegfall des Nebenkostenprivilegs deutet auf mangelnde Kundenbindung hin.',
 			},
 			{
 				icon: Star,
 				title: '1,6/5 Sterne Bewertung',
 				detail:
-					'Sehr schlechte Kundenbewertungen auf allen großen Bewertungsportalen.',
+					'Sehr schlechte Kundenbewertungen auf allen großen Verbraucherportalen hinsichtlich Stabilität und Hotline.',
 			},
 			{
 				icon: WifiOff,
 				title: 'Häufige Totalausfälle',
 				detail:
-					'Internet, Telefonie und TV fallen gleichzeitig aus. Rückkanalstörungen häufig.',
+					'Internet, Telefonie und TV fallen gleichzeitig aus. Lange Behebungszeiten durch veraltete Technik.',
 			},
 			{
 				icon: Zap,
-				title: 'Nur 20% der gebuchten Speed',
+				title: 'Nur Bruchteil der gebuchten Speed',
 				detail:
-					'Tatsächliche Geschwindigkeiten oft drastisch unter der beworbenen Bandbreite.',
+					'Tatsächliche Geschwindigkeiten liegen oft drastisch unter der beworbenen Bandbreite (abends oft nur 20%).',
 			},
 			{
 				icon: Unplug,
 				title: 'Veraltetes Shared Medium',
 				detail:
-					'Kabel-Sharing wie Vodafone, aber noch kleineres und älteres Netz.',
+					'Gleiches Kabel-Sharing-Problem wie Vodafone, jedoch in einem noch älteren, schlechter gewarteten Netz.',
 			},
 		],
 		telekomArguments: [
@@ -426,25 +426,25 @@ export const COMPETITORS: Competitor[] = [
 				icon: Zap,
 				title: '💛 Emotionaler Marker: Frustfrei',
 				detail:
-					'“Viele PYUR-Kunden kommen zu uns, weil sie am Abend kaum noch surfen konnten. Mit Telekom-Glasfaser ist Schluss mit Shared Medium – Ihre Leitung gehört nur Ihnen.”',
+					'„Ich verstehe vollkommen, dass Sie mit PYUR sparen wollten. Genau das ist aber der Grund für die ständigen Störungen: Das Kabelnetz von PYUR ist veraltet. Sie teilen sich die Leitung abends mit der halben Straße und die Geschwindigkeit bricht ein. Bei der Telekom bekommen Sie Ihre eigene Glasfaserleitung ohne Sharing. Ruckelt Ihr Bild abends beim Fernsehen auch manchmal?“',
 			},
 			{
 				icon: Trophy,
-				title: 'Bundesweit verfügbar, nicht nur regional',
+				title: 'Bundesweit verfügbar',
 				detail:
-					'PYUR ist nur in wenigen Regionen verfügbar. Die Telekom versorgt ganz Deutschland – bei Umzug behält man seinen Anbieter und muss nichts kündigen.',
+					'„Absolut richtig, man will flexibel bleiben. Genau das wird bei PYUR zum Problem: Die sind nur regional verfügbar. Die Telekom versorgt ganz Deutschland – bei Umzug nehmen Sie Ihren Anschluss einfach mit. Wann steht bei Ihnen der nächste Umzug an?“',
 			},
 			{
 				icon: Wifi,
-				title: 'Glasfaser vs. veraltetes Kabelnetz',
+				title: 'Echtes FTTH vs. veraltetes Kabelnetz',
 				detail:
-					'PYUR basiert auf einem kleinen, teilweise veralteten Kabelnetz. Die Telekom investiert in echte Glasfaser bis in die Wohnung (FTTH) – zukunftssicher und ohne Sharing-Probleme.',
+					'„Das verstehe ich vollkommen, die Technik muss modern sein. Genau deshalb bauen wir echte Glasfaser direkt in Ihre Wohnung (FTTH), während PYUR auf altes TV-Kabel setzt. Das ist die sicherste Verbindung für Sie. Richten wir das jetzt risikofrei ein. Wie lautet Ihre E-Mail-Adresse?“',
 			},
 			{
 				icon: Headphones,
-				title: 'Service mit Bestnoten statt 1,6 Sterne',
+				title: 'Kundenservice mit Bestnoten statt 1,6 Sterne',
 				detail:
-					'PYUR wird auf Bewertungsportalen mit 1,6/5 Sternen bewertet. Die Telekom gewinnt regelmäßig Kundenservice-Awards und bietet persönliche Betreuung in 500+ Shops.',
+					'„Das tut mir leid, mit schlechtem Service will sich niemand herumschlagen. Genau deshalb gewinnt die Telekom regelmäßig Kundenservice-Awards, während PYUR auf Portalen abgestraft wird. Wir machen das jetzt direkt fertig für Sie. Wie schreibt sich Ihr Nachname?“',
 			},
 		],
 	},
@@ -458,37 +458,37 @@ export const COMPETITORS: Competitor[] = [
 				icon: Unplug,
 				title: 'Reiner Reseller',
 				detail:
-					'Kein eigenes Netz. Nutzt Telekom, Vodafone oder o2 im Hintergrund.',
+					'Kein eigenes Mobilfunk- oder Festnetz. Nutzt im Hintergrund Kapazitäten von Telekom, Vodafone oder o2.',
 			},
 			{
 				icon: EyeOff,
 				title: 'Netz-Lotterie',
 				detail:
-					'Kunden wissen oft nicht, in welchem Netz sie landen. Intransparente Zuordnung.',
+					'Kunden wissen oft nicht, in welchem Netz sie landen, da Tarife intransparent zugeordnet und gewechselt werden.',
 			},
 			{
 				icon: DollarSign,
 				title: 'Aggressives Upselling',
 				detail:
-					'Bekannt für versteckte Zusatzoptionen und aggressive Vertriebsmethoden.',
+					'Bekannt für versteckte Zusatzoptionen, kostenpflichtige Testabos im Kleingedruckten und aggressive Werbeanrufe.',
 			},
 			{
 				icon: Scissors,
 				title: 'Einseitige Kündigungen',
 				detail:
-					'Berichte über Vertragskündigungen durch freenet ohne Vorwarnung – sogar 3 Monate nach Abschluss.',
+					'Berichte über Vertragskündigungen durch freenet ohne Vorwarnung bei Überschreitung bestimmter Nutzungsgrenzen.',
 			},
 			{
 				icon: PhoneOff,
 				title: 'Kein technischer Support',
 				detail:
-					'Bei Netzproblemen kann freenet nicht helfen – kein eigener Zugriff auf die Infrastruktur.',
+					'Bei Netzproblemen kann freenet nicht helfen – kein eigener Zugriff auf die Netzinfrastruktur der Betreiber.',
 			},
 			{
 				icon: Lock,
 				title: 'Schwierige Kündigung',
 				detail:
-					'Kündigungsprozesse kompliziert und mangelnde Transparenz bei Vertragsdetails.',
+					'Komplizierte Kündigungsprozesse und mangelnde Transparenz bei Verträgen, die über Drittportale laufen.',
 			},
 		],
 		telekomArguments: [
@@ -496,31 +496,31 @@ export const COMPETITORS: Competitor[] = [
 				icon: Star,
 				title: '💛 Emotionaler Marker: Klarheit',
 				detail:
-					'“Bei uns gibt\'s keine versteckten Kosten und keine Netz-Lotterie. Sie bekommen das beste Netz Deutschlands – direkt, ohne Mittelsmann.”',
+					'„Verstehe ich absolut, freenet lockt mit billigen Preisen. Genau das ist aber das Problem mit der Netz-Lotterie: Sie wissen oft nicht, in welchem Netz Sie landen und werden ungefragt verschoben. Bei der Telekom bekommen Sie das beste Netz Deutschlands direkt und garantiert. Wie viel Datenvolumen benötigen Sie im Monat?“',
 			},
 			{
 				icon: Shield,
-				title: 'Transparenz: Sie wissen, was Sie bekommen',
+				title: 'Garantierte Netzqualität ohne Restposten',
 				detail:
-					'Bei der Telekom buchen Sie das Telekom-Netz – garantiert. Bei freenet wissen Kunden oft nicht, ob sie im Telekom-, Vodafone- oder o2-Netz landen. Und bei Problemen ist niemand zuständig.',
+					'„Das verstehe ich völlig, man will überall surfen können. Genau deshalb surfen Sie als Telekom-Direktkunde immer mit voller Netzpriorität. Reseller wie freenet werden bei hoher Auslastung gedrosselt. Sichern wir Ihnen die volle Leistung für Ihr Smartphone. Wie lautet Ihr Geburtsdatum?“',
 			},
 			{
 				icon: Signal,
-				title: 'Volle Netzqualität, keine Restposten',
+				title: 'Direktvertrag mit dem Netzbesitzer',
 				detail:
-					'Reseller wie freenet kaufen Kapazitäten ein und verkaufen sie weiter. Telekom-Direktkunden surfen mit voller Priorität und profitieren sofort von jedem Netzausbau.',
+					'„Absolut richtig, im Störungsfall zählt jede Minute. Genau deshalb ist der Direktvertrag mit uns die beste Wahl: Wir entstören direkt, während freenet nur Tickets weiterleitet. Ich richte Ihnen das jetzt direkt ein. Wie lautet Ihre E-Mail-Adresse?“',
 			},
 			{
 				icon: Headphones,
-				title: 'Ehrlicher Service statt Upselling',
+				title: 'Ehrlicher Service statt Abos im Kleingedruckten',
 				detail:
-					'freenet ist für aggressive Vertriebsmethoden bekannt. Die Telekom berät ehrlich und transparent – unsere Berater werden an Kundenzufriedenheit gemessen, nicht an Upselling-Quoten.',
+					'„Ich verstehe, dass Sie günstige Verträge schätzen. Genau deshalb berät die Telekom transparent: Bei uns gibt es keine versteckten Testabos im Kleingedruckten. Wir machen das jetzt kurz fertig. Wie lautet Ihr Nachname?“',
 			},
 		],
 	},
 	{
 		id: 'drillisch',
-		name: 'Drillisch-Marken (PremiumSIM, smartmobil, winSIM, sim.de)',
+		name: 'Drillisch-Marken (PremiumSIM, winSIM, sim.de, etc.)',
 		color: '#7b2d8e',
 		logoText: 'DR',
 		weaknesses: [
@@ -528,35 +528,31 @@ export const COMPETITORS: Competitor[] = [
 				icon: SignalZero,
 				title: 'o2-Netz = Platz 3',
 				detail:
-					'PremiumSIM, smartmobil, winSIM, sim.de – alle nutzen das o2-Netz. Dauerhaft letzter Platz.',
+					'PremiumSIM, winSIM, sim.de, smartmobil – alle nutzen das o2-Netz, das dauerhaft den letzten Platz belegt.',
 			},
 			{
 				icon: Unplug,
 				title: 'Kein eigenes Netz',
 				detail:
-					'Kein eigener technischer Support. Bei Problemen wird an den Netzbetreiber verwiesen.',
+					'Kein eigener technischer Support. Bei Netzproblemen wird der Kunde im Kreis geschickt, da kein physischer Zugriff besteht.',
 			},
 			{
 				icon: UserX,
-				title: 'Keine Shops',
+				title: 'Keine Shops vor Ort',
 				detail:
-					'Nur Online – keine persönliche Beratung, kein Ansprechpartner vor Ort.',
+					'Reine Online-Discounter. Keine persönliche Beratung, kein Ansprechpartner bei Gerätedefekten.',
 			},
 			{
 				icon: Ban,
-				title: 'Kein 5G',
-				detail: 'Die meisten Drillisch-Tarife haben keinen Zugang zum 5G-Netz.',
+				title: 'Gedrosseltes 5G & kein 5G Standalone',
+				detail:
+					'Drillisch-Tarife sind geschwindigkeitsgedrosselt (meist max. 50 Mbit/s) und haben keinen Zugang zum modernen 5G Standalone (5G+) Netz.',
 			},
 			{
 				icon: PhoneOff,
-				title: 'Bare-Bones-Service',
-				detail: 'Minimal-Support: Bei Problemen wird man im Kreis geschickt.',
-			},
-			{
-				icon: Building2,
-				title: '1&1/United Internet',
+				title: 'Minimal-Support',
 				detail:
-					'Gehören zum gleichen Konzern – teilen dessen Infrastruktur-Schwächen.',
+					'Eingeschränkter Kundenservice. Lange Warteschleifen und keine individuelle Betreuung bei Problemen.',
 			},
 		],
 		telekomArguments: [
@@ -564,25 +560,25 @@ export const COMPETITORS: Competitor[] = [
 				icon: Shield,
 				title: '💛 Emotionaler Marker: Qualität zahlt sich aus',
 				detail:
-					'“Billig ist nicht günstig. Was nützt ein 5€-Tarif im o2-Netz, wenn man auf dem Land kein Netz hat? Für wenige Euro mehr gibt\'s das beste Netz Deutschlands und echten Service.”',
+					'„Ich verstehe vollkommen, dass ein 5€-Tarif verlockend klingt. Genau das ist aber das Problem auf dem Land oder im Zug: Drillisch nutzt das leistungsschwächste o2-Netz und hat massive Funklöcher. Für wenige Euro mehr bekommen Sie das Testsieger-Netz der Telekom mit echter Erreichbarkeit. Fahren Sie manchmal aus der Stadt raus?“',
 			},
 			{
 				icon: Trophy,
-				title: 'Bestes Netz vs. günstigstes Netz',
+				title: 'Bestes Netz vs. Billig-Netz',
 				detail:
-					'Drillisch-Marken nutzen das o2-Netz – dauerhaft Platz 3 in jedem Netztest. Für ein paar Euro mehr im Monat bekommt der Kunde das Telekom-Netz: 15× Testsieger, überall erreichbar.',
+					'„Absolut richtig, der Preisunterschied ist spürbar. Genau das ist aber der Punkt: Drillisch nutzt das o2-Netz, das in jedem Netztest auf Platz 3 landet. Bei uns zahlen Sie knapp 30 Cent mehr am Tag für das beste Netz Deutschlands. Lassen Sie uns das Angebot jetzt sichern. Wie lautet Ihre E-Mail-Adresse?“',
 			},
 			{
 				icon: Headphones,
-				title: 'Shops & Beratung vs. reine Online-Marke',
+				title: 'Vor-Ort-Service vs. Anonyme Online-Marke',
 				detail:
-					'Drillisch hat keinen einzigen Shop in Deutschland. Bei der Telekom können Kunden jederzeit persönlich vorbeikommen, Geräte anfassen und sich beraten lassen.',
+					'„Das verstehe ich, man will einfach nur telefonieren. Genau deshalb ist Drillisch so billig: Sie haben keinen einzigen Shop und keinen Ansprechpartner bei Geräteschäden. Bei uns gehen Sie einfach in den nächsten Shop und bekommen sofort Hilfe. Dürfen wir Ihre Rufnummer jetzt zu uns übertragen? Wie schreibt sich Ihr Nachname?“',
 			},
 			{
 				icon: Signal,
-				title: '5G inklusive, nicht als Aufpreis',
+				title: 'Echtes 5G inklusive',
 				detail:
-					'Viele Drillisch-Tarife haben kein 5G. Bei der Telekom ist 5G in allen aktuellen Tarifen inklusive – mit dem größten 5G-Netz Deutschlands.',
+					'„Ich verstehe, dass Sie sparen möchten. Genau deshalb ist unser Tarif zukunftssicher: Bei der Telekom ist echtes 5G in allen Tarifen inklusive, während Drillisch Sie oft auf langsames LTE drosselt. Wir machen das jetzt direkt fertig für Sie. Welches Smartphone nutzen Sie aktuell?“',
 			},
 		],
 	},
@@ -596,31 +592,25 @@ export const COMPETITORS: Competitor[] = [
 				icon: Unplug,
 				title: 'freenet-Reseller',
 				detail:
-					'Kein eigenes Netz. Nutzt wahlweise Telekom-, Vodafone- oder o2-Kapazitäten.',
+					'Kein eigenes Netz. Miete von Kapazitäten bei Telekom, Vodafone oder o2 ohne Einfluss auf Netzparameter.',
 			},
 			{
 				icon: EyeOff,
 				title: 'Unübersichtliche Verträge',
 				detail:
-					'Abschlüsse oft über Drittplattformen – wenig Transparenz über Vertragsinhalte.',
+					'Vertrieb erfolgt oft über Drittplattformen mit unklaren Mindestlaufzeiten und automatischen Preiserhöhungen.',
 			},
 			{
 				icon: PhoneOff,
-				title: 'Eingeschränkter Service',
+				title: 'Eingeschränkter Support',
 				detail:
-					'Sehr limitierter Kundenservice. Keine Problemlösung vor Ort möglich.',
+					'Sehr begrenzter Kundenservice. Keine schnelle Fehlerbehebung oder Vor-Ort-Hilfe möglich.',
 			},
 			{
 				icon: UserX,
-				title: 'Keine Shops',
+				title: 'Keine Filialen',
 				detail:
-					'Keine persönliche Beratung, kein physischer Anlaufpunkt für Kunden.',
-			},
-			{
-				icon: Ban,
-				title: 'Kein eigener Tech-Support',
-				detail:
-					'Bei Netzproblemen kann klarmobil nicht helfen – kein Zugriff auf die Infrastruktur.',
+					'Keine persönliche Beratung, kein physischer Anlaufpunkt für Kunden bei Störungen.',
 			},
 		],
 		telekomArguments: [
@@ -628,19 +618,19 @@ export const COMPETITORS: Competitor[] = [
 				icon: Headphones,
 				title: '💛 Emotionaler Marker: Einer für alles',
 				detail:
-					'“Warum drei verschiedene Anbieter für Handy, Internet und TV? Bei der Telekom bekommen Sie alles aus einer Hand – einen Vertrag, eine Rechnung, ein Ansprechpartner.”',
+					'„Verstehe ich absolut, klarmobil wirbt viel. Genau das ist aber der Punkt: Warum drei Verträge bei verschiedenen Anbietern für Handy, Internet und TV haben? Bei der Telekom bekommen Sie alles aus einer Hand – einen Vertrag, eine Rechnung, einen Servicepartner. Ist Ihr Internetanschluss aktuell auch bei klarmobil?“',
 			},
 			{
 				icon: Shield,
-				title: 'Direktvertrag statt Mittelsmann',
+				title: 'Direktvertrag statt Reseller-Umweg',
 				detail:
-					'klarmobil ist ein freenet-Reseller. Bei der Telekom haben Sie einen Direktvertrag mit dem Netzbetreiber – keine Drittpartei zwischen Ihnen und Ihrem Netz.',
+					'„Das verstehe ich, man sucht nach günstigen Tarifen. Genau hier liegt aber das Problem: klarmobil ist nur ein Reseller. Bei Störungen müssen Sie den Umweg über klarmobil gehen. Bei der Telekom haben Sie einen echten Direktvertrag für bevorzugte Entstörung. Sichern wir das jetzt direkt für Sie ab. Wie lautet Ihre E-Mail-Adresse?“',
 			},
 			{
 				icon: Star,
 				title: 'Vollständiges Ökosystem',
 				detail:
-					'Mobilfunk, Festnetz, Glasfaser, MagentaTV, Smart-Home – alles von einem Anbieter. klarmobil bietet nur Mobilfunk. Kein Festnetz, kein TV, keine Bundles.',
+					'„Absolut richtig, alles muss zusammenpassen. Genau deshalb bietet die Telekom Mobilfunk, Festnetz und MagentaTV perfekt abgestimmt aus einer Hand. klarmobil hat kein echtes TV-Angebot. Wir machen das jetzt kurz fertig. Wie lautet Ihr Geburtsdatum?“',
 			},
 		],
 	},
@@ -652,39 +642,33 @@ export const COMPETITORS: Competitor[] = [
 		weaknesses: [
 			{
 				icon: TrendingDown,
-				title: 'Abgewertete Netze',
+				title: 'Abgewertete Netzkapazitäten',
 				detail:
-					'Alle Discount-MVNOs nutzen das o2- oder Vodafone-Netz – nie das beste.',
+					'Discount-MVNOs nutzen das o2- oder Vodafone-Netz, erhalten jedoch immer die niedrigste Bandbreiten-Priorität.',
 			},
 			{
 				icon: SignalZero,
 				title: 'Niedrigste Netzpriorität',
 				detail:
-					'ALDI TALK/Blau: o2-Netz mit niedrigster Priorität. Als erste gedrosselt bei Überlastung.',
-			},
-			{
-				icon: WifiOff,
-				title: 'Lidl: Kein Premium-Netz',
-				detail:
-					'Lidl Connect nutzt Vodafone-Netz, aber ohne volle Netzpriorität.',
+					'Bei hoher Netzauslastung (Events, Hauptverkehrszeit) werden Prepaid-Karten als Erstes gedrosselt.',
 			},
 			{
 				icon: Ban,
-				title: 'Kein 5G, keine Features',
+				title: 'Gedrosseltes Netz & kein Smartwatch-Support',
 				detail:
-					'Kein 5G, keine Premium-Features, keine Beratung – reines Billig-Angebot.',
+					'Kein Zugang zu echtem 5G Standalone (5G+), gedrosselte Geschwindigkeit (meist 25–50 Mbit/s) und kein Smartwatch-Support (eSIM-MultiSIM).',
 			},
 			{
 				icon: UserX,
-				title: 'Null Service',
+				title: 'Kein Kundenservice',
 				detail:
-					'Nur Prepaid-Automation. Kein Ansprechpartner bei Problemen – man steht allein da.',
+					'Reiner Prepaid-Automatensupport. Bei Problemen steht der Kunde komplett ohne Hilfe da.',
 			},
 			{
 				icon: Smartphone,
 				title: 'Kein Ökosystem',
 				detail:
-					'Keine Endgeräte-Auswahl, keine Bundles, kein Zusammenspiel zwischen Produkten.',
+					'Keine Endgeräte-Auswahl, keine Kombi-Vorteile (wie MagentaEINS), kein Zusammenspiel von Produkten.',
 			},
 		],
 		telekomArguments: [
@@ -692,25 +676,25 @@ export const COMPETITORS: Competitor[] = [
 				icon: Zap,
 				title: '💛 Emotionaler Marker: Das Beste für die Familie',
 				detail:
-					'“Für sich selbst könnte man Discount nehmen. Aber für die Familie will man Verlässlichkeit – dass die Kinder im Notfall anrufen können, dass das Homeoffice nicht abbricht. Das ist die Telekom.”',
+					'„Ich verstehe vollkommen, für sich selbst reicht Prepaid oft aus. Genau das ist aber der Punkt, wenn es um die Familie geht: Sie wollen Verlässlichkeit, damit die Kinder im Notfall immer erreichbar sind und das Homeoffice stabil steht. Das bietet nur das Telekom-Premiumnetz. Wie viele Personen nutzen das Internet bei Ihnen zu Hause?“',
 			},
 			{
 				icon: Trophy,
 				title: 'Premium-Netz für den Alltag',
 				detail:
-					'Discount-Marken nutzen immer die schwächsten Netz-Kapazitäten. Telekom-Kunden surfen mit voller Priorität auf Deutschlands bestem Netz – der Unterschied zeigt sich bei Großevents, in der Stadt und auf Reisen.',
+					'„Absolut richtig, man will flexibel sein. Genau deshalb werden Prepaid-Karten bei hoher Auslastung im Netz als Erstes gedrosselt. Als Telekom-Vertragskunde surfen Sie immer mit voller Priorität. Lassen Sie uns das Angebot jetzt sichern. Wie lautet Ihre E-Mail-Adresse?“',
 			},
 			{
 				icon: Headphones,
 				title: 'Mensch statt Maschine',
 				detail:
-					'Kein Chatbot, keine endlose FAQ-Suche: Telekom bietet echte Menschen in echten Shops. Discount-MVNOs bieten keine Beratung – wer Hilfe braucht, steht allein da.',
+					'„Das verstehe ich, man sucht nach der einfachsten Lösung. Genau deshalb ist Discount bei Störungen so frustrierend: Sie haben nur Chatbots. Bei uns haben Sie 500+ Shops und direkte Hilfe. Wir machen das jetzt unkompliziert fertig. Wie schreibt sich Ihr Nachname?“',
 			},
 			{
 				icon: Signal,
 				title: 'Zukunftssicher mit 5G & Glasfaser',
 				detail:
-					'Discount-Marken haben kein 5G und werden es so schnell nicht bekommen. Die Telekom bietet 5G in allen Tarifen und investiert 30 Mrd. € in Glasfaser bis 2030.',
+					'„Absolut richtig, die Technik schreitet voran. Genau deshalb bietet die Telekom echtes 5G und Glasfaser, während Discount-Karten jahrelang hinterherhinken. Wir richten das jetzt zukunftssicher für Sie ein. Wie lautet Ihr Geburtsdatum?“',
 			},
 		],
 	},
@@ -721,55 +705,91 @@ export const OBJECTIONS: Objection[] = [
 		id: 'too-expensive',
 		title: '„Zu teuer“',
 		coreArgument:
-			'Tagespreis-Rechnung, Gegenüberstellung Einzelkosten, Mehrwert',
+			'Tagespreis-Rechnung, Nutzenbrücke, Premiumnetz',
 		exampleText:
-			'„Ich verstehe, dass der Preis im ersten Moment hoch wirkt. Wenn wir es aber mal auf den Tag herunterrechnen, sprechen wir hier von wenigen Cent. Dafür bekommen Sie das Telekom-Premiumnetz und sparen sich den Ärger. Ist das nicht den kleinen Aufpreis wert?“',
-		tip: 'Zuerst Verständnis zeigen. Dann von Gesamtkosten in kleinere, greifbare Einheiten (z.B. Tagespreis) wechseln.',
+			'„Herr/Frau [Name], Qualität hat ihren Preis – das wissen Sie selbst. Aber lassen Sie uns mal schauen, was Sie dafür sparen: Sie sparen sich die abendlichen Ruckler, den Ärger mit der Hotline und vor allem Ihre wertvolle Zeit. Wir sprechen hier umgerechnet über gerade einmal wenige Cent am Tag Unterschied zu Ihrem alten Anbieter. Dafür haben Sie die absolute Sicherheit im stabilsten Netz Deutschlands. Richten wir den Anschluss direkt auf Ihren Namen ein – nutzen wir Ihre aktuelle Adresse oder haben Sie eine abweichende?“',
+		tip: 'Zuerst Wertbrücke bauen. Gesamtpreis entkräften, indem man ihn auf den Tagespreis reduziert und die Kosten von Netzfehlern aufzeigt.',
 		icon: DollarSign,
 	},
 	{
 		id: 'dont-need-it',
 		title: '„Brauche ich nicht“',
-		coreArgument: 'Bedarfsweckung, aktuelle Nutzung hinterfragen',
+		coreArgument: 'Bedarfsweckung, Smart Home, Zukunftssicherheit',
 		exampleText:
-			'„Das höre ich oft. Dachte ich anfangs auch. Haben Sie schon mal erlebt, dass abends das Bild ruckelt? Genau hier hilft nämlich diese Lösung, damit das nicht mehr passiert.“',
-		tip: 'Fragen stellen, statt zu argumentieren: „Wie nutzen Sie aktuell...?“, „Was machen Sie, wenn...?“',
+			'„Das verstehe ich vollkommen, Herr/Frau [Name]. Man fragt sich natürlich, ob man das braucht. Genau das ist der Punkt: Früher war das Internet nur für E-Mails da. Heute läuft alles darüber. Ihr Fernseher, Ihr Smartphone und Ihre Haushaltsgeräte. Wir richten Ihre Leitung jetzt direkt zukunftssicher ein. So läuft alles ohne Unterbrechung, selbst wenn mehrere Geräte gleichzeitig online sind.“',
+		tip: 'Einwand entkräften, indem man die wachsende Anzahl an vernetzten Geräten im Haushalt aufzeigt. Direkt in die Auswahlkupplung gehen.',
 		icon: EyeOff,
 	},
 	{
 		id: 'need-to-think',
 		title: '„Muss drüber nachdenken“',
-		coreArgument: 'Zeitdruck, Angebot anbieten',
+		coreArgument: 'Einwand-Isolierung, Sicherheits-Joker, Aktionspreis',
 		exampleText:
-			'„Verstehe ich absolut. Nur zur Info: Die aktuelle Aktion gilt nur noch diese Woche. Sollen wir das heute schon mal fertig machen und Sie haben noch ein Widerrufsrecht, falls Sie es sich anders überlegen?“',
-		tip: 'Einwand abfedern, aber Dringlichkeit aufbauen (FOMO = Fear of missing out).',
+			'„Das kann ich gut verstehen, Herr/Frau [Name]. Eine gute Entscheidung will gut überlegt sein. Genau darum geht es. Lassen Sie uns das Angebot jetzt sichern, damit die Konditionen für Sie reserviert sind. Wir machen das risikofrei: Ich schicke Ihnen jetzt direkt die Bestätigung per E-Mail. Sie erhalten alle Aktionspreise und haben ab heute 14 Tage Zeit, sich alles in Ruhe auf der Couch anzuschauen. Wenn Sie es doch nicht möchten, reicht ein kurzer Anruf oder Mail. Welche E-Mail-Adresse nutzen Sie aktuell für wichtige Nachrichten?“',
+		tip: 'Einwand isolieren (Leistung vs. Preis). Dann das Risiko minimieren durch den Widerrufs-Joker im assumptive close.',
 		icon: Clock,
 	},
 	{
 		id: 'im-satisfied',
 		title: '„Bin zufrieden“',
-		coreArgument: 'Verbesserungspotential zeigen, Vergleich Alt vs. Neu',
+		coreArgument: 'Tarif-Optimierung, Moderne Standards',
 		exampleText:
-			'„Das freut mich sehr, Herr [Name]. Deswegen melde ich mich auch. Als treuer Kunde haben sich über die Jahre Ihre Konditionen etwas überholt – ich kann Ihnen heute für fast das gleiche Geld die vierfache Leistung anbieten.“',
-		tip: 'Zufriedenheit loben, aber Weiterentwicklung (Update) schmackhaft machen.',
+			'„Klasse, das freut mich zu hören! Ein neuer, stabiler Anschluss ist Gold wert. Genau deshalb spreche ich das an. Über die Jahre verändern sich ja die Geräte und Anforderungen bei Ihnen zu Hause. Früher reichte eine einfache Leitung. Heute laufen Fernseher, Handys und Homeoffice gleichzeitig. Wir passen Ihr Profil jetzt an die modernen Standards an. Sie erhalten die vierfache Leistung für fast das gleiche Geld. Das läuft ab sofort komplett automatisch. Lassen Sie uns Ihre Kundendaten abgleichen. Wie lautet Ihr Geburtsdatum?“',
+		tip: 'Zufriedenheit verstärken. Das Angebot nicht als neuen Verkauf, sondern als Anpassung an moderne Standards und veränderte Haushaltsgeräte framen.',
 		icon: CheckCircle2,
 	},
 	{
 		id: 'in-contract',
 		title: '„Bin noch im Vertrag“',
-		coreArgument: 'Vormerkung, MagentaEINS-Vorteil, Wechselzeitpunkt',
+		coreArgument: 'Wechsel-Vormerkung, Anschlussgebühr-Erlass, Kündigungsservice',
 		exampleText:
-			'“Kein Problem! Das ist sogar perfekt. Wir können den Wechsel jetzt schon kostenlos reservieren, Sie sichern sich die heutigen Aktionspreise, und wir kümmern uns automatisch im Hintergrund um die problemlose Kündigung beim alten Anbieter, sobald die Zeit reif ist.”',
-		tip: 'Kunden die Angst vor dem \'Doppelt-Zahlen\' nehmen und auf Bequemlichkeit hinweisen.',
+			'„Verstehe ich absolut. Niemand möchte doppelt bezahlen oder Stress beim Wechsel haben. Genau deshalb reservieren wir Ihren Anschluss heute schon im Voraus. Wir richten den Wechseltermin exakt auf das Ende Ihrer aktuellen Laufzeit ein. Sie zahlen keinen Cent doppelt. Als Wechsel-Vorteil erlassen wir Ihnen die komplette Bereitstellungsgebühr und wir kündigen automatisch im Hintergrund für Sie. Bei welchem Anbieter sind Sie aktuell und wann läuft der Vertrag dort aus?“',
+		tip: 'Angst vor doppelten Kosten nehmen. Den nahtlosen Übergang betonen und den Erlass der Bereitstellungsgebühr als exklusiven Wechsel-Vorteil nutzen.',
 		icon: Lock,
 	},
 	{
 		id: 'competitor-cheaper',
 		title: '„Wettbewerber ist günstiger“',
-		coreArgument: 'Lösung: Überleitung zu Battlecards',
+		coreArgument: 'Zwei-Klassen-Netz, Priorisierung, TCO',
 		exampleText:
-			'“Da haben Sie recht, auf dem Papier sieht das günstiger aus. Aber wissen Sie auch, woran dort gespart wird? Oft ist es die Netzqualität am Abend oder der Kundenservice. Welcher Anbieter ist es denn genau?”',
-		tip: 'Sofort in die Analyse gehen (\'Welcher Anbieter?\') und dann ins Battlecard-Panel (Tab: Wettbewerb) wechseln.',
+			'„Absolut richtig, auf den ersten Blick sieht das günstiger aus. Genau das ist aber der Unterschied zwischen dem Original-Netzbesitzer und einem Untermieter. Billig gekauft ist oft doppelt bezahlt. Andere Anbieter mieten nur unsere Netze oder teilen sich die Leitungen. Bei der Telekom haben Sie Ihre eigene Spur. Bei Störungen haben Sie als Direktkunde oberste Priorität bei unseren Technikern. Das spart Ihnen Zeit und Nerven. Welche DSL-Geschwindigkeit nutzen Sie momentan bei Ihrem aktuellen Anbieter?“',
+		tip: 'Den Unterschied zwischen Netzbesitzer und Untermieter/Reseller klar aufzeigen. Die versteckten Kosten von Ausfällen hervorheben.',
 		icon: AlertTriangle,
+	},
+	{
+		id: 'no-time',
+		title: '„Habe gerade keine Zeit“',
+		coreArgument: '45-Sekunden-Pitch, Zukunfts-Vorteil, Bedarfsanalyse',
+		exampleText:
+			'„Verstehe ich völlig, Ihre Zeit ist kostbar. Genau deshalb machen wir das jetzt ganz kurz und unkompliziert in 45 Sekunden fertig. Ich zeige Ihnen, wie wir Ihre Leitung stabilisieren und Sie ab sofort dauerhaft 10 € sparen. Wenn das für Sie interessant klingt, machen wir das direkt fertig – dann haben Sie das Thema für die nächsten zwei Jahre vom Tisch. Schauen Sie aktuell noch über Kabel oder schon über die Telefonbuchse?“',
+		tip: 'Mach dem Kunden klar, dass der Abschluss jetzt schneller geht, als einen neuen Termin auszumachen. Nimm das Tempo auf deine Kappe (z.B. „Ich klicke das hier parallel superschnell ein“).',
+		icon: Clock,
+	},
+	{
+		id: 'bad-experience',
+		title: '„Schlechte Erfahrungen“',
+		coreArgument: 'Persönliche Betreuung, Hotline-Testsieger, Vertrauensaufbau',
+		exampleText:
+			'„Das tut mir wirklich leid und ich kann den Ärger absolut nachvollziehen. Genau deshalb sitze ich heute als Ihr persönlicher Ansprechpartner hier: Wir haben im Service radikal aufgeräumt – genau aus diesem Grund sind wir wiederholt Testsieger beim connect Hotline-Test geworden. Damit das von damals nie wieder passiert, richte ich Ihnen das heute persönlich ein und bleibe Ihr fester Ansprechpartner. Lassen Sie uns kurz schauen: Woran genau hat es damals bei Ihnen gehakt?“',
+		tip: 'Nutze das „Psychologische Konto“. Indem du die Schuld der alten Telekom anerkennst, baust du Vertrauen auf. Geh sofort über in die Fehlerbehebung (Beratung) und von dort direkt in den Auftrag.',
+		icon: Headphones,
+	},
+	{
+		id: 'too-much-effort',
+		title: '„Zu viel Aufwand“',
+		coreArgument: 'Digitaler Vollservice, Rufnummernmitnahme, Datenerfassung',
+		exampleText:
+			'„Das höre ich oft, aber genau da habe ich die beste Nachricht des Tages für Sie: Den Aufwand gibt es nicht mehr. Wir übernehmen mit unserem Komplett-Wechselservice alles für Sie – von der Kündigung beim alten Anbieter bis zur Rufnummernmitnahme. Sie unterschreiben nichts, Sie müssen nirgendwo anrufen. Wir machen das jetzt in zwei Minuten am Telefon fertig und Sie lehnen sich einfach zurück. Wie lautet der vollständige Name des aktuellen Vertragsinhabers beim alten Anbieter?“',
+		tip: 'Nutze die direkte Frage nach dem Vertragsinhaber, um den Buchungsprozess sofort einzuleiten. Das lenkt den Fokus auf die Datenerfassung.',
+		icon: Unplug,
+	},
+	{
+		id: 'discuss-partner',
+		title: '„Mit Partner besprechen“',
+		coreArgument: 'Sicherungs-Option, Widerrufs-Recht, Couch-Bedenkzeit',
+		exampleText:
+			'„Das zeigt, wie wichtig Ihnen eine gute Entscheidung für die Familie ist. Genau deshalb sichern wir das Angebot heute, damit die Konditionen für Sie reserviert sind. Wir buchen das jetzt fest ein. Sie erhalten alle Unterlagen per E-Mail. Falls Ihr Partner heute Abend sagt: \'Nein, das machen wir nicht\', haben Sie ab heute 14 Tage Zeit. Ein kurzer Anruf bei uns oder das Online-Stornoformular genügt, und wir machen alles rückgängig. So verpassen Sie das Angebot nicht und haben null Risiko. Wie lautet Ihre korrekte E-Mail-Adresse für die Unterlagen?“',
+		tip: 'Das gesetzliche Widerrufsrecht (14 Tage bei Fernabsatz) ist im Callcenter deine schärfste Waffe gegen den Partner-Einwand. Du buchst das Angebot ein, stellst aber die unkomplizierte Stornierung per Anruf oder Formular heraus.',
+		icon: UserX,
 	},
 ];

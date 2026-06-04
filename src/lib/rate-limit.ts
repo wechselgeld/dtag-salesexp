@@ -1,5 +1,6 @@
 import {
     redis,
+    ensureRedisConnected,
 } from './redis';
 import {
     cacheLogger,
@@ -48,6 +49,7 @@ export class RedisRateLimiter {
         const memberId = `${now}:${randomUUID()}`;
 
         try {
+            await ensureRedisConnected();
             // Execute Redis pipeline for atomicity and high performance
             const pipeline = redis.pipeline();
             pipeline.zremrangebyscore(key, '-inf', clearBefore);

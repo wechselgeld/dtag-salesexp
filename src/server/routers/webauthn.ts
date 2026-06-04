@@ -23,6 +23,7 @@ import {
 import crypto from 'crypto';
 import {
     redis,
+    ensureRedisConnected,
 } from '@/lib/redis';
 import {
     getSession, login, signDeviceId, verifyDeviceId,
@@ -123,7 +124,18 @@ export const webauthnRouter = router({
                 },
             });
 
-            await redis.set(`webauthn_challenge:reg:${input.email}`, options.challenge, 'EX', 300);
+            try {
+                await ensureRedisConnected();
+                await redis.set(`webauthn_challenge:reg:${input.email}`, options.challenge, 'EX', 300);
+            }
+            catch (error: any) {
+                console.error('Failed to store WebAuthn registration challenge in Redis:', error);
+                throw new TRPCError({
+                    code: 'SERVICE_UNAVAILABLE',
+                    message: 'Der Authentifizierungs-Server ist vorübergehend nicht erreichbar. Bitte versuche es in wenigen Minuten erneut.',
+                    cause: error,
+                });
+            }
 
             return options;
         }),
@@ -136,16 +148,30 @@ export const webauthnRouter = router({
         .mutation(async ({
             ctx, input,
         }) => {
-            const expectedChallenge = await redis.get(`webauthn_challenge:reg:${input.email}`);
+            let expectedChallenge: string | null = null;
+            try {
+                await ensureRedisConnected();
+                expectedChallenge = await redis.get(`webauthn_challenge:reg:${input.email}`);
+                if (expectedChallenge) {
+                    // Strict Single-Use: delete challenge immediately upon retrieval
+                    await redis.del(`webauthn_challenge:reg:${input.email}`);
+                }
+            }
+            catch (error: any) {
+                console.error('Failed to retrieve WebAuthn registration challenge from Redis:', error);
+                throw new TRPCError({
+                    code: 'SERVICE_UNAVAILABLE',
+                    message: 'Der Authentifizierungs-Server ist vorübergehend nicht erreichbar. Bitte versuche es in wenigen Minuten erneut.',
+                    cause: error,
+                });
+            }
+
             if (!expectedChallenge) {
                 throw new TRPCError({
                     code: 'BAD_REQUEST',
                     message: 'Challenge expired or invalid',
                 });
             }
-
-            // Strict Single-Use: delete challenge immediately upon retrieval
-            await redis.del(`webauthn_challenge:reg:${input.email}`);
 
             const {
                 rpID, origin,
@@ -237,10 +263,21 @@ export const webauthnRouter = router({
             });
 
             const challengeId = crypto.randomBytes(16).toString('hex');
-            await redis.set(`webauthn_challenge:auth:${challengeId}`, options.challenge, 'EX', 300);
+            try {
+                await ensureRedisConnected();
+                await redis.set(`webauthn_challenge:auth:${challengeId}`, options.challenge, 'EX', 300);
 
-            if (input.email) {
-                await redis.set(`webauthn_challenge:auth:${input.email}`, options.challenge, 'EX', 300);
+                if (input.email) {
+                    await redis.set(`webauthn_challenge:auth:${input.email}`, options.challenge, 'EX', 300);
+                }
+            }
+            catch (error: any) {
+                console.error('Failed to store WebAuthn authentication challenge in Redis:', error);
+                throw new TRPCError({
+                    code: 'SERVICE_UNAVAILABLE',
+                    message: 'Der Authentifizierungs-Server ist vorübergehend nicht erreichbar. Bitte versuche es in wenigen Minuten erneut.',
+                    cause: error,
+                });
             }
 
             return {
@@ -259,17 +296,28 @@ export const webauthnRouter = router({
             ctx, input,
         }) => {
             let expectedChallenge: string | null = null;
-            if (input.challengeId) {
-                expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.challengeId}`);
-                if (expectedChallenge) {
-                    await redis.del(`webauthn_challenge:auth:${input.challengeId}`);
+            try {
+                await ensureRedisConnected();
+                if (input.challengeId) {
+                    expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.challengeId}`);
+                    if (expectedChallenge) {
+                        await redis.del(`webauthn_challenge:auth:${input.challengeId}`);
+                    }
+                }
+                else if (input.email) {
+                    expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.email}`);
+                    if (expectedChallenge) {
+                        await redis.del(`webauthn_challenge:auth:${input.email}`);
+                    }
                 }
             }
-            else if (input.email) {
-                expectedChallenge = await redis.get(`webauthn_challenge:auth:${input.email}`);
-                if (expectedChallenge) {
-                    await redis.del(`webauthn_challenge:auth:${input.email}`);
-                }
+            catch (error: any) {
+                console.error('Failed to retrieve WebAuthn authentication challenge from Redis:', error);
+                throw new TRPCError({
+                    code: 'SERVICE_UNAVAILABLE',
+                    message: 'Der Authentifizierungs-Server ist vorübergehend nicht erreichbar. Bitte versuche es in wenigen Minuten erneut.',
+                    cause: error,
+                });
             }
 
             if (!expectedChallenge) {

@@ -45,3 +45,66 @@ export const redis = globalForRedis.redis ?? createRedisInstance();
 if (process.env.NODE_ENV !== 'production') {
   globalForRedis.redis = redis;
 }
+
+let connectPromise: Promise<void> | null = null;
+
+/**
+ * Ensures the Redis connection is fully in the 'ready' state before executing commands.
+ * This handles lazyConnect and reconnection race conditions under high concurrency.
+ */
+export async function ensureRedisConnected(): Promise<Redis> {
+  // If already ready, return immediately
+  if (redis.status === 'ready') {
+    return redis;
+  }
+
+  // If we are currently connecting/reconnecting, wait for the active promise
+  if (connectPromise) {
+    await connectPromise;
+    return redis;
+  }
+
+  // If in 'wait' state (not yet connecting), start the connection
+  if (redis.status === 'wait') {
+    connectPromise = redis.connect().catch((err) => {
+      cacheLogger.error(`Redis connection failed during connect(): ${err.message}`);
+      throw err;
+    }).finally(() => {
+      connectPromise = null;
+    });
+    await connectPromise;
+    return redis;
+  }
+
+  // If in another state (e.g., 'connecting', 'reconnecting', 'connect' but not ready),
+  // wait for the 'ready' event or an error
+  connectPromise = new Promise<void>((resolve, reject) => {
+    const onReady = () => {
+      cleanup();
+      resolve();
+    };
+    const onError = (err: Error) => {
+      cleanup();
+      reject(err);
+    };
+    const cleanup = () => {
+      redis.off('ready', onReady);
+      redis.off('error', onError);
+    };
+    
+    redis.on('ready', onReady);
+    redis.on('error', onError);
+
+    // Safeguard timeout to prevent hanging the request forever
+    setTimeout(() => {
+      cleanup();
+      reject(new Error('Redis connection handshake timeout (5s)'));
+    }, 5000);
+  }).finally(() => {
+    connectPromise = null;
+  });
+
+  await connectPromise;
+  return redis;
+}
+
