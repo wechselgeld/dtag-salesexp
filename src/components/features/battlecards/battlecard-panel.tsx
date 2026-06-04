@@ -993,31 +993,33 @@ export function BattlecardModal({
 						className="absolute inset-0 cursor-pointer"
 					/>
 
-					{/* Modal */}
-					<motion.div
-						initial={{
-							opacity: 0,
-							scale: 0.95,
-							y: 10,
-						}}
-						animate={{
-							opacity: 1,
-							scale: 1,
-							y: 0,
-						}}
-						exit={{
-							opacity: 0,
-							scale: 0.95,
-							y: 10,
-						}}
-						transition={{
-							duration: 0.25,
-							ease: 'easeOut',
-						}}
-						className="relative w-full max-w-6xl bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[#eaedf0] overflow-hidden flex flex-col h-[85vh]"
-					>
-						{/* Header */}
-						<div className="flex items-center justify-between px-8 md:px-10 py-5 border-b border-[#eaedf0]">
+					{/* Flex Wrapper for Card and Outside Footer */}
+					<div className="relative w-full max-w-6xl flex flex-col items-center gap-4 z-10">
+						{/* Modal */}
+						<motion.div
+							initial={{
+								opacity: 0,
+								scale: 0.95,
+								y: 10,
+							}}
+							animate={{
+								opacity: 1,
+								scale: 1,
+								y: 0,
+							}}
+							exit={{
+								opacity: 0,
+								scale: 0.95,
+								y: 10,
+							}}
+							transition={{
+								duration: 0.25,
+								ease: 'easeOut',
+							}}
+							className="relative w-full bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[#eaedf0] overflow-hidden flex flex-col h-[85vh]"
+						>
+							{/* Header */}
+							<div className="flex items-center justify-between px-8 md:px-10 py-5 border-b border-[#eaedf0]">
 							<ScreenHeader
 								icon={<Swords className="w-5.5 h-5.5 text-[#e20074]" />}
 								title="Battlecards"
@@ -1276,15 +1278,32 @@ export function BattlecardModal({
 								)}
 							</div>
 						</div>
-
-						{/* Footer */}
-						<div className="px-8 py-4 border-t border-[#f0f0f0] bg-[#fafbfc]">
-							<p className="text-[0.7rem] text-[#bbb] m-0 text-center font-medium">
-								Diese Liste strebt keinen Anspruch auf Vollständigkeit oder
-								Richtigkeit an.
-							</p>
-						</div>
 					</motion.div>
+
+					{/* Notice Outside the Card */}
+						<motion.p
+							initial={{
+								opacity: 0,
+								y: 10,
+							}}
+							animate={{
+								opacity: 1,
+								y: 0,
+							}}
+							exit={{
+								opacity: 0,
+								y: 10,
+							}}
+							transition={{
+								delay: 0.1,
+								duration: 0.25,
+							}}
+							className="text-[0.75rem] text-white/70 font-medium m-0 text-center max-w-xl"
+						>
+							Diese Liste strebt keinen Anspruch auf Vollständigkeit oder
+							Richtigkeit an.
+						</motion.p>
+					</div>
 				</div>
 			)}
 		</AnimatePresence>,
