@@ -215,9 +215,9 @@ export default function AdminNewsPage() {
 													confirmDelete({
 														id: item.id,
 														name: item.title,
-														onConfirm: (sudoPassword) => deleteNews.mutateAsync({
+														requireSudo: false,
+														onConfirm: () => deleteNews.mutateAsync({
 															id: item.id,
-															sudoPassword,
 														}),
 													});
 												}}

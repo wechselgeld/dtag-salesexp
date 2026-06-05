@@ -10,6 +10,7 @@ import {
 interface DeleteConfirmState {
 	id: string;
 	name: string;
+	requireSudo?: boolean;
 	onConfirm: (password: string) => Promise<any>;
 }
 
@@ -50,8 +51,11 @@ setLoading,
 		<SudoPromptModal
 			isOpen={!!pending}
 			onClose={() => setPending(null)}
-			title="Löschen bestätigen (Sudo-Modus)"
-			description={`Bitte gib Dein Administrator-Passwort ein, um "${pending?.name}" unwiderruflich zu löschen.`}
+			title={pending?.requireSudo === false ? 'Löschen bestätigen' : 'Löschen bestätigen (Sudo-Modus)'}
+			description={pending?.requireSudo === false
+				? `Bist Du sicher, dass Du "${pending?.name}" unwiderruflich löschen möchtest?`
+				: `Bitte gib Dein Administrator-Passwort ein, um "${pending?.name}" unwiderruflich zu löschen.`}
+			requireSudo={pending?.requireSudo}
 			loading={loading}
 			onConfirm={async (password) => {
 				if (!pending) return;

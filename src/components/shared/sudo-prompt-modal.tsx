@@ -20,6 +20,7 @@ interface SudoPromptModalProps {
     title?: string;
     description?: string;
     loading?: boolean;
+    requireSudo?: boolean;
 }
 
 export function SudoPromptModal({
@@ -29,6 +30,7 @@ export function SudoPromptModal({
     title = 'Sicherheitsbestätigung erforderlich',
     description = 'Bitte gib Dein Administrator-Passwort ein, um diese kritische bzw. unwiderrufliche Aktion auszuführen.',
     loading = false,
+    requireSudo = true,
 }: SudoPromptModalProps) {
     const [
  password,
@@ -42,7 +44,7 @@ setError,
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        if (!password) {
+        if (requireSudo && !password) {
             setError('Bitte gib Dein Passwort ein.');
             return;
         }
@@ -111,17 +113,19 @@ y: 10,
                                 {description}
                             </p>
 
-                            <PremiumInput
-                                label="Administrator-Passwort"
-                                type="password"
-                                placeholder="Passwort eingeben..."
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                error={error}
-                                disabled={loading}
-                                icon={<Key className="w-[18px] h-[18px]" />}
-                                autoFocus
-                            />
+                            {requireSudo && (
+                                <PremiumInput
+                                    label="Administrator-Passwort"
+                                    type="password"
+                                    placeholder="Passwort eingeben..."
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    error={error}
+                                    disabled={loading}
+                                    icon={<Key className="w-[18px] h-[18px]" />}
+                                    autoFocus
+                                />
+                            )}
 
                             {/* Footer Buttons */}
                             <div className="flex items-center justify-end gap-3 pt-2">
