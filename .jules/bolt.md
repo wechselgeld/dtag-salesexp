@@ -1,0 +1,3 @@
+## 2024-05-18 - [Optimize Repeated Lookups in React Loops]
+**Learning:** React functional component re-renders can easily hide O(N*M) algorithmic complexity when `.find()` is used heavily inside `.map()` loops directly in JSX props. Specifically, calling `find` inside a callback executed on every iteration over an array creates an N*M bottleneck on every keystroke/re-render.
+**Action:** When mapping over items in a render function, always try to pre-calculate values using `useMemo` or at the top of the map callback body if the value is derived from a constant/pre-existing map, effectively reducing the complexity to O(N+M) or O(N). Additionally, build `Map` objects for static configuration data instead of repeatedly searching arrays.
