@@ -202,45 +202,57 @@ export function calculateProductCosts({
 		productNameLower.includes('magentamobil xl');
 	const hasUnlimitedAdvantage = isAtLeastM && pkCount > 0;
 
-	for (let month = 1; month <= 24; month++) {
-		let bestBasePrice = effectiveBasePrice;
-		let bestTVCost = tvPackagePrice;
+	// O(SpecialPrices * Tiers) pre-calculation of best prices per month
+	// ⚡ Bolt: Using pre-allocated arrays to eliminate nested .find() loops per month
+	const bestBasePrices = new Float64Array(25);
+	const bestTVCosts = new Float64Array(25);
+	const appliedBasePriceSpecials = new Array<SpecialPrice | undefined>(25);
+	const appliedTVSpecials = new Array<SpecialPrice | undefined>(25);
 
-		let appliedBasePriceSpecial: SpecialPrice | undefined;
-		let appliedTVSpecial: SpecialPrice | undefined;
+	bestBasePrices.fill(effectiveBasePrice);
+	bestTVCosts.fill(tvPackagePrice);
+	appliedBasePriceSpecials.fill(undefined);
+	appliedTVSpecials.fill(undefined);
 
-		for (const sp of activeSpecialPrices) {
-			const matchingTier = sp.tiers.find(t => month >= t.fromMonth && month <= t.toMonth);
-			if (!matchingTier) { continue; }
+	for (const sp of activeSpecialPrices) {
+		for (const tier of sp.tiers) {
+			const target = tier.discountTarget || sp.discountTarget;
+			const type = tier.discountType || sp.discountType;
 
-			const target = matchingTier.discountTarget || sp.discountTarget;
-			const type = matchingTier.discountType || sp.discountType;
+			for (let month = Math.max(1, tier.fromMonth); month <= Math.min(24, tier.toMonth); month++) {
+				if (target === 'MAGENTA_TV') {
+					let simulatedCost = type === 'RELATIVE'
+						? tvPackagePrice - tier.price
+						: tier.price;
 
-			if (target === 'MAGENTA_TV') {
-				let simulatedCost = type === 'RELATIVE'
-					? tvPackagePrice - matchingTier.price
-					: matchingTier.price;
+					if (simulatedCost < 0) { simulatedCost = 0; }
 
-				if (simulatedCost < 0) { simulatedCost = 0; }
-
-				if (simulatedCost < bestTVCost) {
-					bestTVCost = simulatedCost;
-					appliedTVSpecial = sp;
+					if (simulatedCost < bestTVCosts[month]) {
+						bestTVCosts[month] = simulatedCost;
+						appliedTVSpecials[month] = sp;
+					}
 				}
-			}
-			else {
-				let simulatedCost = type === 'RELATIVE'
-					? effectiveBasePrice - matchingTier.price
-					: matchingTier.price;
+ else {
+					let simulatedCost = type === 'RELATIVE'
+						? effectiveBasePrice - tier.price
+						: tier.price;
 
-				if (simulatedCost < 0) { simulatedCost = 0; }
+					if (simulatedCost < 0) { simulatedCost = 0; }
 
-				if (simulatedCost < bestBasePrice) {
-					bestBasePrice = simulatedCost;
-					appliedBasePriceSpecial = sp;
+					if (simulatedCost < bestBasePrices[month]) {
+						bestBasePrices[month] = simulatedCost;
+						appliedBasePriceSpecials[month] = sp;
+					}
 				}
 			}
 		}
+	}
+
+	for (let month = 1; month <= 24; month++) {
+		const bestBasePrice = bestBasePrices[month];
+		const bestTVCost = bestTVCosts[month];
+		const appliedBasePriceSpecial = appliedBasePriceSpecials[month];
+		const appliedTVSpecial = appliedTVSpecials[month];
 
 		const totalMonthCost = bestBasePrice + monthlyAddonCost + bestTVCost + plusKartenCostPerMonth;
 		sumMonthlyCosts += totalMonthCost;
