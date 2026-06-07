@@ -1005,25 +1005,11 @@ export const adminRouter = router({
             .use(requirePermission('news:delete'))
             .input(z.object({
                 id: z.string(),
-                sudoPassword: z.string().optional(),
             }))
             .mutation(async ({
                 input, ctx,
             }) => {
                 const session = ctx.session as any;
-                if (!session.password) {
-                throw new TRPCError({
-                    code: 'FORBIDDEN',
-                    message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
-                });
-            }
-            const isSudoValid = await bcrypt.compare(input.sudoPassword || '', session.password);
-            if (!isSudoValid) {
-                    throw new TRPCError({
-                        code: 'FORBIDDEN',
-                        message: 'Sicherheitsbestätigung (Passwort) fehlgeschlagen.',
-                    });
-                }
                 const news = await (prisma.news as any).findUnique({
                     where: {
                         id: input.id,
