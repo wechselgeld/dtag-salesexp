@@ -767,7 +767,9 @@ export const OfferDocument: React.FC<OfferDocumentProps> = ({
 					<Text style={styles.greeting}>Dein persönliches Magenta-Angebot</Text>
 					<Text style={styles.introSubtitle}>Bereit für Highspeed? Dein maßgeschneidertes Telekom-Paket.</Text>
 					<Text style={styles.introText}>
-						Vielen Dank für das angenehme Gespräch. Wie versprochen habe ich Deine Wunschprodukte zusammengestellt und berechnet. Mit den <Text style={{ fontWeight: 'bold' }}>Telekom Kombivorteilen</Text> und unseren aktuellen Aktionen sichern wir Dir das beste Preis-Leistungs-Verhältnis. Hier ist Dein persönliches Angebot:
+						Vielen Dank für das angenehme Gespräch. Wie versprochen habe ich Deine Wunschprodukte zusammengestellt und berechnet. Mit den <Text style={{
+ fontWeight: 'bold',
+}}>Telekom Kombivorteilen</Text> und unseren aktuellen Aktionen sichern wir Dir das beste Preis-Leistungs-Verhältnis. Hier ist Dein persönliches Angebot:
 					</Text>
 				</View>
 
@@ -880,7 +882,7 @@ export const OfferDocument: React.FC<OfferDocumentProps> = ({
 							styles.tableRow,
 							{
 								backgroundColor: softBgColor,
-								borderColor: catColor + '33',
+								borderColor: `${catColor }33`,
 								borderWidth: 0.75,
 							},
 						]} wrap={false}>
@@ -946,8 +948,8 @@ export const OfferDocument: React.FC<OfferDocumentProps> = ({
 								{costs.oneTimeCosts.total > 0 && (
 									<View style={styles.cardOneTimeContainer}>
 										<Text style={styles.cardOneTimeText}>
-											Einmalige Kosten: {formatCurrency(costs.oneTimeCosts.total)} 
-											{costs.oneTimeCosts.breakdown.length > 0 && 
+											Einmalige Kosten: {formatCurrency(costs.oneTimeCosts.total)}
+											{costs.oneTimeCosts.breakdown.length > 0 &&
 												` (${costs.oneTimeCosts.breakdown.map(b => `${b.name}: ${formatCurrency(b.cost)}`).join(', ')})`
 											}
 										</Text>

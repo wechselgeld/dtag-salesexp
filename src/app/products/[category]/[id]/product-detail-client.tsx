@@ -12,7 +12,9 @@ import {
 import {
 	AddonSelector,
 } from '@/components/features/calculator/addon-selector';
-import type { SpecialPrice } from '@/types/product';
+import type {
+ SpecialPrice,
+} from '@/types/product';
 import type {
 	MagentaTVPackageKey,
 } from '@/hooks/use-cost-calculator';
@@ -1498,7 +1500,8 @@ function ProductPageContent() {
 													if (businessCase === 'PLAN_CHANGE') { return false; }
 												}
 												return true;
-											}) || [];
+											}) || [
+];
 
 											return (
 												<motion.div

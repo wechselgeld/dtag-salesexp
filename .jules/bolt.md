@@ -1,0 +1,3 @@
+## 2024-11-20 - [Optimize streaming-comparison.tsx React Render Loop]
+**Learning:** In highly interactive components with multiple groupings like `streaming-comparison.tsx` (or anything rendering mapped items from global configs like `STREAMING_SERVICES`), checking arrays during render using `.find()` or `.some()` leads to significant re-render latency and O(N*M) lookups.
+**Action:** Precalculate lookup maps using `useMemo` outside the render loop. Specifically, creating a `selectedServiceByGroup` Map (group -> serviceId) eliminates both multiple `.find()` calls in the current services list and nested `.some()` loops in the included services mapping.

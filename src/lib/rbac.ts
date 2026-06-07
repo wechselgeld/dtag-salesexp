@@ -42,7 +42,8 @@ export function getOdRegionFilter(user: SessionUser | undefined | null) {
         };
     }
     if (hasRole(user, 'ADMIN')) {
-        return {};
+        return {
+};
     }
 
     // Managers are permitted to read structural regions to populate selection items on forms.
@@ -74,7 +75,8 @@ export function getLocationFilter(user: SessionUser | undefined | null) {
 
     // Admins see everything
     if (hasRole(user, 'ADMIN')) {
-        return {};
+        return {
+};
     }
 
     // OD Managers are scoped to locations within their region
@@ -121,7 +123,8 @@ export function getTeamFilter(user: SessionUser | undefined | null) {
     }
 
     if (hasRole(user, 'ADMIN')) {
-        return {};
+        return {
+};
     }
 
     const odId = user.effectiveOdRegionId || user.odRegionId;
@@ -153,7 +156,9 @@ export function getTeamFilter(user: SessionUser | undefined | null) {
     // or allow active teams to prevent form crashes.
     if (hasRole(user, 'TEAM_LEADER')) {
         if (locId) {
-            return { locationId: locId };
+            return {
+ locationId: locId,
+};
         }
         return {
             location: {
