@@ -85,7 +85,7 @@ const footer = {
 	textAlign: 'center' as const,
 };
 
-export const VerificationEmail = ({
+const VerificationEmail = ({
 	firstName,
 	verificationLink,
 	appUrl,

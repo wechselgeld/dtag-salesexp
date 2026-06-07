@@ -6,11 +6,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import {
-	TelekomLogo,
-} from '@/components/shared/telekom-logo';
-import {
 	GlobalFooter,
 } from '@/components/shared/global-footer';
+import { PageHeader } from '@/components/shared/page-header';
 import {
 	BackButton,
 } from '@/components/shared/back-button';
@@ -23,16 +21,11 @@ export default function ImpressumPage() {
 	return (
 		<div className="min-h-screen py-16 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074]">
 			<div className="max-w-3xl mx-auto">
-				{/* Header */}
-				<div className="flex flex-col items-center mb-12 text-center">
-					<TelekomLogo className="w-12 h-12 text-[#e20074] mb-8 ml-2" />
-					<h1 className="text-3xl font-extrabold text-[#1a1a2e] tracking-tight mb-4">
-						Impressum
-					</h1>
-					<p className="text-[#888] font-medium max-w-xl">
-						Angaben gemäß § 5 TMG für die interne Nutzung der Sales Experience.
-					</p>
-				</div>
+				<PageHeader
+					title="Impressum"
+					description="Angaben gemäß § 5 TMG für die interne Nutzung der Sales Experience."
+					logoClassName="ml-2"
+				/>
 
 				{/* Content */}
 				<div className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] p-8 sm:p-12 space-y-10">

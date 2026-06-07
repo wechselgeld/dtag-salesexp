@@ -7,146 +7,43 @@ import {
 	motion, AnimatePresence,
 } from 'framer-motion';
 import {
-	useState,
+	useState, useEffect,
 } from 'react';
-import {
-	TelekomLogo,
-} from '@/components/shared/telekom-logo';
 import {
 	GlobalFooter,
 } from '@/components/shared/global-footer';
 import clsx from 'clsx';
-
-const CHANGELOGS = [
-		{
-		id: 'may-22',
-		title: '22. Mai 2026',
-		items: [
-			{
-				q: 'Hinzugefügt',
-				a: 'Vergleichsmodus (Comparison Mode) für Warenkorbkonfigurationen hinzugefügt, damit Du verschiedene Tarife speichern und schnell vergleichen kannst; PINs & Passwörter zu Accounts verpflichtend gemacht; ...und noch viel mehr',
-			},
-			{
-				q: 'Geändert',
-				a: 'Produktkarten und -Konfiguration sind nun für kleinere Bildschirme optimiert; Fehlerlog hinzugefügt, damit wir die Anwendung stetig und schneller verbessern können; Das Design einiger Elemente wurde verbessert',
-			},
-			{
-				q: 'Entfernt',
-				a: 'Es wurde nichts entfernt',
-			},
-		],
-	},
-	{
-		id: 'may-16',
-		title: '16. Mai 2026',
-		items: [
-			{
-				q: 'Hinzugefügt',
-				a: 'Du kannst Dich nun über Passkeys anmelden; Im Admin-Bereich gibt es nun eine Standort- und Team-basierte Filterung für Sales-Sessions; Vor- und Nachnamen werden bei der Registrierung nun automatisch korrekt großgeschrieben',
-			},
-			{
-				q: 'Geändert',
-				a: 'Bessere Übersicht der Einmalkosten im Warenkorb; Erhebliche Optimierungen des Systems',
-			},
-			{
-				q: 'Entfernt',
-				a: 'Es wurde nichts entfernt',
-			},
-		],
-	},
-
-		{
-		id: 'march-22',
-		title: '22. März 2025',
-		items: [
-			{
-				q: 'Hinzugefügt',
-				a: 'Jeder Preis kann nun auf einen eigenen historischen Zustand gesetzt werden - dies wird im PDF-Angebot als Bestandstarif widergespiegelt; Es gibt nun einen Tarif-Preisvergleich',
-			},
-			{
-				q: 'Geändert',
-				a: 'Der Server ist nun viel leistungsstärker; Es wurden viele Datenbank-Verbesserungen geschrieben; Neuerungen können ab sofort viel schneller bereitgestellt werden',
-			},
-			{
-				q: 'Entfernt',
-				a: 'Es wurde nichts entfernt',
-			},
-		],
-	},
-	{
-		id: 'march-18',
-		title: '18. März 2025',
-		items: [
-			{
-				q: 'Hinzugefügt',
-				a: 'Es wurde nichts hinzugefügt',
-			},
-			{
-				q: 'Geändert',
-				a: 'Der Offer Generator (PDF-Export) wurde überarbeitet und optimiert.',
-			},
-			{
-				q: 'Entfernt',
-				a: 'Es wurde nichts entfernt',
-			},
-		],
-	},
-	{
-		id: 'march-17',
-		title: '17. März 2025',
-		items: [
-			{
-				q: 'Hinzugefügt',
-				a: 'Zu Mobilfunk-Tarifen können nun Smartphones hinzugebucht werden; Es gibt nun ein Feedback-Modal; Es gibt nun einen Changelog',
-			},
-			{
-				q: 'Geändert',
-				a: 'Die Ansicht der Zubuchoptionen (UI) wurde optimiert; Die Preiskachel "Regulär" zeigt nun immer den korrekten Preis an; Es wurden schwerwiegende Performanceprobleme behoben; Die Sonderpreis- und Optionslogik wurde übearbeitet; Die Suchleiste wurde überarbeitet (UI)',
-			},
-			{
-				q: 'Entfernt',
-				a: 'Es wurde nichts entfernt',
-			},
-		],
-	},
-];
+import { PageHeader } from '@/components/shared/page-header';
+import {
+	CHANGELOG_DATA,
+} from '@/lib/data/changelog-data';
+import {
+	useChangelogStore,
+} from '@/lib/store/changelog-store';
 
 export default function FAQPage() {
+	const setLastSeenChangelogId = useChangelogStore((state) => state.setLastSeenChangelogId);
+
+	useEffect(() => {
+		const latestId = CHANGELOG_DATA[0]?.id;
+		if (latestId) {
+			setLastSeenChangelogId(latestId);
+		}
+	}, [
+		setLastSeenChangelogId,
+	]);
+
 	return (
 		<div className="min-h-screen py-12 px-4 selection:bg-[#e20074]/10 selection:text-[#e20074]">
 			<div className="max-w-3xl mx-auto">
 				{/* ─── Header / Branding ─── */}
-				<motion.div
-					initial={{
-						opacity: 0,
-						y: 12,
-					}}
-					animate={{
-						opacity: 1,
-						y: 0,
-					}}
-					transition={{
-						duration: 0.5,
-						ease: [
-							0.16,
-							1,
-							0.3,
-							1,
-						],
-					}}
-					className="flex flex-col items-center mb-10 text-center"
-				>
-					<TelekomLogo className="w-12 h-12 text-[#e20074] mb-8" />
-					<h1 className="text-3xl sm:text-[2.5rem] font-extrabold text-[#1a1a2e] tracking-tight mb-3 leading-none">
-						Änderungsverlauf
-					</h1>
-					<p className="text-[1.05rem] text-[#888] font-normal leading-relaxed max-w-md mx-auto mt-1">
-						Hier findest Du alle Änderungen und Updates der Sales Experience.
-					</p>
-				</motion.div>
+				<PageHeader
+					title="Änderungsverlauf"
+					description="Hier findest Du alle Änderungen und Updates der Sales Experience."
+				/>
 
 				<div className="space-y-12 mb-16">
-					{CHANGELOGS.map((category, catIdx) => (
+					{CHANGELOG_DATA.map((category, catIdx) => (
 						<motion.section
 							key={category.id}
 							initial={{

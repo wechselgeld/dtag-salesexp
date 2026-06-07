@@ -132,7 +132,7 @@ const adminButtonSecondary = {
 	marginBottom: '10px',
 };
 
-export const AccountResetEmail = ({
+const AccountResetEmail = ({
 	email, firstName, appUrl,
 }: AccountResetEmailProps) => {
 	const greeting = firstName ? `Hallo ${firstName},` : 'Guten Tag,';

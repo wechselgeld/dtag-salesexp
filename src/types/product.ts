@@ -145,7 +145,7 @@ export interface PricingSettings {
     mobile_tier_premium_plus: number;
 }
 
-export const DEFAULT_PRICING: PricingSettings = {
+const DEFAULT_PRICING: PricingSettings = {
     magentatv_smart_price: 10,
     magentatv_smartstream_price: 17,
     magentatv_megastream_price: 30,

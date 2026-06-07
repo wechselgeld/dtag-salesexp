@@ -298,7 +298,7 @@ export function getUserFilter(user: SessionUser | undefined | null) {
 // ACTIONS (For create/update/delete checks)
 // ------------------------------------------------------------------
 
-export function canEditTeam(user: SessionUser | undefined | null, targetLocationId?: string | null, targetTeamId?: string | null): boolean {
+function canEditTeam(user: SessionUser | undefined | null, targetLocationId?: string | null, targetTeamId?: string | null): boolean {
     if (!user) return false;
     if (hasRole(user, 'ADMIN')) return true;
     if (!hasPermission(user.role, 'teams:manage')) return false;

@@ -43,6 +43,7 @@ import {
 import {
     motion, AnimatePresence,
 } from 'framer-motion';
+import { useSearchHotkey } from '@/hooks/use-search-hotkey';
 
 interface AuditLogType {
     id: string;
@@ -148,17 +149,7 @@ setActiveFilterId,
 ]);
 
     // Hotkey to focus search box with "/"
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === '/' && document.activeElement !== inputRef.current) {
-                e.preventDefault();
-                inputRef.current?.focus();
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [
-]);
+    useSearchHotkey(inputRef);
 
     // Query logs
     const {

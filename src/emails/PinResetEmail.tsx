@@ -85,7 +85,7 @@ const footer = {
 	textAlign: 'center' as const,
 };
 
-export const PinResetEmail = ({
+const PinResetEmail = ({
 	firstName,
 	code,
 	appUrl,

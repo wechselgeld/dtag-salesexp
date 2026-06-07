@@ -1,7 +1,7 @@
 import * as React from 'react';
 import clsx from 'clsx';
 
-export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
 	error?: string;
 	label?: string;
 }

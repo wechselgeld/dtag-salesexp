@@ -43,6 +43,12 @@ import {
     PremiumInput, PremiumButton, ScreenHeader, SelectionTile, CheckboxRow, ErrorBanner,
 } from '@/components/shared/form/form-suite';
 import {
+    PremiumGhostInput,
+} from '@/components/shared/form/premium-ghost-input';
+import {
+    useSetupStore,
+} from '@/lib/store/setup-store';
+import {
     z,
 } from 'zod';
 
@@ -113,166 +119,92 @@ function capitalizeWords(str: string): string {
         .join(' ');
 }
 
+interface SetupPageProps {
+    initialLocations: any; // Fallback to any if complex to infer, but let's try to type it nicely
+    initialIsEmailRequired: boolean;
+    initialIpError: string | null;
+    initialSession: any;
+}
+
 export default function SetupPage({
     initialLocations,
     initialIsEmailRequired: _initialIsEmailRequired,
     initialIpError,
     initialSession,
-}: {
-    initialLocations?: any;
-    initialIsEmailRequired?: boolean;
-    initialIpError?: string | null;
-    initialSession?: any;
-}) {
+}: SetupPageProps) {
     const router = useRouter();
     const op = useOpenPanel();
-
-    const [
+    const {
         currentStep,
         setCurrentStep,
-    ] = useState(1);
-    const [
         firstName,
         setFirstName,
-    ] = useState('');
-    const [
         lastName,
         setLastName,
-    ] = useState('');
-    const [
         email,
         setEmail,
-    ] = useState('');
-    const [
         pin,
         setPin,
-    ] = useState('');
-    const [
-        reloginPin,
-        setReloginPin,
-    ] = useState('');
+        locationId,
+        setLocationId,
+        teamId,
+        setTeamId,
+        acceptedTerms,
+        setAcceptedTerms,
+        acceptedPrivacy,
+        setAcceptedPrivacy,
+        acceptedTracking,
+        setAcceptedTracking,
+        userExists,
+        setUserExists,
+        profileFirstName,
+        profileLastName,
+        profileTeamName,
+        nextStep,
+        prevStep,
+        resetStore,
+    } = useSetupStore();
 
-    // Already registered / PIN reset states
-    const [
-        isAlreadyRegisteredFlow,
-        setIsAlreadyRegisteredFlow,
-    ] = useState(false);
-    const [
-        loginEmail,
-        setLoginEmail,
-    ] = useState('');
-    const [
-        loginPin,
-        setLoginPin,
-    ] = useState('');
-    const [
-        loginError,
-        setLoginError,
-    ] = useState<string | null>(null);
-    const [
-        isLoggingIn,
-        setIsLoggingIn,
-    ] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
-    const [
-        isPinResetFlow,
-        setIsPinResetFlow,
-    ] = useState(false);
-    const [
-        pinResetOtp,
-        setPinResetOtp,
-    ] = useState('');
-    const [
-        pinResetError,
-        setPinResetError,
-    ] = useState<string | null>(null);
+    const [reloginPin, setReloginPin] = useState('');
+    const [isAlreadyRegisteredFlow, setIsAlreadyRegisteredFlow] = useState(false);
+    const [loginEmail, setLoginEmail] = useState('');
+    const [loginPin, setLoginPin] = useState('');
+    const [loginError, setLoginError] = useState<string | null>(null);
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-    const [
-        isSettingNewPin,
-        setIsSettingNewPin,
-    ] = useState(false);
-    const [
-        newPin,
-        setNewPin,
-    ] = useState('');
-    const [
-        newPinConfirm,
-        setNewPinConfirm,
-    ] = useState('');
-    const [
-        newPinError,
-        setNewPinError,
-    ] = useState<string | null>(null);
+    const [isPinResetFlow, setIsPinResetFlow] = useState(false);
+    const [pinResetOtp, setPinResetOtp] = useState('');
+    const [pinResetError, setPinResetError] = useState<string | null>(null);
 
-    const [
-        locationSearch,
-        setLocationSearch,
-    ] = useState('');
-    const [
-        debouncedSearch,
-        setDebouncedSearch,
-    ] = useState('');
+    const [isSettingNewPin, setIsSettingNewPin] = useState(false);
+    const [newPin, setNewPin] = useState('');
+    const [newPinConfirm, setNewPinConfirm] = useState('');
+    const [newPinError, setNewPinError] = useState<string | null>(null);
+
+    const [locationSearch, setLocationSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(locationSearch);
         }, 300);
         return () => clearTimeout(timer);
-    }, [
-        locationSearch,
-    ]);
+    }, [locationSearch]);
 
-    const [
-        selectedLocationId,
-        setSelectedLocationId,
-    ] = useState<string | null>(null);
-    const [
-        selectedTeamId,
-        setSelectedTeamId,
-    ] = useState<string | null>(null);
-    const [
-        acceptedTerms,
-        setAcceptedTerms,
-    ] = useState(false);
-    const [
-        acceptedPrivacy,
-        setAcceptedPrivacy,
-    ] = useState(false);
-    const [
-        acceptedTracking,
-        setAcceptedTracking,
-    ] = useState(false);
-    const [
-        isSubmitting,
-        setIsSubmitting,
-    ] = useState(false);
-    const [
-        pendingBindingToken,
-        setPendingBindingToken,
-    ] = useState<string | null>(null);
-    const [
-        formErrors,
-        setFormErrors,
-    ] = useState<Record<string, string>>({
-    });
-    const [
-        reloginError,
-        setReloginError,
-    ] = useState<string | null>(null);
-    const [
-        isAutoCheck,
-        setIsAutoCheck,
-    ] = useState(false);
-    const [
-        isSilentSuccess,
-        setIsSilentSuccess,
-    ] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [pendingBindingToken, setPendingBindingToken] = useState<string | null>(null);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+    const [reloginError, setReloginError] = useState<string | null>(null);
+    const [isAutoCheck, setIsAutoCheck] = useState(false);
+    const [isSilentSuccess, setIsSilentSuccess] = useState(false);
 
     const cardRef = useRef<HTMLDivElement>(null);
-    const [
-        cardHeight,
-        setCardHeight,
-    ] = useState<number | 'auto'>('auto');
+    const [cardHeight, setCardHeight] = useState<number | 'auto'>('auto');
 
     useEffect(() => {
         if (!cardRef.current) return;
@@ -284,17 +216,10 @@ export default function SetupPage({
         });
         observer.observe(cardRef.current);
         return () => observer.disconnect();
-    }, [
-    ]);
+    }, []);
 
-    const [
-        hasCompletedBefore,
-        setHasCompletedBefore,
-    ] = useState(false);
-    const [
-        showReconfigure,
-        setShowReconfigure,
-    ] = useState(false);
+    const [hasCompletedBefore, setHasCompletedBefore] = useState(false);
+    const [showReconfigure, setShowReconfigure] = useState(false);
 
     const {
         data: locations, isLoading: isLocationsLoading,
@@ -312,11 +237,11 @@ export default function SetupPage({
     const {
         data: teams, isLoading: isTeamsLoading,
     } = trpc.team.list.useQuery(
-        selectedLocationId ? {
-            locationId: selectedLocationId,
+        locationId ? {
+            locationId,
         } : undefined,
         {
-            enabled: !!selectedLocationId,
+            enabled: !!locationId,
         },
     );
 
@@ -350,8 +275,8 @@ export default function SetupPage({
                 location: 'setup_page',
                 firstName: data.firstName?.trim() || '',
                 lastName: data.lastName?.trim() || '',
-                locationId: selectedLocationId ?? '',
-                teamId: selectedTeamId ?? '',
+                locationId: locationId ?? '',
+                teamId: teamId ?? '',
             });
             persistName(data.firstName?.trim() || '', data.lastName?.trim() || '', data.email?.trim() || '');
             markSetupComplete();
@@ -629,12 +554,11 @@ export default function SetupPage({
 
     useEffect(() => {
         const stored = getStoredUser();
-        if (stored.firstName) setFirstName(stored.firstName);
-        if (stored.lastName) setLastName(stored.lastName);
-        if (stored.email) setEmail(stored.email);
+        if (stored.firstName && !firstName) setFirstName(stored.firstName);
+        if (stored.lastName && !lastName) setLastName(stored.lastName);
+        if (stored.email && !email) setEmail(stored.email);
         setHasCompletedBefore(isSetupAlreadyDone());
-    }, [
-    ]);
+    }, []);
 
     useEffect(() => {
         if (verificationStatus?.verified && pendingBindingToken && !finalizeLogin.isPending && !finalizeLogin.isSuccess) {
@@ -669,15 +593,9 @@ export default function SetupPage({
             localStorage.removeItem(LS_KEY_LAST_NAME);
             localStorage.removeItem(LS_KEY_EMAIL);
             localStorage.removeItem(LS_KEY_SETUP_DONE);
-            setFirstName('');
-            setLastName('');
-            setEmail('');
-            setPin('');
-            setSelectedLocationId(null);
-            setSelectedTeamId(null);
+            resetStore();
             setHasCompletedBefore(false);
             setShowReconfigure(true);
-            setCurrentStep(1);
         }
     }, [
         isReturningUser,
@@ -763,45 +681,42 @@ export default function SetupPage({
         !lastName.trim() ||
         !email.trim() ||
         pin.length !== 6 ||
-        !selectedLocationId ||
-        !selectedTeamId ||
+        !locationId ||
+        !teamId ||
         !acceptedTerms ||
-        !acceptedPrivacy ||
-        !acceptedTracking;
+        !acceptedPrivacy;
 
     const canSubmitClick = !anyFieldEmpty && !isSubmitting && !pendingBindingToken;
 
     const handleNextStep = () => {
-        if (currentStep === 1 && selectedLocationId) {
+        if (currentStep === 1 && locationId) {
             setCurrentStep(2);
         }
-        else if (currentStep === 2 && selectedTeamId) {
+        else if (currentStep === 2 && teamId) {
             setCurrentStep(3);
         }
     };
 
     const handlePrevStep = () => {
-        if (currentStep > 1) setCurrentStep(currentStep - 1);
+        if (currentStep > 0) setCurrentStep(currentStep - 1);
     };
 
     const handleSubmit = useCallback(() => {
-        setFormErrors({
-        });
+        setFormErrors({});
         const result = setupFormSchema.safeParse({
             firstName,
             lastName,
             email,
             pin,
-            locationId: selectedLocationId ?? '',
-            teamId: selectedTeamId ?? '',
-            acceptedTerms,
-            acceptedPrivacy,
-            acceptedTracking,
+            locationId: locationId ?? '',
+            teamId: teamId ?? '',
+            acceptedTerms: acceptedTerms ? true : undefined,
+            acceptedPrivacy: acceptedPrivacy ? true : undefined,
+            acceptedTracking: acceptedTracking ? true : undefined,
         });
 
         if (!result.success) {
-            const errors: Record<string, string> = {
-            };
+            const errors: Record<string, string> = {};
             for (const issue of result.error.issues) {
                 const fieldName = String(issue.path[0]);
                 errors[fieldName] = issue.message;
@@ -825,8 +740,8 @@ export default function SetupPage({
             acceptedTerms: true,
         });
     }, [
-        selectedLocationId,
-        selectedTeamId,
+        locationId,
+        teamId,
         acceptedTerms,
         acceptedPrivacy,
         acceptedTracking,
@@ -863,6 +778,7 @@ export default function SetupPage({
                 user_role: existingSession?.role || undefined,
             });
             alert('Passkey erfolgreich eingerichtet!');
+            resetStore();
             router.push('/products');
             router.refresh();
         }
@@ -877,6 +793,108 @@ export default function SetupPage({
             alert(`Fehler bei der Passkey-Einrichtung: ${e.message}`);
         }
     };
+
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+    const utils = trpc.useUtils();
+
+    const handleEmailSubmit = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        setEmailError(null);
+        
+        const trimmedEmail = email.trim().toLowerCase();
+        if (!trimmedEmail) {
+            setEmailError('Bitte gib Deine E-Mail-Adresse ein.');
+            return;
+        }
+
+        let fullEmail = trimmedEmail;
+        if (!fullEmail.includes('@')) {
+            fullEmail = trimmedEmail + '@telekom.de';
+        }
+
+        const emailSchema = z.string().email('Ungültige E-Mail-Adresse').refine((val) => val.endsWith('@telekom.de'), {
+            message: 'Es sind nur interne Adressen erlaubt (@telekom.de).',
+        });
+
+        const validation = emailSchema.safeParse(fullEmail);
+        if (!validation.success) {
+            setEmailError(validation.error.issues[0].message);
+            return;
+        }
+
+        setEmail(fullEmail);
+
+        try {
+            setIsCheckingEmail(true);
+            const data = await utils.session.checkUserExists.fetch({ email: fullEmail });
+            if (data.exists) {
+                setUserExists(true, data.firstName, data.lastName, data.teamName);
+                setLoginEmail(fullEmail);
+            } else {
+                setUserExists(false);
+                setCurrentStep(1);
+            }
+        } catch (err: any) {
+            console.error('Email check failed:', err);
+            setEmailError(err.message || 'Verbindung zum Server fehlgeschlagen.');
+        } finally {
+            setIsCheckingEmail(false);
+        }
+    };
+
+    const renderStep0 = () => (
+        <motion.div
+            key="step0"
+            initial={{ opacity: 0, x: 15 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -15 }}
+            className="space-y-6 w-full"
+        >
+            <ScreenHeader 
+                icon={<Mail className="w-5 h-5 text-[#e20074]" />} 
+                title="E-Mail-Adresse eingeben" 
+                subtitle="Gib Deine geschäftliche E-Mail-Adresse ein, um fortzufahren." 
+            />
+            <form onSubmit={handleEmailSubmit} className="space-y-6 mt-5">
+                <PremiumGhostInput
+                    id="setup-email-step0"
+                    label="E-Mail-Adresse"
+                    placeholder="max.mustermann"
+                    value={email}
+                    onValueChange={setEmail}
+                    error={emailError}
+                    disabled={isCheckingEmail}
+                    autoComplete="username webauthn"
+                />
+                <div className="flex flex-col gap-3 pt-4 border-t border-[#eaedf0] mt-8">
+                    <PremiumButton 
+                        type="submit" 
+                        disabled={isCheckingEmail || !email.trim()} 
+                        loading={isCheckingEmail} 
+                        variant="primary" 
+                        className="w-full"
+                        icon={<ArrowRight className="w-4 h-4 ml-0.5" strokeWidth={2.5} />}
+                    >
+                        Weiter
+                    </PremiumButton>
+                    <PremiumButton
+                        type="button"
+                        onClick={() => {
+                            setIsAlreadyRegisteredFlow(true);
+                            setLoginEmail('');
+                            setLoginPin('');
+                            setLoginError(null);
+                        }}
+                        variant="ghost"
+                        className="w-full"
+                    >
+                        <LogIn className="w-3.5 h-3.5" /> Bereits registriert? Hier anmelden
+                    </PremiumButton>
+                </div>
+            </form>
+        </motion.div>
+    );
 
     const renderStep1 = () => (
         <motion.div
@@ -919,28 +937,19 @@ export default function SetupPage({
                     <AnimatePresence>
                         {locations?.items?.filter((loc: any) => loc.isActive).map((loc: any, index: number) => (
                             <SelectionTile
-                                key={loc.id} name={loc.name} subtitle={loc.address || ''} isSelected={selectedLocationId === loc.id}
-                                onClick={() => { setSelectedLocationId(loc.id); setSelectedTeamId(null); }} index={index}
+                                key={loc.id} name={loc.name} subtitle={loc.address || ''} isSelected={locationId === loc.id}
+                                onClick={() => { setLocationId(loc.id); }} index={index}
                             />
                         ))}
                     </AnimatePresence>
                 </div>
             )}
-            <div className="flex flex-col gap-3 pt-4 border-t border-[#eaedf0] mt-8">
-                <PremiumButton onClick={handleNextStep} disabled={!selectedLocationId} variant="primary" className="w-full">
-                    Weiter
+            <div className="flex gap-3 pt-4 border-t border-[#eaedf0] mt-8">
+                <PremiumButton onClick={handlePrevStep} variant="secondary" className="flex-1">
+                    Zurück
                 </PremiumButton>
-                <PremiumButton
-                    onClick={() => {
-                        setIsAlreadyRegisteredFlow(true);
-                        setLoginEmail('');
-                        setLoginPin('');
-                        setLoginError(null);
-                    }}
-                    variant="ghost"
-                    className="w-full"
-                >
-                    <LogIn className="w-3.5 h-3.5" /> Bereits registriert? Hier anmelden
+                <PremiumButton onClick={handleNextStep} disabled={!locationId} variant="primary" className="flex-1">
+                    Weiter
                 </PremiumButton>
             </div>
         </motion.div>
@@ -975,7 +984,7 @@ export default function SetupPage({
                 <div className="grid grid-cols-2 gap-3 mt-5">
                     <AnimatePresence>
                         {teams?.items?.map((team: any, index: number) => (
-                            <SelectionTile key={team.id} name={team.name} isSelected={selectedTeamId === team.id} onClick={() => setSelectedTeamId(team.id)} index={index} />
+                            <SelectionTile key={team.id} name={team.name} isSelected={teamId === team.id} onClick={() => setTeamId(team.id)} index={index} />
                         ))}
                     </AnimatePresence>
                 </div>
@@ -984,12 +993,47 @@ export default function SetupPage({
                 <PremiumButton onClick={handlePrevStep} variant="secondary" className="flex-1">
                     Zurück
                 </PremiumButton>
-                <PremiumButton onClick={handleNextStep} disabled={!selectedTeamId} variant="primary" className="flex-1">
+                <PremiumButton onClick={handleNextStep} disabled={!teamId} variant="primary" className="flex-1">
                     Weiter
                 </PremiumButton>
             </div>
         </motion.div>
     );
+
+    const firstNameRef = useRef<HTMLInputElement>(null);
+    const lastNameRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (currentStep === 3) {
+            setTimeout(() => {
+                firstNameRef.current?.focus();
+            }, 100);
+        }
+    }, [currentStep]);
+
+    const handleFirstNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            lastNameRef.current?.focus();
+        }
+    };
+
+    const handleLastNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const pinInputFirstDigit = document.querySelector('#setup-pin input') as HTMLInputElement;
+            pinInputFirstDigit?.focus();
+        }
+    };
+
+    const [gdprShouldShake, setGdprShouldShake] = useState(false);
+
+    const triggerGdprShake = () => {
+        setGdprShouldShake(true);
+        setTimeout(() => setGdprShouldShake(false), 500);
+        const termsCheckbox = document.querySelector('#setup-terms-checkbox') as HTMLInputElement;
+        termsCheckbox?.focus();
+    };
 
     const renderStep3 = () => (
         <motion.div
@@ -1008,11 +1052,11 @@ export default function SetupPage({
             <section>
                 <ScreenHeader icon={<User className="w-5 h-5 text-[#e20074]" />} title="Persönliche Daten & PIN" subtitle="Lege Deine Zugangsdaten fest." />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
-                    <PremiumInput id="setup-first-name" label="Vorname" placeholder="Max" value={firstName} onChange={(e) => setFirstName(capitalizeWords(e.target.value))} />
-                    <PremiumInput id="setup-last-name" label="Nachname" placeholder="Mustermann" value={lastName} onChange={(e) => setLastName(capitalizeWords(e.target.value))} />
+                    <PremiumInput ref={firstNameRef} id="setup-first-name" label="Vorname" placeholder="Max" value={firstName} onChange={(e) => setFirstName(capitalizeWords(e.target.value))} onKeyDown={handleFirstNameKeyDown} />
+                    <PremiumInput ref={lastNameRef} id="setup-last-name" label="Nachname" placeholder="Mustermann" value={lastName} onChange={(e) => setLastName(capitalizeWords(e.target.value))} onKeyDown={handleLastNameKeyDown} />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                    <PremiumInput id="setup-email" label="E-Mail-Adresse" placeholder="max.mustermann@telekom.de" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username webauthn" />
+                    <PremiumInput id="setup-email" label="E-Mail-Adresse" placeholder="max.mustermann@telekom.de" value={email} disabled={true} />
                     <div className="flex flex-col gap-1.5 text-left w-full">
                         <label htmlFor="setup-pin" className="text-[0.75rem] font-bold text-[#b0b0b0] uppercase tracking-wider pl-1 font-sans">
                             6-stellige PIN
@@ -1022,47 +1066,70 @@ export default function SetupPage({
                             value={pin}
                             onChange={setPin}
                             disabled={isSubmitting}
+                            onComplete={(val) => {
+                                if (val.length === 6) {
+                                    if (acceptedTerms && acceptedPrivacy) {
+                                        handleSubmit();
+                                    } else {
+                                        triggerGdprShake();
+                                    }
+                                }
+                            }}
                         />
                     </div>
                 </div>
             </section>
             <div className="h-px bg-[#eaedf0]" />
             <section>
-                <div className="bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl p-5 mb-6">
-                    <div className="flex gap-4">
-                        <ShieldAlert className="w-[18px] h-[18px] text-[#888] shrink-0 mt-[2px]" />
-                        <div className="flex flex-col gap-1.5">
-                            <h3 className="text-[0.85rem] font-bold text-[#1a1a2e] m-0 leading-none">Interner Nutzungshinweis</h3>
-                            <p className="text-[0.8rem] text-[#888] leading-relaxed m-0">
-                                Dieses Tool dient ausschließlich internen Beratungs- und Schulungszwecken. Es handelt sich um keine rechtsverbindliche Preisliste. Die Weitergabe an Dritte ist strikt untersagt.
-                            </p>
+                <motion.div
+                    animate={gdprShouldShake ? {
+                        x: [-6, 6, -6, 6, -3, 3, 0]
+                    } : { x: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="space-y-6"
+                >
+                    <div className="bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl p-5">
+                        <div className="flex gap-4">
+                            <ShieldAlert className="w-[18px] h-[18px] text-[#888] shrink-0 mt-[2px]" />
+                            <div className="flex flex-col gap-1.5">
+                                <h3 className="text-[0.85rem] font-bold text-[#1a1a2e] m-0 leading-none">Interner Nutzungshinweis</h3>
+                                <p className="text-[0.8rem] text-[#888] leading-relaxed m-0">
+                                    Dieses Tool dient ausschließlich internen Beratungs- und Schulungszwecken. Es handelt sich um keine rechtsverbindliche Preisliste. Die Weitergabe an Dritte ist strikt untersagt.
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div className="flex flex-col gap-6 mt-6">
                     <div className="flex flex-col gap-2.5">
                         <CheckboxRow
-                            checked={acceptedPrivacy}
-                            onChange={() => {
-                                const nextVal = !acceptedPrivacy;
-                                setAcceptedPrivacy(nextVal);
-                                setAcceptedTerms(nextVal);
-                            }}
+                            id="setup-terms-checkbox"
+                            checked={acceptedTerms}
+                            onChange={() => setAcceptedTerms(!acceptedTerms)}
                             label={(
                                 <>
                                     Ich akzeptiere den{' '}
-                                    <span className="text-[#1a1a2e] font-bold">Nutzungshinweis</span> und habe die{' '}
+                                    <span className="text-[#1a1a2e] font-bold">Nutzungshinweis</span> für dieses System.
+                                </>
+                            )}
+                        />
+                        <CheckboxRow
+                            id="setup-privacy-checkbox"
+                            checked={acceptedPrivacy}
+                            onChange={() => setAcceptedPrivacy(!acceptedPrivacy)}
+                            label={(
+                                <>
+                                    Ich habe die{' '}
                                     <Link
                                         href="/privacy"
                                         className="text-[#1a1a2e] font-bold hover:text-[#e20074] transition-colors underline underline-offset-2"
                                     >
                                         Datenschutzerklärung
                                     </Link>
-                                    {' '}gelesen.
+                                    {' '}gelesen und willige in die Datenverarbeitung ein.
                                 </>
                             )}
                         />
                         <CheckboxRow
+                            id="setup-tracking-checkbox"
                             checked={acceptedTracking}
                             onChange={() => setAcceptedTracking(!acceptedTracking)}
                             label={(
@@ -1074,50 +1141,110 @@ export default function SetupPage({
                                     >
                                         anonymen Nutzungsanalyse
                                     </Link>{' '}
-                                    zur App-Optimierung zu.
+                                    zu (optional).
                                 </>
                             )}
                         />
                     </div>
-                    <div className="flex gap-3">
-                        <PremiumButton onClick={handlePrevStep} variant="secondary" className="flex-1">
-                            Zurück
-                        </PremiumButton>
-                        <PremiumButton onClick={handleSubmit} disabled={!canSubmitClick} loading={isSubmitting} variant="primary" className="flex-1">
-                            Setup abschließen
-                        </PremiumButton>
-                    </div>
-                    <ErrorBanner message={Object.keys(formErrors).length > 0 ? Object.values(formErrors).join(' • ') : null} />
-                </div>
+                </motion.div>
             </section>
-        </motion.div>
-    );
-
-    const renderStep4 = () => (
-        <motion.div
-            key="step4" initial={{
-                opacity: 0,
-                scale: 0.95,
-            }} animate={{
-                opacity: 1,
-                scale: 1,
-            }} exit={{
-                opacity: 0,
-                scale: 0.95,
-            }}
-            className="flex flex-col gap-6 py-4"
-        >
-            <ScreenHeader icon={<Key className="w-5 h-5 text-[#e20074]" />} title="Gerät sicher merken (Passkey)" subtitle="Melde Dich in Zukunft blitzschnell per Fingerabdruck, FaceID, Bitwarden oder Windows Hello an – ganz ohne PIN oder Passwort!" />
-            <div className="flex flex-col gap-3 w-full mt-2">
-                <PremiumButton onClick={handlePasskeyEnrollment} variant="primary" className="w-full">
-                    <Key className="w-4 h-4 mr-2" /> Passkey einrichten
+            <div className="flex gap-3 pt-4 border-t border-[#eaedf0] mt-8">
+                <PremiumButton onClick={handlePrevStep} variant="secondary" className="flex-1">
+                    Zurück
                 </PremiumButton>
-                <PremiumButton onClick={() => { router.push('/products'); router.refresh(); }} variant="ghost" className="w-full">
-                    <ArrowRight className="w-3.5 h-3.5" /> Überspringen
+                <PremiumButton
+                    onClick={handleSubmit}
+                    disabled={!canSubmitClick}
+                    loading={isSubmitting}
+                    variant="primary"
+                    className="flex-1"
+                >
+                    Registrierung abschließen
                 </PremiumButton>
             </div>
         </motion.div>
     );
+
+    const renderStep4 = () => {
+        const handleSnooze = () => {
+            const snoozeTime = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+            localStorage.setItem('setup-passkey-snoozed-until', snoozeTime);
+            router.push('/products');
+        };
+
+        return (
+            <motion.div
+                key="step4"
+                className="space-y-6 text-center font-sans"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+            >
+                <div className="flex flex-col items-center">
+                    <div className="relative w-20 h-24 flex items-center justify-center mb-4">
+                        <motion.div
+                            className="absolute inset-0 rounded-full border border-[#e20074]/20"
+                            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        />
+                        <div className="w-16 h-16 bg-[#e20074]/5 rounded-full flex items-center justify-center text-[#e20074]">
+                            <Fingerprint className="w-8 h-8" />
+                        </div>
+                    </div>
+                    <ScreenHeader
+                        icon={<Fingerprint className="w-5 h-5 text-[#e20074]" />}
+                        title="Blitzschnelle Anmeldung mit Passkey"
+                        subtitle="Sichere Deine Sales Experience mit Windows Hello, FaceID oder TouchID. Nie wieder PINs eintippen!"
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left my-6">
+                    <div className="p-4 rounded-xl bg-[#f7f8fa] border border-[#eaedf0]">
+                        <h4 className="text-[0.82rem] font-bold text-[#1a1a2e] mb-1">⚡ Login in 2 Sekunden</h4>
+                        <p className="text-[0.75rem] text-[#888] leading-relaxed">Ein biometrischer Scan genügt.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[#f7f8fa] border border-[#eaedf0]">
+                        <h4 className="text-[0.82rem] font-bold text-[#1a1a2e] mb-1">🔒 Phishing-Schutz</h4>
+                        <p className="text-[0.75rem] text-[#888] leading-relaxed">Absolut immun gegen Abfangversuche.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[#f7f8fa] border border-[#eaedf0]">
+                        <h4 className="text-[0.82rem] font-bold text-[#1a1a2e] mb-1">🧠 Entlastung für Dich</h4>
+                        <p className="text-[0.75rem] text-[#888] leading-relaxed">Keine Sorgen mehr über vergessene PINs.</p>
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-3 pt-4 border-t border-[#eaedf0]">
+                    <PremiumButton
+                        onClick={handlePasskeyEnrollment}
+                        variant="primary"
+                        className="w-full font-bold"
+                    >
+                        Sicher einrichten (Empfohlen)
+                    </PremiumButton>
+                    <div className="flex gap-2">
+                        <PremiumButton
+                            onClick={handleSnooze}
+                            variant="secondary"
+                            className="flex-1 font-semibold text-[0.85rem]"
+                        >
+                            In 7 Tagen erinnern
+                        </PremiumButton>
+                        <PremiumButton
+                            onClick={() => {
+                                resetStore();
+                                router.push('/products');
+                                router.refresh();
+                            }}
+                            variant="ghost"
+                            className="flex-1 text-[0.85rem]"
+                        >
+                            Später einrichten
+                        </PremiumButton>
+                    </div>
+                </div>
+            </motion.div>
+        );
+    };
 
     const isWizardFlow = !isIpLoading && !isIpError && !(isReturningUser && !showReconfigure) && !isAlreadyRegisteredFlow && !isPinResetFlow && !isSettingNewPin && !requestPinReset.isPending;
 
@@ -1151,20 +1278,31 @@ export default function SetupPage({
                     duration: 0.4,
                 }} className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] overflow-hidden relative">
                     <div ref={cardRef} className="p-8 sm:p-12">
-                        {isWizardFlow && (
+                        {isMounted && isWizardFlow && currentStep < 4 && (
                             <div className="flex justify-center gap-2 mb-8">
                                 {[
+                                    0,
                                     1,
                                     2,
                                     3,
-                                    4,
                                 ].map(step => (
                                     <div key={step} className={clsx('h-1.5 rounded-full transition-all duration-300', currentStep === step ? 'w-8 bg-[#e20074]' : currentStep > step ? 'w-8 bg-[#e20074]/30' : 'w-2 bg-[#eaedf0]')} />
                                 ))}
                             </div>
                         )}
                         <AnimatePresence mode="wait" initial={false}>
-                            {isIpLoading ? (
+                            {!isMounted ? (
+                                <motion.div
+                                    key="isMountedLoading"
+                                    initial={{ opacity: 0, x: 15 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -15 }}
+                                    className="flex flex-col items-center gap-4 py-12"
+                                >
+                                    <div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
+                                    <p className="text-[#888] text-[0.9rem] font-medium">Laden…</p>
+                                </motion.div>
+                            ) : isIpLoading ? (
                                 <motion.div key="ipLoading" initial={{
                                     opacity: 0,
                                     x: 15,
@@ -1188,7 +1326,7 @@ export default function SetupPage({
                                 }} exit={{
                                     opacity: 0,
                                     x: -15,
-                                }}>
+                                }} className="w-full">
                                     <IpBlockedCard error={ipError} />
                                 </motion.div>
                             ) : isReturningUser && !showReconfigure && isUserExistsLoading ? (
@@ -1205,7 +1343,7 @@ export default function SetupPage({
                                     <div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
                                     <p className="text-[#888] text-[0.9rem] font-medium">Profil wird geladen…</p>
                                 </motion.div>
-                            ) : isReturningUser && !showReconfigure ? (
+                            ) : ((isReturningUser && !showReconfigure) || userExists === true) ? (
                                 <motion.div key="welcomeBack" initial={{
                                     opacity: 0,
                                     x: 15,
@@ -1217,7 +1355,10 @@ export default function SetupPage({
                                     x: -15,
                                 }}>
                                     <WelcomeBackCard
-                                        firstName={firstName} lastName={lastName} email={email} teamName={existingSession?.team?.name}
+                                        firstName={profileFirstName || firstName}
+                                        lastName={profileLastName || lastName}
+                                        email={email || loginEmail}
+                                        teamName={profileTeamName || existingSession?.team?.name}
                                         reloginPin={reloginPin} setReloginPin={setReloginPin} reloginError={reloginError}
                                         isReloggingIn={(reloginReturningUser.isPending && !isAutoCheck) || isSilentSuccess}
                                         onReloginWithPin={(overridePin?: string) => {
@@ -1231,7 +1372,7 @@ export default function SetupPage({
                                                 return;
                                             }
                                             reloginReturningUser.mutate({
-                                                email,
+                                                email: email || loginEmail,
                                                 pin: pinToSubmit,
                                             });
                                         }}
@@ -1284,8 +1425,8 @@ export default function SetupPage({
                                             setLastName('');
                                             setEmail('');
                                             setPin('');
-                                            setSelectedLocationId(null);
-                                            setSelectedTeamId(null);
+                                            setLocationId(null);
+                                            setTeamId(null);
                                             setHasCompletedBefore(false);
                                             setShowReconfigure(true);
                                             setCurrentStep(1);
@@ -1487,6 +1628,7 @@ export default function SetupPage({
                                 </motion.div>
                             ) : (
                                 <>
+                                    {currentStep === 0 && renderStep0()}
                                     {currentStep === 1 && renderStep1()}
                                     {currentStep === 2 && renderStep2()}
                                     {currentStep === 3 && renderStep3()}

@@ -14,6 +14,7 @@ interface SettingsState {
 	sortOption: string;
 	bypassResolutionGuard: boolean;
 	acceptedTracking: boolean | null;
+	acceptedAiDisclaimer: boolean;
 	setCompactView: (value: boolean) => void;
 	setClearAfterExport: (value: boolean) => void;
 	setReduceAnimations: (value: boolean) => void;
@@ -22,6 +23,7 @@ interface SettingsState {
 	setSortOption: (value: string) => void;
 	setBypassResolutionGuard: (value: boolean) => void;
 	setAcceptedTracking: (value: boolean | null) => void;
+	setAcceptedAiDisclaimer: (value: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -35,6 +37,7 @@ export const useSettingsStore = create<SettingsState>()(
 			sortOption: 'default',
 			bypassResolutionGuard: false,
 			acceptedTracking: null as boolean | null,
+			acceptedAiDisclaimer: false,
 			setCompactView: (value) => set({
 				compactView: value,
 			}),
@@ -58,6 +61,9 @@ export const useSettingsStore = create<SettingsState>()(
 			}),
 			setAcceptedTracking: (value) => set({
 				acceptedTracking: value,
+			}),
+			setAcceptedAiDisclaimer: (value) => set({
+				acceptedAiDisclaimer: value,
 			}),
 		}),
 		{

@@ -19,6 +19,7 @@ export interface UtilityLink {
 	onClick?: () => void;
 	href?: string;
 	type: 'button' | 'link' | 'external';
+	badge?: React.ReactNode;
 }
 
 interface SidebarToolsProps {
@@ -54,17 +55,23 @@ export function SidebarTools({
 					);
 
 					const content = (
-						<div className="flex items-center justify-between w-full h-full">
+						<div className="flex items-center justify-between w-full h-full relative">
 							<div className="flex items-center gap-3 min-w-0">
-								<Icon
-									className={clsx(
-										'shrink-0 transition-all duration-200 text-[#444]',
-										collapsed ? 'w-4 h-4' : 'w-4 h-4',
+								<div className="relative flex items-center justify-center shrink-0">
+									<Icon
+										className={clsx(
+											'shrink-0 transition-all duration-200 text-[#444]',
+											collapsed ? 'w-4 h-4' : 'w-4 h-4',
+										)}
+										strokeWidth={2}
+									/>
+									{/* Collapsed view pulsing dot overlay */}
+									{collapsed && item.badge && (
+										<span className="absolute -top-1 -right-1 w-2 h-2 bg-[#e20074] rounded-full ring-2 ring-white animate-ping" />
 									)}
-									strokeWidth={2}
-								/>
+								</div>
 								<span
-									className="truncate transition-opacity duration-200"
+									className="truncate transition-opacity duration-200 flex items-center gap-1.5"
 									style={{
 										opacity: collapsed ? 0 : 1,
 										width: collapsed ? 0 : 'auto',
@@ -72,6 +79,7 @@ export function SidebarTools({
 									}}
 								>
 									{item.label}
+									{item.badge}
 								</span>
 							</div>
 							{!collapsed && (

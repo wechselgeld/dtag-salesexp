@@ -120,7 +120,7 @@ const footer = {
 	textAlign: 'center' as const,
 };
 
-export const WelcomeEmail = ({
+const WelcomeEmail = ({
 	email,
 	role,
 	tempPassword,

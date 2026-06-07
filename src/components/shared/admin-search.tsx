@@ -10,6 +10,7 @@ import clsx from 'clsx';
 import {
 	fuzzySearch,
 } from '@/lib/fuzzy-search';
+import { useSearchHotkey } from '@/hooks/use-search-hotkey';
 
 interface AdminSearchProps<T> {
 	items: T[];
@@ -100,17 +101,7 @@ activeQuery,
 ]);
 
 	// Global hotkey to focus the search box when pressing '/'
-	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (e.key === '/' && document.activeElement !== inputRef.current) {
-				e.preventDefault();
-				inputRef.current?.focus();
-			}
-		};
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
-	}, [
-]);
+	useSearchHotkey(inputRef);
 
 	return (
 		<div className={clsx('relative flex-1 group', className)}>

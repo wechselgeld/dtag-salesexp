@@ -32,7 +32,7 @@ export const DEFAULT_PRICING: PricingSettings = {
 };
 
 export type {
-	BusinessCase, HardwareTier, CalculationInput,
+	BusinessCase, CalculationInput,
 };
 export type {
 	MagentaTVPackageKey,

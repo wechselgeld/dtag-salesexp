@@ -31,11 +31,17 @@ import {
 	StreamingCalculatorModal,
 } from '@/components/features/calculator/streaming-calculator-modal';
 import {
+	SalesTipsModal,
+} from '@/components/features/sales-tips/sales-tips-modal';
+import {
 	BattlecardModal,
 } from '@/components/features/battlecards/battlecard-panel';
 import {
 	GlobalNewsNotification,
 } from '@/components/features/news/global-news-notification';
+import {
+	WhatsNewModal,
+} from '@/components/features/news/whats-new-modal';
 import {
 	FeedbackModal,
 } from '@/components/features/feedback/feedback-modal';
@@ -76,6 +82,8 @@ export function AppShell({
 		setBattlecardOpen,
 		feedbackOpen,
 		setFeedbackOpen,
+		salesTipsOpen,
+		setSalesTipsOpen,
 	} = useModalStore();
 
 	const isComparisonMode = useBasketStore((state) => state.isComparisonMode);
@@ -86,7 +94,11 @@ export function AppShell({
 	const showConsentBanner =
 		pathname !== '/setup' &&
 		pathname !== '/login' &&
-		!pathname.startsWith('/admin');
+		!pathname.startsWith('/admin') &&
+		pathname !== '/privacy' &&
+		pathname !== '/tracking' &&
+		pathname !== '/impressum' &&
+		!pathname.startsWith('/verify');
 
 	if (
 		isMaintenanceActive &&
@@ -137,6 +149,10 @@ export function AppShell({
 						isOpen={calculatorOpen}
 						onClose={() => setCalculatorOpen(false)}
 					/>
+					<SalesTipsModal
+						isOpen={salesTipsOpen}
+						onClose={() => setSalesTipsOpen(false)}
+					/>
 					<BattlecardModal
 						isOpen={battlecardOpen}
 						onClose={() => setBattlecardOpen(false)}
@@ -146,6 +162,7 @@ export function AppShell({
 						onClose={() => setFeedbackOpen(false)}
 					/>
 					<GlobalNewsNotification />
+					<WhatsNewModal />
 				</>
 			)}
 		</IntroSplash>

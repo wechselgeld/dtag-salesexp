@@ -32,6 +32,8 @@ import {
 import {
 	Tooltip,
 } from '@/components/shared/ui/tooltip';
+import { AdminEmptyState } from '@/components/features/admin/admin-empty-state';
+import { AdminLoadMore } from '@/components/features/admin/admin-load-more';
 
 export default function LocationsClient() {
 	const utils = trpc.useUtils();
@@ -173,33 +175,16 @@ color: '#94a3b8',
 						))}
 					</div>
 				) : filteredLocations.length === 0 ? (
-					<div className="p-20 flex flex-col items-center justify-center text-center">
-						<div className="w-16 h-16 bg-[#f7f8fa] rounded-2xl flex items-center justify-center mb-4 border border-[#eaedf0]">
-							<MapPin className="w-6 h-6 text-[#ccc]" />
-						</div>
-						<h3 className="text-[1.1rem] font-bold text-[#1a1a2e] mb-1">
-							Keine Standorte
-						</h3>
-						<p className="text-[0.85rem] text-[#999] max-w-[250px] m-0 mb-4">
-							Es wurden keine Standorte {searchQuery || activeFilterId !== 'ALL' ? 'für deine Suche/Filter' : ''} gefunden.
-						</p>
-						<div className="flex gap-3 mt-2">
-							{(searchQuery || activeFilterId !== 'ALL') && (
-								<button
-									onClick={() => { setSearchQuery(''); setActiveFilterId('ALL'); }}
-									className="text-[#1a1a2e] text-[0.85rem] font-semibold bg-white border border-[#eaedf0] px-4 py-2 rounded-xl hover:bg-[#f7f8fa] transition-colors cursor-pointer"
-								>
-									Filter zurücksetzen
-								</button>
-							)}
-							<Link
-								href="/admin/locations/new"
-								className="text-white text-[0.85rem] font-semibold bg-[#e20074] border-none px-4 py-2 rounded-xl hover:bg-[#c70066] transition-colors cursor-pointer no-underline flex items-center gap-2"
-							>
-								<Plus className="w-4 h-4" /> Neuer Standort
-							</Link>
-						</div>
-					</div>
+					<AdminEmptyState
+						icon={MapPin}
+						title="Keine Standorte"
+						description="Es wurden keine Standorte"
+						searchQuery={searchQuery}
+						activeFilterId={activeFilterId}
+						onResetFilters={() => { setSearchQuery(''); setActiveFilterId('ALL'); }}
+						newLinkHref="/admin/locations/new"
+						newLinkLabel="Neuer Standort"
+					/>
 				) : (
 					<div className="overflow-x-auto">
 						<table className="w-full text-left">
@@ -298,23 +283,11 @@ color: '#94a3b8',
 					</div>
 				)}
 
-				{hasNextPage && (
-					<div className="p-8 border-t border-[#f0f0f0] flex justify-center bg-[#fcfcfd]">
-						<button
-							onClick={() => fetchNextPage()}
-							disabled={isFetchingNextPage}
-							className="flex items-center gap-2 bg-white hover:bg-[#f7f8fa] text-[#1a1a2e] px-8 py-3 rounded-2xl font-bold transition-all border border-[#eaedf0] shadow-sm hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-[0.85rem]"
-						>
-							{isFetchingNextPage ? (
-								<Loader2 className="w-5 h-5 animate-spin" />
-							) : (
-								<Plus className="w-5 h-5" />
-							)}
-							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr laden'}
-						</button>
-					</div>
-
-				)}
+				<AdminLoadMore
+					hasNextPage={hasNextPage}
+					isFetchingNextPage={isFetchingNextPage}
+					fetchNextPage={fetchNextPage}
+				/>
 			</div>
 		</div>
 	);

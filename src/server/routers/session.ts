@@ -514,10 +514,20 @@ export const sessionRouter = router({
                 },
                 select: {
                     id: true,
+                    firstName: true,
+                    lastName: true,
+                    team: {
+                        select: {
+                            name: true,
+                        },
+                    },
                 },
             });
             return {
                 exists: !!user,
+                firstName: user?.firstName || '',
+                lastName: user?.lastName || '',
+                teamName: user?.team?.name || '',
             };
         }),
 

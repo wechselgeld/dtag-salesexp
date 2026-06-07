@@ -50,6 +50,12 @@ import {
 import {
 	useNewsNotificationStore,
 } from '@/lib/store/news-notification-store';
+import {
+	useChangelogStore,
+} from '@/lib/store/changelog-store';
+import {
+	CHANGELOG_DATA,
+} from '@/lib/data/changelog-data';
 
 const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: '#e20074',
@@ -72,10 +78,17 @@ export function SidebarNav() {
 	const pathname = usePathname();
 	const items = useBasketStore((state) => state.items);
 	const {
-		setCalculatorOpen, setBattlecardOpen, setFeedbackOpen,
+		setCalculatorOpen, setBattlecardOpen, setFeedbackOpen, setSalesTipsOpen,
 	} =
 		useModalStore();
 	const addNotification = useNewsNotificationStore((state) => state.addNotification);
+
+	const lastSeenChangelogId = useChangelogStore((state) => state.lastSeenChangelogId);
+	const acknowledgedFeatures = useChangelogStore((state) => state.acknowledgedFeatures);
+	const acknowledgeFeature = useChangelogStore((state) => state.acknowledgeFeature);
+
+	const isChangelogNew = lastSeenChangelogId !== (CHANGELOG_DATA[0]?.id || null);
+	const isSalesTipsNew = !acknowledgedFeatures.includes('sales-tips');
 
 	const [
 		collapsed,
@@ -216,6 +229,21 @@ export function SidebarNav() {
 			onClick: () => setBattlecardOpen(true),
 			type: 'button',
 		},
+		{
+			id: 'tour-sales-tips',
+			icon: MessageSquare,
+			label: 'Sales Tipps',
+			onClick: () => {
+				acknowledgeFeature('sales-tips');
+				setSalesTipsOpen(true);
+			},
+			type: 'button',
+			badge: isSalesTipsNew ? (
+				<span className="px-1.5 py-0.5 text-[0.6rem] font-black uppercase tracking-wider bg-[#e20074]/10 text-[#e20074] rounded-md animate-pulse">
+					NEU
+				</span>
+			) : undefined,
+		},
 	];
 
 	const group2: UtilityLink[] = [
@@ -232,6 +260,9 @@ export function SidebarNav() {
 			label: 'Changelog',
 			href: '/changelog',
 			type: 'link',
+			badge: isChangelogNew ? (
+				<span className="w-1.5 h-1.5 rounded-full bg-[#e20074] inline-block animate-ping shrink-0" />
+			) : undefined,
 		},
 		{
 			id: 'settings-link',

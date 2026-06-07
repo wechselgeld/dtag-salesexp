@@ -5,11 +5,9 @@ import {
 	ShieldCheck, Info, FileText,
 } from 'lucide-react';
 import {
-	TelekomLogo,
-} from '@/components/shared/telekom-logo';
-import {
 	GlobalFooter,
 } from '@/components/shared/global-footer';
+import { PageHeader } from '@/components/shared/page-header';
 import {
 	BackButton,
 } from '@/components/shared/back-button';
@@ -22,18 +20,11 @@ export default function PrivacyPage() {
 	return (
 		<div className="min-h-screen py-16 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074]">
 			<div className="max-w-3xl mx-auto">
-				{/* Header */}
-				<div className="flex flex-col items-center mb-12 text-center">
-					<TelekomLogo className="w-12 h-12 text-[#e20074] mb-8 ml-2" />
-					<h1 className="text-3xl font-extrabold text-[#1a1a2e] tracking-tight mb-4">
-						Datenschutzerklärung
-					</h1>
-					<p className="text-[#888] font-medium max-w-xl">
-						Informationspflichten nach Art. 13 DSGVO für Mitarbeiter und
-						Berechtigte zur Nutzung des internen Beratungstools (Sales
-						Experience).
-					</p>
-				</div>
+				<PageHeader
+					title="Datenschutzerklärung"
+					description="Informationspflichten nach Art. 13 DSGVO für Mitarbeiter und Berechtigte zur Nutzung des internen Beratungstools (Sales Experience)."
+					logoClassName="ml-2"
+				/>
 
 				{/* Content */}
 				<div className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] p-8 sm:p-12 space-y-10">
@@ -203,9 +194,9 @@ export default function PrivacyPage() {
 							zertifiziert) oder Standardvertragsklauseln (SCC) abgesichert.
 						</p>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed mt-2 p-4 bg-[#f7f8fa] border border-[#eaedf0] rounded-xl">
-							Wir haben mit den oben genannten Anbietern (Cloudflare, Hetzner
-							sowie Resend) Verträge zur Auftragsverarbeitung (AVV)
-							abgeschlossen. Diese garantieren, dass die Dienstleister die Daten
+							Wir haben mit den oben genannten Anbietern (Cloudflare, Hetzner,
+							Resend sowie NVIDIA) Verträge zur Auftragsverarbeitung (AVV)
+							abgeschlossen oder entsprechende Datenschutzklauseln vereinbart. Diese garantieren, dass die Dienstleister die Daten
 							ausschließlich nach unseren Weisungen und unter Einhaltung der
 							DSGVO verarbeiten.
 						</p>
@@ -214,6 +205,12 @@ export default function PrivacyPage() {
 						</h3>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
 							Zur kontinuierlichen Verbesserung der Plattform, zur Fehleranalyse sowie zur Erkennung von Sicherheitsvorfällen (z. B. wiederholte fehlgeschlagene Anmeldeversuche) nutzen wir eine selbstgehostete Instanz des Analysedienstes "OpenPanel". Die Datenverarbeitung erfolgt auf von uns (der Buff Germany UG) gemieteten Servern bei der Hetzner Online GmbH (in Deutschland/EU) unter der Domain buffinteractive.net. Es findet keine Übermittlung an Drittländer (wie die USA) statt. OpenPanel erfasst Nutzungsdaten wie aufgerufene Seiten, Interaktionen mit der Benutzeroberfläche (Klicks) sowie sicherheitsrelevante Ereignisse (Login, Kontoeinrichtung, Passkey-Registrierung und -Nutzung). Hierbei werden im Falle von Authentifizierungsvorgängen Ihre dienstliche E-Mail-Adresse und Benutzerrolle verarbeitet, um den Erfolg der Vorgänge nachzuvollziehen. Die Nutzung erfolgt auf Grundlage unseres berechtigten Interesses an der Stabilität, Sicherheit und bedarfsgerechten Gestaltung des Tools (Art. 6 Abs. 1 lit. f DSGVO i.V.m. § 26 BDSG).
+						</p>
+						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-4">
+							NVIDIA NIM (Künstliche Intelligenz / SXP Scout)
+						</h3>
+						<p className="text-[0.95rem] text-[#555] leading-relaxed">
+							Für unseren KI Sales Copilot (SXP Scout) nutzen wir die API-Schnittstelle von NVIDIA NIM. Anbieter ist die NVIDIA Corporation, 2788 San Tomas Expressway, Santa Clara, CA 95051, USA. Über diese Schnittstelle verarbeiten wir rein sachliche und anonyme Daten des aktiven Warenkorbs (Produktnamen, Kategorien, Preise) sowie Ihre manuell eingegebenen Fragen oder Kundeneinwände. Dies dient der Bereitstellung von Echtzeit-Verkaufsargumenten und Vertriebsunterstützung. Es werden <strong>keine personenbezogenen Kundendaten</strong> an NVIDIA übermittelt. NVIDIA verarbeitet die Anfragen flüchtig im Arbeitsspeicher; eine dauerhafte Speicherung oder Nutzung Ihrer Eingaben zum Training zukünftiger Modelle ist vertraglich ausgeschlossen (Zero-Retention-Policy). Die Datenübertragung in die USA wird durch Standardvertragsklauseln (SCC) sowie das EU-U.S. Data Privacy Framework abgesichert. Die Nutzung erfolgt auf Grundlage unseres berechtigten Interesses an einer intelligenten und zeitgemäßen Vertriebsunterstützung (Art. 6 Abs. 1 lit. f DSGVO).
 						</p>
 					</section>
 

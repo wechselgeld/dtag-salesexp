@@ -36,7 +36,7 @@ import {
  * - Output: Returns a Promise resolving to a Base64 data URL for `generateOfferPdf` and a `Blob` for `buildPdfBlob`.
  */
 
-export function getSvgAsPngBase64(url: string): Promise<string> {
+function getSvgAsPngBase64(url: string): Promise<string> {
 	return new Promise((resolve) => {
 		if (typeof window === 'undefined') {
 			resolve('');
@@ -67,7 +67,7 @@ export function getSvgAsPngBase64(url: string): Promise<string> {
 	});
 }
 
-export async function buildPdfBlob(
+async function buildPdfBlob(
 	items: BasketItem[],
 	basketCredits: Credit[],
 	settings: PricingSettings = DEFAULT_PRICING,
@@ -95,7 +95,7 @@ export async function buildPdfBlob(
 	return pdf(doc).toBlob();
 }
 
-export function downloadBlob(blob: Blob, fileName: string): void {
+function downloadBlob(blob: Blob, fileName: string): void {
 	if (typeof window === 'undefined') {
 		return;
 	}

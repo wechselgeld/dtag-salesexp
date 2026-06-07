@@ -14,7 +14,7 @@ const MISSING = Symbol('MISSING');
 // only one DB query fires. All others await the same Promise.
 const inflight = new Map<string, Promise<unknown>>();
 
-export async function getCache<T>(key: string): Promise<T | typeof MISSING> {
+async function getCache<T>(key: string): Promise<T | typeof MISSING> {
   try {
     await ensureRedisConnected();
     const cached = await redis.get(key);
@@ -28,7 +28,7 @@ export async function getCache<T>(key: string): Promise<T | typeof MISSING> {
   return MISSING;
 }
 
-export async function setCache<T>(key: string, value: T, ttlMs: number): Promise<void> {
+async function setCache<T>(key: string, value: T, ttlMs: number): Promise<void> {
   try {
     if (value !== undefined) {
       await ensureRedisConnected();

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import clsx from 'clsx';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 	error?: string;
 	label?: string;
 }

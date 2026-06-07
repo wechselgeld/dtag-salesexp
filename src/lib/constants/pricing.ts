@@ -36,7 +36,7 @@ export const MAGENTA_TV_PACKAGES = {
 
 export type MagentaTVPackageKey = keyof typeof MAGENTA_TV_PACKAGES;
 
-export const CATEGORY_NAMES: Record<string, string> = {
+const CATEGORY_NAMES: Record<string, string> = {
 	MOBILE: 'Mobilfunk',
 	FIBER: 'Glasfaser',
 	DSL: 'Festnetz',
@@ -46,7 +46,7 @@ export const CATEGORY_NAMES: Record<string, string> = {
 	DATA: 'Datentarife',
 };
 
-export const CATEGORY_COLORS: Record<string, string> = {
+const CATEGORY_COLORS: Record<string, string> = {
 	MOBILE: '#e20074',
 	FIBER: '#0090d0',
 	DSL: '#7b61ff',
@@ -56,4 +56,4 @@ export const CATEGORY_COLORS: Record<string, string> = {
 	DATA: '#3498db',
 };
 
-export const SHIPPING_HARDWARE_FEE = 6.95;
+const SHIPPING_HARDWARE_FEE = 6.95;

@@ -8,7 +8,7 @@ import {
     prisma,
 } from '@/lib/prisma';
 
-export interface SerializedErrorLog {
+interface SerializedErrorLog {
     id: string;
     traceId: string;
     path: string | null;

@@ -50,6 +50,17 @@ export function GlobalFooter({
 				</Link>
 				<span className="opacity-50">·</span>
 				<Link
+					href="/ai-info"
+					className={clsx(
+						'transition-colors duration-200',
+						linkColor,
+						hoverColor,
+					)}
+				>
+					KI-Nutzung
+				</Link>
+				<span className="opacity-50">·</span>
+				<Link
 					href="/faq"
 					className={clsx(
 						'transition-colors duration-200',

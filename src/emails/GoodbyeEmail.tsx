@@ -65,7 +65,7 @@ const footer = {
 	textAlign: 'center' as const,
 };
 
-export const GoodbyeEmail = ({
+const GoodbyeEmail = ({
 	email, appUrl,
 }: GoodbyeEmailProps) => {
 	return (

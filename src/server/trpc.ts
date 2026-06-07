@@ -340,9 +340,6 @@ import type {
 import {
   hasPermission,
 } from '@/lib/permissions';
-import type {
-  HierarchicalEntity,
-} from './middlewares/scope-engine';
 import {
   withHierarchicalScope,
 } from './middlewares/scope-engine';
@@ -372,7 +369,4 @@ export const requirePermission = (permission: Permission) =>
 
 export {
   withHierarchicalScope,
-};
-export type {
-  HierarchicalEntity,
 };

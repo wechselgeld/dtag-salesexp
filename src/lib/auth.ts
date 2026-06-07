@@ -32,7 +32,7 @@ export interface SessionUser {
   sessionVersion?: number;
 }
 
-export function signJWT(payload: object, expiresIn = '4h', typ: JwtTyp = 'auth') {
+function signJWT(payload: object, expiresIn = '4h', typ: JwtTyp = 'auth') {
   return new SignJWT({
     ...payload,
     typ,
@@ -116,19 +116,19 @@ export async function logout() {
   cookieStore.delete('sales-session-id');
 }
 
-export async function logoutSalesSession() {
+async function logoutSalesSession() {
   const cookieStore = await cookies();
   cookieStore.delete('auth-token');
   cookieStore.delete('sales-session-id');
 }
 
-export function signSessionId(id: string) {
+function signSessionId(id: string) {
   return signJWT({
     id,
   }, '30d', 'sales-session');
 }
 
-export async function verifySessionId(token: string) {
+async function verifySessionId(token: string) {
   const payload = await verifyJWT(token, 'sales-session');
   return payload?.id as string | undefined;
 }

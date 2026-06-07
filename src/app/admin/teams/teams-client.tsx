@@ -45,6 +45,8 @@ import {
 import {
  AdminSearch,
 } from '@/components/shared/admin-search';
+import { AdminEmptyState } from '@/components/features/admin/admin-empty-state';
+import { AdminLoadMore } from '@/components/features/admin/admin-load-more';
 
 const CATEGORIES = [
 	{
@@ -305,16 +307,16 @@ setShowSelectedOnly,
 ].map((i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
 					</div>
 				) : filteredTeams.length === 0 ? (
-					<div className="p-20 text-center">
-						<div className="w-16 h-16 bg-[#f7f8fa] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#eaedf0]">
-							<Users className="w-6 h-6 text-[#ccc]" />
-						</div>
-						<h3 className="font-bold text-[#1a1a2e] mb-1">Keine Teams gefunden</h3>
-						<p className="text-[0.85rem] text-[#999] mb-6">Versuche es mit einem anderen Suchbegriff oder Standort.</p>
-						<button onClick={() => { setTeamSearchQuery(''); setSelectedLocationId('all'); }} className="px-6 py-2 bg-[#f7f8fa] text-[#1a1a2e] rounded-xl font-bold border border-[#eaedf0] hover:bg-[#f0f2f5] transition-all">
-							Filter zurücksetzen
-						</button>
-					</div>
+					<AdminEmptyState
+						icon={Users}
+						title="Keine Teams gefunden"
+						description="Es wurden keine Teams"
+						searchQuery={teamSearchQuery}
+						activeFilterId={selectedLocationId}
+						onResetFilters={() => { setTeamSearchQuery(''); setSelectedLocationId('all'); }}
+						newLinkHref="/admin/teams/new"
+						newLinkLabel="Team erstellen"
+					/>
 				) : (
 					<div className="overflow-x-auto">
 						<table className="w-full text-left">
@@ -371,14 +373,11 @@ onConfirm: (sudoPassword) => deleteTeam.mutateAsync({
 					</div>
 				)}
 
-				{hasNextPage && (
-					<div className="p-8 border-t border-[#f0f0f0] flex justify-center bg-[#fcfcfd]">
-						<button onClick={() => fetchNextPage()} disabled={isFetchingNextPage} className="flex items-center gap-2 bg-white hover:bg-[#f7f8fa] text-[#1a1a2e] px-8 py-3 rounded-2xl font-bold transition-all border border-[#eaedf0] shadow-sm hover:shadow-md active:scale-95 disabled:opacity-50">
-							{isFetchingNextPage ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
-							{isFetchingNextPage ? 'Wird geladen...' : 'Mehr laden'}
-						</button>
-					</div>
-				)}
+				<AdminLoadMore
+					hasNextPage={hasNextPage}
+					isFetchingNextPage={isFetchingNextPage}
+					fetchNextPage={fetchNextPage}
+				/>
 			</div>
 
 			{/* FOCUS MANAGEMENT MODAL */}

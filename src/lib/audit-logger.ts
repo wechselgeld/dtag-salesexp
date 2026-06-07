@@ -5,7 +5,7 @@ import {
  getAuditContext,
 } from './audit-context';
 
-export const AUDITED_MODELS = [
+const AUDITED_MODELS = [
   'Product',
   'Addon',
   'SpecialPrice',
@@ -38,7 +38,7 @@ export function isAuditedModel(model: string): boolean {
 /**
  * Strips credentials and tokens to ensure security and GDPR compliance.
  */
-export function sanitizePayload(data: any): any {
+function sanitizePayload(data: any): any {
   if (!data || typeof data !== 'object') return data;
 
   const clone = JSON.parse(JSON.stringify(data));

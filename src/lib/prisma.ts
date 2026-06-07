@@ -1,3 +1,4 @@
+// fallow-ignore-file circular-dependency
 import {
   PrismaClient, Prisma,
 } from '@prisma/client';

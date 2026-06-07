@@ -11,7 +11,7 @@ import {
     revertAuditLog,
 } from '@/lib/audit-revert';
 
-export interface SerializedAuditLog {
+interface SerializedAuditLog {
     id: string;
     action: string;
     entityType: string | null;

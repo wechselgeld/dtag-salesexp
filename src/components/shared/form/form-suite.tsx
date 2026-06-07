@@ -29,7 +29,7 @@ export function ScreenHeader({
 }
 
 // --- Section Header (legacy inline with step number badge) ---
-export function SectionHeader({
+function SectionHeader({
     icon, title, step,
 }: { icon: React.ReactNode; title: string; step?: number }) {
     return (
@@ -48,7 +48,7 @@ export function SectionHeader({
 }
 
 // --- Animated Error (inline field error, small) ---
-export function AnimatedError({
+function AnimatedError({
  message,
 }: { message?: string | null }) {
     return (
@@ -112,7 +112,7 @@ scale: 0.99,
 }
 
 // --- Premium Input ---
-export interface PremiumInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface PremiumInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     error?: string | null;
     icon?: React.ReactNode;
@@ -158,7 +158,7 @@ export const PremiumInput = React.forwardRef<HTMLInputElement, PremiumInputProps
 PremiumInput.displayName = 'PremiumInput';
 
 // --- Premium Button ---
-export interface PremiumButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface PremiumButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     loading?: boolean;
     variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
     icon?: React.ReactNode;
@@ -205,12 +205,12 @@ PremiumButton.displayName = 'PremiumButton';
 
 // --- Checkbox Row ---
 export function CheckboxRow({
- checked, onChange, label, disabled,
-}: { checked: boolean; onChange: () => void; label: React.ReactNode; disabled?: boolean }) {
+ checked, onChange, label, disabled, id,
+}: { checked: boolean; onChange: () => void; label: React.ReactNode; disabled?: boolean; id?: string }) {
     return (
         <label className={clsx('flex items-center gap-2.5 group select-none text-left', disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer')}>
             <div className="relative flex items-center justify-center shrink-0">
-                <input type="checkbox" className="peer sr-only" checked={checked} onChange={disabled ? undefined : onChange} disabled={disabled} />
+                <input id={id} type="checkbox" className="peer sr-only" checked={checked} onChange={disabled ? undefined : onChange} disabled={disabled} />
                 <div
                     className={clsx(
                         'w-[20px] h-[20px] rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200',
@@ -285,7 +285,7 @@ duration: 0.25,
 }
 
 // --- Info Card (Vaguely copies the design of Interner Nutzungshinweis from /setup) ---
-export function InfoCard({
+function InfoCard({
     icon,
     title,
     children,

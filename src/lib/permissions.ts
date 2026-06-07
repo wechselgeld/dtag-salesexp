@@ -1,4 +1,4 @@
-export const PERMISSIONS = [
+const PERMISSIONS = [
   'users:read',
   'users:write',
   'users:delete',
@@ -19,7 +19,7 @@ export const PERMISSIONS = [
 
 export type Permission = typeof PERMISSIONS[number];
 
-export const ROLE_PERMISSIONS: Record<string, ReadonlySet<Permission>> = {
+const ROLE_PERMISSIONS: Record<string, ReadonlySet<Permission>> = {
   ADMIN: new Set(PERMISSIONS), // ADMIN receives all permissions
   OD_MANAGER: new Set([
   'users:read',
