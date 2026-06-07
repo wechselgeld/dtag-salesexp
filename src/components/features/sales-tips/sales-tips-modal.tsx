@@ -123,8 +123,8 @@ function formatMessageContent(text: string, isGeneratingLast: boolean = false, i
 				blockquote: ({ children }) => (
 					<blockquote className={clsx(
 						"border-l-4 pl-4 py-1.5 italic rounded-r-xl my-3",
-						isAi 
-							? "border-[#e20074]/30 text-gray-600 bg-gray-50/50" 
+						isAi
+							? "border-[#e20074]/30 text-gray-600 bg-gray-50/50"
 							: "border-white/30 text-white/70 bg-white/10"
 					)}>
 						{renderChildrenWithCursor(children)}
@@ -133,8 +133,8 @@ function formatMessageContent(text: string, isGeneratingLast: boolean = false, i
 				code: ({ children }) => (
 					<code className={clsx(
 						"px-1.5 py-0.5 rounded-md text-[0.85em] font-mono font-semibold",
-						isAi 
-							? "bg-[#f0f2f5] text-[#e20074]" 
+						isAi
+							? "bg-[#f0f2f5] text-[#e20074]"
 							: "bg-white/15 text-pink-300"
 					)}>
 						{renderChildrenWithCursor(children)}
@@ -154,8 +154,8 @@ function formatMessageContent(text: string, isGeneratingLast: boolean = false, i
 					<div className="overflow-x-auto my-4 w-full">
 						<table className={clsx(
 							"border-collapse text-left rounded-xl overflow-hidden border",
-							isAi 
-								? "w-full bg-white border-[#eaedf0] shadow-sm" 
+							isAi
+								? "w-full bg-white border-[#eaedf0] shadow-sm"
 								: "min-w-full bg-white/5 border-white/10"
 						)}>
 							{children}
@@ -826,7 +826,7 @@ export function SalesTipsModal({
 									Sales Tipps mit KI aktivieren?
 								</h3>
 								<p className="text-[0.875rem] text-[#666] leading-relaxed max-w-sm">
-									Der SXP Scout unterstützt Dich in Echtzeit mit künstlicher Intelligenz. <br /><strong>Er analysiert Deine Nachricht und antwortet mit dem besten Sales Tipp.</strong> Er kann auch Tarife und Deinen Warenkorb durchsuchen.<br /><br />Bitte beachte, dass die KI Fehler machen kann, <strong>oft langsam antwortet oder die Übertragung abbrechen kann</strong>. Wir arbeiten an einer Lösung. Weitere Details findest Du in unseren{' '}
+									Der SXP Scout unterstützt Dich in Echtzeit mit künstlicher Intelligenz. <br /><strong>Er analysiert Deine Nachricht und antwortet mit dem besten Sales Tipp.</strong> Er kann auch Tarife und Deinen Warenkorb durchsuchen.<br /><br />Bitte beachte, dass die KI Fehler machen kann, <strong>manchmal langsam antwortet oder die Übertragung abbrechen kann</strong>. Wir arbeiten an einer Lösung. Weitere Details findest Du in unseren{' '}
 									<Link
 										href="/ai-info"
 										target="_blank"

@@ -141,7 +141,7 @@ export function WhatsNewModal() {
 								<Sparkles className="w-6 h-6" />
 							</div>
 							<h3 className="text-[1.2rem] font-extrabold text-[#1a1a2e] tracking-tight">
-								Nutzungsanalyse aktivieren?
+								Das ist Neu
 							</h3>
 							<p className="text-[0.875rem] text-[#666] leading-relaxed max-w-sm">
 								Update vom {latestRelease.title}
