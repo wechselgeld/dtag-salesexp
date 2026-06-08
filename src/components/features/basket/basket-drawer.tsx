@@ -1238,6 +1238,9 @@ const BasketColumn = memo(function BasketColumn({
 								if (teamEmail.includes('@')) {
 									window.location.href = `mailto:${teamEmail}?subject=${subject}&body=${bodyText}`;
 								}
+								else {
+									window.location.href = `tel:${teamEmail.replace(/\s+/g, '')}`;
+								}
 
 								setIsGenerating('success');
 								if (clearAfterExport) {
@@ -1283,7 +1286,7 @@ const BasketColumn = memo(function BasketColumn({
 							{isGenerating === 'generating' && <>Wird generiert...</>}
 							{isGenerating === 'success' && (
 								<>
-									Outlook geöffnet
+									{teamEmail.includes('@') ? 'Outlook geöffnet' : 'Anruf gestartet'}
 									<Check className="w-3.5 h-3.5" />
 								</>
 							)}

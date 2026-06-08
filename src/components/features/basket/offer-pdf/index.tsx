@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-	Document, Page, Text, View, StyleSheet, Image,
+	Document, Page, Text, View, StyleSheet, Image, Link,
 } from '@react-pdf/renderer';
 import type {
 	BasketItem,
@@ -767,7 +767,9 @@ export const OfferDocument: React.FC<OfferDocumentProps> = ({
 					<Text style={styles.greeting}>Dein persönliches Magenta-Angebot</Text>
 					<Text style={styles.introSubtitle}>Bereit für Highspeed? Dein maßgeschneidertes Telekom-Paket.</Text>
 					<Text style={styles.introText}>
-						Vielen Dank für das angenehme Gespräch. Wie versprochen habe ich Deine Wunschprodukte zusammengestellt und berechnet. Mit den <Text style={{ fontWeight: 'bold' }}>Telekom Kombivorteilen</Text> und unseren aktuellen Aktionen sichern wir Dir das beste Preis-Leistungs-Verhältnis. Hier ist Dein persönliches Angebot:
+						Vielen Dank für das angenehme Gespräch. Wie versprochen habe ich Deine Wunschprodukte zusammengestellt und berechnet. Mit den <Text style={{
+							fontWeight: 'bold',
+						}}>Telekom Kombivorteilen</Text> und unseren aktuellen Aktionen sichern wir Dir das beste Preis-Leistungs-Verhältnis. Hier ist Dein persönliches Angebot:
 					</Text>
 				</View>
 
@@ -880,7 +882,7 @@ export const OfferDocument: React.FC<OfferDocumentProps> = ({
 							styles.tableRow,
 							{
 								backgroundColor: softBgColor,
-								borderColor: catColor + '33',
+								borderColor: `${catColor}33`,
 								borderWidth: 0.75,
 							},
 						]} wrap={false}>
@@ -946,9 +948,9 @@ export const OfferDocument: React.FC<OfferDocumentProps> = ({
 								{costs.oneTimeCosts.total > 0 && (
 									<View style={styles.cardOneTimeContainer}>
 										<Text style={styles.cardOneTimeText}>
-											Einmalige Kosten: {formatCurrency(costs.oneTimeCosts.total)} 
-											{costs.oneTimeCosts.breakdown.length > 0 && 
-												` (${costs.oneTimeCosts.breakdown.map(b => `${b.name}: ${formatCurrency(b.cost)}`).join(', ')})`
+											Einmalige Kosten: {formatCurrency(costs.oneTimeCosts.total)}
+											{costs.oneTimeCosts.breakdown.length > 0 &&
+												` (${costs.oneTimeCosts.breakdown.map((b) => `${b.name}: ${formatCurrency(b.cost)}`).join(', ')})`
 											}
 										</Text>
 									</View>
@@ -1076,11 +1078,16 @@ export const OfferDocument: React.FC<OfferDocumentProps> = ({
 				<View style={styles.ctaCard} wrap={false}>
 					<Text style={styles.ctaTitle}>Lass uns das Angebot gemeinsam buchen!</Text>
 					<Text style={styles.ctaText}>
-						Bist Du mit der Zusammenstellung zufrieden? Um die Bestellung auszuführen und Deine Tarife zu aktivieren, antworte mir einfach direkt auf meine E-Mail oder kontaktiere das Team unter:
+						{teamEmail.includes('@')
+							? 'Bist Du mit der Zusammenstellung zufrieden? Um die Bestellung auszuführen und Deine Tarife zu aktivieren, antworte mir einfach direkt auf meine E-Mail oder kontaktiere das Team unter:'
+							: 'Bist Du mit der Zusammenstellung zufrieden? Um die Bestellung auszuführen und Deine Tarife zu aktivieren, kontaktiere das Team unter:'}
 					</Text>
-					<View style={styles.ctaButton}>
+					<Link
+						style={styles.ctaButton}
+						src={teamEmail.includes('@') ? `mailto:${teamEmail}` : `tel:${teamEmail.replace(/\s+/g, '')}`}
+					>
 						<Text style={styles.ctaButtonText}>{teamEmail}</Text>
-					</View>
+					</Link>
 					<Text style={styles.ctaFooter}>
 						Du möchtest zur Telekom wechseln? Wir übernehmen alle Wechselformalitäten, die Kündigung Deines alten Anbieters und die kostenfreie Mitnahme Deiner bestehenden Rufnummer.
 					</Text>
