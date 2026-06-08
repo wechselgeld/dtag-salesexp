@@ -294,12 +294,6 @@ export function SidebarNav() {
 			catColor={catColor}
 			footerActions={
 				<div className="flex flex-col gap-1 w-full">
-					<SidebarTools
-						collapsed={collapsed}
-						group1={group1}
-						group2={group2}
-					/>
-
 					<SidebarNps
 						collapsed={collapsed}
 						npsChecked={npsChecked}
@@ -328,6 +322,12 @@ export function SidebarNav() {
 				catColor={catColor}
 				catName={catName}
 				currentCategory={currentCategory}
+			/>
+
+			<SidebarTools
+				collapsed={collapsed}
+				group1={group1}
+				group2={group2}
 			/>
 		</SidebarLayout>
 	);

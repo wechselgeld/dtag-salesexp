@@ -15,6 +15,8 @@ interface SettingsState {
 	bypassResolutionGuard: boolean;
 	acceptedTracking: boolean | null;
 	acceptedAiDisclaimer: boolean;
+	workflowExpanded: boolean;
+	toolsExpanded: boolean;
 	setCompactView: (value: boolean) => void;
 	setClearAfterExport: (value: boolean) => void;
 	setReduceAnimations: (value: boolean) => void;
@@ -24,6 +26,8 @@ interface SettingsState {
 	setBypassResolutionGuard: (value: boolean) => void;
 	setAcceptedTracking: (value: boolean | null) => void;
 	setAcceptedAiDisclaimer: (value: boolean) => void;
+	setWorkflowExpanded: (value: boolean) => void;
+	setToolsExpanded: (value: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -38,6 +42,8 @@ export const useSettingsStore = create<SettingsState>()(
 			bypassResolutionGuard: false,
 			acceptedTracking: null as boolean | null,
 			acceptedAiDisclaimer: false,
+			workflowExpanded: true,
+			toolsExpanded: true,
 			setCompactView: (value) => set({
 				compactView: value,
 			}),
@@ -64,6 +70,12 @@ export const useSettingsStore = create<SettingsState>()(
 			}),
 			setAcceptedAiDisclaimer: (value) => set({
 				acceptedAiDisclaimer: value,
+			}),
+			setWorkflowExpanded: (value) => set({
+				workflowExpanded: value,
+			}),
+			setToolsExpanded: (value) => set({
+				toolsExpanded: value,
 			}),
 		}),
 		{
