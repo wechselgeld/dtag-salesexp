@@ -436,13 +436,20 @@ export function SalesTipsModal({
 	useEffect(() => {
 		if (isOpen) {
 			scrollToBottom();
-			op.track('sales_tips_opened');
 		}
 	}, [
 		isOpen,
 		messages,
 		isGenerating,
 		scrollToBottom,
+	]);
+
+	useEffect(() => {
+		if (isOpen) {
+			op.track('sales_tips_opened');
+		}
+	}, [
+		isOpen,
 		op,
 	]);
 
