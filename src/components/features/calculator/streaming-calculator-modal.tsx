@@ -8,7 +8,7 @@ import {
 	Calculator,
 } from 'lucide-react';
 import {
-	useState, useEffect,
+	useState, useEffect, useRef,
 } from 'react';
 import {
 	createPortal,
@@ -38,10 +38,15 @@ export function StreamingCalculatorModal({
 		mounted,
 		setMounted,
 	] = useState(false);
+	const hasTrackedOpenRef = useRef(false);
 
 	useEffect(() => {
-		if (isOpen) {
+		if (isOpen && !hasTrackedOpenRef.current) {
 			op.track('streaming_calculator_opened');
+			hasTrackedOpenRef.current = true;
+		}
+		else if (!isOpen) {
+			hasTrackedOpenRef.current = false;
 		}
 	}, [
 		isOpen,
