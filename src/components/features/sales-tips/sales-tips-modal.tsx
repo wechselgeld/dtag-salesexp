@@ -10,7 +10,7 @@ import {
 	motion, AnimatePresence,
 } from 'framer-motion';
 import {
-	X, MessageSquare, Send, RefreshCw, ShoppingCart, Trash2, ShieldAlert,
+	X, MessageSquare, Send, RefreshCw, Trash2, ShieldAlert,
 	Check,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -31,6 +31,12 @@ import {
 import {
 	useSettingsStore,
 } from '@/lib/store/settings-store';
+import {
+	useOpenPanel,
+} from '@openpanel/nextjs';
+import {
+	trpc,
+} from '@/lib/trpc';
 
 function MiniSpinner({
 	className,
@@ -96,12 +102,12 @@ function replaceCursorMarker(children: React.ReactNode): React.ReactNode {
 }
 
 // Simple, secure local formatter for full markdown rendering (supports lists, bold, italics, code, quotes, and GFM tables)
-function formatMessageContent(text: string, isGeneratingLast: boolean = false, isAi: boolean = true): React.ReactNode {
+function formatMessageContent(text: string, isGeneratingLast = false, isAi = true): React.ReactNode {
 	if (!text) {
 		return null;
 	}
 
-	const processedText = isGeneratingLast ? text + ' [CURSOR]' : text;
+	const processedText = isGeneratingLast ? `${text } [CURSOR]` : text;
 
 	const renderChildrenWithCursor = (children: React.ReactNode) => {
 		return replaceCursorMarker(children);
@@ -109,99 +115,137 @@ function formatMessageContent(text: string, isGeneratingLast: boolean = false, i
 
 	return (
 		<ReactMarkdown
-			remarkPlugins={[remarkGfm]}
+			remarkPlugins={[
+ remarkGfm,
+]}
 			components={{
-				h1: ({ children }) => <h1 className={clsx("text-lg font-extrabold mt-4 mb-2 first:mt-0", isAi ? "text-[#1a1a2e]" : "text-white")}>{renderChildrenWithCursor(children)}</h1>,
-				h2: ({ children }) => <h2 className={clsx("text-md font-extrabold mt-3.5 mb-1.5 first:mt-0", isAi ? "text-[#1a1a2e]" : "text-white")}>{renderChildrenWithCursor(children)}</h2>,
-				h3: ({ children }) => <h3 className={clsx("text-sm font-bold mt-3 mb-1 first:mt-0", isAi ? "text-[#1a1a2e]" : "text-white")}>{renderChildrenWithCursor(children)}</h3>,
-				p: ({ children }) => <p className={clsx("mb-2.5 last:mb-0 leading-relaxed font-medium", isAi ? "text-gray-800" : "text-white/90")}>{renderChildrenWithCursor(children)}</p>,
-				ul: ({ children }) => <ul className="list-disc pl-5 mb-3.5 space-y-1">{children}</ul>,
-				ol: ({ children }) => <ol className="list-decimal pl-5 mb-3.5 space-y-1">{children}</ol>,
-				li: ({ children }) => <li className={clsx("leading-relaxed font-medium", isAi ? "text-gray-800" : "text-white/90")}>{renderChildrenWithCursor(children)}</li>,
-				strong: ({ children }) => <strong className={clsx("font-extrabold", isAi ? "text-[#1a1a2e]" : "text-white")}>{renderChildrenWithCursor(children)}</strong>,
-				em: ({ children }) => <em className={clsx("italic", isAi ? "text-gray-700" : "text-white/85")}>{renderChildrenWithCursor(children)}</em>,
-				blockquote: ({ children }) => (
+				h1: ({
+ children,
+}) => <h1 className={clsx('text-lg font-extrabold mt-4 mb-2 first:mt-0', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</h1>,
+				h2: ({
+ children,
+}) => <h2 className={clsx('text-md font-extrabold mt-3.5 mb-1.5 first:mt-0', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</h2>,
+				h3: ({
+ children,
+}) => <h3 className={clsx('text-sm font-bold mt-3 mb-1 first:mt-0', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</h3>,
+				p: ({
+ children,
+}) => <p className={clsx('mb-2.5 last:mb-0 leading-relaxed font-medium', isAi ? 'text-gray-800' : 'text-white/90')}>{renderChildrenWithCursor(children)}</p>,
+				ul: ({
+ children,
+}) => <ul className="list-disc pl-5 mb-3.5 space-y-1">{children}</ul>,
+				ol: ({
+ children,
+}) => <ol className="list-decimal pl-5 mb-3.5 space-y-1">{children}</ol>,
+				li: ({
+ children,
+}) => <li className={clsx('leading-relaxed font-medium', isAi ? 'text-gray-800' : 'text-white/90')}>{renderChildrenWithCursor(children)}</li>,
+				strong: ({
+ children,
+}) => <strong className={clsx('font-extrabold', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</strong>,
+				em: ({
+ children,
+}) => <em className={clsx('italic', isAi ? 'text-gray-700' : 'text-white/85')}>{renderChildrenWithCursor(children)}</em>,
+				blockquote: ({
+ children,
+}) => (
 					<blockquote className={clsx(
-						"border-l-4 pl-4 py-1.5 italic rounded-r-xl my-3",
+						'border-l-4 pl-4 py-1.5 italic rounded-r-xl my-3',
 						isAi
-							? "border-[#e20074]/30 text-gray-600 bg-gray-50/50"
-							: "border-white/30 text-white/70 bg-white/10"
+							? 'border-[#e20074]/30 text-gray-600 bg-gray-50/50'
+							: 'border-white/30 text-white/70 bg-white/10',
 					)}>
 						{renderChildrenWithCursor(children)}
 					</blockquote>
 				),
-				code: ({ children }) => (
+				code: ({
+ children,
+}) => (
 					<code className={clsx(
-						"px-1.5 py-0.5 rounded-md text-[0.85em] font-mono font-semibold",
+						'px-1.5 py-0.5 rounded-md text-[0.85em] font-mono font-semibold',
 						isAi
-							? "bg-[#f0f2f5] text-[#e20074]"
-							: "bg-white/15 text-pink-300"
+							? 'bg-[#f0f2f5] text-[#e20074]'
+							: 'bg-white/15 text-pink-300',
 					)}>
 						{renderChildrenWithCursor(children)}
 					</code>
 				),
-				a: ({ href, children }) => (
+				a: ({
+ href, children,
+}) => (
 					<a
 						href={href}
 						target="_blank"
 						rel="noopener noreferrer"
-						className={clsx("font-semibold hover:underline", isAi ? "text-[#e20074]" : "text-pink-300")}
+						className={clsx('font-semibold hover:underline', isAi ? 'text-[#e20074]' : 'text-pink-300')}
 					>
 						{renderChildrenWithCursor(children)}
 					</a>
 				),
-				table: ({ children }) => (
+				table: ({
+ children,
+}) => (
 					<div className="overflow-x-auto my-4 w-full">
 						<table className={clsx(
-							"border-collapse text-left rounded-xl overflow-hidden border",
+							'border-collapse text-left rounded-xl overflow-hidden border',
 							isAi
-								? "w-full bg-white border-[#eaedf0] shadow-sm"
-								: "min-w-full bg-white/5 border-white/10"
+								? 'w-full bg-white border-[#eaedf0] shadow-sm'
+								: 'min-w-full bg-white/5 border-white/10',
 						)}>
 							{children}
 						</table>
 					</div>
 				),
-				thead: ({ children }) => (
+				thead: ({
+ children,
+}) => (
 					<thead className={clsx(
-						"border-b",
-						isAi ? "bg-[#f0f2f5] border-[#eaedf0]" : "bg-white/10 border-white/10"
+						'border-b',
+						isAi ? 'bg-[#f0f2f5] border-[#eaedf0]' : 'bg-white/10 border-white/10',
 					)}>
 						{children}
 					</thead>
 				),
-				tbody: ({ children }) => (
+				tbody: ({
+ children,
+}) => (
 					<tbody className={clsx(
-						"divide-y",
-						isAi ? "divide-[#eaedf0]" : "divide-white/10"
+						'divide-y',
+						isAi ? 'divide-[#eaedf0]' : 'divide-white/10',
 					)}>
 						{children}
 					</tbody>
 				),
-				tr: ({ children }) => (
+				tr: ({
+ children,
+}) => (
 					<tr className={clsx(
-						"transition-colors",
-						isAi ? "hover:bg-[#f7f8fa]/50" : "hover:bg-white/5"
+						'transition-colors',
+						isAi ? 'hover:bg-[#f7f8fa]/50' : 'hover:bg-white/5',
 					)}>
 						{children}
 					</tr>
 				),
-				th: ({ children }) => (
+				th: ({
+ children,
+}) => (
 					<th className={clsx(
-						"px-4 py-3 text-xs font-extrabold uppercase tracking-wider",
-						isAi ? "text-[#1a1a2e]" : "text-white"
+						'px-4 py-3 text-xs font-extrabold uppercase tracking-wider',
+						isAi ? 'text-[#1a1a2e]' : 'text-white',
 					)}>
 						{renderChildrenWithCursor(children)}
 					</th>
 				),
-				td: ({ children }) => (
+				td: ({
+ children,
+}) => (
 					<td className={clsx(
-						"px-4 py-2.5 text-[0.875rem] font-medium align-middle",
-						isAi ? "text-gray-800" : "text-white/90"
+						'px-4 py-2.5 text-[0.875rem] font-medium align-middle',
+						isAi ? 'text-gray-800' : 'text-white/90',
 					)}>
 						{renderChildrenWithCursor(children)}
 					</td>
-				)
+				),
 			}}
 		>
 			{processedText}
@@ -252,7 +296,8 @@ function ToolCallProgress({
 							const code = tool.name.replace('api_retry_', '');
 							text = `Server überlastet (Status ${code}). Reconnect-Versuch und versuche es erneut (Versuch ${tool.payload})...`;
 							if (tool.status === 'done') text = 'Verbindung erfolgreich wiederhergestellt';
-						} else {
+						}
+ else {
 							text = `Führe Abfrage ${tool.name} aus...`;
 							if (tool.status === 'done') text = `Abfrage ${tool.name} abgeschlossen`;
 						}
@@ -291,6 +336,16 @@ function ToolCallProgress({
 export function SalesTipsModal({
 	isOpen, onClose,
 }: SalesTipsModalProps) {
+	const op = useOpenPanel();
+	const {
+		data: user,
+	} = trpc.auth.me.useQuery(undefined, {
+		staleTime: 5 * 60 * 1000,
+	});
+
+	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const abortControllerRef = useRef<AbortController | null>(null);
+
 	const [
 		mounted,
 		setMounted,
@@ -324,6 +379,14 @@ export function SalesTipsModal({
 
 	const lastChunkTimestampRef = useRef<number>(0);
 
+	// Auto-scroll logic with smooth animation
+	const scrollToBottom = useCallback(() => {
+		messagesEndRef.current?.scrollIntoView({
+			behavior: 'smooth',
+		});
+	}, [
+]);
+
 	useEffect(() => {
 		if (!isGenerating) {
 			setStreamStatus('idle');
@@ -336,21 +399,29 @@ export function SalesTipsModal({
 			const timeSinceLastChunk = Date.now() - lastChunkTimestampRef.current;
 			if (timeSinceLastChunk > 3500) {
 				setStreamStatus('stalled');
-			} else {
+			}
+ else {
 				setStreamStatus((prev) => (prev === 'stalled' ? 'receiving' : prev));
 			}
 		}, 500);
 
 		return () => clearInterval(interval);
-	}, [isGenerating]);
+	}, [
+ isGenerating,
+]);
 
 	const handleAbort = useCallback(() => {
 		if (abortControllerRef.current) {
 			abortControllerRef.current.abort();
 			abortControllerRef.current = null;
+			op.track('sales_tips_generation_aborted', {
+				reason: 'manual_abort',
+			});
 		}
 		setIsGenerating(false);
-	}, []);
+	}, [
+ op,
+]);
 
 	// Retrieve active context from Zustand basket store
 	const acceptedAiDisclaimer = useSettingsStore((state) => state.acceptedAiDisclaimer);
@@ -362,26 +433,17 @@ export function SalesTipsModal({
 		totals, combinedSteps, totalOneTime, totalCredits,
 	} = useBasketLogic(activeBasketId);
 
-	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const abortControllerRef = useRef<AbortController | null>(null);
-
-	// Auto-scroll logic with smooth animation
-	const scrollToBottom = useCallback(() => {
-		messagesEndRef.current?.scrollIntoView({
-			behavior: 'smooth',
-		});
-	}, [
-	]);
-
 	useEffect(() => {
 		if (isOpen) {
 			scrollToBottom();
+			op.track('sales_tips_opened');
 		}
 	}, [
 		isOpen,
 		messages,
 		isGenerating,
 		scrollToBottom,
+		op,
 	]);
 
 	useEffect(() => {
@@ -398,11 +460,15 @@ export function SalesTipsModal({
 		if (abortControllerRef.current) {
 			abortControllerRef.current.abort();
 			abortControllerRef.current = null;
+			op.track('sales_tips_generation_aborted', {
+				reason: 'modal_closed',
+			});
 		}
 		setIsGenerating(false);
 		onClose();
 	}, [
 		onClose,
+		op,
 	]);
 
 	const clearChat = useCallback(() => {
@@ -414,7 +480,9 @@ export function SalesTipsModal({
 			},
 		]);
 		setApiError(null);
+		op.track('sales_tips_chat_cleared');
 	}, [
+		op,
 	]);
 
 	const handleSend = useCallback(async (textToSend: string) => {
@@ -436,6 +504,13 @@ export function SalesTipsModal({
 			},
 		];
 		setMessages(newMessages);
+
+		op.track('sales_tips_user_message_sent', {
+			content: trimmedText,
+			content_length: trimmedText.length,
+			user_email: user?.email,
+			user_id: user?.id,
+		});
 
 		// Prep abort controller
 		const controller = new AbortController();
@@ -579,6 +654,7 @@ export function SalesTipsModal({
 			const decoder = new TextDecoder('utf-8');
 			let accumulatedResponse = '';
 			let buffer = '';
+			const toolsUsed = new Set<string>();
 
 			while (true) {
 				const {
@@ -623,6 +699,7 @@ export function SalesTipsModal({
 								const {
 									name, status, payload,
 								} = delta.tool_call_status;
+								toolsUsed.add(name);
 								setMessages((prev) =>
 									prev.map((msg) => {
 										if (msg.id !== assistantMsgId) return msg;
@@ -658,7 +735,7 @@ export function SalesTipsModal({
 								let contentChunk = delta.content;
 								if (accumulatedResponse === '') {
 									// Remove any leading BOM (Byte Order Mark) or replacement character (U+FFFD)
-									contentChunk = contentChunk.replace(/^[\ufeff\ufffd\u0000]+/, '');
+									contentChunk = contentChunk.replace(/^[\ufeff\ufffd]+/, '');
 								}
 								if (contentChunk) {
 									accumulatedResponse += contentChunk;
@@ -705,6 +782,7 @@ export function SalesTipsModal({
 									const {
 										name, status, payload,
 									} = delta.tool_call_status;
+									toolsUsed.add(name);
 									setMessages((prev) =>
 										prev.map((msg) => {
 											if (msg.id !== assistantMsgId) return msg;
@@ -763,6 +841,14 @@ export function SalesTipsModal({
 			// 1) For test purposes, log the finished response to the console.
 			console.log('Finished AI Response:', accumulatedResponse);
 
+			op.track('sales_tips_ai_response_finished', {
+				content: accumulatedResponse,
+				content_length: accumulatedResponse.length,
+				tools_used: Array.from(toolsUsed),
+				user_email: user?.email,
+				user_id: user?.id,
+			});
+
 		}
 		catch (err: unknown) {
 			if (err instanceof Error && err.name === 'AbortError') {
@@ -771,7 +857,13 @@ export function SalesTipsModal({
 				return;
 			}
 			console.error('Error fetching stream response:', err);
-			setApiError(err instanceof Error ? err.message : 'Ein unerwarteter Fehler ist aufgetreten.');
+			const errorMessage = err instanceof Error ? err.message : 'Ein unerwarteter Fehler ist aufgetreten.';
+			setApiError(errorMessage);
+			op.track('sales_tips_generation_error', {
+				error_message: errorMessage,
+				user_email: user?.email,
+				user_id: user?.id,
+			});
 			// Remove the empty or partial assistant message on fail
 			setMessages((prev) => prev.filter((msg) => msg.id !== assistantMsgId));
 		}
@@ -787,6 +879,8 @@ export function SalesTipsModal({
 		totalOneTime,
 		totalCredits,
 		isGenerating,
+		op,
+		user,
 	]);
 
 	if (!mounted) return null;
@@ -840,7 +934,10 @@ export function SalesTipsModal({
 
 							<div className="flex flex-col gap-2 pt-2">
 								<PremiumButton
-									onClick={() => setAcceptedAiDisclaimer(true)}
+									onClick={() => {
+										setAcceptedAiDisclaimer(true);
+										op.track('sales_tips_disclaimer_accepted');
+									}}
 									className="w-full"
 								>
 									Aktivieren &amp; Zustimmen
@@ -877,7 +974,7 @@ export function SalesTipsModal({
 					</div>
 				</div>
 			</AnimatePresence>,
-			document.body
+			document.body,
 		);
 	}
 
