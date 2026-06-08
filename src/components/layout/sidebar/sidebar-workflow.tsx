@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import {
+	useState,
+} from 'react';
+import {
 	motion, AnimatePresence,
 } from 'framer-motion';
 import {
-	Check,
+	Check, ChevronDown,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -39,19 +42,38 @@ export function SidebarWorkflow({
 	catName,
 	currentCategory,
 }: SidebarWorkflowProps) {
+	const [
+		isExpanded,
+		setIsExpanded,
+	] = useState(true);
+
 	return (
 		<div className="relative z-10 px-3 pt-2 shrink-0">
-			<div
-				className="text-[1rem] font-bold text-[#1a1a2e] mb-3 px-2 tracking-tight transition-opacity duration-200 overflow-hidden"
-				style={{
-					opacity: collapsed ? 0 : 1,
-					height: collapsed ? 0 : 'auto',
-				}}
+			<button
+				onClick={() => !collapsed && setIsExpanded(!isExpanded)}
+				className={clsx(
+					'w-full flex items-center justify-between text-[1rem] font-bold text-[#1a1a2e] mb-3 px-2 tracking-tight transition-all duration-200 overflow-hidden group focus:outline-none',
+					collapsed ? 'opacity-0 h-0 pointer-events-none' : 'opacity-100 h-auto cursor-pointer',
+				)}
 			>
-				Workflow
-			</div>
+				<span>Workflow</span>
+				<ChevronDown
+					className={clsx(
+						'w-4 h-4 text-[#aaa] transition-transform duration-300 group-hover:text-[#e20074]',
+						isExpanded ? 'rotate-0' : '-rotate-90',
+					)}
+				/>
+			</button>
 
-			<nav className="flex flex-col gap-1.5 relative">
+			<motion.nav
+				initial={false}
+				animate={{
+					height: isExpanded || collapsed ? 'auto' : 0,
+					opacity: isExpanded || collapsed ? 1 : 0,
+					marginBottom: isExpanded || collapsed ? 0 : -12,
+				}}
+				className="flex flex-col gap-1.5 relative overflow-hidden"
+			>
 				{steps.map((step, i) => {
 					const Icon = step.icon;
 					const isActive = step.active;
@@ -228,7 +250,7 @@ export function SidebarWorkflow({
 						</div>
 					);
 				})}
-			</nav>
+			</motion.nav>
 
 			{/* Category badge (collapsed only) */}
 			{currentCategory && collapsed && (
