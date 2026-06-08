@@ -324,6 +324,7 @@ export function BasketDrawer() {
 	]);
 
 	const teamEmail = session?.team?.email || '0800 33 01000';
+	const mailtoEmail = session?.team?.email || 'team06@telekom.de';
 	const salesRepName = session
 		? [
 			session.firstName,
@@ -727,6 +728,7 @@ export function BasketDrawer() {
 										setActiveBasketId={setActiveBasketId}
 										catColor={catColor}
 										teamEmail={teamEmail}
+										mailtoEmail={mailtoEmail}
 										salesRepName={salesRepName}
 										offerTemplateText={offerTemplateText}
 										clearAfterExport={clearAfterExport}
@@ -756,6 +758,7 @@ const BasketColumn = memo(function BasketColumn({
 	setActiveBasketId,
 	catColor,
 	teamEmail,
+	mailtoEmail,
 	salesRepName,
 	offerTemplateText,
 	clearAfterExport,
@@ -772,6 +775,7 @@ const BasketColumn = memo(function BasketColumn({
 	setActiveBasketId: (id: string) => void;
 	catColor: string;
 	teamEmail: string;
+	mailtoEmail: string;
 	salesRepName: string;
 	offerTemplateText: string;
 	clearAfterExport: boolean;
@@ -1235,12 +1239,7 @@ const BasketColumn = memo(function BasketColumn({
 									offerTemplateText.replace(/\{\{salesRepName\}\}/g, salesRepName),
 								);
 
-								if (teamEmail.includes('@')) {
-									window.location.href = `mailto:${teamEmail}?subject=${subject}&body=${bodyText}`;
-								}
-								else {
-									window.location.href = `tel:${teamEmail.replace(/\s+/g, '')}`;
-								}
+								window.location.href = `mailto:${mailtoEmail}?subject=${subject}&body=${bodyText}`;
 
 								setIsGenerating('success');
 								if (clearAfterExport) {
@@ -1286,7 +1285,7 @@ const BasketColumn = memo(function BasketColumn({
 							{isGenerating === 'generating' && <>Wird generiert...</>}
 							{isGenerating === 'success' && (
 								<>
-									{teamEmail.includes('@') ? 'Outlook geöffnet' : 'Anruf gestartet'}
+									Outlook geöffnet
 									<Check className="w-3.5 h-3.5" />
 								</>
 							)}
