@@ -323,7 +323,7 @@ export function BasketDrawer() {
 		isComparisonMode,
 	]);
 
-	const teamEmail = session?.team?.email || 'team06@telekom.de';
+	const teamEmail = session?.team?.email || '0800 33 01000';
 	const salesRepName = session
 		? [
 			session.firstName,
@@ -1235,7 +1235,9 @@ const BasketColumn = memo(function BasketColumn({
 									offerTemplateText.replace(/\{\{salesRepName\}\}/g, salesRepName),
 								);
 
-								window.location.href = `mailto:${teamEmail}?subject=${subject}&body=${bodyText}`;
+								if (teamEmail.includes('@')) {
+									window.location.href = `mailto:${teamEmail}?subject=${subject}&body=${bodyText}`;
+								}
 
 								setIsGenerating('success');
 								if (clearAfterExport) {
