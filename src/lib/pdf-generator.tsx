@@ -26,7 +26,7 @@ import {
  * - settings: PricingSettings (optional)
  *   Pricing rules and custom rates, defaults to DEFAULT_PRICING.
  * - teamEmail: string (optional)
- *   The sales team email address, defaults to 'team06@telekom.de'.
+ *   The sales team email address, defaults to '0800 33 01000'.
  * - salesRepName: string (optional)
  *   The name of the sales representative generating this offer, defaults to an empty string.
  * 
@@ -55,7 +55,8 @@ function getSvgAsPngBase64(url: string): Promise<string> {
 					ctx.drawImage(img, 0, 0);
 				}
 				resolve(canvas.toDataURL('image/png'));
-			} catch (e) {
+			}
+			catch (e) {
 				console.error('Error drawing SVG to canvas:', e);
 				resolve('');
 			}
@@ -71,13 +72,14 @@ async function buildPdfBlob(
 	items: BasketItem[],
 	basketCredits: Credit[],
 	settings: PricingSettings = DEFAULT_PRICING,
-	teamEmail = 'team06@telekom.de',
+	teamEmail = '0800 33 01000',
 	salesRepName = '',
 ): Promise<Blob> {
 	let logoData = '';
 	try {
 		logoData = await getSvgAsPngBase64('/Deutsche_Telekom.svg');
-	} catch (e) {
+	}
+	catch (e) {
 		console.error('Error fetching logo data:', e);
 	}
 
@@ -113,7 +115,7 @@ export async function generateOfferPdf(
 	items: BasketItem[],
 	basketCredits: Credit[],
 	settings: PricingSettings = DEFAULT_PRICING,
-	teamEmail = 'team06@telekom.de',
+	teamEmail = '0800 33 01000',
 	salesRepName = '',
 ): Promise<string> {
 	try {
