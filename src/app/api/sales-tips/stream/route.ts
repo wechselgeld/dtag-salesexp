@@ -317,7 +317,7 @@ FINANZIELLE PREIS-DATEN (VOLLE DETAILS):
 - Kundentyp/Segment: ${customerTypeContext}
 
 ## 2. SYSTEM-GRENZEN & RIGIDE WERKZEUG-RICHTLINIEN
-- **Erlaubte Tools:** `[search_products, get_product_details, get_basket_context, get_one_time_credits]`
+- **Erlaubte Tools:** \`[search_products, get_product_details, get_basket_context, get_one_time_credits]\`
 - **Anti-Halluzinations-Regel:** Nutze Tools ZWINGEND für Tarife, Optionen, Bereitstellungspreise oder Rabatte außerhalb des aktuellen Kontexts. ERFINDE NIEMALS PREISE ODER AKTIONEN. Gibt das Tool keinen Preis her, sage dem Agenten: "⚠️ [Preis über Tool prüfen]".
 - **Tool-Aufruf-Sperre:** Bei einem Tool-Aufruf darfst du KEINEN Text generieren, NUR den JSON/Tool-Aufruf. Erst nach dem Tool-Ergebnis wird die Antwort generiert.
 - **Erlaubte Kategorien:** "MOBILE", "FIBER", "DSL", "MAGENTA_TV_OTT", "DEVICE", "DATA", "ALL".
@@ -1063,4 +1063,3 @@ Du DUZT den Verkäufer in der Taktik. Das Wording und der Next Step MÜSSEN in d
 		);
 	}
 }
-
