@@ -294,6 +294,19 @@ export function SidebarNav() {
 			catColor={catColor}
 			footerActions={
 				<div className="flex flex-col gap-1 w-full">
+					<SidebarNps
+						collapsed={collapsed}
+						npsChecked={npsChecked}
+						npsResetting={npsResetting}
+						npsHovered={npsHovered}
+						setNpsHovered={setNpsHovered}
+						onToggle={() => {
+							if (npsTimerRef.current) { clearTimeout(npsTimerRef.current); }
+							setNpsResetting(false);
+							setNpsChecked(!npsChecked);
+						}}
+					/>
+
 					<SidebarAccount collapsed={collapsed} />
 
 					<SidebarFooter
@@ -315,19 +328,6 @@ export function SidebarNav() {
 				collapsed={collapsed}
 				group1={group1}
 				group2={group2}
-			/>
-
-			<SidebarNps
-				collapsed={collapsed}
-				npsChecked={npsChecked}
-				npsResetting={npsResetting}
-				npsHovered={npsHovered}
-				setNpsHovered={setNpsHovered}
-				onToggle={() => {
-					if (npsTimerRef.current) { clearTimeout(npsTimerRef.current); }
-					setNpsResetting(false);
-					setNpsChecked(!npsChecked);
-				}}
 			/>
 		</SidebarLayout>
 	);

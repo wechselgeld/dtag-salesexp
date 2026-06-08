@@ -6,8 +6,14 @@ import {
 	Tooltip,
 } from './sidebar-tooltip';
 import {
-	ChevronRight,
+	ChevronRight, ChevronDown,
 } from 'lucide-react';
+import {
+	motion,
+} from 'framer-motion';
+import {
+	useSettingsStore,
+} from '@/lib/store/settings-store';
 import {
 	usePathname,
 } from 'next/navigation';
@@ -32,6 +38,10 @@ export function SidebarTools({
 	collapsed, group1, group2,
 }: SidebarToolsProps) {
 	const pathname = usePathname();
+	const {
+		toolsExpanded,
+		setToolsExpanded,
+	} = useSettingsStore();
 
 	const renderGroup = (links: UtilityLink[]) => {
 		return (
@@ -126,15 +136,34 @@ export function SidebarTools({
 
 	return (
 		<div className="relative z-10 px-3 w-full shrink-0 mt-4 mb-2">
-			{!collapsed && (
-				<div className="text-[1rem] font-bold text-[#1a1a2e] mb-3 px-2 tracking-tight">
-					Tools
-				</div>
-			)}
-			<div className="flex flex-col gap-3 w-full">
+			<button
+				onClick={() => !collapsed && setToolsExpanded(!toolsExpanded)}
+				className={clsx(
+					'w-full flex items-center justify-between text-[1rem] font-bold text-[#1a1a2e] mb-3 px-2 tracking-tight transition-all duration-200 overflow-hidden group focus:outline-none',
+					collapsed ? 'opacity-0 h-0 pointer-events-none' : 'opacity-100 h-auto cursor-pointer',
+				)}
+			>
+				<span>Tools</span>
+				<ChevronDown
+					className={clsx(
+						'w-4 h-4 text-[#aaa] transition-transform duration-300 group-hover:text-[#e20074]',
+						toolsExpanded ? 'rotate-0' : '-rotate-90',
+					)}
+				/>
+			</button>
+
+			<motion.div
+				initial={false}
+				animate={{
+					height: toolsExpanded || collapsed ? 'auto' : 0,
+					opacity: toolsExpanded || collapsed ? 1 : 0,
+					marginBottom: toolsExpanded || collapsed ? 0 : -12,
+				}}
+				className="flex flex-col gap-3 w-full overflow-hidden"
+			>
 				{renderGroup(group1)}
 				{renderGroup(group2)}
-			</div>
+			</motion.div>
 		</div>
 	);
 }
