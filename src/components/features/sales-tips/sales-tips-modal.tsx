@@ -345,6 +345,7 @@ export function SalesTipsModal({
 
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
+	const hasTrackedOpenRef = useRef(false);
 
 	const [
 		mounted,
@@ -445,8 +446,12 @@ export function SalesTipsModal({
 	]);
 
 	useEffect(() => {
-		if (isOpen) {
+		if (isOpen && !hasTrackedOpenRef.current) {
 			op.track('sales_tips_opened');
+			hasTrackedOpenRef.current = true;
+		}
+		else if (!isOpen) {
+			hasTrackedOpenRef.current = false;
 		}
 	}, [
 		isOpen,

@@ -15,36 +15,10 @@ import {
 	X,
 
 	ChevronDown,
-	Shield,
-	Trophy,
 	Zap,
-	Headphones,
-	Wifi,
-	WifiOff,
-	Signal,
-	SignalZero,
-	Star,
-
 	CheckCircle2,
 	AlertTriangle,
-	Clock,
-	TrendingDown,
-	PhoneOff,
-	DollarSign,
-	Construction,
-	UserX,
-	EyeOff,
-	Scissors,
-	Smartphone,
-	MapPinOff,
-	Unplug,
-	Lock,
-	Building2,
-	Ban,
 	Check,
-
-
-	SignalIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -54,8 +28,12 @@ import {
 	ScreenHeader,
 } from '@/components/shared/form/form-suite';
 
-import type { Competitor, Objection } from '@/types/battlecards';
-import { COMPETITORS, OBJECTIONS } from '@/lib/constants/battlecards-data';
+import type {
+	Competitor, Objection,
+} from '@/types/battlecards';
+import {
+	COMPETITORS, OBJECTIONS,
+} from '@/lib/constants/battlecards-data';
 
 // ─── Modal Component ─────────────────────────────────────────────
 
@@ -96,6 +74,7 @@ export function BattlecardModal({
 	] = useState(false);
 	const searchRef = useRef<HTMLInputElement>(null);
 	const sidebarRef = useRef<HTMLDivElement>(null);
+	const hasTrackedOpenRef = useRef(false);
 	const [
 		showScrollHint,
 		setShowScrollHint,
@@ -141,7 +120,7 @@ export function BattlecardModal({
 
 	// Focus search on open
 	useEffect(() => {
-		if (isOpen) {
+		if (isOpen && !hasTrackedOpenRef.current) {
 			setActiveTab('battlecards');
 			setSelectedCompetitorId(COMPETITORS[0].id);
 			setSelectedObjectionId(OBJECTIONS[0].id);
@@ -149,10 +128,14 @@ export function BattlecardModal({
 			op.track('battlecards_opened', {
 				tab: 'battlecards',
 			});
+			hasTrackedOpenRef.current = true;
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		else if (!isOpen) {
+			hasTrackedOpenRef.current = false;
+		}
 	}, [
 		isOpen,
+		op,
 	]);
 
 	// Focus search on tab change to battlecards
