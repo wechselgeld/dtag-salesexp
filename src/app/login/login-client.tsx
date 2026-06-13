@@ -1,19 +1,19 @@
 'use client';
 
 import {
- useState, useRef, useEffect,
+	useState, useRef, useEffect,
 } from 'react';
 import {
- useRouter,
+	useRouter,
 } from 'next/navigation';
 import {
- trpc,
+	trpc,
 } from '@/lib/trpc';
 import {
 	useOpenPanel,
 } from '@openpanel/nextjs';
 import {
- motion, AnimatePresence,
+	motion, AnimatePresence,
 } from 'framer-motion';
 import {
 	ArrowRight,
@@ -28,20 +28,20 @@ import {
 	Key,
 } from 'lucide-react';
 import {
- TelekomLogo,
+	TelekomLogo,
 } from '@/components/shared/telekom-logo';
 import {
- GlobalFooter,
+	GlobalFooter,
 } from '@/components/shared/global-footer';
 import {
- useForm,
+	useForm,
 } from 'react-hook-form';
 import {
- zodResolver,
+	zodResolver,
 } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
- PremiumPinInput,
+	PremiumPinInput,
 } from '@/components/shared/premium-pin-input';
 import {
 	PremiumInput,
@@ -65,36 +65,36 @@ export default function LoginPage() {
 	const utils = trpc.useUtils();
 	const op = useOpenPanel();
 	const [
- error,
-setError,
-] = useState('');
+		error,
+		setError,
+	] = useState('');
 	const [
- showPassword,
-setShowPassword,
-] = useState(false);
+		showPassword,
+		setShowPassword,
+	] = useState(false);
 
 	const cardRef = useRef<HTMLDivElement>(null);
 	const [
- cardHeight,
-setCardHeight,
-] = useState<number | 'auto'>('auto');
+		cardHeight,
+		setCardHeight,
+	] = useState<number | 'auto'>('auto');
 
 	useEffect(() => {
 		if (!cardRef.current) return;
 		const observer = new ResizeObserver((entries) => {
 			setCardHeight(
 				entries[0].borderBoxSize?.[0]?.blockSize ??
-					entries[0].target.getBoundingClientRect().height,
+				entries[0].target.getBoundingClientRect().height,
 			);
 		});
 		observer.observe(cardRef.current);
 		return () => observer.disconnect();
 	}, [
-]);
+	]);
 
 	const {
- data: currentUser,
-} = trpc.auth.me.useQuery();
+		data: currentUser,
+	} = trpc.auth.me.useQuery();
 
 	const {
 		data: passwordSetupInfo,
@@ -106,8 +106,8 @@ setCardHeight,
 		register,
 		handleSubmit,
 		formState: {
- errors, isValid,
-},
+			errors, isValid,
+		},
 		watch,
 	} = useForm<LoginFormData>({
 		resolver: zodResolver(loginSchema),
@@ -124,43 +124,43 @@ setCardHeight,
 		setIsSettingUpPassword,
 	] = useState(false);
 	const [
- setupEmail,
-setSetupEmail,
-] = useState('');
+		setupEmail,
+		setSetupEmail,
+	] = useState('');
 	const [
- setupPin,
-setSetupPin,
-] = useState('');
+		setupPin,
+		setSetupPin,
+	] = useState('');
 	const [
- setupPassword,
-setSetupPassword,
-] = useState('');
+		setupPassword,
+		setSetupPassword,
+	] = useState('');
 	const [
- setupPasswordConfirm,
-setSetupPasswordConfirm,
-] = useState('');
+		setupPasswordConfirm,
+		setSetupPasswordConfirm,
+	] = useState('');
 	const [
- setupError,
-setSetupError,
-] = useState('');
+		setupError,
+		setSetupError,
+	] = useState('');
 	const [
- showSetupPassword,
-setShowSetupPassword,
-] = useState(false);
+		showSetupPassword,
+		setShowSetupPassword,
+	] = useState(false);
 
 	// Passkey setup state
 	const [
- showPasskeyStep,
-setShowPasskeyStep,
-] = useState(false);
+		showPasskeyStep,
+		setShowPasskeyStep,
+	] = useState(false);
 	const [
- passkeyEmail,
-setPasskeyEmail,
-] = useState('');
+		passkeyEmail,
+		setPasskeyEmail,
+	] = useState('');
 	const [
- isEnrollingPasskey,
-setIsEnrollingPasskey,
-] = useState(false);
+		isEnrollingPasskey,
+		setIsEnrollingPasskey,
+	] = useState(false);
 
 	// tRPC WebAuthn mutations
 	const getRegOptions = trpc.webauthn.generateRegistrationOptions.useMutation();
@@ -177,7 +177,7 @@ setIsEnrollingPasskey,
 				setPasskeyEmail(setupEmail || '');
 				setShowPasskeyStep(true);
 			}
- else {
+			else {
 				router.push('/admin/products');
 				router.refresh();
 			}
@@ -234,7 +234,7 @@ setIsEnrollingPasskey,
 				setPasskeyEmail(watch('email') || '');
 				setShowPasskeyStep(true);
 			}
- else {
+			else {
 				router.push('/admin/products');
 				router.refresh();
 			}
@@ -268,8 +268,8 @@ setIsEnrollingPasskey,
 		});
 		try {
 			const {
- startRegistration,
-} = await import('@simplewebauthn/browser');
+				startRegistration,
+			} = await import('@simplewebauthn/browser');
 			const options = await getRegOptions.mutateAsync({
 				email: targetEmail,
 			});
@@ -289,7 +289,7 @@ setIsEnrollingPasskey,
 			router.push('/admin/products');
 			router.refresh();
 		}
- catch (err: any) {
+		catch (err: any) {
 			console.error('Passkey failed', err);
 			op.track('passkey_registration_failed', {
 				email: targetEmail,
@@ -299,7 +299,7 @@ setIsEnrollingPasskey,
 			});
 			alert(`Fehler bei der Passkey-Einrichtung: ${err.message}`);
 		}
- finally {
+		finally {
 			setIsEnrollingPasskey(false);
 		}
 	};
@@ -315,9 +315,9 @@ setIsEnrollingPasskey,
 	};
 
 	const [
- isPasskeyLoading,
-setIsPasskeyLoading,
-] = useState(false);
+		isPasskeyLoading,
+		setIsPasskeyLoading,
+	] = useState(false);
 	const getAuthOptions =
 		trpc.webauthn.generateAuthenticationOptions.useMutation();
 	const verifyAuth = trpc.webauthn.verifyAuthentication.useMutation();
@@ -337,13 +337,13 @@ setIsPasskeyLoading,
 			) {
 				try {
 					const {
- startAuthentication,
-} =
+						startAuthentication,
+					} =
 						await import('@simplewebauthn/browser');
 					const {
- options, challengeId,
-} = await getAuthOptions.mutateAsync({
-});
+						options, challengeId,
+					} = await getAuthOptions.mutateAsync({
+					});
 					const authResp = await startAuthentication({
 						optionsJSON: options,
 						useBrowserAutofill: true,
@@ -383,7 +383,7 @@ setIsPasskeyLoading,
 		};
 		runConditionalAutofill();
 	}, [
-]);
+	]);
 
 	const handlePasskeyLogin = async () => {
 		setError('');
@@ -394,12 +394,12 @@ setIsPasskeyLoading,
 		});
 		try {
 			const {
- startAuthentication,
-} = await import('@simplewebauthn/browser');
+				startAuthentication,
+			} = await import('@simplewebauthn/browser');
 			const {
- options, challengeId,
-} = await getAuthOptions.mutateAsync({
-});
+				options, challengeId,
+			} = await getAuthOptions.mutateAsync({
+			});
 			const authResp = await startAuthentication({
 				optionsJSON: options,
 			});
@@ -434,7 +434,7 @@ setIsPasskeyLoading,
 				setError('Passkey-Login fehlgeschlagen. Bitte verwende Dein Passwort.');
 			}
 		}
- finally {
+		finally {
 			setIsPasskeyLoading(false);
 		}
 	};
@@ -501,21 +501,20 @@ setIsPasskeyLoading,
 					<div ref={cardRef} className="p-8 sm:p-12">
 						<div className="flex justify-center gap-2 mb-8">
 							{[
- 1,
-2,
-].map((step) => {
+								1,
+								2,
+							].map((step) => {
 								const isCurrent = (showPasskeyStep ? 2 : 1) === step;
 								const isCompleted = (showPasskeyStep ? 2 : 1) > step;
 								return (
 									<div
 										key={step}
-										className={`h-1.5 rounded-full transition-all duration-300 ${
-											isCurrent
+										className={`h-1.5 rounded-full transition-all duration-300 ${isCurrent
 												? 'w-8 bg-[#e20074]'
 												: isCompleted
-												? 'w-8 bg-[#e20074]/30'
-												: 'w-2 bg-[#eaedf0]'
-										}`}
+													? 'w-8 bg-[#e20074]/30'
+													: 'w-2 bg-[#eaedf0]'
+											}`}
 									/>
 								);
 							})}
@@ -541,7 +540,7 @@ setIsPasskeyLoading,
 									<ScreenHeader
 										icon={<Key className="w-5 h-5 text-[#e20074]" />}
 										title="Gerät sicher merken (Passkey)"
-										subtitle="Melde Dich in Zukunft blitzschnell per Fingerabdruck, FaceID, Bitwarden oder Windows Hello an – ganz ohne PIN oder Passwort!"
+										subtitle="Melde Dich in Zukunft blitzschnell per Bitwarden oder Windows Hello an – ganz ohne PIN oder Passwort!"
 									/>
 
 									<div className="flex flex-col gap-3 w-full mt-4">

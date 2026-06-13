@@ -92,10 +92,13 @@ model Product {
   activationFeePlanChange Float?          @default(0)
   activationFeeSpeedUp    Float?
   allowMagentaTV          Boolean         @default(false)
+  allowHybrid             Boolean         @default(false)
   hasMagentaTVBundle      Boolean         @default(false)
   magentaTVBundleName     String?
   magentaTVBundlePrice    Float?
   allowHardwareTiers      Boolean         @default(false)
+  allowPlusKarten         Boolean         @default(false)
+  allowsUnlimitedAdvantage Boolean        @default(false)
   deviceManufacturer      String?
   deviceContext           String?
   purchasePrice           Float?

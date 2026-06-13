@@ -12,7 +12,7 @@ import {
 import {
 	AddonSelector,
 } from '@/components/features/calculator/addon-selector';
-import type { SpecialPrice } from '@/types/product';
+import { type SpecialPrice } from '@/types/product';
 import type {
 	MagentaTVPackageKey,
 } from '@/hooks/use-cost-calculator';
@@ -56,6 +56,7 @@ import {
 	Edit2,
 	AlertTriangle,
 	RefreshCw,
+	Infinity,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -161,11 +162,15 @@ function ProductPageContent() {
 		setHardwarePurchaseType,
 		plusKartenCount,
 		setPlusKartenCount,
+		plusKarten,
+		setPlusKarten,
 		settings,
 		customBasePrice,
 		setCustomBasePrice,
 		hardwareTier,
 		setHardwareTier,
+		isHybrid,
+		setIsHybrid,
 	} = useCostCalculator(product);
 
 	const {
@@ -191,9 +196,9 @@ function ProductPageContent() {
 		setShowCustomPriceInput,
 	] = React.useState(false);
 	const [
-		tempCustomPrice,
-		setTempCustomPrice,
-	] = React.useState<string>('');
+		initializedBasketItemId,
+		setInitializedBasketItemId,
+	] = React.useState<string | null>(null);
 
 	const handleSelectHistoryPrice = React.useCallback((price: number) => {
 		setCustomBasePrice(price);
@@ -219,36 +224,54 @@ function ProductPageContent() {
 		? items.find((i) => i.id === basketItemId)
 		: undefined;
 
-	const isSameConfig = !!(
-		existingBasketItem &&
-		existingBasketItem.config.businessCase === businessCase &&
-		existingBasketItem.config.magentaTVPackage === magentaTVPackage &&
-		JSON.stringify(
-			[
-				...(existingBasketItem.config.selectedSpecialPriceIds || [
+	const isSameConfig = React.useMemo(() => {
+		return !!(
+			existingBasketItem &&
+			existingBasketItem.config.businessCase === businessCase &&
+			existingBasketItem.config.magentaTVPackage === magentaTVPackage &&
+			JSON.stringify(
+				[
+					...(existingBasketItem.config.selectedSpecialPriceIds || [
+					]),
+				].sort(),
+			) === JSON.stringify([
+				...(selectedSpecialPriceIds || [
 				]),
-			].sort(),
-		) === JSON.stringify([
-			...(selectedSpecialPriceIds || [
-			]),
-		].sort()) &&
-		JSON.stringify(
-			[
-				...(existingBasketItem.config.selectedAddonIds || [
+			].sort()) &&
+			JSON.stringify(
+				[
+					...(existingBasketItem.config.selectedAddonIds || [
+					]),
+				].sort(),
+			) === JSON.stringify([
+				...(selectedAddonIds || [
 				]),
-			].sort(),
-		) === JSON.stringify([
-			...(selectedAddonIds || [
-			]),
-		].sort()) &&
-		existingBasketItem.config.hardwarePurchaseType === hardwarePurchaseType &&
-		existingBasketItem.config.plusKartenCount === plusKartenCount &&
-		existingBasketItem.config.customBasePrice === customBasePrice &&
-		(existingBasketItem.config.hardwareTier || 'none') === hardwareTier
-	);
+			].sort()) &&
+			existingBasketItem.config.hardwarePurchaseType === hardwarePurchaseType &&
+			JSON.stringify(existingBasketItem.config.plusKarten || { normal: existingBasketItem.config.plusKartenCount ?? 0, flex: 0, kidsTeens: 0 }) === JSON.stringify(plusKarten) &&
+			existingBasketItem.config.customBasePrice === customBasePrice &&
+			(existingBasketItem.config.hardwareTier || 'none') === hardwareTier &&
+			(existingBasketItem.config as any).isHybrid === isHybrid
+		);
+	}, [
+		existingBasketItem,
+		businessCase,
+		magentaTVPackage,
+		selectedSpecialPriceIds,
+		selectedAddonIds,
+		hardwarePurchaseType,
+		plusKarten,
+		customBasePrice,
+		hardwareTier,
+		isHybrid,
+	]);
 
 	useEffect(() => {
-		if (basketItemId && product && items) {
+		if (!basketItemId) {
+			setInitializedBasketItemId(null);
+			return;
+		}
+		if (product && items && initializedBasketItemId !== basketItemId) {
 			const item = items.find((i) => i.id === basketItemId);
 			if (item) {
 				setBusinessCase(item.config.businessCase);
@@ -258,8 +281,14 @@ function ProductPageContent() {
 				if (item.config.hardwarePurchaseType) {
 					setHardwarePurchaseType(item.config.hardwarePurchaseType);
 				}
-				if (item.config.plusKartenCount !== undefined) {
-					setPlusKartenCount(item.config.plusKartenCount);
+				if (item.config.plusKarten !== undefined) {
+					setPlusKarten(item.config.plusKarten);
+				} else if (item.config.plusKartenCount !== undefined) {
+					setPlusKarten({
+						normal: item.config.plusKartenCount,
+						flex: 0,
+						kidsTeens: 0,
+					});
 				}
 				if (item.config.customBasePrice !== undefined) {
 					setCustomBasePrice(item.config.customBasePrice);
@@ -267,21 +296,30 @@ function ProductPageContent() {
 				if (item.config.hardwareTier) {
 					setHardwareTier(item.config.hardwareTier);
 				}
+				if ((item.config as any).isHybrid !== undefined) {
+					setIsHybrid((item.config as any).isHybrid);
+				} else {
+					setIsHybrid(false);
+				}
+				setInitializedBasketItemId(basketItemId);
 			}
 		}
 	}, [
 		basketItemId,
 		product,
 		items,
+		initializedBasketItemId,
 		setBusinessCase,
 		setSelectedSpecialPriceIds,
 		setMagentaTVPackage,
 		setSelectedAddonIds,
-		setPlusKartenCount,
+		setPlusKarten,
 		setHardwarePurchaseType,
 		setCustomBasePrice,
 		setHardwareTier,
+		setIsHybrid,
 	]);
+
 
 	// Persistent Alert Management
 	useEffect(() => {
@@ -315,13 +353,21 @@ function ProductPageContent() {
 							<div>
 								<div className="flex items-center gap-2 mb-1">
 									<h4 className="font-bold text-[0.95rem] m-0 text-amber-900">
-										Preis ist nicht aktuell
+										{customBasePrice === product.basePrice ? "Als Bestandstarif festgelegt" : "Preis ist nicht aktuell"}
 									</h4>
 								</div>
 								<p className="text-[0.8rem] text-amber-900/70 m-0 leading-relaxed max-w-[400px]">
-									Du hast einen{' '}
-									<span className="font-bold">abweichenden Preis</span>{' '}
-									gewählt. Sonderpreise und Optionen weichen eventuell ab. Bitte überprüfe dies sorgfältig.
+									{customBasePrice === product.basePrice ? (
+										<>
+											Du hast diesen Tarif als <span className="font-bold">Bestandstarif</span> markiert. Sonderpreise und Optionen weichen eventuell ab. Bitte überprüfe dies sorgfältig.
+										</>
+									) : (
+										<>
+											Du hast einen{' '}
+											<span className="font-bold">abweichenden Preis</span>{' '}
+											gewählt. Sonderpreise und Optionen weichen eventuell ab. Bitte überprüfe dies sorgfältig.
+										</>
+									)}
 								</p>
 							</div>
 						</div>
@@ -340,7 +386,7 @@ function ProductPageContent() {
 								onClick={() => setCustomBasePrice(undefined)}
 								className="px-4 py-2 text-[0.78rem] font-bold text-amber-800 hover:bg-black/5 rounded-lg transition-all outline-none cursor-pointer bg-transparent border-none active:scale-95"
 							>
-								Preis zurücksetzen
+								{customBasePrice === product.basePrice ? "Bestandstarif aufheben" : "Preis zurücksetzen"}
 							</button>
 						</div>
 					</Toast>
@@ -368,126 +414,22 @@ function ProductPageContent() {
 			addAlert({
 				id: alertId,
 				content: (
-					<Toast
-						key={alertId}
-						duration={0}
-						color={catColor}
-						onDismiss={() => {
+					<CustomPriceToast
+						catColor={catColor}
+						onClose={() => setShowCustomPriceInput(false)}
+						onApply={(price) => {
+							handleSelectHistoryPrice(price);
 							setShowCustomPriceInput(false);
-							setTempCustomPrice('');
 						}}
-						className="bg-white border-2 text-[#1a1a2e]"
-						style={{
-							borderColor: `${catColor}40`,
-						}}
-					>
-						<div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-(--cat-color) to-transparent opacity-5 blur-xl pointer-events-none rounded-full" />
-
-						<div className="flex gap-3 align-start relative z-10">
-							<div
-								className="shrink-0 flex items-center justify-center text-white mt-0.5 p-2 rounded-xl shadow-lg"
-								style={{
-									backgroundColor: catColor,
-									boxShadow: `0 8px 20px ${catColor}30`,
-								}}
-							>
-								<Edit2 className="w-5 h-5" />
-							</div>
-
-							<div className="flex-1">
-								<div className="flex items-center gap-2 mb-1">
-									<h4 className="font-bold text-[0.95rem] m-0 text-[#1a1a2e]">
-										Eigener Preis
-									</h4>
-								</div>
-								<p className="text-[0.8rem] text-[#666] m-0 mb-3 leading-relaxed max-w-[400px]">
-									Gib den monatlichen Grundpreis für diesen Tarif manuell ein.
-								</p>
-
-								<div className="relative group max-w-[200px]">
-									<input
-										type="text"
-										autoFocus
-										value={tempCustomPrice}
-										onChange={(e) => setTempCustomPrice(e.target.value)}
-										onKeyDown={(e) => {
-											if (e.key === 'Enter' && tempCustomPrice) {
-												const price = parseFloat(tempCustomPrice.replace(',', '.'));
-												if (!isNaN(price)) {
-													handleSelectHistoryPrice(price);
-													setShowCustomPriceInput(false);
-													setTempCustomPrice('');
-												}
-											}
-										}}
-										placeholder="0,00"
-										className="w-full bg-[#f7f8fa] border rounded-lg px-3 py-2 pr-8 text-[0.95rem] font-bold outline-none focus:bg-white transition-all text-[#1a1a2e] shadow-inner shadow-black/5"
-										style={{
-											borderColor: `${catColor}40`,
-											borderWidth: '2px',
-										}}
-										onFocus={(e) => {
-											e.currentTarget.style.borderColor = catColor;
-										}}
-										onBlur={(e) => {
-											e.currentTarget.style.borderColor = `${catColor}40`;
-										}}
-									/>
-									<span
-										className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-[0.95rem] transition-colors"
-										style={{
-											color: `${catColor}80`,
-										}}
-									>
-										€
-									</span>
-								</div>
-							</div>
-						</div>
-
-						<div className="flex items-center gap-2 mt-3 ml-12 relative z-10">
-							<button
-								type="button"
-								disabled={!tempCustomPrice}
-								onClick={() => {
-									const price = parseFloat(tempCustomPrice.replace(',', '.'));
-									if (!isNaN(price)) {
-										handleSelectHistoryPrice(price);
-										setShowCustomPriceInput(false);
-										setTempCustomPrice('');
-									}
-								}}
-								className="px-4 py-2 text-white text-[0.78rem] font-bold rounded-lg transition-all shadow-lg outline-none cursor-pointer border-none active:scale-95 flex items-center gap-1.5 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
-								style={{
-									backgroundColor: catColor,
-									boxShadow: `0 4px 12px ${catColor}30`,
-								}}
-							>
-								<Check className="w-4 h-4" />
-								Übernehmen
-							</button>
-							<button
-								type="button"
-								onClick={() => {
-									setShowCustomPriceInput(false);
-									setTempCustomPrice('');
-								}}
-								className="px-4 py-2 text-[0.78rem] font-bold text-[#888] hover:bg-black/5 hover:text-[#555] rounded-lg transition-all outline-none cursor-pointer bg-transparent border-none active:scale-95"
-							>
-								Abbrechen
-							</button>
-						</div>
-					</Toast>
+					/>
 				),
 			});
-		}
-		else {
+		} else {
 			removeAlert(alertId);
 		}
 		return () => removeAlert(alertId);
 	}, [
 		showCustomPriceInput,
-		tempCustomPrice,
 		addAlert,
 		removeAlert,
 		catColor,
@@ -551,8 +493,10 @@ function ProductPageContent() {
 			],
 			hardwarePurchaseType,
 			plusKartenCount,
+			plusKarten,
 			customBasePrice,
 			hardwareTier,
+			isHybrid,
 		};
 
 		if (existingBasketItem) {
@@ -570,6 +514,13 @@ function ProductPageContent() {
 
 	// Merged product name
 	let displayName = product.name;
+	if (isHybrid) {
+		if (displayName.includes('(DSL)')) {
+			displayName = displayName.replace('(DSL)', 'Hybrid').trim();
+		} else {
+			displayName = `${displayName} Hybrid`;
+		}
+	}
 	if (magentaTVPackage) {
 		displayName += ` mit ${MAGENTA_TV_PACKAGES[magentaTVPackage].name}`;
 	}
@@ -672,12 +623,35 @@ function ProductPageContent() {
 								)
 								: product.dataVolume && (
 									<div className="flex items-center gap-2">
-										<Wifi className="w-4 h-4" style={{
+										<Wifi className="w-4 h-4 text-pink-600" style={{
 											color: catColor,
 										}} />
-										<span className="text-[0.85rem] font-semibold text-[#555]">
-											{product.dataVolume}
-										</span>
+										<div className="relative overflow-visible flex items-center">
+											<AnimatePresence mode="wait">
+												{calculation.hasUnlimitedAdvantage || product.dataVolume?.toLowerCase().trim() === 'unlimited' ? (
+													<motion.span
+														key="unlimited-infinity"
+														initial={{ opacity: 0, scale: 0.8 }}
+														animate={{ opacity: 1, scale: 1 }}
+														exit={{ opacity: 0, scale: 0.8 }}
+														className="text-[1.25rem] font-bold text-[#e20074] flex items-center"
+														title={product.dataVolume?.toLowerCase().trim() === 'unlimited' ? "Inklusive Unlimited Datenvolumen" : "Unlimited durch Kombivorteil"}
+													>
+														<Infinity className="w-6 h-6 stroke-[2.5]" />
+													</motion.span>
+												) : (
+													<motion.span
+														key="standard-badge"
+														initial={{ opacity: 0, scale: 0.95 }}
+														animate={{ opacity: 1, scale: 1 }}
+														exit={{ opacity: 0, scale: 0.95 }}
+														className="text-[0.85rem] font-semibold text-[#555]"
+													>
+														{product.dataVolume}
+													</motion.span>
+												)}
+											</AnimatePresence>
+										</div>
 									</div>
 								)}
 							{(product.downloadSpeed ?? 0) > 0 &&
@@ -720,295 +694,354 @@ function ProductPageContent() {
 					</div>
 
 					{/* Right: Price highlight & Actions */}
-					<div className="shrink-0 flex items-start gap-4">
-						{/* MagentaInfos Link (Left of price) */}
-						{product.magentaInfosUrl && (
-							<a
-								href={product.magentaInfosUrl}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center gap-1.5 px-3.5 h-[46px] rounded-xl border transition-colors group/link shrink-0"
-								style={{
-									backgroundColor: `${catColor}0d`,
-									borderColor: `${catColor}26`,
-								}}
-							>
-								<ExternalLink
-									className="w-4 h-4 group-hover/link:scale-110 transition-transform"
-									style={{
-										color: catColor,
-									}}
-									strokeWidth={2.5}
-								/>
-							</a>
-						)}
+					<div className="shrink-0 flex flex-col items-end gap-2.5">
+						<div className="flex items-start gap-4">
+							{/* MagentaInfos Link (Left of price) */}
+							{product.magentaInfosUrl && (
+								<a
+									href={product.magentaInfosUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex items-center gap-2 px-3 h-[38px] bg-linear-to-r from-[#fcfafc] to-[#f7f8fa] border border-[#eaedf0] rounded-xl shadow-xs transition-all hover:bg-[#f0f2f5] active:scale-[0.98] shrink-0 cursor-pointer select-none"
+								>
+									<span className="text-[0.78rem] font-bold text-[#444] uppercase tracking-wide">
+										MagentaInfos
+									</span>
+									<ExternalLink
+										className="w-3.5 h-3.5 transition-transform"
+										style={{
+											color: catColor,
+										}}
+										strokeWidth={2.5}
+									/>
+								</a>
+							)}
 
-						{/* Price Card */}
-						<div className="relative z-50">
-							<button
-								type="button"
-								onClick={() => setPriceDropdownOpen(!priceDropdownOpen)}
-								className={clsx(
-									'bg-[#f7f8fa] border border-[#eaedf0] rounded-xl px-4 h-[46px] flex items-center shadow-sm w-full outline-none',
-									'cursor-pointer hover:bg-[#f0f2f5] transition-colors',
-								)}
-							>
-								{product.category === 'DEVICE' ? (
-									<div className="flex items-center gap-2">
-										<span className="text-[0.7rem] font-semibold text-[#aaa] uppercase tracking-wider mt-0.5">
-											Ab
-										</span>
-										<div className="flex items-center gap-3">
-											{(product as any).purchasePrice > 0 && (
-												<div className="flex items-baseline gap-1.5">
-													<span
-														className={clsx(
-															'font-extrabold tracking-tight leading-none',
-															((product as any).rentalPrice ||
-																product.basePrice) > 0
-																? 'text-[1.2rem]'
-																: 'text-[1.4rem]',
-														)}
-														style={{
-															color: catColor,
-														}}
-													>
-														<AnimatedNumber
-															value={(product as any).purchasePrice}
-														/>{' '}
-														€
-													</span>
-													<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
-														Kauf
-													</span>
-												</div>
-											)}
-											{((product as any).rentalPrice || product.basePrice) >
-												0 && (
+							{/* Price Card */}
+							<div className="relative z-50">
+								<button
+									type="button"
+									onClick={() => setPriceDropdownOpen(!priceDropdownOpen)}
+									className="bg-linear-to-r from-[#fcfafc] to-[#f7f8fa] border border-[#eaedf0] rounded-xl px-3.5 h-[38px] flex items-center shadow-xs w-full outline-none hover:bg-[#f0f2f5] active:scale-[0.98] transition-all select-none cursor-pointer"
+								>
+									{product.category === 'DEVICE' ? (
+										<div className="flex items-center gap-2">
+											<span className="text-[0.78rem] font-bold text-[#444] uppercase tracking-wide mt-0.5">
+												Ab
+											</span>
+											<div className="flex items-center gap-3">
+												{(product as any).purchasePrice > 0 && (
 													<div className="flex items-baseline gap-1.5">
 														<span
 															className={clsx(
 																'font-extrabold tracking-tight leading-none',
-																(product as any).purchasePrice > 0
-																	? 'text-[1.2rem]'
-																	: 'text-[1.4rem]',
+																((product as any).rentalPrice ||
+																	product.basePrice) > 0
+																	? 'text-[1.1rem]'
+																	: 'text-[1.2rem]',
 															)}
 															style={{
 																color: catColor,
 															}}
 														>
 															<AnimatedNumber
-																value={
-																	(product as any).rentalPrice ||
-																	product.basePrice
-																}
+																value={(product as any).purchasePrice}
 															/>{' '}
 															€
 														</span>
-														<span className="text-[0.75rem] text-[#b0b0b0] font-bold uppercase tracking-wider">
-															Miete
+														<span className="text-[0.78rem] text-[#444] font-bold uppercase tracking-wide">
+															Kauf
 														</span>
 													</div>
 												)}
-										</div>
-									</div>
-								) : (
-									<div className="flex items-center gap-1.5">
-										<span className="text-[0.75rem] font-bold text-[#b0b0b0] uppercase tracking-wider mt-0.5 select-none">
-											Ab
-										</span>
-										<span
-											className="text-[1.25rem] font-extrabold tracking-tight"
-											style={{
-												color: catColor,
-											}}
-										>
-											<AnimatedNumber
-												value={
-													customBasePrice !== undefined
-														? customBasePrice
-														: product.basePrice
-												}
-											/>{' '}
-											€
-										</span>
-										<span className="text-[0.75rem] font-bold text-[#b0b0b0] uppercase tracking-wider mt-0.5 select-none">
-											/Monat
-										</span>
-										<ChevronDown
-											className={clsx(
-												'w-4 h-4 ml-0.5 transition-transform',
-												priceDropdownOpen && 'rotate-180',
-											)}
-											style={{
-												color: catColor,
-											}}
-										/>
-									</div>
-								)}
-							</button>
-
-							{/* History Popover */}
-							<AnimatePresence>
-								{priceDropdownOpen && (
-									<>
-										<div
-											className="fixed inset-0 z-40"
-											onClick={() => setPriceDropdownOpen(false)}
-										/>
-										<motion.div
-											initial={{
-												opacity: 0,
-												y: -4,
-												scale: 0.98,
-											}}
-											animate={{
-												opacity: 1,
-												y: 0,
-												scale: 1,
-											}}
-											exit={{
-												opacity: 0,
-												y: -4,
-												scale: 0.98,
-											}}
-											transition={{
-												duration: 0.2,
-												ease: [
-													0.23,
-													1,
-													0.32,
-													1,
-												],
-											}}
-											className="absolute top-[calc(100%+12px)] w-[300px] md:w-[340px] right-0 bg-white border border-[#eaedf0] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.12)] z-1000 overflow-hidden backdrop-blur-xl"
-										>
-											{product.priceHistory && product.priceHistory.length > 0 ? (
-												<div className="px-4 py-3 border-b border-amber-100 bg-amber-50/80">
-													<div className="flex items-start gap-2.5">
-														<div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 mt-1 shadow-sm border border-amber-200/50">
-															<AlertTriangle className="w-6 h-6 text-amber-700" />
-														</div>
-														<p className="text-[0.75rem] leading-snug font-bold text-amber-900 m-0">
-															Historische Preise
-															<span className="block font-medium text-amber-800/70 mt-0.6">
-																Nicht für Neubereitstellungen empfohlen.
-																Sonderpreise & Optionen könnten nicht dazu
-																passen.
-															</span>
-														</p>
-													</div>
-												</div>
-											) : (
-												<div className="px-4 py-3 border-b border-[#eaedf0] bg-[#f7f8fa]/80">
-													<div className="flex items-start gap-2.5">
-														<div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 mt-1 shadow-sm border border-[#eaedf0]">
-															<Edit2 className="w-5 h-5 text-[#555]" />
-														</div>
-														<p className="text-[0.75rem] leading-snug font-bold text-[#1a1a2e] m-0 mt-0.5">
-															Preis anpassen
-															<span className="block font-medium text-[#666] mt-0.6">
-																Nicht für Neubereitstellungen empfohlen. Sonderpreise & Optionen könnten nicht dazu
-																passen.
-															</span>
-														</p>
-													</div>
-												</div>
-											)}
-											<div className="p-2 flex flex-col gap-1 max-h-[300px] overflow-y-auto scrollbar-none">
-												<button
-													type="button"
-													className={clsx(
-														'w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item',
-														customBasePrice === undefined
-															? 'font-bold'
-															: 'font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]',
-													)}
-													style={{
-														color:
-															customBasePrice === undefined
-																? catColor
-																: undefined,
-														...(customBasePrice === undefined
-															? {
-																backgroundColor: `${catColor}12`,
-															}
-															: {
-															}),
-													}}
-													onClick={() => {
-														setCustomBasePrice(undefined);
-														setPriceDropdownOpen(false);
-													}}
-												>
-													<span className="tracking-tight">
-														Aktueller Preis
-													</span>
-													<span className="font-bold opacity-90">
-														{product.basePrice.toFixed(2).replace('.', ',')} €
-													</span>
-												</button>
-												{product.priceHistory && product.priceHistory.length > 0 && (
-													<>
-														<div className="h-px bg-[#f0f2f5] my-1.5 mx-3" />
-														{product.priceHistory.map((ph: any) => (
-															<button
-																key={ph.id}
-																type="button"
+												{((product as any).rentalPrice || product.basePrice) >
+													0 && (
+														<div className="flex items-baseline gap-1.5">
+															<span
 																className={clsx(
-																	'w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item',
-																	customBasePrice === ph.price
-																		? 'font-bold'
-																		: 'font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]',
+																	'font-extrabold tracking-tight leading-none',
+																	(product as any).purchasePrice > 0
+																		? 'text-[1.1rem]'
+																		: 'text-[1.2rem]',
 																)}
 																style={{
-																	color:
-																		customBasePrice === ph.price
-																			? catColor
-																			: undefined,
-																	...(customBasePrice === ph.price
-																		? {
-																			backgroundColor: `${catColor}12`,
-																		}
-																		: {
-																		}),
+																	color: catColor,
 																}}
-																onClick={() => handleSelectHistoryPrice(ph.price)}
 															>
-																<span className="tracking-tight">
-																	{ph.label || 'Historischer Preis'}
-																</span>
-																<span className="font-bold opacity-90">
-																	{ph.price.toFixed(2).replace('.', ',')} €
-																</span>
-															</button>
-														))}
-													</>
-												)}
-
-												<div className="h-px bg-[#f0f2f5] my-1.5 mx-3" />
-
-												<button
-													type="button"
-													className="w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] font-bold transition-all flex justify-between items-center outline-none hover:bg-[#f7f8fa] text-[#666] group/item active:scale-[0.98]"
-													onClick={() => {
-														setShowCustomPriceInput(true);
-														setPriceDropdownOpen(false);
-													}}
-												>
-													<span className="tracking-tight">
-														Einen eigenen Preis festlegen
-													</span>
-													<div className="p-1.5 bg-[#f0f2f5] rounded-lg group-hover/item:bg-white transition-colors">
-														<Edit2 className="w-3.5 h-3.5" />
-													</div>
-												</button>
+																<AnimatedNumber
+																	value={
+																		(product as any).rentalPrice ||
+																		product.basePrice
+																	}
+																/>{' '}
+																€
+															</span>
+															<span className="text-[0.78rem] text-[#444] font-bold uppercase tracking-wide">
+																Miete
+															</span>
+														</div>
+													)}
 											</div>
-										</motion.div>
-									</>
-								)}
-							</AnimatePresence>
+										</div>
+									) : (
+										<div className="flex items-center gap-1.5">
+											<span className="text-[0.78rem] font-bold text-[#444] uppercase tracking-wide mt-0.5 select-none">
+												Ab
+											</span>
+											<span
+												className="text-[1.2rem] font-extrabold tracking-tight"
+												style={{
+													color: catColor,
+												}}
+											>
+												<AnimatedNumber
+													value={
+														customBasePrice !== undefined
+															? customBasePrice
+															: product.basePrice
+													}
+												/>{' '}
+												€
+											</span>
+											<span className="text-[0.78rem] font-bold text-[#444] uppercase tracking-wide mt-0.5 select-none">
+												/Monat
+											</span>
+											<ChevronDown
+												className={clsx(
+													'w-4 h-4 ml-0.5 transition-transform',
+													priceDropdownOpen && 'rotate-180',
+												)}
+												style={{
+													color: catColor,
+												}}
+											/>
+										</div>
+									)}
+								</button>
+
+								{/* History Popover */}
+								<AnimatePresence>
+									{priceDropdownOpen && (
+										<>
+											<div
+												className="fixed inset-0 z-40"
+												onClick={() => setPriceDropdownOpen(false)}
+											/>
+											<motion.div
+												initial={{
+													opacity: 0,
+													y: -4,
+													scale: 0.98,
+												}}
+												animate={{
+													opacity: 1,
+													y: 0,
+													scale: 1,
+												}}
+												exit={{
+													opacity: 0,
+													y: -4,
+													scale: 0.98,
+												}}
+												transition={{
+													duration: 0.2,
+													ease: [
+														0.23,
+														1,
+														0.32,
+														1,
+													],
+												}}
+												className="absolute top-[calc(100%+12px)] w-[300px] md:w-[340px] right-0 bg-white border border-[#eaedf0] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.12)] z-1000 overflow-hidden backdrop-blur-xl"
+											>
+												{product.priceHistory && product.priceHistory.length > 0 ? (
+													<div className="px-4 py-3 border-b border-amber-100 bg-amber-50/80">
+														<div className="flex items-start gap-2.5">
+															<div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 mt-1 shadow-sm border border-amber-200/50">
+																<AlertTriangle className="w-6 h-6 text-amber-700" />
+															</div>
+															<p className="text-[0.75rem] leading-snug font-bold text-amber-900 m-0">
+																Historische Preise
+																<span className="block font-medium text-amber-800/70 mt-0.6">
+																	Nicht für Neubereitstellungen empfohlen.
+																	Sonderpreise & Optionen könnten nicht dazu
+																	passen.
+																</span>
+															</p>
+														</div>
+													</div>
+												) : (
+													<div className="px-4 py-3 border-b border-[#eaedf0] bg-[#f7f8fa]/80">
+														<div className="flex items-start gap-2.5">
+															<div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 mt-1 shadow-sm border border-[#eaedf0]">
+																<Edit2 className="w-5 h-5 text-[#555]" />
+															</div>
+															<p className="text-[0.75rem] leading-snug font-bold text-[#1a1a2e] m-0 mt-0.5">
+																Produkt anpassen
+																<span className="block font-medium text-[#666] mt-0.6">
+																	Nicht für Neubereitstellungen empfohlen. Sonderpreise & Optionen könnten nicht dazu
+																	passen.
+																</span>
+															</p>
+														</div>
+													</div>
+												)}
+												<div className="p-2 flex flex-col gap-1 max-h-[300px] overflow-y-auto scrollbar-none">
+													<button
+														type="button"
+														className={clsx(
+															'w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item',
+															customBasePrice === undefined
+																? 'font-bold'
+																: 'font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]',
+														)}
+														style={{
+															color:
+																customBasePrice === undefined
+																	? catColor
+																	: undefined,
+															...(customBasePrice === undefined
+																? {
+																	backgroundColor: `${catColor}12`,
+																}
+																: {
+																}),
+														}}
+														onClick={() => {
+															setCustomBasePrice(undefined);
+															setPriceDropdownOpen(false);
+														}}
+													>
+														<span className="tracking-tight">
+															Aktueller Preis
+														</span>
+														<span className="font-bold opacity-90">
+															{product.basePrice.toFixed(2).replace('.', ',')} €
+														</span>
+													</button>
+													{product.priceHistory && product.priceHistory.length > 0 && (
+														<>
+															<div className="h-px bg-[#f0f2f5] my-1.5 mx-3" />
+															{product.priceHistory.map((ph: any) => (
+																<button
+																	key={ph.id}
+																	type="button"
+																	className={clsx(
+																		'w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item',
+																		customBasePrice === ph.price
+																			? 'font-bold'
+																			: 'font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]',
+																	)}
+																	style={{
+																		color:
+																			customBasePrice === ph.price
+																				? catColor
+																				: undefined,
+																		...(customBasePrice === ph.price
+																			? {
+																				backgroundColor: `${catColor}12`,
+																			}
+																			: {
+																			}),
+																	}}
+																	onClick={() => handleSelectHistoryPrice(ph.price)}
+																>
+																	<span className="tracking-tight">
+																		{ph.label || 'Historischer Preis'}
+																	</span>
+																	<span className="font-bold opacity-90">
+																		{ph.price.toFixed(2).replace('.', ',')} €
+																	</span>
+																</button>
+															))}
+														</>
+													)}
+
+													<button
+														type="button"
+														className="w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] font-bold transition-all flex justify-between items-center outline-none hover:bg-[#f7f8fa] text-[#666] group/item active:scale-[0.98]"
+														onClick={() => {
+															setShowCustomPriceInput(true);
+															setPriceDropdownOpen(false);
+														}}
+													>
+														<span className="tracking-tight">
+															Einen eigenen Preis festlegen
+														</span>
+														<div className="p-1.5 bg-[#f0f2f5] rounded-lg group-hover/item:bg-white transition-colors">
+															<Edit2 className="w-3.5 h-3.5" />
+														</div>
+													</button>
+
+													<div className="h-px bg-[#f0f2f5] my-1.5 mx-3" />
+
+													<button
+														type="button"
+														className={clsx(
+															'w-full text-left px-3.5 py-3 rounded-xl text-[0.85rem] transition-all flex justify-between items-center outline-none group/item',
+															customBasePrice === product.basePrice
+																? 'font-bold'
+																: 'font-medium hover:bg-[#f7f8fa] text-[#444] active:scale-[0.98]',
+														)}
+														style={{
+															color:
+																customBasePrice === product.basePrice
+																	? catColor
+																	: undefined,
+															...(customBasePrice === product.basePrice
+																? {
+																	backgroundColor: `${catColor}12`,
+																}
+																: {
+																}),
+														}}
+														onClick={() => {
+															handleSelectHistoryPrice(product.basePrice);
+														}}
+													>
+														<span className="tracking-tight">
+															Als Bestandstarif setzen
+														</span>
+														<div className="p-1.5 bg-[#f0f2f5] rounded-lg group-hover/item:bg-white transition-colors">
+															<RefreshCw className="w-3.5 h-3.5" />
+														</div>
+													</button>
+												</div>
+											</motion.div>
+										</>
+									)}
+								</AnimatePresence>
+							</div>
 						</div>
+
+						{/* Hybrid Switch */}
+						{product.allowHybrid && (
+							<div className="flex items-center gap-2.5 px-3 h-[38px] bg-linear-to-r from-[#fcfafc] to-[#f7f8fa] border border-[#eaedf0] rounded-xl shadow-xs select-none">
+								<span className="text-[0.78rem] font-bold text-[#444] uppercase tracking-wide">
+									Hybrid-Option
+								</span>
+								<button
+									type="button"
+									role="switch"
+									aria-checked={isHybrid}
+									onClick={() => setIsHybrid(!isHybrid)}
+									className={clsx(
+										'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none',
+										isHybrid ? 'bg-pink-600' : 'bg-gray-200'
+									)}
+									style={{
+										backgroundColor: isHybrid ? catColor : undefined
+									}}
+								>
+									<span
+										className={clsx(
+											'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out',
+											isHybrid ? 'translate-x-4' : 'translate-x-0'
+										)}
+									/>
+								</button>
+							</div>
+						)}
 					</div>
 				</div>
 			</motion.div>
@@ -1238,7 +1271,15 @@ function ProductPageContent() {
 											Bestandsprodukt
 										</div>
 										<div className="text-[0.8rem] text-[#666] max-w-[350px]">
-											Durch den abweichenden Preis wird dieser Tarif als Bestandsprodukt behandelt und ohne Einmalgebühren kalkuliert.
+											{customBasePrice === product.basePrice ? (
+												<>
+													Durch die Markierung als Bestandstarif wird dieser Tarif ohne Einmalgebühren kalkuliert.
+												</>
+											) : (
+												<>
+													Durch den abweichenden Preis wird dieser Tarif als Bestandsprodukt behandelt und ohne Einmalgebühren kalkuliert.
+												</>
+											)}
 										</div>
 									</motion.div>
 								) : (
@@ -1616,6 +1657,27 @@ function ProductPageContent() {
 						</ConfigSection>
 					)}
 
+					{/* Unified PlusKarten ConfigSection */}
+					{product.allowPlusKarten && (
+						<ConfigSection
+							id="pluskarten-unified-config"
+							title="Zweitkarten (PlusKarten) hinzufügen"
+							catColor="#e20074"
+							index={1.5}
+						>
+							<div className="space-y-4">
+
+
+								<PlusKartenConfigGroup
+									plusKarten={plusKarten}
+									setPlusKarten={setPlusKarten}
+									settings={settings}
+									catColor="#e20074"
+								/>
+							</div>
+						</ConfigSection>
+					)}
+
 					{/* Special Prices */}
 					<ConfigSection
 						id="tour-config-special-prices"
@@ -1819,7 +1881,7 @@ function ProductPageContent() {
 					)}
 
 					{/* Nudges */}
-					{category === 'MOBILE' && (
+					{category === 'MOBILE' && product.allowPlusKarten && (
 						<motion.div
 							id="tour-config-pluskarte"
 							initial={{
@@ -1834,7 +1896,7 @@ function ProductPageContent() {
 								delay: 0.4,
 								duration: 0.35,
 							}}
-							className="mt-4 border rounded-xl p-4 flex gap-4 items-start relative overflow-hidden"
+							className="mt-4 border rounded-xl p-4 flex flex-col relative overflow-hidden"
 							style={{
 								backgroundColor: `${catColor}0D`,
 								borderColor: `${catColor}33`,
@@ -1846,65 +1908,68 @@ function ProductPageContent() {
 									backgroundColor: `${catColor}1A`,
 								}}
 							/>
-							<div
-								className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-								style={{
-									backgroundColor: `${catColor}1A`,
-								}}
-							>
-								<UserPlus className="w-4 h-4" style={{
-									color: catColor,
-								}} />
-							</div>
-							<div className="flex-1">
-								<h4
-									className="text-[0.85rem] font-bold mb-1 leading-tight"
+							<div className="flex gap-4 items-start mb-3">
+								<div
+									className="w-8.5 h-8.5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
 									style={{
-										color: catColor,
+										backgroundColor: `${catColor}1A`,
 									}}
 								>
-									Biete eine PlusKarte an.
-								</h4>
-								<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0 mb-3">
-									Jede weitere Person surft für nur einen Bruchteil des Preises!{' '}
-									<br />
-									<strong>
-										1. Karte{' '}
-										<AnimatedNumber value={settings.plus_karte_first_price} />{' '}
-										€; ab 2. Karte{' '}
-										<AnimatedNumber
-											value={settings.plus_karte_following_price}
-										/>{' '}
-										€
-									</strong>
-								</p>
-
-								<div className="flex items-center gap-3">
-									<button
-										onClick={() =>
-											setPlusKartenCount(Math.max(0, plusKartenCount - 1))
-										}
-										className="w-7 h-7 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center hover:opacity-80 transition-opacity"
+									<UserPlus className="w-4 h-4" style={{
+										color: catColor,
+									}} />
+								</div>
+								<div className="flex-1">
+									<h4
+										className="text-[0.85rem] font-bold mb-1 leading-tight"
 										style={{
 											color: catColor,
 										}}
 									>
-										<Minus className="w-3.5 h-3.5" />
-									</button>
-									<span className="font-extrabold text-[#1a1a2e] text-[0.95rem] w-4 text-center">
-										{plusKartenCount}
-									</span>
-									<button
-										onClick={() => setPlusKartenCount(plusKartenCount + 1)}
-										className="w-7 h-7 rounded-full bg-white border border-[#eaedf0] flex items-center justify-center hover:opacity-80 transition-opacity"
-										style={{
-											color: catColor,
-										}}
-									>
-										<Plus className="w-3.5 h-3.5" />
-									</button>
+										Zweitkarten (PlusKarten)
+									</h4>
+									<p className="text-[0.75rem] text-[#1a1a2e]/70 leading-relaxed m-0">
+										Familie & Freunde surfen zum unschlagbaren Vorteilspreis!
+									</p>
 								</div>
 							</div>
+
+							{(() => {
+								const totalPK = plusKarten.normal + plusKarten.flex + plusKarten.kidsTeens;
+								if (totalPK > 0) {
+									return (
+										<div className="bg-white/80 backdrop-blur-xs p-3.5 rounded-xl border border-pink-500/10 flex flex-col gap-2.5">
+
+											{calculation.hasUnlimitedAdvantage && (
+												<div className="text-[0.72rem] text-pink-600 font-bold flex items-center gap-1.5 bg-pink-50 p-1.5 rounded-md border border-pink-100">
+													<Sparkles className="w-3.5 h-3.5 shrink-0" />
+													<span>Kombivorteil aktiv: Haupttarif surft Unlimited!</span>
+												</div>
+											)}
+											<button
+												onClick={() => document.getElementById('pluskarten-unified-config')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+												className="w-full mt-1 text-[0.72rem] py-1.5 font-bold text-center text-[#e20074] bg-[#e20074]/5 hover:bg-[#e20074]/10 rounded-lg transition-colors border border-[#e20074]/15 cursor-pointer"
+											>
+												Konfiguration anpassen
+											</button>
+										</div>
+									);
+								} else {
+									return (
+										<div className="bg-white/80 backdrop-blur-xs p-3.5 rounded-xl border border-pink-500/10 flex flex-col gap-2.5">
+											<p className="text-[0.72rem] text-gray-600 leading-normal m-0">
+												Füge im Konfigurator Zweitkarten hinzu, um dem Kunden einen enormen Sparvorteil und das unbegrenzte Datenvolumen zu sichern.
+											</p>
+											<button
+												onClick={() => document.getElementById('pluskarten-unified-config')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+												className="w-full text-[0.72rem] py-1.5 font-bold text-center text-white bg-[#e20074] hover:bg-[#c00062] rounded-lg shadow-sm transition-all active:scale-98 cursor-pointer"
+											>
+												Zweitkarten hinzufügen
+											</button>
+										</div>
+									);
+								}
+							})()}
 						</motion.div>
 					)}
 
@@ -2410,3 +2475,456 @@ function HardwareTierSelector({
 		</div>
 	);
 }
+
+/* ── PlusKarten Multi-Variant Configurator ── */
+interface PlusKartenConfigGroupProps {
+	plusKarten: { normal: number; flex: number; kidsTeens: number };
+	setPlusKarten: React.Dispatch<React.SetStateAction<{ normal: number; flex: number; kidsTeens: number }>>;
+	settings: any;
+	catColor: string;
+}
+
+const PlusKartenConfigGroup = ({
+	plusKarten,
+	setPlusKarten,
+	settings,
+	catColor,
+}: PlusKartenConfigGroupProps) => {
+	const totalCount = plusKarten.normal + plusKarten.flex + plusKarten.kidsTeens;
+	const [isManualExpanded, setIsManualExpanded] = React.useState(false);
+	const isPlusKartenToggled = isManualExpanded || totalCount > 0;
+
+	const firstPrice = settings?.plus_karte_first_price ?? 19.95;
+	const followingPrice = settings?.plus_karte_following_price ?? 14.95;
+	const flexPrice = settings?.plus_karte_flex_price ?? 19.95;
+	const kidsPrice = settings?.plus_karte_kids_price ?? 9.95;
+
+	const activationFeeNormal = settings?.plus_karte_activation_fee_normal ?? 19.95;
+	const activationFeeFlex = settings?.plus_karte_activation_fee_flex ?? 19.95;
+
+	const promoFreeNormal = !!settings?.plus_karte_promo_free_activation_normal;
+	const promoFreeFlex = !!settings?.plus_karte_promo_free_activation_flex;
+
+	const getCalculatedPrice = (key: 'normal' | 'flex' | 'kidsTeens', count: number) => {
+		if (count === 0) return 0;
+		if (key === 'normal') {
+			return firstPrice + (count - 1) * followingPrice;
+		}
+		if (key === 'flex') {
+			return count * flexPrice;
+		}
+		return count * kidsPrice;
+	};
+
+	const getStartingPrice = (key: 'normal' | 'flex' | 'kidsTeens') => {
+		if (key === 'normal') return firstPrice;
+		if (key === 'flex') return flexPrice;
+		return kidsPrice;
+	};
+
+	const variants = [
+		{
+			key: 'normal' as const,
+			name: 'PlusKarte (Normal)',
+			features: [
+				'24 Monate Mindestvertragslaufzeit',
+				`Monatlicher Basispreis: 1. Karte für ${firstPrice.toFixed(2).replace('.', ',')} €, danach ${followingPrice.toFixed(2).replace('.', ',')} € mtl.`,
+				promoFreeNormal
+					? `Bereitstellungspauschale: 0,00 € statt ${activationFeeNormal.toFixed(2).replace('.', ',')} € (Aktionspreis)`
+					: `Bereitstellungspauschale: ${activationFeeNormal.toFixed(2).replace('.', ',')} €`,
+			],
+		},
+		{
+			key: 'flex' as const,
+			name: 'PlusKarte Flex',
+			features: [
+				'Monatlich kündbar (Ohne Mindestlaufzeit)',
+				`Monatlicher Basispreis: ${flexPrice.toFixed(2).replace('.', ',')} € mtl.`,
+				promoFreeFlex
+					? `Bereitstellungspauschale: 0,00 € statt ${activationFeeFlex.toFixed(2).replace('.', ',')} € (Aktionspreis)`
+					: `Bereitstellungspauschale: ${activationFeeFlex.toFixed(2).replace('.', ',')} €`,
+			],
+		},
+		{
+			key: 'kidsTeens' as const,
+			name: 'PlusKarte Kids & Teens',
+			features: [
+				'24 Monate Mindestvertragslaufzeit',
+				'Ausschließlich für Kinder und Jugendliche unter 18 Jahren',
+				`Monatlicher Basispreis: ${kidsPrice.toFixed(2).replace('.', ',')} € mtl.`,
+				'Bereitstellungspauschale: Dauerhaft kostenlos (0,00 €)',
+			],
+		},
+	];
+
+	return (
+		<div className="space-y-4">
+			{/* Main Toggle Card (1:1 styling like MagentaTV main card toggle) */}
+			<motion.div
+				whileTap={{
+					scale: 0.98,
+				}}
+				onClick={() => {
+					if (isPlusKartenToggled) {
+						setIsManualExpanded(false);
+						setPlusKarten({ normal: 0, flex: 0, kidsTeens: 0 });
+					} else {
+						setIsManualExpanded(true);
+					}
+				}}
+				className={clsx(
+					'relative rounded-xl p-4 border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 group overflow-hidden',
+					isPlusKartenToggled ? 'bg-white' : 'bg-white hover:border-gray-300',
+				)}
+				style={{
+					borderColor: isPlusKartenToggled ? catColor : '#eaedf0',
+					backgroundColor: isPlusKartenToggled ? `${catColor}06` : 'white',
+				}}
+			>
+				{/* Stylized Zweitkarten Tag Indicator (1:1 like MagentaTV) */}
+				<div
+					className={clsx(
+						'relative z-10 w-25 h-10 rounded-lg shrink-0 font-extrabold flex items-center justify-center text-[0.85rem] transition-all duration-200 border-2',
+						isPlusKartenToggled
+							? 'bg-(--cat-color) text-white border-transparent'
+							: 'bg-transparent text-(--cat-color) border-(--cat-color) group-hover:text-white group-hover:border-white',
+					)}
+					style={{
+						borderColor: isPlusKartenToggled ? 'transparent' : catColor,
+						color: isPlusKartenToggled ? 'white' : catColor,
+						backgroundColor: isPlusKartenToggled ? catColor : 'transparent',
+					}}
+				>
+					ZWEITKARTEN
+				</div>
+
+				<div className="flex-1 flex flex-col justify-center items-start relative z-10">
+					<h3
+						className={clsx(
+							'text-[0.95rem] font-bold m-0 transition-colors',
+							isPlusKartenToggled ? 'text-(--cat-color)' : 'text-[#1a1a2e]',
+						)}
+						style={{
+							color: isPlusKartenToggled ? catColor : '#1a1a2e',
+						}}
+					>
+						Zweitkarten (PlusKarten) dazubuchen
+					</h3>
+					<p className="text-[0.78rem] m-0 text-[#999] mt-0.5">
+						ab {kidsPrice.toFixed(2).replace('.', ',')} € mtl. für Familie & Freunde
+					</p>
+				</div>
+
+				{/* Checkbox indicator */}
+				<div
+					className="relative z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+					style={{
+						borderColor: totalCount > 0 ? catColor : '#ddd',
+						backgroundColor: totalCount > 0 ? catColor : 'transparent',
+					}}
+				>
+					{totalCount > 0 && (
+						<Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />
+					)}
+				</div>
+			</motion.div>
+
+			{/* Sub-cards selection stack (appears when toggled on, 1:1 layout like MagentaTV sub-packages) */}
+			{isPlusKartenToggled && (
+				<motion.div
+					initial={{
+						opacity: 0,
+						height: 0,
+					}}
+					animate={{
+						opacity: 1,
+						height: 'auto',
+					}}
+					transition={{
+						duration: 0.25,
+					}}
+					className="space-y-2 mt-3"
+				>
+					{variants.map((v) => {
+						const count = plusKarten[v.key];
+						const isSelected = count > 0;
+						const isMaxReached = totalCount >= 5;
+						const maxAllowedForThis = 5 - (totalCount - count);
+
+						const displayPrice = isSelected ? getCalculatedPrice(v.key, count) : getStartingPrice(v.key);
+
+						return (
+							<motion.div
+								key={v.key}
+								layout
+								transition={{ type: "spring", stiffness: 350, damping: 30 }}
+								whileTap={!(isMaxReached && !isSelected) ? {
+									scale: 0.98,
+								} : undefined}
+								onClick={() => {
+									if (isSelected) {
+										// Deselect card type
+										setPlusKarten((prev) => ({
+											...prev,
+											[v.key]: 0,
+										}));
+									} else {
+										if (isMaxReached) return;
+										// Select card type with 1 card default
+										setPlusKarten((prev) => ({
+											...prev,
+											[v.key]: 1,
+										}));
+									}
+								}}
+								className={clsx(
+									"rounded-xl p-3.5 border-2 cursor-pointer transition-colors duration-200 relative overflow-hidden",
+									isMaxReached && !isSelected ? "opacity-40 pointer-events-none" : ""
+								)}
+								style={{
+									borderColor: isSelected ? catColor : '#eaedf0',
+									backgroundColor: isSelected
+										? `${catColor}08`
+										: '#fafafa',
+								}}
+							>
+								<div className="flex items-center gap-3">
+									{/* Checkbox circle with Check (makes it checkboxes instead of radio buttons) */}
+									<div
+										className="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all duration-200"
+										style={{
+											borderColor: isSelected ? catColor : '#ccc',
+											backgroundColor: isSelected
+												? catColor
+												: 'transparent',
+										}}
+									>
+										{isSelected && (
+											<Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />
+										)}
+									</div>
+
+									{/* Metadata */}
+									<div className="flex-1 min-w-0">
+										<span className="text-[0.85rem] font-semibold text-[#1a1a2e] block">
+											{v.name}
+										</span>
+									</div>
+
+									{/* Price display on the right */}
+									<span
+										className="text-[0.82rem] font-bold shrink-0"
+										style={{
+											color: isSelected ? catColor : '#888',
+										}}
+									>
+										+ {displayPrice.toFixed(2).replace('.', ',')} €
+									</span>
+								</div>
+
+								{/* Features & Quantity Selection (shown when selected) */}
+								{isSelected && (
+									<motion.div
+										layout="position"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{ duration: 0.2 }}
+										className="mt-3 pt-3 border-t border-dashed"
+										style={{
+											borderColor: `${catColor}25`,
+										}}
+										onClick={(e) => e.stopPropagation()}
+									>
+										<ul className="space-y-1.5 m-0 p-0 list-none">
+											{v.features.map((feature: string, idx: number) => (
+												<li
+													key={idx}
+													className="flex items-start gap-2 text-[0.75rem] text-[#666]"
+												>
+													<Check
+														className="w-3.5 h-3.5 shrink-0 mt-0.5"
+														style={{
+															color: catColor,
+														}}
+														strokeWidth={3}
+													/>
+													<span>{feature}</span>
+												</li>
+											))}
+										</ul>
+
+										{/* Horizontal Segmented Quantity Control */}
+										<div
+											className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-3 border-t border-dashed"
+											style={{
+												borderColor: `${catColor}15`,
+											}}
+										>
+											<span className="text-[0.75rem] text-gray-500 font-semibold">
+												Kartenanzahl auswählen:
+											</span>
+											<motion.div
+												layout
+												transition={{ type: "spring", stiffness: 400, damping: 35 }}
+												className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-2xs overflow-hidden"
+											>
+												<AnimatePresence mode="popLayout" initial={false}>
+													{Array.from({ length: maxAllowedForThis }, (_, i) => i + 1).map((val) => {
+														const isCountSelected = count === val;
+														return (
+															<motion.button
+																key={val}
+																layout
+																initial={{ opacity: 0, scale: 0.6 }}
+																animate={{ opacity: 1, scale: 1 }}
+																exit={{ opacity: 0, scale: 0.6 }}
+																transition={{ type: "spring", stiffness: 400, damping: 30 }}
+																type="button"
+																onClick={() => {
+																	setPlusKarten((prev) => ({
+																		...prev,
+																		[v.key]: val,
+																	}));
+																}}
+																className={clsx(
+																	"w-6.5 h-6.5 rounded-md text-[0.72rem] font-extrabold transition-colors duration-200 flex items-center justify-center cursor-pointer",
+																	isCountSelected
+																		? "text-white shadow-xs"
+																		: "text-gray-500 hover:bg-gray-100"
+																)}
+																style={{
+																	backgroundColor: isCountSelected ? catColor : 'transparent',
+																	color: isCountSelected ? 'white' : undefined,
+																}}
+															>
+																{val}
+															</motion.button>
+														);
+													})}
+												</AnimatePresence>
+											</motion.div>
+										</div>
+									</motion.div>
+								)}
+							</motion.div>
+						);
+					})}
+				</motion.div>
+			)}
+		</div>
+	);
+};
+
+interface CustomPriceToastProps {
+	catColor: string;
+	onClose: () => void;
+	onApply: (price: number) => void;
+}
+
+function CustomPriceToast({ catColor, onClose, onApply }: CustomPriceToastProps) {
+	const [tempCustomPrice, setTempCustomPrice] = React.useState<string>('');
+
+	const handleApply = React.useCallback(() => {
+		const price = parseFloat(tempCustomPrice.replace(',', '.'));
+		if (!isNaN(price)) {
+			onApply(price);
+		}
+	}, [tempCustomPrice, onApply]);
+
+	return (
+		<Toast
+			key="custom-price-input"
+			duration={0}
+			color={catColor}
+			onDismiss={onClose}
+			className="bg-white border-2 text-[#1a1a2e]"
+			style={{
+				borderColor: `${catColor}40`,
+			}}
+		>
+			<div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-(--cat-color) to-transparent opacity-5 blur-xl pointer-events-none rounded-full" />
+
+			<div className="flex gap-3 align-start relative z-10">
+				<div
+					className="shrink-0 flex items-center justify-center text-white mt-0.5 p-2 rounded-xl shadow-lg"
+					style={{
+						backgroundColor: catColor,
+						boxShadow: `0 8px 20px ${catColor}30`,
+					}}
+				>
+					<Edit2 className="w-5 h-5" />
+				</div>
+
+				<div className="flex-1">
+					<div className="flex items-center gap-2 mb-1">
+						<h4 className="font-bold text-[0.95rem] m-0 text-[#1a1a2e]">
+							Eigener Preis
+						</h4>
+					</div>
+					<p className="text-[0.8rem] text-[#666] m-0 mb-3 leading-relaxed max-w-[400px]">
+						Gib den monatlichen Grundpreis für diesen Tarif manuell ein.
+					</p>
+
+					<div className="relative group max-w-[200px]">
+						<input
+							type="text"
+							autoFocus
+							value={tempCustomPrice}
+							onChange={(e) => setTempCustomPrice(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' && tempCustomPrice) {
+									handleApply();
+								}
+							}}
+							placeholder="0,00"
+							className="w-full bg-[#f7f8fa] border rounded-lg px-3 py-2 pr-8 text-[0.95rem] font-bold outline-none focus:bg-white transition-all text-[#1a1a2e] shadow-inner shadow-black/5"
+							style={{
+								borderColor: `${catColor}40`,
+								borderWidth: '2px',
+							}}
+							onFocus={(e) => {
+								e.currentTarget.style.borderColor = catColor;
+							}}
+							onBlur={(e) => {
+								e.currentTarget.style.borderColor = `${catColor}40`;
+							}}
+						/>
+						<span
+							className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-[0.95rem] transition-colors"
+							style={{
+								color: `${catColor}80`,
+							}}
+						>
+							€
+						</span>
+					</div>
+				</div>
+			</div>
+
+			<div className="flex items-center gap-2 mt-3 ml-12 relative z-10">
+				<button
+					type="button"
+					disabled={!tempCustomPrice}
+					onClick={handleApply}
+					className="px-4 py-2 text-white text-[0.78rem] font-bold rounded-lg transition-all shadow-lg outline-none cursor-pointer border-none active:scale-95 flex items-center gap-1.5 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
+					style={{
+						backgroundColor: catColor,
+						boxShadow: `0 4px 12px ${catColor}30`,
+					}}
+				>
+					<Check className="w-4 h-4" />
+					Übernehmen
+				</button>
+				<button
+					type="button"
+					onClick={onClose}
+					className="px-4 py-2 text-[0.78rem] font-bold text-[#888] hover:bg-black/5 hover:text-[#555] rounded-lg transition-all outline-none cursor-pointer bg-transparent border-none active:scale-95"
+				>
+					Abbrechen
+				</button>
+			</div>
+		</Toast>
+	);
+}
+

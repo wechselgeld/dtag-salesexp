@@ -1,13 +1,13 @@
 'use client';
 
 import {
-	ArrowLeft, ChevronDown,
+	ArrowLeft,
 } from 'lucide-react';
 import {
-	motion, AnimatePresence,
+	motion,
 } from 'framer-motion';
 import {
-	useState, useEffect,
+	useEffect,
 } from 'react';
 import {
 	GlobalFooter,
@@ -21,7 +21,7 @@ import {
 	useChangelogStore,
 } from '@/lib/store/changelog-store';
 
-export default function FAQPage() {
+export default function ChangelogPage() {
 	const setLastSeenChangelogId = useChangelogStore((state) => state.setLastSeenChangelogId);
 
 	useEffect(() => {
@@ -34,21 +34,23 @@ export default function FAQPage() {
 	]);
 
 	return (
-		<div className="min-h-screen py-12 px-4 selection:bg-[#e20074]/10 selection:text-[#e20074]">
-			<div className="max-w-3xl mx-auto">
+		<div className="min-h-screen py-16 px-4 sm:px-6 bg-[#fafafa] selection:bg-[#e20074]/10 selection:text-[#e20074]">
+			<div className="max-w-2xl mx-auto">
 				{/* ─── Header / Branding ─── */}
 				<PageHeader
 					title="Änderungsverlauf"
-					description="Hier findest Du alle Änderungen und Updates der Sales Experience."
+					description="Aktuelle Neuerungen, Optimierungen und Ankündigungen der Sales Experience."
+					className="mb-16"
 				/>
 
-				<div className="space-y-12 mb-16">
+				{/* ─── Timeline Feed ─── */}
+				<div className="relative border-l border-slate-200 ml-3 sm:ml-6 pl-6 sm:pl-10 space-y-16 mb-20 pb-4">
 					{CHANGELOG_DATA.map((category, catIdx) => (
 						<motion.section
 							key={category.id}
 							initial={{
 								opacity: 0,
-								y: 20,
+								y: 16,
 							}}
 							animate={{
 								opacity: 1,
@@ -56,7 +58,7 @@ export default function FAQPage() {
 							}}
 							transition={{
 								duration: 0.5,
-								delay: 0.1 + catIdx * 0.1,
+								delay: catIdx * 0.05,
 								ease: [
 									0.16,
 									1,
@@ -64,152 +66,75 @@ export default function FAQPage() {
 									1,
 								],
 							}}
-							className="space-y-6"
+							className="relative group"
 						>
-							<div className="flex items-center gap-4 px-2">
-								<h2 className="text-[1.3rem] font-extrabold text-[#1a1a2e] m-0 tracking-tight">
+							{/* Timeline Dot/Node */}
+							<div className="absolute -left-[31px] sm:-left-[47px] top-2 w-3 h-3 rounded-full bg-white border-2 border-slate-300 z-10 transition-all duration-300 group-hover:border-[#e20074] group-hover:bg-[#e20074] group-hover:shadow-[0_0_8px_rgba(226,0,116,0.5)]" />
+
+							{/* Release Date Header */}
+							<div className="flex items-center gap-3 mb-6">
+								<h2 className="text-[1.25rem] sm:text-[1.35rem] font-bold text-[#111] m-0 tracking-tight">
 									{category.title}
 								</h2>
+								{category.isMajor && (
+									<span className="text-[10px] font-bold text-[#e20074] uppercase tracking-wider bg-[#e20074]/5 px-2 py-0.5 rounded border border-[#e20074]/10">
+										Major Update
+									</span>
+								)}
 							</div>
 
-							<div className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.03)] border border-[#eaedf0] p-3 sm:p-5 space-y-3">
-								{category.items.map((item, i) => (
-									<FAQItem
-										key={`${catIdx}-${i}`}
-										question={item.q}
-										answer={item.a}
-										index={i}
-									/>
-								))}
+							{/* Release Content Card */}
+							<div className="bg-white rounded-2xl border border-slate-100 p-6 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.015)] transition-all duration-300 group-hover:border-slate-200/80 group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
+								<div className="divide-y divide-slate-100">
+									{category.items.map((item, idx) => {
+										const isAdded = item.q === 'Hinzugefügt';
+										const isChanged = item.q === 'Geändert';
+										const isRemoved = item.q === 'Entfernt';
+										return (
+											<div
+												key={idx}
+												className="py-4.5 first:pt-0 last:pb-0 flex items-start gap-4"
+											>
+												{/* Action Badge */}
+												<div className="shrink-0 pt-0.5 min-w-[90px]">
+													<span className={clsx(
+														'inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+														isAdded && 'text-[#e20074] bg-[#e20074]/5',
+														isChanged && 'text-[#3b82f6] bg-[#3b82f6]/5',
+														isRemoved && 'text-[#64748b] bg-[#64748b]/5',
+													)}>
+														{item.q}
+													</span>
+												</div>
+
+												{/* Description */}
+												<p className="text-[0.925rem] text-[#444] leading-relaxed m-0 font-normal">
+													{item.a}
+												</p>
+											</div>
+										);
+									})}
+								</div>
 							</div>
 						</motion.section>
 					))}
 				</div>
 
-				<div className="flex justify-center mb-20">
+				<div className="flex justify-center mb-24">
 					<button
 						onClick={() => window.history.back()}
-						className="inline-flex items-center justify-center px-10 py-5 bg-[#1a1a2e] hover:bg-black text-white font-bold rounded-2xl transition-all cursor-pointer border-none shadow-xl shadow-[#1a1a2e]/20 active:scale-[0.98] gap-2.5 text-[1rem]"
+						className="inline-flex items-center justify-center px-8 py-3.5 bg-[#1a1a2e] hover:bg-black text-white text-[0.95rem] font-bold rounded-xl transition-all cursor-pointer border-none shadow-md hover:shadow-lg active:scale-[0.98] gap-2 group"
 					>
-						<ArrowLeft className="w-5 h-5" />
+						<ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
 						Zurück zur App
 					</button>
 				</div>
 
 				<GlobalFooter
-					className="pt-10 pb-0 mt-4 text-[#bbb]"
-					linkColor="text-[#bbb]"
+					className="pt-10 pb-0 mt-4 text-[#aaa]"
+					linkColor="text-[#aaa]"
 				/>
 			</div>
 		</div>
-	);
-}
-
-function FAQItem({
-	question,
-	answer,
-	index,
-}: {
-	question: string;
-	answer: string;
-	index: number;
-}) {
-	const [
-		open,
-		setOpen,
-	] = useState(false);
-
-	return (
-		<motion.div
-			initial={{
-				opacity: 0,
-				y: 10,
-			}}
-			animate={{
-				opacity: 1,
-				y: 0,
-			}}
-			transition={{
-				delay: index * 0.05,
-				duration: 0.4,
-				ease: [
-					0.16,
-					1,
-					0.3,
-					1,
-				],
-			}}
-			className={clsx(
-				'group rounded-3xl border transition-all duration-300 overflow-hidden',
-				open
-					? 'border-[#e20074]/30 bg-[#e20074]/2 shadow-xs'
-					: 'border-transparent bg-[#f7f8fa] hover:bg-white hover:border-[#eaedf0] hover:shadow-sm',
-			)}
-		>
-			<button
-				onClick={() => setOpen(!open)}
-				className="w-full flex items-center justify-between px-6 py-4.5 text-left cursor-pointer bg-transparent border-none outline-none group"
-			>
-				<span
-					className={clsx(
-						'text-[0.95rem] font-bold transition-colors duration-300 pr-6 leading-snug',
-						open
-							? 'text-[#e20074]'
-							: 'text-[#1a1a2e] group-hover:text-[#e20074]',
-					)}
-				>
-					{question}
-				</span>
-				<div
-					className={clsx(
-						'w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 transition-all duration-300',
-						open
-							? 'bg-[#e20074] border-[#e20074] text-white shadow-lg shadow-[#e20074]/20'
-							: 'border-[#eaedf0] bg-white text-[#ccc] group-hover:border-[#e20074]/30 group-hover:text-[#e20074]',
-					)}
-				>
-					<ChevronDown
-						className={clsx(
-							'w-3.5 h-3.5 transition-transform duration-300',
-							open && 'rotate-180',
-						)}
-						strokeWidth={2.5}
-					/>
-				</div>
-			</button>
-			<AnimatePresence initial={false}>
-				{open && (
-					<motion.div
-						initial={{
-							height: 0,
-							opacity: 0,
-						}}
-						animate={{
-							height: 'auto',
-							opacity: 1,
-						}}
-						exit={{
-							height: 0,
-							opacity: 0,
-						}}
-						transition={{
-							duration: 0.35,
-							ease: [
-								0.16,
-								1,
-								0.3,
-								1,
-							],
-						}}
-					>
-						<div className="px-6 pb-6 pt-1">
-							<p className="text-[0.92rem] text-[#5b5b71] leading-relaxed m-0 font-medium">
-								{answer}
-							</p>
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
-		</motion.div>
 	);
 }

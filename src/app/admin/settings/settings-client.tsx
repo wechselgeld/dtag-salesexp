@@ -758,7 +758,14 @@ function PricingPanel() {
 		magentatv_megastream_price: '30.00',
 		shipping_hardware_fee: '6.95',
 		plus_karte_first_price: '19.95',
-		plus_karte_following_price: '9.95',
+		plus_karte_following_price: '14.95',
+		plus_karte_flex_price: '19.95',
+		plus_karte_kids_price: '9.95',
+		plus_karte_activation_fee_normal: '19.95',
+		plus_karte_activation_fee_flex: '19.95',
+		plus_karte_activation_fee_kids: '0.00',
+		plus_karte_promo_free_activation_normal: 'true',
+		plus_karte_promo_free_activation_flex: 'true',
 		mobile_tier_smartphone: '10.00',
 		mobile_tier_top: '20.00',
 		mobile_tier_premium: '30.00',
@@ -778,6 +785,20 @@ function PricingPanel() {
 					pricingSettings.plus_karte_first_price.toFixed(2),
 				plus_karte_following_price:
 					pricingSettings.plus_karte_following_price.toFixed(2),
+				plus_karte_flex_price:
+					pricingSettings.plus_karte_flex_price.toFixed(2),
+				plus_karte_kids_price:
+					pricingSettings.plus_karte_kids_price.toFixed(2),
+				plus_karte_activation_fee_normal:
+					pricingSettings.plus_karte_activation_fee_normal.toFixed(2),
+				plus_karte_activation_fee_flex:
+					pricingSettings.plus_karte_activation_fee_flex.toFixed(2),
+				plus_karte_activation_fee_kids:
+					pricingSettings.plus_karte_activation_fee_kids.toFixed(2),
+				plus_karte_promo_free_activation_normal:
+					pricingSettings.plus_karte_promo_free_activation_normal ? 'true' : 'false',
+				plus_karte_promo_free_activation_flex:
+					pricingSettings.plus_karte_promo_free_activation_flex ? 'true' : 'false',
 				mobile_tier_smartphone:
 					pricingSettings.mobile_tier_smartphone.toFixed(2),
 				mobile_tier_top:
@@ -899,7 +920,7 @@ function PricingPanel() {
 			>
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<Input
-						label="PlusKarte (Erste)"
+						label="PlusKarte Normal (Erste)"
 						type="number"
 						step="0.01"
 						value={form.plus_karte_first_price}
@@ -908,12 +929,57 @@ function PricingPanel() {
 						}
 					/>
 					<Input
-						label="PlusKarte (Jede weitere)"
+						label="PlusKarte Normal (Jede weitere)"
 						type="number"
 						step="0.01"
 						value={form.plus_karte_following_price}
 						onChange={(e) =>
 							handleChange('plus_karte_following_price', e.target.value)
+						}
+					/>
+					<Input
+						label="PlusKarte Flex"
+						type="number"
+						step="0.01"
+						value={form.plus_karte_flex_price}
+						onChange={(e) =>
+							handleChange('plus_karte_flex_price', e.target.value)
+						}
+					/>
+					<Input
+						label="PlusKarte Kids & Teens"
+						type="number"
+						step="0.01"
+						value={form.plus_karte_kids_price}
+						onChange={(e) =>
+							handleChange('plus_karte_kids_price', e.target.value)
+						}
+					/>
+					<Input
+						label="Bereitstellung PlusKarte Normal"
+						type="number"
+						step="0.01"
+						value={form.plus_karte_activation_fee_normal}
+						onChange={(e) =>
+							handleChange('plus_karte_activation_fee_normal', e.target.value)
+						}
+					/>
+					<Input
+						label="Bereitstellung PlusKarte Flex"
+						type="number"
+						step="0.01"
+						value={form.plus_karte_activation_fee_flex}
+						onChange={(e) =>
+							handleChange('plus_karte_activation_fee_flex', e.target.value)
+						}
+					/>
+					<Input
+						label="Bereitstellung PlusKarte Kids & Teens"
+						type="number"
+						step="0.01"
+						value={form.plus_karte_activation_fee_kids}
+						onChange={(e) =>
+							handleChange('plus_karte_activation_fee_kids', e.target.value)
 						}
 					/>
 					<Input
@@ -925,6 +991,52 @@ function PricingPanel() {
 							handleChange('shipping_hardware_fee', e.target.value)
 						}
 					/>
+					
+					<div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 mt-2 pt-4 border-t border-[#eaedf0]">
+						<div className="flex items-center justify-between p-4 bg-[#f7f8fa] rounded-xl border border-[#eaedf0]">
+							<div>
+								<span className="text-[0.8rem] font-bold text-[#1a1a2e] block mb-1">
+									Aktion: Bereitstellungsgebühr Normal entfällt
+								</span>
+								<span className="text-[0.7rem] text-[#888] block">
+									Aktive Promo: 0 € AP statt {form.plus_karte_activation_fee_normal} €
+								</span>
+							</div>
+							<label className="relative inline-flex items-center cursor-pointer">
+								<input
+									type="checkbox"
+									className="sr-only peer"
+									checked={form.plus_karte_promo_free_activation_normal === 'true'}
+									onChange={(e) =>
+										handleChange('plus_karte_promo_free_activation_normal', e.target.checked ? 'true' : 'false')
+									}
+								/>
+								<div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#e20074]"></div>
+							</label>
+						</div>
+
+						<div className="flex items-center justify-between p-4 bg-[#f7f8fa] rounded-xl border border-[#eaedf0]">
+							<div>
+								<span className="text-[0.8rem] font-bold text-[#1a1a2e] block mb-1">
+									Aktion: Bereitstellungsgebühr Flex entfällt
+								</span>
+								<span className="text-[0.7rem] text-[#888] block">
+									Aktive Promo: 0 € AP statt {form.plus_karte_activation_fee_flex} €
+								</span>
+							</div>
+							<label className="relative inline-flex items-center cursor-pointer">
+								<input
+									type="checkbox"
+									className="sr-only peer"
+									checked={form.plus_karte_promo_free_activation_flex === 'true'}
+									onChange={(e) =>
+										handleChange('plus_karte_promo_free_activation_flex', e.target.checked ? 'true' : 'false')
+									}
+								/>
+								<div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#e20074]"></div>
+							</label>
+						</div>
+					</div>
 				</div>
 			</AdminFormSection>
 

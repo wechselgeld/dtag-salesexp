@@ -139,14 +139,25 @@ setIsChartReady,
 				vouchers: item.config.vouchers,
 				credits: item.config.credits || [
 				],
+				plusKartenCount: item.config.plusKartenCount,
+				plusKarten: item.config.plusKarten,
 				settings,
+				isHybrid: (item.config as any).isHybrid,
 			});
 
 			calculation.monthlyCosts.forEach((mc, index) => {
 				if (data[index]) {
 					data[index].total += mc.total;
+					let baseName = item.product.name;
+					if ((item.config as any).isHybrid) {
+						if (baseName.includes('(DSL)')) {
+							baseName = baseName.replace('(DSL)', 'Hybrid').trim();
+						} else {
+							baseName = `${baseName} Hybrid`;
+						}
+					}
 					data[index].details.push({
-						name: item.product.name,
+						name: baseName,
 						cost: mc.total,
 					});
 				}

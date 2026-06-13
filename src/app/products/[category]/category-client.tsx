@@ -28,6 +28,7 @@ import {
 	Plus,
 	Sparkles,
 	ArrowDown,
+	Infinity as InfinityIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -49,6 +50,8 @@ import {
 import {
 	Skeleton,
 } from '@/components/shared/skeleton';
+
+
 
 /* --- Custom UI Icons --- */
 const SpeedTacho = ({
@@ -737,6 +740,7 @@ export default function ProductListPage() {
 								const isFocused = session?.team?.highlights.some(
 									(h) => h.productId === product.id,
 								);
+								const isStandalone = false;
 
 								return (
 									<motion.div
@@ -759,32 +763,48 @@ export default function ProductListPage() {
 										} as React.CSSProperties}
 										data-cursor="view"
 										className={clsx(
-											'bg-linear-to-br from-white to-[#fcfafc] rounded-2xl flex flex-col justify-between transition-all duration-300 group border relative cursor-pointer overflow-hidden',
-											isFocused ? 'highlight-glow' : 'border-[#eaedf0]',
+											isStandalone
+												? 'bg-linear-to-br from-white to-[#fffcfb] border-2 border-pink-500/20 rounded-2xl shadow-xl shadow-pink-500/5 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group cursor-pointer'
+												: 'bg-linear-to-br from-white to-[#fcfafc] rounded-2xl flex flex-col justify-between transition-all duration-300 group border relative cursor-pointer overflow-hidden',
+											isFocused ? 'highlight-glow' : !isStandalone ? 'border-[#eaedf0]' : '',
 											isCardCompact ? 'p-3.5' : 'p-5',
 										)}
 									>
+										{isStandalone && (
+											<div className="absolute top-0 right-0 w-48 h-48 bg-linear-to-br from-pink-500/10 to-transparent blur-2xl pointer-events-none rounded-full" />
+										)}
+
 										{/* Gradient overlay - hover only */}
 										<div
 											className="absolute inset-0 pointer-events-none rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
 											style={{
 												background: `linear-gradient(to right, transparent 20%, ${catColor}10 60%, ${catColor}18 100%)`,
+
 											}}
 										/>
 
 										{/* Top section */}
 										<div className="relative z-10">
 											{/* Badges row */}
-											{isFocused && (
-												<div className="mb-2 flex items-center gap-2">
+											<div className="mb-2 flex flex-wrap items-center gap-2">
+												{isFocused && (
 													<div className="inline-flex bg-[rgba(255,213,79,0.15)] text-[#b78900] px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide leading-none uppercase items-center gap-1 whitespace-nowrap">
 														<Star className="w-3 h-3 fill-current" />
 														<span className="relative top-[1.5px]">
 															TEAM-FOKUS
 														</span>
 													</div>
-												</div>
-											)}
+												)}
+												{isStandalone && (
+													<div className="inline-flex bg-pink-50 text-[#e20074] px-2 py-0.5 rounded text-[0.65rem] font-bold tracking-wide leading-none uppercase items-center gap-1 whitespace-nowrap border border-pink-100/50">
+														<Sparkles className="w-3 h-3 text-[#e20074] fill-current" />
+														<span className="relative top-[1px]">
+															ZUSATZKARTEN
+														</span>
+													</div>
+												)}
+											</div>
+
 
 
 											{/* Title + Duration + Stats indicator on same line (or wrapped downwards when small) */}
@@ -830,8 +850,12 @@ export default function ProductListPage() {
 																}
 																color={catColor}
 															/>
-															<span className="mt-0.5">
-																{product.dataVolume}
+															<span className="mt-0.5 flex items-center">
+																{product.dataVolume?.toLowerCase().trim() === 'unlimited' ? (
+																	<InfinityIcon className="w-4 h-4 stroke-[2.5]" />
+																) : (
+																	product.dataVolume
+																)}
 															</span>
 														</div>
 													) : product.category !== 'DEVICE' &&
@@ -868,6 +892,13 @@ export default function ProductListPage() {
 												<p className="text-[0.8rem] text-[#666] line-clamp-2 mt-1 mb-3 leading-relaxed">
 													{product.description}
 												</p>
+											)}
+
+											{product.category === 'MOBILE' && product.allowsUnlimitedAdvantage && product.dataVolume?.toLowerCase().trim() !== 'unlimited' && (
+												<div className="flex items-center gap-1.5 text-[0.72rem] text-[#e20074] font-semibold mt-1 mb-2.5">
+													<InfinityIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+													<span className="mt-0.5">Mit PlusKarte zu Unlimited</span>
+												</div>
 											)}
 
 											{/* Specs - compact inline (REMOVED: Now displayed beside the title) */}
@@ -1010,6 +1041,21 @@ export default function ProductListPage() {
 																</div>
 															)}
 													</div>
+												) : isStandalone ? (
+													<>
+														<span className="text-[0.7rem] text-[#b0b0b0] block mb-0.5 font-semibold">Zweitkarten ab</span>
+														<span
+															className={clsx(
+																'font-extrabold text-[#1a1a2e] tracking-tight leading-none',
+																isCardCompact ? 'text-[1.3rem]' : 'text-[1.8rem]',
+															)}
+														>
+															9,95 €
+														</span>
+														<span className="text-[0.7rem] text-[#b0b0b0] font-medium ml-1">
+															/Monat
+														</span>
+													</>
 												) : (
 													<>
 														<span
@@ -1027,61 +1073,63 @@ export default function ProductListPage() {
 												)}
 											</div>
 
-											<div className="flex items-center gap-1.5">
-												<button
-													onClick={(e) => {
-														e.preventDefault();
-														e.stopPropagation();
-														addItem(product as any, {
-															businessCase: 'NEW_ACTIVATION',
-															selectedSpecialPriceIds: [
-															],
-															magentaTVPackage: null,
-															selectedAddonIds: [
-															],
-															vouchers: [
-															],
-															credits: [
-															],
-															hardwarePurchaseType:
-																product.category === 'DEVICE'
-																	? ((product as any).rentalPrice ||
-																		product.basePrice) > 0
-																		? 'RENT'
-																		: 'BUY'
-																	: undefined,
-														});
-													}}
-													className={clsx(
-														'px-2.5 py-1.5 h-full rounded-xl transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-95',
-														isFocused
-															? 'text-white border-transparent'
-															: 'bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:text-white',
-													)}
-													style={{
-														backgroundColor: isFocused ? catColor : undefined,
-														borderColor: isFocused ? catColor : undefined,
-													}}
-													onMouseEnter={(e) => {
-														if (!isFocused) {
-															e.currentTarget.style.backgroundColor = catColor;
-															e.currentTarget.style.borderColor = catColor;
-														}
-													}}
-													onMouseLeave={(e) => {
-														if (!isFocused) {
-															e.currentTarget.style.backgroundColor = '';
-															e.currentTarget.style.borderColor = '';
-														}
-													}}
-													title="Hinzufügen"
-												>
-													<Plus className="w-5 h-5 shrink-0" />
-												</button>
+											<div className="flex items-center gap-1.5 w-full justify-end sm:w-auto">
+												{!isStandalone && (
+													<button
+														onClick={(e) => {
+															e.preventDefault();
+															e.stopPropagation();
+															addItem(product as any, {
+																businessCase: 'NEW_ACTIVATION',
+																selectedSpecialPriceIds: [
+																],
+																magentaTVPackage: null,
+																selectedAddonIds: [
+																],
+																vouchers: [
+																],
+																credits: [
+																],
+																hardwarePurchaseType:
+																	product.category === 'DEVICE'
+																		? ((product as any).rentalPrice ||
+																			product.basePrice) > 0
+																			? 'RENT'
+																			: 'BUY'
+																		: undefined,
+															});
+														}}
+														className={clsx(
+															'px-2.5 py-1.5 h-full rounded-xl transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-95',
+															isFocused
+																? 'text-white border-transparent'
+																: 'bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:text-white',
+														)}
+														style={{
+															backgroundColor: isFocused ? catColor : undefined,
+															borderColor: isFocused ? catColor : undefined,
+														}}
+														onMouseEnter={(e) => {
+															if (!isFocused) {
+																e.currentTarget.style.backgroundColor = catColor;
+																e.currentTarget.style.borderColor = catColor;
+															}
+														}}
+														onMouseLeave={(e) => {
+															if (!isFocused) {
+																e.currentTarget.style.backgroundColor = '';
+																e.currentTarget.style.borderColor = '';
+															}
+														}}
+														title="Hinzufügen"
+													>
+														<Plus className="w-5 h-5 shrink-0" />
+													</button>
+												)}
 
 												<Link
 													href={`/products/${category}/${product.id}`}
-													className="block"
+													className={clsx('block', isStandalone && 'w-full')}
 													onMouseEnter={() =>
 														utils.product.getProductById.prefetch({
 															id: product.id,
@@ -1096,13 +1144,15 @@ export default function ProductListPage() {
 													<button
 														className={clsx(
 															'px-3 py-1.5 rounded-xl font-semibold text-[0.8rem] transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95',
-															isFocused
-																? 'text-white hover:shadow-lg'
-																: 'bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:bg-[#1a1a2e] hover:text-white hover:border-[#1a1a2e]',
+															isStandalone
+																? 'w-full bg-[#e20074] text-white hover:bg-[#c00062] hover:shadow-lg hover:shadow-pink-500/20'
+																: isFocused
+																	? 'text-white hover:shadow-lg'
+																	: 'bg-[#f7f8fa] border border-[#eaedf0] text-[#666] hover:bg-[#1a1a2e] hover:text-white hover:border-[#1a1a2e]',
 														)}
 														style={{
-															backgroundColor: isFocused ? catColor : undefined,
-															boxShadow: isFocused
+															backgroundColor: (isFocused && !isStandalone) ? catColor : undefined,
+															boxShadow: (isFocused && !isStandalone)
 																? `0 4px 12px ${catColor}33`
 																: undefined,
 														}}
@@ -1112,6 +1162,7 @@ export default function ProductListPage() {
 													</button>
 												</Link>
 											</div>
+
 										</div>
 									</motion.div>
 								);

@@ -21,6 +21,7 @@ import {
 import {
     ShieldAlert, ArrowRight, Users, User, Mail,
     CheckCircle2, RotateCcw, MapPin, ArrowLeft, Search, Key, Lock, LogIn, Fingerprint,
+    Zap, ShieldCheck, KeyRound, Clock,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -801,7 +802,7 @@ export default function SetupPage({
     const handleEmailSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         setEmailError(null);
-        
+
         const trimmedEmail = email.trim().toLowerCase();
         if (!trimmedEmail) {
             setEmailError('Bitte gib Deine E-Mail-Adresse ein.');
@@ -851,10 +852,10 @@ export default function SetupPage({
             exit={{ opacity: 0, x: -15 }}
             className="space-y-6 w-full"
         >
-            <ScreenHeader 
-                icon={<Mail className="w-5 h-5 text-[#e20074]" />} 
-                title="E-Mail-Adresse eingeben" 
-                subtitle="Gib Deine geschäftliche E-Mail-Adresse ein, um fortzufahren." 
+            <ScreenHeader
+                icon={<Mail className="w-5 h-5 text-[#e20074]" />}
+                title="E-Mail-Adresse eingeben"
+                subtitle="Gib Deine geschäftliche E-Mail-Adresse ein, um fortzufahren."
             />
             <form onSubmit={handleEmailSubmit} className="space-y-6 mt-5">
                 <PremiumGhostInput
@@ -868,11 +869,11 @@ export default function SetupPage({
                     autoComplete="username webauthn"
                 />
                 <div className="flex flex-col gap-3 pt-4 border-t border-[#eaedf0] mt-8">
-                    <PremiumButton 
-                        type="submit" 
-                        disabled={isCheckingEmail || !email.trim()} 
-                        loading={isCheckingEmail} 
-                        variant="primary" 
+                    <PremiumButton
+                        type="submit"
+                        disabled={isCheckingEmail || !email.trim()}
+                        loading={isCheckingEmail}
+                        variant="primary"
                         className="w-full"
                         icon={<ArrowRight className="w-4 h-4 ml-0.5" strokeWidth={2.5} />}
                     >
@@ -1175,58 +1176,57 @@ export default function SetupPage({
         return (
             <motion.div
                 key="step4"
-                className="space-y-6 text-center font-sans"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
+                className="space-y-6 w-full"
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -15 }}
             >
-                <div className="flex flex-col items-center">
-                    <div className="relative w-20 h-24 flex items-center justify-center mb-4">
-                        <motion.div
-                            className="absolute inset-0 rounded-full border border-[#e20074]/20"
-                            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                        />
-                        <div className="w-16 h-16 bg-[#e20074]/5 rounded-full flex items-center justify-center text-[#e20074]">
-                            <Fingerprint className="w-8 h-8" />
+                <ScreenHeader
+                    icon={<Fingerprint className="w-5 h-5 text-[#e20074]" />}
+                    title="Anmeldung mit Passkey"
+                    subtitle="Melde Dich in Zukunft blitzschnell per Bitwarden oder Windows Hello an – ganz ohne PIN!"
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left my-8">
+                    <div className="p-5 rounded-2xl bg-[#f7f8fa] border border-[#eaedf0] hover:border-[#e20074]/20 transition-all duration-300">
+                        <div className="w-8 h-8 rounded-lg bg-[#e20074]/10 text-[#e20074] flex items-center justify-center mb-3">
+                            <Zap className="w-4 h-4" />
                         </div>
+                        <h4 className="text-[0.85rem] font-bold text-[#1a1a2e] mb-1.5">Schnellanmeldung</h4>
+                        <p className="text-[0.78rem] text-[#666] leading-relaxed">Einfacher und schneller Zugriff mittels Gesichtserkennung oder Fingerabdruck.</p>
                     </div>
-                    <ScreenHeader
-                        icon={<Fingerprint className="w-5 h-5 text-[#e20074]" />}
-                        title="Blitzschnelle Anmeldung mit Passkey"
-                        subtitle="Sichere Deine Sales Experience mit Windows Hello, FaceID oder TouchID. Nie wieder PINs eintippen!"
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left my-6">
-                    <div className="p-4 rounded-xl bg-[#f7f8fa] border border-[#eaedf0]">
-                        <h4 className="text-[0.82rem] font-bold text-[#1a1a2e] mb-1">⚡ Login in 2 Sekunden</h4>
-                        <p className="text-[0.75rem] text-[#888] leading-relaxed">Ein biometrischer Scan genügt.</p>
+                    <div className="p-5 rounded-2xl bg-[#f7f8fa] border border-[#eaedf0] hover:border-[#e20074]/20 transition-all duration-300">
+                        <div className="w-8 h-8 rounded-lg bg-[#e20074]/10 text-[#e20074] flex items-center justify-center mb-3">
+                            <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-[0.85rem] font-bold text-[#1a1a2e] mb-1.5">Höchste Sicherheit</h4>
+                        <p className="text-[0.78rem] text-[#666] leading-relaxed">Kryptografisch gesichert und vollständig resistent gegen Phishing.</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-[#f7f8fa] border border-[#eaedf0]">
-                        <h4 className="text-[0.82rem] font-bold text-[#1a1a2e] mb-1">🔒 Phishing-Schutz</h4>
-                        <p className="text-[0.75rem] text-[#888] leading-relaxed">Absolut immun gegen Abfangversuche.</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-[#f7f8fa] border border-[#eaedf0]">
-                        <h4 className="text-[0.82rem] font-bold text-[#1a1a2e] mb-1">🧠 Entlastung für Dich</h4>
-                        <p className="text-[0.75rem] text-[#888] leading-relaxed">Keine Sorgen mehr über vergessene PINs.</p>
+                    <div className="p-5 rounded-2xl bg-[#f7f8fa] border border-[#eaedf0] hover:border-[#e20074]/20 transition-all duration-300">
+                        <div className="w-8 h-8 rounded-lg bg-[#e20074]/10 text-[#e20074] flex items-center justify-center mb-3">
+                            <KeyRound className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-[0.85rem] font-bold text-[#1a1a2e] mb-1.5">Passwortloser Komfort</h4>
+                        <p className="text-[0.78rem] text-[#666] leading-relaxed">Keine PINs oder Passwörter mehr merken. Sicherer Schutz auf Deinem Gerät.</p>
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-3 pt-4 border-t border-[#eaedf0]">
+                <div className="flex flex-col gap-3 pt-6 border-[#eaedf0] mt-6">
                     <PremiumButton
                         onClick={handlePasskeyEnrollment}
                         variant="primary"
-                        className="w-full font-bold"
+                        className="w-full font-bold flex items-center justify-center gap-2"
                     >
-                        Sicher einrichten (Empfohlen)
+                        <Fingerprint className="w-5 h-5" />
+                        Sicher einrichten via Bitwarden oder Windows Hello
                     </PremiumButton>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-3">
                         <PremiumButton
                             onClick={handleSnooze}
                             variant="secondary"
-                            className="flex-1 font-semibold text-[0.85rem]"
+                            className="flex-1 font-semibold text-[0.85rem] flex items-center justify-center gap-2"
                         >
+                            <Clock className="w-4 h-4" />
                             In 7 Tagen erinnern
                         </PremiumButton>
                         <PremiumButton
@@ -1235,9 +1235,10 @@ export default function SetupPage({
                                 router.push('/products');
                                 router.refresh();
                             }}
-                            variant="ghost"
-                            className="flex-1 text-[0.85rem]"
+                            variant="secondary"
+                            className="flex-1 font-semibold text-[0.85rem] flex items-center justify-center gap-2"
                         >
+                            <ArrowRight className="w-4 h-4" />
                             Später einrichten
                         </PremiumButton>
                     </div>
@@ -1328,111 +1329,6 @@ export default function SetupPage({
                                     x: -15,
                                 }} className="w-full">
                                     <IpBlockedCard error={ipError} />
-                                </motion.div>
-                            ) : isReturningUser && !showReconfigure && isUserExistsLoading ? (
-                                <motion.div key="userExistsLoading" initial={{
-                                    opacity: 0,
-                                    x: 15,
-                                }} animate={{
-                                    opacity: 1,
-                                    x: 0,
-                                }} exit={{
-                                    opacity: 0,
-                                    x: -15,
-                                }} className="flex flex-col items-center gap-4 py-12">
-                                    <div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
-                                    <p className="text-[#888] text-[0.9rem] font-medium">Profil wird geladen…</p>
-                                </motion.div>
-                            ) : ((isReturningUser && !showReconfigure) || userExists === true) ? (
-                                <motion.div key="welcomeBack" initial={{
-                                    opacity: 0,
-                                    x: 15,
-                                }} animate={{
-                                    opacity: 1,
-                                    x: 0,
-                                }} exit={{
-                                    opacity: 0,
-                                    x: -15,
-                                }}>
-                                    <WelcomeBackCard
-                                        firstName={profileFirstName || firstName}
-                                        lastName={profileLastName || lastName}
-                                        email={email || loginEmail}
-                                        teamName={profileTeamName || existingSession?.team?.name}
-                                        reloginPin={reloginPin} setReloginPin={setReloginPin} reloginError={reloginError}
-                                        isReloggingIn={(reloginReturningUser.isPending && !isAutoCheck) || isSilentSuccess}
-                                        onReloginWithPin={(overridePin?: string) => {
-                                            const pinToSubmit = overridePin || reloginPin;
-                                            const isAuto = !!overridePin;
-                                            setIsAutoCheck(isAuto);
-                                            if (!pinToSubmit || pinToSubmit.length !== 6) {
-                                                if (!overridePin) {
-                                                    setReloginError('Bitte gib Deine 6-stellige PIN ein.');
-                                                }
-                                                return;
-                                            }
-                                            reloginReturningUser.mutate({
-                                                email: email || loginEmail,
-                                                pin: pinToSubmit,
-                                            });
-                                        }}
-                                        onReloginWithPasskey={async () => {
-                                            try {
-                                                const {
-                                                    options,
-                                                } = await getAuthOptions.mutateAsync({
-                                                    email,
-                                                });
-                                                const authResp = await startAuthentication({
-                                                    optionsJSON: options,
-                                                });
-                                                const verifyResp = await verifyAuth.mutateAsync({
-                                                    email,
-                                                    response: authResp,
-                                                });
-                                                if (verifyResp.success) {
-                                                    if ('isAdmin' in verifyResp && verifyResp.isAdmin) {
-                                                        router.push('/admin/products');
-                                                        return;
-                                                    }
-                                                    const salesData = verifyResp as { firstName?: string, lastName?: string, email?: string };
-                                                    persistName(salesData.firstName?.trim() || '', salesData.lastName?.trim() || '', salesData.email?.trim() || '');
-                                                    markSetupComplete();
-                                                    refetchCurrentSession().then(() => {
-                                                        router.push('/products');
-                                                        router.refresh();
-                                                    });
-                                                }
-                                            }
-                                            catch (err) {
-                                                console.log('Passkey auth failed', err);
-                                                setReloginError('Passkey-Anmeldung fehlgeschlagen oder nicht verfügbar.');
-                                            }
-                                        }}
-                                        onForgotPassword={handleRequestPinReset}
-                                        onReconfigure={async () => {
-                                            try {
-                                                await logoutMutation.mutateAsync();
-                                            }
-                                            catch (err) {
-                                                console.error('Logout during reconfigure failed:', err);
-                                            }
-                                            localStorage.removeItem(LS_KEY_FIRST_NAME);
-                                            localStorage.removeItem(LS_KEY_LAST_NAME);
-                                            localStorage.removeItem(LS_KEY_EMAIL);
-                                            localStorage.removeItem(LS_KEY_SETUP_DONE);
-                                            setFirstName('');
-                                            setLastName('');
-                                            setEmail('');
-                                            setPin('');
-                                            setLocationId(null);
-                                            setTeamId(null);
-                                            setHasCompletedBefore(false);
-                                            setShowReconfigure(true);
-                                            setCurrentStep(1);
-                                        }}
-                                        hasActiveSession={!!existingSession}
-                                    />
                                 </motion.div>
                             ) : requestPinReset.isPending ? (
                                 <motion.div key="sendingReset" initial={{
@@ -1545,6 +1441,105 @@ export default function SetupPage({
                                             </PremiumButton>
                                         </div>
                                     </form>
+                                </motion.div>
+                            ) : isReturningUser && !showReconfigure && isUserExistsLoading ? (
+                                <motion.div key="userExistsLoading" initial={{
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }} className="flex flex-col items-center gap-4 py-12">
+                                    <div className="w-8 h-8 border-4 border-[#eaedf0] border-t-[#e20074] rounded-full animate-spin" />
+                                    <p className="text-[#888] text-[0.9rem] font-medium">Profil wird geladen…</p>
+                                </motion.div>
+                            ) : ((isReturningUser && !showReconfigure) || userExists === true) ? (
+                                <motion.div key="welcomeBack" initial={{
+                                    opacity: 0,
+                                    x: 15,
+                                }} animate={{
+                                    opacity: 1,
+                                    x: 0,
+                                }} exit={{
+                                    opacity: 0,
+                                    x: -15,
+                                }}>
+                                    <WelcomeBackCard
+                                        firstName={profileFirstName || firstName}
+                                        lastName={profileLastName || lastName}
+                                        email={email || loginEmail}
+                                        teamName={profileTeamName || existingSession?.team?.name}
+                                        reloginPin={reloginPin} setReloginPin={setReloginPin} reloginError={reloginError}
+                                        isReloggingIn={(reloginReturningUser.isPending && !isAutoCheck) || isSilentSuccess}
+                                        onReloginWithPin={(overridePin?: string) => {
+                                            const pinToSubmit = overridePin || reloginPin;
+                                            const isAuto = !!overridePin;
+                                            setIsAutoCheck(isAuto);
+                                            if (!pinToSubmit || pinToSubmit.length !== 6) {
+                                                if (!overridePin) {
+                                                    setReloginError('Bitte gib Deine 6-stellige PIN ein.');
+                                                }
+                                                return;
+                                            }
+                                            reloginReturningUser.mutate({
+                                                email: email || loginEmail,
+                                                pin: pinToSubmit,
+                                            });
+                                        }}
+                                        onReloginWithPasskey={async () => {
+                                            try {
+                                                const {
+                                                    options,
+                                                } = await getAuthOptions.mutateAsync({
+                                                    email,
+                                                });
+                                                const authResp = await startAuthentication({
+                                                    optionsJSON: options,
+                                                });
+                                                const verifyResp = await verifyAuth.mutateAsync({
+                                                    email,
+                                                    response: authResp,
+                                                });
+                                                if (verifyResp.success) {
+                                                    if ('isAdmin' in verifyResp && verifyResp.isAdmin) {
+                                                        router.push('/admin/products');
+                                                        return;
+                                                    }
+                                                    const salesData = verifyResp as { firstName?: string, lastName?: string, email?: string };
+                                                    persistName(salesData.firstName?.trim() || '', salesData.lastName?.trim() || '', salesData.email?.trim() || '');
+                                                    markSetupComplete();
+                                                    refetchCurrentSession().then(() => {
+                                                        router.push('/products');
+                                                        router.refresh();
+                                                    });
+                                                }
+                                            }
+                                            catch (err) {
+                                                console.log('Passkey auth failed', err);
+                                                setReloginError('Passkey-Anmeldung fehlgeschlagen oder nicht verfügbar.');
+                                            }
+                                        }}
+                                        onForgotPassword={handleRequestPinReset}
+                                        onReconfigure={async () => {
+                                            try {
+                                                await logoutMutation.mutateAsync();
+                                            }
+                                            catch (err) {
+                                                console.error('Logout during reconfigure failed:', err);
+                                            }
+                                            localStorage.removeItem(LS_KEY_FIRST_NAME);
+                                            localStorage.removeItem(LS_KEY_LAST_NAME);
+                                            localStorage.removeItem(LS_KEY_EMAIL);
+                                            localStorage.removeItem(LS_KEY_SETUP_DONE);
+                                            resetStore();
+                                            setHasCompletedBefore(false);
+                                            setShowReconfigure(true);
+                                        }}
+                                        hasActiveSession={!!existingSession}
+                                    />
                                 </motion.div>
                             ) : isAlreadyRegisteredFlow ? (
                                 <motion.div key="alreadyRegistered" initial={{

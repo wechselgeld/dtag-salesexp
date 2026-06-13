@@ -112,3 +112,18 @@ export async function invalidateCache(keyPrefix: string): Promise<void> {
     cacheLogger.error(`Cache invalidation failed for "${keyPrefix}*": ${(err as Error).message}`);
   }
 }
+
+export async function clearCache(): Promise<void> {
+  const start = Date.now();
+  try {
+    await ensureRedisConnected();
+    await redis.flushdb();
+    cacheLogger.info(
+      `${pc.bold(pc.magenta('RESET'))} Entire Redis cache cleared ${pc.gray(`(${Date.now() - start}ms)`)}`,
+    );
+  }
+  catch (err) {
+    cacheLogger.error(`Failed to clear cache: ${(err as Error).message}`);
+  }
+}
+

@@ -2,11 +2,21 @@ import {
     PrismaClient,
 } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import {
+    clearCache,
+} from '@/lib/cache';
+import {
+    redis,
+} from '@/lib/redis';
 
 const prisma = new PrismaClient();
 
 async function main() {
     console.log('🌱 Starting comprehensive database seed...');
+
+    // Reset Redis Cache before seeding
+    console.log('🧹 Resetting Redis cache...');
+    await clearCache();
 
     // 1. Clean existing seed data (optional/safe upserts used below)
     console.log('🧹 Cleaning up old demo data...');
@@ -479,6 +489,8 @@ async function main() {
             allowMove: false,
             allowPlanChange: true,
             activationFeeNew: 39.95,
+            allowPlusKarten: true,
+            allowsUnlimitedAdvantage: false,
             features: JSON.stringify([
                 '5G',
                 'Phone Flat',
@@ -501,6 +513,8 @@ async function main() {
             allowMove: false,
             allowPlanChange: true,
             activationFeeNew: 39.95,
+            allowPlusKarten: true,
+            allowsUnlimitedAdvantage: true,
             features: JSON.stringify([
                 '5G',
                 'Phone Flat',
@@ -523,6 +537,8 @@ async function main() {
             allowMove: false,
             allowPlanChange: true,
             activationFeeNew: 39.95,
+            allowPlusKarten: true,
+            allowsUnlimitedAdvantage: true,
             features: JSON.stringify([
                 '5G',
                 'Phone Flat',
@@ -546,6 +562,8 @@ async function main() {
             allowMove: false,
             allowPlanChange: true,
             activationFeeNew: 39.95,
+            allowPlusKarten: true,
+            allowsUnlimitedAdvantage: true,
             features: JSON.stringify([
                 '5G',
                 'Phone Flat',
@@ -569,6 +587,8 @@ async function main() {
             allowMove: false,
             allowPlanChange: true,
             activationFeeNew: 39.95,
+            allowPlusKarten: true,
+            allowsUnlimitedAdvantage: true,
             features: JSON.stringify([
                 '5G',
                 'Phone Flat',
@@ -592,6 +612,8 @@ async function main() {
             allowMove: false,
             allowPlanChange: false,
             activationFeeNew: 0,
+            allowPlusKarten: false,
+            allowsUnlimitedAdvantage: false,
             features: JSON.stringify([
                 '5G',
                 'Phone Flat',
@@ -765,6 +787,7 @@ async function main() {
             allowSpeedUp: true,
             activationFeeNew: 69.95,
             allowMagentaTV: true,
+            allowHybrid: true,
             features: JSON.stringify([
                 'Flatrate ins dt. Festnetz',
                 'Internet Flat',
@@ -1456,15 +1479,23 @@ async function main() {
         },
     });
 
+    // Reset Redis Cache again after successful seeding to ensure no stale data remains
+    console.log('🧹 Finalizing cache reset...');
+    await clearCache();
+
     console.log('✨ Comprehensive database seed completed successfully!');
 }
 
 main()
     .then(async () => {
         await prisma.$disconnect();
+        await redis.quit();
     })
     .catch(async (e) => {
         console.error(e);
         await prisma.$disconnect();
+        try {
+            await redis.quit();
+        } catch {}
         process.exit(1);
     });

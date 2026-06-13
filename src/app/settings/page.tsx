@@ -894,7 +894,7 @@ export default function SettingsPage() {
 					</div>
 
 					<p className="text-[0.82rem] text-[#666] leading-relaxed max-w-2xl m-0">
-						Melde Dich blitzschnell per Fingerabdruck, FaceID, Bitwarden oder Windows Hello an – ganz ohne PIN oder Passwort!
+						Melde Dich in Zukunft blitzschnell per Bitwarden oder Windows Hello an – ganz ohne PIN!
 					</p>
 
 					<div className="bg-[#f8f9fa] border border-[#eaedf0] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 mt-2">

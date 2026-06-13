@@ -15,9 +15,15 @@ export interface CalculationInput {
     credits?: Credit[];
     hardwarePurchaseType?: 'RENT' | 'BUY';
     plusKartenCount?: number;
+    plusKarten?: {
+        normal: number;
+        flex: number;
+        kidsTeens: number;
+    };
     settings?: PricingSettings;
     customBasePrice?: number;
     hardwareTier?: HardwareTier;
+    isHybrid?: boolean;
 }
 
 export interface PriceHistory {
@@ -88,6 +94,9 @@ export interface Product {
     allowPlanChange: boolean;
     allowSpeedUp: boolean;
     allowMagentaTV: boolean;
+    allowHybrid: boolean;
+    allowPlusKarten: boolean;
+    allowsUnlimitedAdvantage: boolean;
 
     description: string | null;
     downloadSpeed: number | null;
@@ -139,21 +148,37 @@ export interface PricingSettings {
     shipping_hardware_fee: number;
     plus_karte_first_price: number;
     plus_karte_following_price: number;
+    plus_karte_flex_price: number;
+    plus_karte_kids_price: number;
+    plus_karte_activation_fee_normal: number;
+    plus_karte_activation_fee_flex: number;
+    plus_karte_activation_fee_kids: number;
+    plus_karte_promo_free_activation_normal: boolean;
+    plus_karte_promo_free_activation_flex: boolean;
     mobile_tier_smartphone: number;
     mobile_tier_top: number;
     mobile_tier_premium: number;
     mobile_tier_premium_plus: number;
 }
 
-const DEFAULT_PRICING: PricingSettings = {
+export const DEFAULT_PRICING: PricingSettings = {
     magentatv_smart_price: 10,
     magentatv_smartstream_price: 17,
     magentatv_megastream_price: 30,
     shipping_hardware_fee: 6.95,
     plus_karte_first_price: 19.95,
-    plus_karte_following_price: 9.95,
+    plus_karte_following_price: 14.95,
+    plus_karte_flex_price: 19.95,
+    plus_karte_kids_price: 9.95,
+    plus_karte_activation_fee_normal: 19.95,
+    plus_karte_activation_fee_flex: 19.95,
+    plus_karte_activation_fee_kids: 0,
+    plus_karte_promo_free_activation_normal: true,
+    plus_karte_promo_free_activation_flex: true,
     mobile_tier_smartphone: 10,
     mobile_tier_top: 20,
     mobile_tier_premium: 30,
     mobile_tier_premium_plus: 40,
 };
+
+

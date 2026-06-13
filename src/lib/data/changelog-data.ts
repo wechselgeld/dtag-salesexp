@@ -13,6 +13,29 @@ export interface ChangelogRelease {
 
 export const CHANGELOG_DATA: ChangelogRelease[] = [
 	{
+		id: 'june-13-26',
+		title: '13. Juni 2026',
+		isMajor: true,
+		items: [
+			{
+				q: 'Hinzugefügt',
+				a: 'Hybrid-Tarif-Schalter für Festnetz-Tarife hinzugefügt (ermöglicht die flexible Aktivierung von Hybrid-Optionen direkt im Konfigurator).',
+			},
+			{
+				q: 'Hinzugefügt',
+				a: 'Spezielle Hinweise für unbegrenztes Datenvolumen (Unlimited Data) bei der Buchung einer PlusKarte ergänzt.',
+			},
+			{
+				q: 'Geändert',
+				a: 'Angebotsersteller (PDF-Export) mit einem stark verbesserten, moderneren Design und reichhaltigerem Inhalt komplett überarbeitet.',
+			},
+			{
+				q: 'Geändert',
+				a: 'PlusKarten-Buchung & -Design auf der Mobilfunk-Produktkonfigurationsseite komplett optimiert und ansprechender gestaltet.',
+			},
+		],
+	},
+	{
 		id: 'june-07-26',
 		title: '7. Juni 2026',
 		isMajor: true,

@@ -146,7 +146,7 @@ export const sessionRouter = router({
                 },
             });
         });
-        return setting?.value !== 'false';
+        return setting?.value === 'true';
     }),
 
     requestVerification: publicProcedure
@@ -185,7 +185,7 @@ export const sessionRouter = router({
                     },
                 });
             });
-            const isEmailRequiredSystemWide = emailVerificationSetting?.value !== 'false';
+            const isEmailRequiredSystemWide = emailVerificationSetting?.value === 'true';
 
             if (!checkIpIsAllowed(clientIp, allowedIpsValue)) {
                 throw new TRPCError({
@@ -654,7 +654,7 @@ export const sessionRouter = router({
                     },
                 });
             });
-            const isEmailRequiredSystemWide = emailVerificationSetting?.value !== 'false';
+            const isEmailRequiredSystemWide = emailVerificationSetting?.value === 'true';
 
             let canInstantlyRelogin = !isEmailRequiredSystemWide || user.isVerified;
             const deviceId = user.deviceId || crypto.randomBytes(16).toString('hex');

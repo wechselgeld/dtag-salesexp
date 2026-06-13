@@ -97,6 +97,7 @@ export function useBasketLogic(basketId?: string) {
 				vouchers: item.config.vouchers,
 				hardwarePurchaseType: item.config.hardwarePurchaseType,
 				plusKartenCount: item.config.plusKartenCount,
+				plusKarten: item.config.plusKarten,
 				settings,
 				customBasePrice: item.config.customBasePrice,
 				hardwareTier: item.config.hardwareTier,

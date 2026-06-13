@@ -331,6 +331,8 @@ export function BasketDrawer() {
 			session.lastName,
 		].filter(Boolean).join(' ')
 		: '';
+	const locationName = session?.location?.name || '';
+
 
 	const params = useParams();
 	const pathname = usePathname();
@@ -535,6 +537,7 @@ export function BasketDrawer() {
 						<div className="relative flex-1 overflow-hidden">
 							<LayoutGroup id="basket-tabs">
 								<motion.div
+									id="tour-basket-tabs"
 									layout
 									ref={tabsRef}
 									className={clsx(
@@ -604,6 +607,7 @@ export function BasketDrawer() {
 
 						{!showComparison && baskets.length < 3 && (
 							<button
+								id="tour-basket-add-tab"
 								onClick={handleAddBasket}
 								className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#f7f8fa] hover:bg-[#eaeaea] text-[#888] transition-all border border-[#eaedf0] shrink-0 cursor-pointer active:scale-90"
 								title="Neue Konfiguration hinzufügen"
@@ -618,6 +622,7 @@ export function BasketDrawer() {
 						<div className="w-[80px] flex items-center justify-end gap-1.5 shrink-0 ml-auto pr-1">
 							{baskets.length < 3 && (
 								<button
+									id="tour-basket-add-tab"
 									onClick={handleAddBasket}
 									className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#f7f8fa] hover:bg-[#eaeaea] text-[#888] transition-all border border-[#eaedf0] shrink-0 cursor-pointer active:scale-90"
 									title="Neue Konfiguration hinzufügen"
@@ -627,6 +632,7 @@ export function BasketDrawer() {
 							)}
 							{baskets.length > 1 && (
 								<button
+									id="tour-basket-compare"
 									onClick={() => setIsComparisonMode(!isComparisonMode)}
 									className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 shrink-0 cursor-pointer active:scale-95 border bg-[#e20074] text-white border-[#e20074] shadow-sm hover:opacity-90"
 									style={{
@@ -642,6 +648,7 @@ export function BasketDrawer() {
 					) : (
 						baskets.length > 1 && (
 							<button
+								id="tour-basket-compare"
 								onClick={() => setIsComparisonMode(!isComparisonMode)}
 								className={clsx(
 									'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 shrink-0 cursor-pointer active:scale-95 border',
@@ -730,6 +737,7 @@ export function BasketDrawer() {
 										teamEmail={teamEmail}
 										mailtoEmail={mailtoEmail}
 										salesRepName={salesRepName}
+										locationName={locationName}
 										offerTemplateText={offerTemplateText}
 										clearAfterExport={clearAfterExport}
 										isComparisonMode={showComparison}
@@ -760,6 +768,7 @@ const BasketColumn = memo(function BasketColumn({
 	teamEmail,
 	mailtoEmail,
 	salesRepName,
+	locationName,
 	offerTemplateText,
 	clearAfterExport,
 	isComparisonMode,
@@ -777,6 +786,7 @@ const BasketColumn = memo(function BasketColumn({
 	teamEmail: string;
 	mailtoEmail: string;
 	salesRepName: string;
+	locationName: string;
 	offerTemplateText: string;
 	clearAfterExport: boolean;
 	isComparisonMode: boolean;
@@ -1232,6 +1242,7 @@ const BasketColumn = memo(function BasketColumn({
 									settings,
 									teamEmail,
 									salesRepName,
+									locationName,
 								);
 
 								const subject = encodeURIComponent('Ihr persönliches Angebot der Telekom');
@@ -1322,8 +1333,10 @@ const BasketItemCard = memo(function BasketItemCard({
 			vouchers: item.config.vouchers,
 			hardwarePurchaseType: item.config.hardwarePurchaseType,
 			plusKartenCount: item.config.plusKartenCount,
+			plusKarten: item.config.plusKarten,
 			settings,
 			customBasePrice: item.config.customBasePrice,
+			isHybrid: (item.config as any).isHybrid,
 		});
 	}, [
 		item,
@@ -1344,7 +1357,15 @@ const BasketItemCard = memo(function BasketItemCard({
 				premium_plus: 'Premium-Plus-Smartphone',
 			}[item.config.hardwareTier] || 'Smartphone'}`
 			: '';
-	const fullItemTitle = `${item.product.name}${itemSuffix}`;
+	let baseName = item.product.name;
+	if ((item.config as any).isHybrid) {
+		if (baseName.includes('(DSL)')) {
+			baseName = baseName.replace('(DSL)', 'Hybrid').trim();
+		} else {
+			baseName = `${baseName} Hybrid`;
+		}
+	}
+	const fullItemTitle = `${baseName}${itemSuffix}`;
 
 	return (
 		<motion.div
@@ -1497,25 +1518,74 @@ const BasketItemCard = memo(function BasketItemCard({
 					)}
 
 				{/* PlusKarten */}
-				{item.config.plusKartenCount !== undefined &&
-					item.config.plusKartenCount > 0 && (
+				{(() => {
+					const hasNewConfig = item.config.plusKarten !== undefined;
+					const pkNormal = hasNewConfig ? (item.config.plusKarten?.normal ?? 0) : (item.config.plusKartenCount ?? 0);
+					const pkFlex = hasNewConfig ? (item.config.plusKarten?.flex ?? 0) : 0;
+					const pkKids = hasNewConfig ? (item.config.plusKarten?.kidsTeens ?? 0) : 0;
+					const totalCount = pkNormal + pkFlex + pkKids;
+
+					if (totalCount === 0) return null;
+
+					const normalCost = pkNormal > 0
+						? (settings.plus_karte_first_price + Math.max(0, pkNormal - 1) * settings.plus_karte_following_price)
+						: 0;
+					const flexCost = pkFlex * settings.plus_karte_flex_price;
+					const kidsCost = pkKids * settings.plus_karte_kids_price;
+
+					return (
 						<div className="flex flex-col gap-1.5 mb-3">
-							<div className="flex items-center justify-between text-[0.72rem] font-medium">
-								<div
-									className="flex items-center gap-1.5"
-									style={{
-										color: catColor,
-									}}
-								>
-									<UserPlus className="w-3.5 h-3.5" />
-									<span>{item.config.plusKartenCount}x PlusKarte</span>
+							{pkNormal > 0 && (
+								<div className="flex items-center justify-between text-[0.72rem] font-medium">
+									<div
+										className="flex items-center gap-1.5"
+										style={{
+											color: catColor,
+										}}
+									>
+										<UserPlus className="w-3.5 h-3.5" />
+										<span>{pkNormal}x PlusKarte Normal</span>
+									</div>
+									<span className="opacity-70 font-semibold text-[#1a1a2e]">
+										+{normalCost.toFixed(2).replace('.', ',')} €
+									</span>
 								</div>
-								<span className="opacity-70 font-semibold text-[#1a1a2e]">
-									+{calculation.plusKartenCost.toFixed(2)} €
-								</span>
-							</div>
+							)}
+							{pkFlex > 0 && (
+								<div className="flex items-center justify-between text-[0.72rem] font-medium">
+									<div
+										className="flex items-center gap-1.5"
+										style={{
+											color: catColor,
+										}}
+									>
+										<UserPlus className="w-3.5 h-3.5" />
+										<span>{pkFlex}x PlusKarte Flex</span>
+									</div>
+									<span className="opacity-70 font-semibold text-[#1a1a2e]">
+										+{flexCost.toFixed(2).replace('.', ',')} €
+									</span>
+								</div>
+							)}
+							{pkKids > 0 && (
+								<div className="flex items-center justify-between text-[0.72rem] font-medium">
+									<div
+										className="flex items-center gap-1.5"
+										style={{
+											color: catColor,
+										}}
+									>
+										<UserPlus className="w-3.5 h-3.5" />
+										<span>{pkKids}x PlusKarte Kids & Teens</span>
+									</div>
+									<span className="opacity-70 font-semibold text-[#1a1a2e]">
+										+{kidsCost.toFixed(2).replace('.', ',')} €
+									</span>
+								</div>
+							)}
 						</div>
-					)}
+					);
+				})()}
 
 				{/* Price config */}
 				<div className="flex items-center gap-3">
@@ -1545,7 +1615,7 @@ const BasketItemCard = memo(function BasketItemCard({
 							<>
 								{item.config.customBasePrice !== undefined && (
 									<Tooltip
-										content="Historischer Preis verwendet"
+										content={item.config.customBasePrice === item.product.basePrice ? "Als Bestandstarif markiert" : "Historischer Preis verwendet"}
 										position="right"
 										className="mr-1"
 									>

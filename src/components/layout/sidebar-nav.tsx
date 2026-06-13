@@ -17,6 +17,7 @@ import {
 	ExternalLink,
 	MessageSquare,
 	Logs,
+	Sparkles,
 } from 'lucide-react';
 
 import {
@@ -157,7 +158,7 @@ export function SidebarNav() {
 		{
 			id: 'home',
 			label: 'Startseite',
-			sublabel: isHome ? 'Katalog durchstöbern' : 'Startseite',
+			sublabel: isHome ? 'Katalog durchstöbern' : 'Zurück',
 			icon: Home,
 			href: '/',
 			active: isHome,
@@ -231,8 +232,8 @@ export function SidebarNav() {
 		},
 		{
 			id: 'tour-sales-tips',
-			icon: MessageSquare,
-			label: 'Sales Tipps',
+			icon: Sparkles,
+			label: 'Sales Tipps mit KI',
 			onClick: () => {
 				acknowledgeFeature('sales-tips');
 				setSalesTipsOpen(true);

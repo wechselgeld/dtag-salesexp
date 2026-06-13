@@ -12,6 +12,7 @@ import {
 import {
 	X, MessageSquare, Send, RefreshCw, Trash2, ShieldAlert,
 	Check,
+	Sparkles,
 } from 'lucide-react';
 import clsx from 'clsx';
 import Link from 'next/link';
@@ -107,7 +108,7 @@ function formatMessageContent(text: string, isGeneratingLast = false, isAi = tru
 		return null;
 	}
 
-	const processedText = isGeneratingLast ? `${text } [CURSOR]` : text;
+	const processedText = isGeneratingLast ? `${text} [CURSOR]` : text;
 
 	const renderChildrenWithCursor = (children: React.ReactNode) => {
 		return replaceCursorMarker(children);
@@ -116,39 +117,39 @@ function formatMessageContent(text: string, isGeneratingLast = false, isAi = tru
 	return (
 		<ReactMarkdown
 			remarkPlugins={[
- remarkGfm,
-]}
+				remarkGfm,
+			]}
 			components={{
 				h1: ({
- children,
-}) => <h1 className={clsx('text-lg font-extrabold mt-4 mb-2 first:mt-0', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</h1>,
+					children,
+				}) => <h1 className={clsx('text-lg font-extrabold mt-4 mb-2 first:mt-0', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</h1>,
 				h2: ({
- children,
-}) => <h2 className={clsx('text-md font-extrabold mt-3.5 mb-1.5 first:mt-0', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</h2>,
+					children,
+				}) => <h2 className={clsx('text-md font-extrabold mt-3.5 mb-1.5 first:mt-0', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</h2>,
 				h3: ({
- children,
-}) => <h3 className={clsx('text-sm font-bold mt-3 mb-1 first:mt-0', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</h3>,
+					children,
+				}) => <h3 className={clsx('text-sm font-bold mt-3 mb-1 first:mt-0', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</h3>,
 				p: ({
- children,
-}) => <p className={clsx('mb-2.5 last:mb-0 leading-relaxed font-medium', isAi ? 'text-gray-800' : 'text-white/90')}>{renderChildrenWithCursor(children)}</p>,
+					children,
+				}) => <p className={clsx('mb-2.5 last:mb-0 leading-relaxed font-medium', isAi ? 'text-gray-800' : 'text-white/90')}>{renderChildrenWithCursor(children)}</p>,
 				ul: ({
- children,
-}) => <ul className="list-disc pl-5 mb-3.5 space-y-1">{children}</ul>,
+					children,
+				}) => <ul className="list-disc pl-5 mb-3.5 space-y-1">{children}</ul>,
 				ol: ({
- children,
-}) => <ol className="list-decimal pl-5 mb-3.5 space-y-1">{children}</ol>,
+					children,
+				}) => <ol className="list-decimal pl-5 mb-3.5 space-y-1">{children}</ol>,
 				li: ({
- children,
-}) => <li className={clsx('leading-relaxed font-medium', isAi ? 'text-gray-800' : 'text-white/90')}>{renderChildrenWithCursor(children)}</li>,
+					children,
+				}) => <li className={clsx('leading-relaxed font-medium', isAi ? 'text-gray-800' : 'text-white/90')}>{renderChildrenWithCursor(children)}</li>,
 				strong: ({
- children,
-}) => <strong className={clsx('font-extrabold', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</strong>,
+					children,
+				}) => <strong className={clsx('font-extrabold', isAi ? 'text-[#1a1a2e]' : 'text-white')}>{renderChildrenWithCursor(children)}</strong>,
 				em: ({
- children,
-}) => <em className={clsx('italic', isAi ? 'text-gray-700' : 'text-white/85')}>{renderChildrenWithCursor(children)}</em>,
+					children,
+				}) => <em className={clsx('italic', isAi ? 'text-gray-700' : 'text-white/85')}>{renderChildrenWithCursor(children)}</em>,
 				blockquote: ({
- children,
-}) => (
+					children,
+				}) => (
 					<blockquote className={clsx(
 						'border-l-4 pl-4 py-1.5 italic rounded-r-xl my-3',
 						isAi
@@ -159,8 +160,8 @@ function formatMessageContent(text: string, isGeneratingLast = false, isAi = tru
 					</blockquote>
 				),
 				code: ({
- children,
-}) => (
+					children,
+				}) => (
 					<code className={clsx(
 						'px-1.5 py-0.5 rounded-md text-[0.85em] font-mono font-semibold',
 						isAi
@@ -171,8 +172,8 @@ function formatMessageContent(text: string, isGeneratingLast = false, isAi = tru
 					</code>
 				),
 				a: ({
- href, children,
-}) => (
+					href, children,
+				}) => (
 					<a
 						href={href}
 						target="_blank"
@@ -183,8 +184,8 @@ function formatMessageContent(text: string, isGeneratingLast = false, isAi = tru
 					</a>
 				),
 				table: ({
- children,
-}) => (
+					children,
+				}) => (
 					<div className="overflow-x-auto my-4 w-full">
 						<table className={clsx(
 							'border-collapse text-left rounded-xl overflow-hidden border',
@@ -197,8 +198,8 @@ function formatMessageContent(text: string, isGeneratingLast = false, isAi = tru
 					</div>
 				),
 				thead: ({
- children,
-}) => (
+					children,
+				}) => (
 					<thead className={clsx(
 						'border-b',
 						isAi ? 'bg-[#f0f2f5] border-[#eaedf0]' : 'bg-white/10 border-white/10',
@@ -207,8 +208,8 @@ function formatMessageContent(text: string, isGeneratingLast = false, isAi = tru
 					</thead>
 				),
 				tbody: ({
- children,
-}) => (
+					children,
+				}) => (
 					<tbody className={clsx(
 						'divide-y',
 						isAi ? 'divide-[#eaedf0]' : 'divide-white/10',
@@ -217,8 +218,8 @@ function formatMessageContent(text: string, isGeneratingLast = false, isAi = tru
 					</tbody>
 				),
 				tr: ({
- children,
-}) => (
+					children,
+				}) => (
 					<tr className={clsx(
 						'transition-colors',
 						isAi ? 'hover:bg-[#f7f8fa]/50' : 'hover:bg-white/5',
@@ -227,8 +228,8 @@ function formatMessageContent(text: string, isGeneratingLast = false, isAi = tru
 					</tr>
 				),
 				th: ({
- children,
-}) => (
+					children,
+				}) => (
 					<th className={clsx(
 						'px-4 py-3 text-xs font-extrabold uppercase tracking-wider',
 						isAi ? 'text-[#1a1a2e]' : 'text-white',
@@ -237,8 +238,8 @@ function formatMessageContent(text: string, isGeneratingLast = false, isAi = tru
 					</th>
 				),
 				td: ({
- children,
-}) => (
+					children,
+				}) => (
 					<td className={clsx(
 						'px-4 py-2.5 text-[0.875rem] font-medium align-middle',
 						isAi ? 'text-gray-800' : 'text-white/90',
@@ -297,7 +298,7 @@ function ToolCallProgress({
 							text = `Server überlastet (Status ${code}). Reconnect-Versuch und versuche es erneut (Versuch ${tool.payload})...`;
 							if (tool.status === 'done') text = 'Verbindung erfolgreich wiederhergestellt';
 						}
- else {
+						else {
 							text = `Führe Abfrage ${tool.name} aus...`;
 							if (tool.status === 'done') text = `Abfrage ${tool.name} abgeschlossen`;
 						}
@@ -386,7 +387,7 @@ export function SalesTipsModal({
 			behavior: 'smooth',
 		});
 	}, [
-]);
+	]);
 
 	useEffect(() => {
 		if (!isGenerating) {
@@ -401,15 +402,15 @@ export function SalesTipsModal({
 			if (timeSinceLastChunk > 3500) {
 				setStreamStatus('stalled');
 			}
- else {
+			else {
 				setStreamStatus((prev) => (prev === 'stalled' ? 'receiving' : prev));
 			}
 		}, 500);
 
 		return () => clearInterval(interval);
 	}, [
- isGenerating,
-]);
+		isGenerating,
+	]);
 
 	const handleAbort = useCallback(() => {
 		if (abortControllerRef.current) {
@@ -421,8 +422,8 @@ export function SalesTipsModal({
 		}
 		setIsGenerating(false);
 	}, [
- op,
-]);
+		op,
+	]);
 
 	// Retrieve active context from Zustand basket store
 	const acceptedAiDisclaimer = useSettingsStore((state) => state.acceptedAiDisclaimer);
@@ -1035,7 +1036,7 @@ export function SalesTipsModal({
 						{/* Header */}
 						<div className="flex flex-col md:flex-row md:items-center justify-between px-8 py-5 border-b border-[#eaedf0] gap-4 shrink-0">
 							<ScreenHeader
-								icon={<MessageSquare className="w-5.5 h-5.5 text-[#e20074]" />}
+								icon={<Sparkles className="w-5.5 h-5.5 text-[#e20074]" />}
 								title="Sales Tipps mit KI"
 								subtitle="Kontextbasierter Argumentationstrainer & Einwandbehandlung"
 							/>

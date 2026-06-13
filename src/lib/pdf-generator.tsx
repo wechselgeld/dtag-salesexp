@@ -36,53 +36,14 @@ import {
  * - Output: Returns a Promise resolving to a Base64 data URL for `generateOfferPdf` and a `Blob` for `buildPdfBlob`.
  */
 
-function getSvgAsPngBase64(url: string): Promise<string> {
-	return new Promise((resolve) => {
-		if (typeof window === 'undefined') {
-			resolve('');
-			return;
-		}
-		const img = new window.Image();
-		img.crossOrigin = 'anonymous';
-		img.onload = () => {
-			try {
-				const canvas = document.createElement('canvas');
-				canvas.width = img.width * 4 || 1160;
-				canvas.height = img.height * 4 || 1380;
-				const ctx = canvas.getContext('2d');
-				if (ctx) {
-					ctx.scale(4, 4);
-					ctx.drawImage(img, 0, 0);
-				}
-				resolve(canvas.toDataURL('image/png'));
-			}
-			catch (e) {
-				console.error('Error drawing SVG to canvas:', e);
-				resolve('');
-			}
-		};
-		img.onerror = () => {
-			resolve('');
-		};
-		img.src = url;
-	});
-}
-
 async function buildPdfBlob(
 	items: BasketItem[],
 	basketCredits: Credit[],
 	settings: PricingSettings = DEFAULT_PRICING,
 	teamEmail = '0800 33 01000',
 	salesRepName = '',
+	locationName = '',
 ): Promise<Blob> {
-	let logoData = '';
-	try {
-		logoData = await getSvgAsPngBase64('/Deutsche_Telekom.svg');
-	}
-	catch (e) {
-		console.error('Error fetching logo data:', e);
-	}
-
 	const doc = (
 		<OfferDocument
 			items={items}
@@ -90,7 +51,7 @@ async function buildPdfBlob(
 			settings={settings}
 			teamEmail={teamEmail}
 			salesRepName={salesRepName}
-			logoData={logoData || undefined}
+			locationName={locationName}
 		/>
 	);
 
@@ -117,9 +78,10 @@ export async function generateOfferPdf(
 	settings: PricingSettings = DEFAULT_PRICING,
 	teamEmail = '0800 33 01000',
 	salesRepName = '',
+	locationName = '',
 ): Promise<string> {
 	try {
-		const blob = await buildPdfBlob(items, basketCredits, settings, teamEmail, salesRepName);
+		const blob = await buildPdfBlob(items, basketCredits, settings, teamEmail, salesRepName, locationName);
 		downloadBlob(blob, 'Telekom-Angebot.pdf');
 
 		return new Promise<string>((resolve, reject) => {

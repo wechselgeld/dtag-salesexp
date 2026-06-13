@@ -85,13 +85,33 @@ const teleNeo = localFont({
 });
 
 export const metadata: Metadata = {
+	metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
 	title: {
 		default: 'Sales Experience',
 		template: '%s | Sales Experience',
 	},
-	description: 'Die Sales Experience für die DT Service GmbH.',
+	description: 'Die Sales Experience für die Deutsche Telekom Service GmbH.',
 	icons: {
 		icon: '/favicon.ico',
+	},
+	openGraph: {
+		title: 'Sales Experience',
+		description: 'Die Sales Experience für die Deutsche Telekom Service GmbH.',
+		images: [
+			{
+				url: '/se-logo.svg',
+				width: 1200,
+				height: 630,
+				alt: 'Sales Experience Logo',
+			},
+		],
+		type: 'website',
+	},
+	twitter: {
+		card: 'summary_large_image',
+		title: 'Sales Experience',
+		description: 'Die Sales Experience für die Deutsche Telekom Service GmbH.',
+		images: ['/se-logo.svg'],
 	},
 };
 

@@ -75,7 +75,7 @@ export function SidebarLayout({
 			<SidebarLogo collapsed={collapsed} catColor={catColor} />
 
 			{/* Main scrollable content area */}
-			<div className="flex-1 overflow-x-hidden overflow-y-auto scrollbar-none pb-12">
+			<div className="flex-1 overflow-x-hidden overflow-y-auto scrollbar-none flex flex-col justify-between">
 				{children}
 			</div>
 

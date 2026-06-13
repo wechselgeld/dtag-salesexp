@@ -1,5 +1,5 @@
 import {
-	useEffect, useMemo, useState,
+	useEffect, useMemo, useState, useCallback,
 } from 'react';
 import type {
 	MagentaTVPackageKey,
@@ -24,7 +24,14 @@ export const DEFAULT_PRICING: PricingSettings = {
 	magentatv_megastream_price: 30,
 	shipping_hardware_fee: 6.95,
 	plus_karte_first_price: 19.95,
-	plus_karte_following_price: 9.95,
+	plus_karte_following_price: 14.95,
+	plus_karte_flex_price: 19.95,
+	plus_karte_kids_price: 9.95,
+	plus_karte_activation_fee_normal: 19.95,
+	plus_karte_activation_fee_flex: 19.95,
+	plus_karte_activation_fee_kids: 0,
+	plus_karte_promo_free_activation_normal: true,
+	plus_karte_promo_free_activation_flex: true,
 	mobile_tier_smartphone: 10,
 	mobile_tier_top: 20,
 	mobile_tier_premium: 30,
@@ -49,9 +56,11 @@ export function calculateProductCosts({
 	],
 	hardwarePurchaseType,
 	plusKartenCount,
+	plusKarten,
 	settings = DEFAULT_PRICING,
 	customBasePrice,
 	hardwareTier = 'none',
+	isHybrid = false,
 }: CalculationInput): CalculationResult {
 	if (!product) {
 		return {
@@ -154,6 +163,63 @@ export function calculateProductCosts({
 		});
 	}
 
+	// Resolve the 3 PlusKarten variants count (backward compatible)
+	const pkNormal = plusKarten?.normal ?? plusKartenCount ?? 0;
+	const pkFlex = plusKarten?.flex ?? 0;
+	const pkKids = plusKarten?.kidsTeens ?? 0;
+
+	// Promotional Activation Fees
+	if (pkNormal > 0) {
+		const fee = settings.plus_karte_activation_fee_normal;
+		const promoActive = settings.plus_karte_promo_free_activation_normal;
+		if (promoActive) {
+			oneTimeBreakdown.push({
+				name: `Bereitstellung PlusKarte Normal (Aktionspreis: 0 € statt ${(pkNormal * fee).toFixed(2).replace('.', ',')} €)`,
+				cost: 0,
+			});
+		} else {
+			const totalFee = pkNormal * fee;
+			oneTimeTotal += totalFee;
+			oneTimeBreakdown.push({
+				name: `Bereitstellung PlusKarte Normal (${pkNormal}x ${fee.toFixed(2).replace('.', ',')} €)`,
+				cost: totalFee,
+			});
+		}
+	}
+	if (pkFlex > 0) {
+		const fee = settings.plus_karte_activation_fee_flex;
+		const promoActive = settings.plus_karte_promo_free_activation_flex;
+		if (promoActive) {
+			oneTimeBreakdown.push({
+				name: `Bereitstellung PlusKarte Flex (Aktionspreis: 0 € statt ${(pkFlex * fee).toFixed(2).replace('.', ',')} €)`,
+				cost: 0,
+			});
+		} else {
+			const totalFee = pkFlex * fee;
+			oneTimeTotal += totalFee;
+			oneTimeBreakdown.push({
+				name: `Bereitstellung PlusKarte Flex (${pkFlex}x ${fee.toFixed(2).replace('.', ',')} €)`,
+				cost: totalFee,
+			});
+		}
+	}
+	if (pkKids > 0) {
+		const fee = settings.plus_karte_activation_fee_kids;
+		if (fee === 0) {
+			oneTimeBreakdown.push({
+				name: 'Bereitstellung PlusKarte Kids & Teens',
+				cost: 0,
+			});
+		} else {
+			const totalFee = pkKids * fee;
+			oneTimeTotal += totalFee;
+			oneTimeBreakdown.push({
+				name: `Bereitstellung PlusKarte Kids & Teens (${pkKids}x ${fee.toFixed(2).replace('.', ',')} €)`,
+				cost: totalFee,
+			});
+		}
+	}
+
 	// Credits
 	credits.forEach(credit => {
 		oneTimeTotal -= credit.value;
@@ -191,16 +257,16 @@ export function calculateProductCosts({
 	);
 	const monthlyAddonCost = activeTiers.reduce((sum, tier) => sum + tier.price, 0);
 
-	const pkCount = plusKartenCount || 0;
-	const plusKartenCostPerMonth = pkCount >= 1
-		? (settings.plus_karte_first_price + Math.max(0, pkCount - 1) * settings.plus_karte_following_price)
+	// Multi-Variant PlusKarten Calculations
+	const normalCost = pkNormal > 0
+		? (settings.plus_karte_first_price + Math.max(0, pkNormal - 1) * settings.plus_karte_following_price)
 		: 0;
+	const flexCost = pkFlex * settings.plus_karte_flex_price;
+	const kidsCost = pkKids * settings.plus_karte_kids_price;
+	const plusKartenCostPerMonth = normalCost + flexCost + kidsCost;
 
-	const productNameLower = product.name.toLowerCase();
-	const isAtLeastM = productNameLower.includes('magentamobil m') ||
-		productNameLower.includes('magentamobil l') ||
-		productNameLower.includes('magentamobil xl');
-	const hasUnlimitedAdvantage = isAtLeastM && pkCount > 0;
+	const totalPlusKarten = pkNormal + pkFlex + pkKids;
+	const hasUnlimitedAdvantage = product.allowsUnlimitedAdvantage && totalPlusKarten > 0;
 
 	for (let month = 1; month <= 24; month++) {
 		let bestBasePrice = effectiveBasePrice;
@@ -289,7 +355,7 @@ export function useCostCalculator(
 ) {
 	const [
 		businessCase,
-		setBusinessCase,
+		rawSetBusinessCase,
 	] = useState<BusinessCase>(initialBusinessCase);
 	const [
 		selectedSpecialPriceIds,
@@ -298,8 +364,12 @@ export function useCostCalculator(
 	]);
 	const [
 		magentaTVPackage,
-		setMagentaTVPackage,
+		rawSetMagentaTVPackage,
 	] = useState<MagentaTVPackageKey | null>(null);
+	const [
+		isHybrid,
+		setIsHybrid,
+	] = useState<boolean>(false);
 	const [
 		selectedAddonIds,
 		setSelectedAddonIds,
@@ -328,9 +398,19 @@ export function useCostCalculator(
 		setHardwarePurchaseType,
 	] = useState<'RENT' | 'BUY'>('RENT');
 	const [
-		plusKartenCount,
-		setPlusKartenCount,
-	] = useState<number>(0);
+		plusKarten,
+		setPlusKarten,
+	] = useState<{ normal: number; flex: number; kidsTeens: number }>({
+		normal: 0,
+		flex: 0,
+		kidsTeens: 0,
+	});
+
+	const plusKartenCount = plusKarten.normal + plusKarten.flex + plusKarten.kidsTeens;
+	const setPlusKartenCount = (count: number) => {
+		setPlusKarten(prev => ({ ...prev, normal: count }));
+	};
+
 	const [
 		customBasePrice,
 		setCustomBasePrice,
@@ -343,63 +423,78 @@ export function useCostCalculator(
 	// Derived boolean for backward compat
 	const isMagentaTVSelected = magentaTVPackage !== null || product?.category === 'MAGENTA_TV_OTT';
 
-	// Auto-deselect special prices whose conditions are no longer met
-	useEffect(() => {
-		if (!product || selectedSpecialPriceIds.length === 0) { return; }
-
-		const stillValid = selectedSpecialPriceIds.filter(spId => {
+	const pruneSpecialPrices = useCallback((
+		bc: BusinessCase,
+		pkg: MagentaTVPackageKey | null,
+		priceIds: string[]
+	) => {
+		if (!product || priceIds.length === 0) { return priceIds; }
+		const isMTVSelected = pkg !== null || product.category === 'MAGENTA_TV_OTT';
+		return priceIds.filter(spId => {
 			const sp = product.specialPrices.find(s => s.id === spId);
 			if (!sp) { return false; }
-			if (sp.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
-			if (sp.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
-			if (sp.magentaTVRequirement === 'ONLY_SMART' && magentaTVPackage !== 'smart') { return false; }
-			if (sp.magentaTVRequirement === 'ONLY_SMARTSTREAM' && magentaTVPackage !== 'smartstream') { return false; }
-			if (sp.magentaTVRequirement === 'ONLY_MEGASTREAM' && magentaTVPackage !== 'megastream') { return false; }
+			if (sp.magentaTVRequirement === 'REQUIRED' && !isMTVSelected) { return false; }
+			if (sp.magentaTVRequirement === 'NOT_ALLOWED' && isMTVSelected) { return false; }
+			if (sp.magentaTVRequirement === 'ONLY_SMART' && pkg !== 'smart') { return false; }
+			if (sp.magentaTVRequirement === 'ONLY_SMARTSTREAM' && pkg !== 'smartstream') { return false; }
+			if (sp.magentaTVRequirement === 'ONLY_MEGASTREAM' && pkg !== 'megastream') { return false; }
 			if (sp.requiresMove || sp.requiresNewActivation || sp.requiresSpeedUp) {
-				if (businessCase === 'MOVE' && !sp.requiresMove) { return false; }
-				if (businessCase === 'NEW_ACTIVATION' && !sp.requiresNewActivation) { return false; }
-				if (businessCase === 'SPEED_UP' && !sp.requiresSpeedUp) { return false; }
-				if (businessCase === 'PLAN_CHANGE') { return false; }
+				if (bc === 'MOVE' && !sp.requiresMove) { return false; }
+				if (bc === 'NEW_ACTIVATION' && !sp.requiresNewActivation) { return false; }
+				if (bc === 'SPEED_UP' && !sp.requiresSpeedUp) { return false; }
+				if (bc === 'PLAN_CHANGE') { return false; }
 			}
 			return true;
 		});
+	}, [product]);
 
-		if (stillValid.length !== selectedSpecialPriceIds.length) {
-			setSelectedSpecialPriceIds(stillValid);
-		}
-	}, [
-		isMagentaTVSelected,
-		magentaTVPackage,
-		businessCase,
-		product,
-		selectedSpecialPriceIds,
-	]);
-
-	// Auto-deselect addons whose conditions are no longer met
-	useEffect(() => {
-		if (!product || !product.compatibleAddons || selectedAddonIds.length === 0) { return; }
-
-		const stillValid = selectedAddonIds.filter(tierId => {
+	const pruneAddons = useCallback((
+		pkg: MagentaTVPackageKey | null,
+		addonIds: string[]
+	) => {
+		if (!product || !product.compatibleAddons || addonIds.length === 0) { return addonIds; }
+		const isMTVSelected = pkg !== null || product.category === 'MAGENTA_TV_OTT';
+		return addonIds.filter(tierId => {
 			const addon = product.compatibleAddons!.find(a => (a.tiers || [
 			]).some(t => t.id === tierId));
 			if (!addon) { return false; }
-			if (addon.magentaTVRequirement === 'REQUIRED' && !isMagentaTVSelected) { return false; }
-			if (addon.magentaTVRequirement === 'NOT_ALLOWED' && isMagentaTVSelected) { return false; }
-			if (addon.magentaTVRequirement === 'ONLY_SMART' && magentaTVPackage !== 'smart') { return false; }
-			if (addon.magentaTVRequirement === 'ONLY_SMARTSTREAM' && magentaTVPackage !== 'smartstream') { return false; }
-			if (addon.magentaTVRequirement === 'ONLY_MEGASTREAM' && magentaTVPackage !== 'megastream') { return false; }
+			if (addon.magentaTVRequirement === 'REQUIRED' && !isMTVSelected) { return false; }
+			if (addon.magentaTVRequirement === 'NOT_ALLOWED' && isMTVSelected) { return false; }
+			if (addon.magentaTVRequirement === 'ONLY_SMART' && pkg !== 'smart') { return false; }
+			if (addon.magentaTVRequirement === 'ONLY_SMARTSTREAM' && pkg !== 'smartstream') { return false; }
+			if (addon.magentaTVRequirement === 'ONLY_MEGASTREAM' && pkg !== 'megastream') { return false; }
 			return true;
 		});
+	}, [product]);
 
-		if (stillValid.length !== selectedAddonIds.length) {
-			setSelectedAddonIds(stillValid);
+	const setBusinessCase = useCallback((
+		value: BusinessCase | ((prev: BusinessCase) => BusinessCase)
+	) => {
+		rawSetBusinessCase(prev => {
+			const nextBc = typeof value === 'function' ? value(prev) : value;
+			setSelectedSpecialPriceIds(currentIds => pruneSpecialPrices(nextBc, magentaTVPackage, currentIds));
+			return nextBc;
+		});
+	}, [magentaTVPackage, pruneSpecialPrices]);
+
+	const setMagentaTVPackage = useCallback((
+		value: MagentaTVPackageKey | null | ((prev: MagentaTVPackageKey | null) => MagentaTVPackageKey | null)
+	) => {
+		rawSetMagentaTVPackage(prev => {
+			const nextPkg = typeof value === 'function' ? value(prev) : value;
+			setSelectedSpecialPriceIds(currentIds => pruneSpecialPrices(businessCase, nextPkg, currentIds));
+			setSelectedAddonIds(currentIds => pruneAddons(nextPkg, currentIds));
+			return nextPkg;
+		});
+	}, [businessCase, pruneSpecialPrices, pruneAddons]);
+
+	// Prune on product change
+	useEffect(() => {
+		if (product) {
+			setSelectedSpecialPriceIds(prev => pruneSpecialPrices(businessCase, magentaTVPackage, prev));
+			setSelectedAddonIds(prev => pruneAddons(magentaTVPackage, prev));
 		}
-	}, [
-		isMagentaTVSelected,
-		magentaTVPackage,
-		product,
-		selectedAddonIds,
-	]);
+	}, [product, businessCase, magentaTVPackage, pruneSpecialPrices, pruneAddons]);
 
 	const {
 		data: pricingSettings,
@@ -489,9 +584,11 @@ export function useCostCalculator(
 			credits: activeCredits,
 			hardwarePurchaseType,
 			plusKartenCount,
+			plusKarten,
 			settings,
 			customBasePrice,
 			hardwareTier,
+			isHybrid,
 		});
 	}, [
 		product,
@@ -505,9 +602,11 @@ export function useCostCalculator(
 		selectedCreditIds,
 		hardwarePurchaseType,
 		plusKartenCount,
+		plusKarten,
 		settings,
 		customBasePrice,
 		hardwareTier,
+		isHybrid,
 	]);
 
 	return {
@@ -531,10 +630,14 @@ export function useCostCalculator(
 		setHardwarePurchaseType,
 		plusKartenCount,
 		setPlusKartenCount,
+		plusKarten,
+		setPlusKarten,
 		settings,
 		customBasePrice,
 		setCustomBasePrice,
 		hardwareTier,
 		setHardwareTier,
+		isHybrid,
+		setIsHybrid,
 	};
 }

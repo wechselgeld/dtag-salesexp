@@ -28,6 +28,8 @@ import {
 	X,
 	Hand,
 	Receipt,
+	Plus,
+	Columns,
 } from 'lucide-react';
 import {
 	useRouter,
@@ -68,70 +70,80 @@ interface Step {
 const STEPS: Step[] = [
 	{
 		targetId: 'welcome',
-		title: 'Willkommen! 👋🏻',
+		title: 'Willkommen bei der SXP! 👋🏻',
 		content:
-			'Lass uns gemeinsam die wichtigsten Funktionen entdecken, damit Du Deine Kunden perfekt beraten kannst.',
+			'Dieser interaktive Guide führt Dich Schritt für Schritt durch die wichtigsten Funktionen. Unser Ziel ist es, Dir die Beratung Deiner Kunden so einfach und erfolgreich wie möglich zu machen.',
 		icon: Sparkles,
 		position: 'center',
 		actionLabel: 'Tour starten',
 	},
 	{
 		targetId: 'tour-sidebar',
-		title: 'Workflow-Navigation',
+		title: 'Deine Workflow-Navigation',
 		content:
-			'Hier behältst Du den Überblick über den Beratungsprozess. Du kannst von jeder Seite aus auf "Startseite" klicken, um zurückzukehren.',
+			'Die Sidebar strukturiert das Kundengespräch chronologisch von der Bedarfsanalyse bis zum Abschluss. Du siehst jederzeit, in welchem Schritt (Startseite, Kategorie, Konfiguration) Du Dich befindest und kannst flexibel hin- und herspringen.',
 		icon: LayoutGrid,
 		position: 'right',
+		hint: 'Tipp: Nutze Ctrl+H um die Sidebar ein- und auszuklappen.',
 	},
 	{
 		targetId: 'tour-calculator',
-		title: 'Sparvorteil-Rechner',
+		title: 'Der Sparvorteil-Rechner',
 		content:
-			'Hier prüfst Du, ob und wie viel Dein Kunde spart, wenn er bereits Streamingdienste oder HD-Fernsehen nutzt.',
+			'Gib hier ein, welche Streamingdienste oder TV-Optionen Dein Kunde aktuell privat bezahlt. Das Tool berechnet sofort den Sparvorteil beim Wechsel zur Telekom bzw. MagentaTV – ein unschlagbares Argument für preissensible Kunden!',
 		icon: Calculator,
 		position: 'right',
-		hint: 'Das ist ein starkes Verkaufsargument!',
+		hint: 'Nutze die Ersparnis als direkten Hebel in Deiner Argumentation.',
 	},
 	{
 		targetId: 'tour-battlecards',
-		title: 'Wettbewerbs-Battlecards',
+		title: 'Battlecards',
 		content:
-			'Schlagkräftige Argumente gegen jeden Wettbewerber. Schwachstellen, Telekom-Vorteile und emotionale Formulierungen.',
+			'Hier findest Du geballtes Wissen gegen die Konkurrenz oder generelle Einwände Deines Kunden. Erhalte sofortigen Zugriff auf deren Schwachstellen, unsere Telekom-Vorteile sowie psychologisch optimierte Formulierungen zur Einwandbehandlung.',
 		icon: Swords,
 		position: 'right',
-		hint: 'Das ist Deine Geheimwaffe im Gespräch.',
+		hint: 'Deine Geheimwaffe bei hartnäckigen Kunden-Einwänden.',
+	},
+	{
+		targetId: 'tour-sales-tips',
+		title: 'Sales Tipps mit KI (SXP Scout)',
+		content:
+			'Unser intelligenter KI-Assistent! Klicke hier, um den SXP Scout zu öffnen. Er analysiert automatisch Deinen aktuellen Warenkorb und liefert Dir maßgeschneiderte Argumente, hilft bei der Einwandbehandlung und beantwortet Detailfragen in Echtzeit.',
+		icon: Sparkles,
+		position: 'right',
+		hint: 'Die KI lernt aus Deinem Warenkorb – lade ein Produkt, um es auszuprobieren!',
 	},
 	{
 		targetId: 'tour-nps',
 		title: 'NPS-Erinnerung',
 		content:
-			'Vergiss nie, Deine Kunden auf die SMS-Umfrage hinzuweisen! Hier findest Du auch Formulierungshilfen.',
+			'Exzellenter Service sichert Top-Bewertungen! Klicke auf diese Box, um zu bestätigen, dass Du den Kunden auf die NPS-SMS-Umfrage hingewiesen hast. Ein automatischer Timer erinnert Dich nach 2 Minuten erneut daran.',
 		icon: MessageSquare,
 		position: 'right',
-		hint: 'Klick drauf, wenn Du die Ansprache getätigt hast. Nach zwei Minuten wirst Du wieder daran erinnert.',
+		hint: 'Inklusive bewährter Formulierungshilfen für eine sympathische Ansprache.',
 	},
 	{
 		targetId: 'tour-admin',
-		title: 'Verwaltung',
+		title: 'Verwaltung & Admin-Bereich',
 		content:
-			'Mit Admin-Rechten kannst Du hier Produkte, Preise und Team-Highlights pflegen.',
+			'Hier pflegst Du als Administrator Tarife, Hardware-Spezifikationen, Aktionen und Team-Ziele.',
 		icon: ShieldCheck,
 		position: 'top',
-		hint: 'Neu: Verwalte globale Bilder und Design-Elemente jetzt im Reiter \'Design\'.',
 	},
 	{
 		targetId: 'tour-search',
-		title: 'Schnellsuche',
-		content: 'Suche blitzschnell nach Tarifen, Hardware oder Kategorien.',
+		title: 'Die Schnellsuche',
+		content:
+			'Suche blitzschnell nach bestimmten Tarifen, Geräten oder Zubehör. Perfekt, wenn der Kunde im Gespräch nach einem bestimmten Detail fragt.',
 		icon: Search,
 		position: 'bottom',
-		hint: 'Tipp: Drücke Strg + K, um die Suche von überall aus zu öffnen.',
+		hint: 'Tipp: Drücke von überall aus die Tastenkombination Strg+K.',
 	},
 	{
 		targetId: 'tour-categories',
-		title: 'Produktauswahl',
+		title: 'Produktauswahl & Teamziele',
 		content:
-			'Wähle die passende Kategorie für Deinen Kunden. Im Team-Fokus siehst Du die aktuellen Teamziele.',
+			'Wähle hier die passende Produktkategorie für Deinen Kunden. Achte besonders auf den "Team-Fokus": Er zeigt Dir, welche Produkte aktuell für unsere gemeinsamen Ziele besonders wichtig sind.',
 		icon: LayoutGrid,
 		position: 'right',
 		actionLabel: 'Kategorie öffnen →',
@@ -140,96 +152,121 @@ const STEPS: Step[] = [
 		targetId: 'tour-product-0',
 		title: 'Tarif auswählen',
 		content:
-			'Hier siehst Du alle verfügbaren Tarife. Klicke auf einen Tarif, um ihn zu konfigurieren.',
+			'Hier siehst Du alle verfügbaren Tarife mit ihren wichtigsten Merkmalen auf einen Blick. Klicke auf die Karte, um in die Detail-Konfiguration zu gelangen, oder nutze das kleine "+", um den Tarif direkt in den Warenkorb zu legen.',
 		icon: MousePointerClick,
 		position: 'right',
 		actionLabel: 'Tarif öffnen →',
-		hint: 'Tarife kannst Du auf dem + auch direkt hinzufügen, ohne sie erst konfigurieren zu müssen.',
 	},
 	{
 		targetId: 'tour-config-business-case',
-		title: 'Vertragsart',
+		title: 'Die Vertragsart (Business Case)',
 		content:
-			'Wähle, ob es sich um einen Neuvertrag, Tarifwechsel, SpeedUp oder Umzug handelt.',
+			'Wähle aus, ob es sich um einen Neuvertrag, Tarifwechsel, SpeedUp (Upgrade) oder Umzug handelt. Das Tool passt daraufhin automatisch die Bereitstellungsgebühren, Rabatte und Options-Laufzeiten an.',
 		icon: FileText,
 		position: 'right',
 	},
 	{
 		targetId: 'tour-config-entertainment',
-		title: 'MagentaTV buchen',
+		title: 'MagentaTV zubuchen',
 		content:
-			'Hier kannst Du MagentaTV direkt zum Tarif hinzubuchen. Es wird nun visuell ansprechend mit einem Hintergrundbild hervorgehoben.',
+			'Biete jedem Kunden MagentaTV an! Die Pakete (Smart, SmartStream, MegaStream) sind visuell hervorgehoben und beinhalten bereits beliebte Streaming-Dienste. Perfekt für ein abgerundetes Unterhaltungspaket.',
 		icon: Tv,
 		position: 'right',
 	},
 	{
 		targetId: 'tour-config-special-prices',
-		title: 'Aktionen & Rabatte',
-		content: 'Wende aktive Aktionen an, wie z. B. einen Cashback oder Rabatte.',
+		title: 'Aktionen & Rabatte anwenden',
+		content:
+			'Aktiviere Sonderpreise wie Gutschriften oder Cashbacks. Das Tool berechnet die Rabatte tagesaktuell und zieht sie direkt von der monatlichen Grundgebühr ab.',
 		icon: Tag,
 		position: 'right',
 	},
 	{
 		targetId: 'tour-config-addons',
-		title: 'Zusatzoptionen',
+		title: 'Zusatzoptionen & Hardware',
 		content:
-			'Buche Optionen wie Streamingdienste, Leistungsmerkmale und mehr dazu.',
+			'Konfiguriere Zubuchoptionen, wie zum Beispiel extra Streaming-Optionen. So stellst Du sicher, dass der Kunde voll ausgestattet ist.',
 		icon: PlusCircle,
 		position: 'right',
 	},
 	{
 		targetId: 'tour-config-timeline',
-		title: 'Kostenübersicht',
+		title: 'Die Kostenübersicht (Timeline)',
 		content:
-			'Erhalte einen sofortigen Überblick über die wichtigsten Preispunkte: Ø Monatlich, Regulär, Gesamt und Täglich.',
+			'Volle Preistransparenz! Die interaktive Zeitleiste schlüsselt die monatlichen Kosten über die 24-monatige Vertragslaufzeit hinweg präzise auf. So sieht der Kunde genau, wann welche Rabatte greifen.',
 		icon: TrendingUp,
 		position: 'left',
-		hint: 'Die neuen Preiskarten helfen Dir, die Zahlen schnell zu erfassen.',
+		hint: 'Die Preiskarten fassen den Durchschnitts- und Regulärpreis übersichtlich zusammen.',
 	},
 	{
 		targetId: 'tour-config-daily-price',
-		title: 'Täglicher Preis',
+		title: 'Der tägliche Preis',
 		content:
-			'Präsentiere den Preis als kleinen, täglichen Betrag – oft so günstig wie ein Kaffee!',
+			'Ein mächtiges verkaufspsychologisches Tool! Breche den monatlichen Paketpreis auf einen täglichen Betrag herunter. 1,20 € pro Tag klingt für den Kunden viel attraktiver als 36 € im Monat.',
 		icon: PiggyBank,
 		position: 'left',
-		hint: 'Nutze diesen psychologischen Anker im Verkaufsgespräch. Die Karte hebt diesen Wert nun besonders hervor.',
+		hint: 'Nutze Formulierungen wie: "Das ist günstiger als ein halber Kaffee am Tag!"',
 	},
 	{
 		targetId: 'tour-config-action',
-		title: 'In den Warenkorb',
+		title: 'In den Warenkorb legen',
 		content:
-			'Nach der Konfiguration legst Du alles hier in den Warenkorb. Dort kannst Du auch ein PDF erstellen und per E-Mail versenden.',
+			'Bist Du mit der Konfiguration zufrieden? Lege das Produkt in den Warenkorb. Du kannst danach weitere Produkte hinzufügen oder alternative Angebote konfigurieren.',
 		icon: ShoppingCart,
 		position: 'left',
 		actionLabel: 'Jetzt in den Warenkorb legen →',
 	},
 	{
 		targetId: 'tour-basket',
-		title: 'Der Warenkorb',
+		title: 'Dein Warenkorb',
 		content:
-			'Hier siehst Du die Preisentwicklung über 24 Monate und alle Details übersichtlich aufgeschlüsselt.',
+			'Hier laufen alle Fäden zusammen. Der Warenkorb zeigt die kumulierten Kosten, alle Einmalkosten sowie sämtliche Gutschriften in einer konsolidierten Ansicht an.',
 		icon: ShoppingBag,
 		position: 'left',
 	},
 	{
-		targetId: 'tour-offer-action',
-		title: 'Angebot erstellen',
+		targetId: 'tour-basket-tabs',
+		title: 'Multi-Warenkorb (Tabs)',
 		content:
-			'Mit einem Klick erstellst Du ein fertiges PDF-Angebot und kannst es Deinem Kunden direkt per E-Mail senden.',
+			'Bereite bis zu 3 verschiedene Angebote parallel vor (z. B. DSL vs. Glasfaser oder Tarife mit und ohne TV). Klicke einfach auf die Reiter, um blitzschnell zwischen den Konfigurationen zu wechseln.',
+		icon: LayoutGrid,
+		position: 'left',
+		hint: 'Doppelklicke auf einen Reiter, um ihn individuell umzubenennen!',
+	},
+	{
+		targetId: 'tour-basket-add-tab',
+		title: 'Vergleichsangebot erstellen',
+		content:
+			'Klicke auf das Plus-Symbol, um einen neuen, leeren Warenkorb-Reiter zu öffnen. So kannst Du dem Kunden verschiedene Optionen konzipieren, ohne Deine aktuelle Konfiguration zu verlieren.',
+		icon: Plus,
+		position: 'left',
+	},
+	{
+		targetId: 'tour-basket-compare',
+		title: 'Der Vergleichsmodus',
+		content:
+			'Das Highlight bei der Beratung! Wenn Du mehrere Warenkörbe befüllt hast, aktiviere den Vergleichsmodus über dieses Symbol. Alle Angebote werden nebeneinander mit ihren Kostenverläufen dargestellt.',
+		icon: Columns,
+		position: 'left',
+		hint: 'Mache es dem Kunden leicht, sich für das beste Angebot zu entscheiden!',
+	},
+	{
+		targetId: 'tour-basket',
+		title: 'PDF-Angebot & E-Mail-Versand',
+		content:
+			'Über die Schaltfläche "Angebot erstellen" am Ende des Warenkorbs kannst Du mit einem Klick ein hochprofessionelles PDF-Angebot generieren und dieses direkt per E-Mail an den Kunden senden. Alle Preisvorteile und Rabatte sind darin übersichtlich aufgeschlüsselt.',
 		icon: Receipt,
 		position: 'left',
 		actionLabel: 'Verstanden',
 	},
 	{
 		targetId: 'welcome',
-		title: 'Bereit für den Start!',
-		content:
-			'Wenn Du Hilfe brauchst, wende Dich einfach an deinen Teamleiter oder Kollegen.',
-		icon: Sparkles,
+		title: 'Feedback & Support',
+		content: 'Dieses Tool entwickelt sich konstant weiter. Feedback ist immer willkommen!',
+		icon: MessageSquare,
 		position: 'center',
 		actionLabel: 'Los geht\'s! 🚀',
-		hint: 'Dieses Tool entwickelt sich konstant weiter. Feedback ist immer willkommen! Reiche dieses gerne direkt an den Entwickler per Mail weiter: felix.kinze@telekom.de',
+		hint: 'Reiche dieses gerne direkt an den Entwickler per Mail weiter: felix.kinze@telekom.de',
 	},
 ];
 
@@ -269,6 +306,10 @@ export function OnboardingTutorial() {
 		setFirstName,
 	] = useState('');
 	const router = useRouter();
+	const baskets = useBasketStore((state) => state.baskets);
+	const addBasket = useBasketStore((state) => state.addBasket);
+	const removeBasket = useBasketStore((state) => state.removeBasket);
+	const setIsComparisonMode = useBasketStore((state) => state.setIsComparisonMode);
 	const clearBasket = useBasketStore((state) => state.clearBasket);
 
 	// Startup: check if user has seen onboarding
@@ -450,11 +491,17 @@ export function OnboardingTutorial() {
 		updateCoords();
 		window.addEventListener('resize', updateCoords);
 		window.addEventListener('scroll', updateCoords, true);
+
+		// Re-measure coordinates after page transition animations finish
+		const timer = setTimeout(updateCoords, 300);
+
 		return () => {
 			window.removeEventListener('resize', updateCoords);
 			window.removeEventListener('scroll', updateCoords, true);
+			clearTimeout(timer);
 		};
 	}, [
+		currentStep,
 		updateCoords,
 	]);
 
@@ -487,12 +534,14 @@ export function OnboardingTutorial() {
 	const handleEnd = useCallback(() => {
 		localStorage.setItem(LS_KEY_ONBOARDING, 'true');
 		clearBasket(); // Clean up after tutorial
+		setIsComparisonMode(false);
 		setIsVisible(false);
 		setCurrentStep(null);
 		router.push('/');
 	}, [
 		router,
 		clearBasket,
+		setIsComparisonMode,
 	]);
 
 	const handleNext = useCallback(() => {
@@ -510,6 +559,20 @@ export function OnboardingTutorial() {
 		// Interactive: add to cart when leaving the cart step
 		if (currentStepData.targetId === 'tour-config-action') {
 			handleCartAction();
+		}
+
+		// Interactive: setup tabs and comparison mode
+		if (nextStep.targetId === 'tour-basket-tabs') {
+			if (baskets.length === 1) {
+				addBasket();
+			}
+		}
+		else if (nextStep.targetId === 'tour-basket-compare') {
+			setIsComparisonMode(true);
+		}
+		else if (currentStepData.targetId === 'tour-basket-compare') {
+			// Collapse comparison mode when moving forward past the comparison step
+			setIsComparisonMode(false);
 		}
 
 		// Auto-navigation for dynamic elements
@@ -532,6 +595,9 @@ export function OnboardingTutorial() {
 	}, [
 		currentStep,
 		router,
+		baskets,
+		addBasket,
+		setIsComparisonMode,
 		handleCartAction,
 		handleEnd,
 	]);
@@ -540,7 +606,22 @@ export function OnboardingTutorial() {
 		if (currentStep === null || currentStep <= 0) { return; }
 
 		const prevStepIdx = currentStep - 1;
+		const prevStep = STEPS[prevStepIdx];
 		const currentStepData = STEPS[currentStep];
+
+		// Undo comparison/tabs setup when navigating back
+		if (currentStepData.targetId === 'tour-basket-compare') {
+			setIsComparisonMode(false);
+		}
+		else if (prevStep.targetId === 'tour-basket-compare') {
+			// Re-enable comparison mode when moving backward onto the comparison step
+			setIsComparisonMode(true);
+		}
+		else if (currentStepData.targetId === 'tour-basket-tabs') {
+			if (baskets.length > 1) {
+				removeBasket(baskets[1].id);
+			}
+		}
 
 		if (currentStepData.targetId === 'tour-config-business-case') {
 			router.push('/products/FIBER');
@@ -553,6 +634,9 @@ export function OnboardingTutorial() {
 	}, [
 		currentStep,
 		router,
+		baskets,
+		removeBasket,
+		setIsComparisonMode,
 	]);
 
 	// Keyboard navigation
@@ -603,11 +687,10 @@ export function OnboardingTutorial() {
 				exit={{
 					opacity: 0,
 				}}
-				className={`absolute inset-0 transition-all duration-300 ${
-					isWelcome || (currentStep > 0 && coords.w === 0)
-						? 'bg-black/60 backdrop-blur-[3px] pointer-events-auto'
-						: 'bg-transparent pointer-events-none'
-				}`}
+				className={`absolute inset-0 transition-all duration-300 ${isWelcome || (currentStep > 0 && coords.w === 0)
+					? 'bg-black/60 backdrop-blur-[3px] pointer-events-auto'
+					: 'bg-transparent pointer-events-none'
+					}`}
 			/>
 
 			{/* ─── Spotlight panels ─── */}
@@ -871,52 +954,52 @@ function getCardPosition(
 	const cardWidth = 380;
 
 	switch (position) {
-	case 'right':
-		return {
-			left: Math.min(
-				coords.x + coords.w + offset,
-				window.innerWidth - cardWidth - 20,
-			),
-			top: Math.min(
-				Math.max(coords.y + coords.h / 2, 200),
-				window.innerHeight - 200,
-			),
-			y: '-50%',
-		};
-	case 'left':
-		return {
-			left: Math.max(coords.x - cardWidth - offset, 20),
-			top: Math.min(
-				Math.max(coords.y + coords.h / 2, 200),
-				window.innerHeight - 200,
-			),
-			y: '-50%',
-		};
-	case 'bottom':
-		return {
-			top: Math.min(coords.y + coords.h + offset, window.innerHeight - 300),
-			left: Math.min(
-				Math.max(coords.x + coords.w / 2, cardWidth / 2 + 20),
-				window.innerWidth - cardWidth / 2 - 20,
-			),
-			x: '-50%',
-		};
-	case 'top':
-		return {
-			top: Math.max(coords.y - offset, 20),
-			left: Math.min(
-				Math.max(coords.x + coords.w / 2, cardWidth / 2 + 20),
-				window.innerWidth - cardWidth / 2 - 20,
-			),
-			x: '-50%',
-			y: '-100%',
-		};
-	default:
-		return {
-			left: '50%',
-			top: '50%',
-			x: '-50%',
-			y: '-50%',
-		};
+		case 'right':
+			return {
+				left: Math.min(
+					coords.x + coords.w + offset,
+					window.innerWidth - cardWidth - 20,
+				),
+				top: Math.min(
+					Math.max(coords.y + coords.h / 2, 200),
+					window.innerHeight - 200,
+				),
+				y: '-50%',
+			};
+		case 'left':
+			return {
+				left: Math.max(coords.x - cardWidth - offset, 20),
+				top: Math.min(
+					Math.max(coords.y + coords.h / 2, 200),
+					window.innerHeight - 200,
+				),
+				y: '-50%',
+			};
+		case 'bottom':
+			return {
+				top: Math.min(coords.y + coords.h + offset, window.innerHeight - 300),
+				left: Math.min(
+					Math.max(coords.x + coords.w / 2, cardWidth / 2 + 20),
+					window.innerWidth - cardWidth / 2 - 20,
+				),
+				x: '-50%',
+			};
+		case 'top':
+			return {
+				top: Math.max(coords.y - offset, 20),
+				left: Math.min(
+					Math.max(coords.x + coords.w / 2, cardWidth / 2 + 20),
+					window.innerWidth - cardWidth / 2 - 20,
+				),
+				x: '-50%',
+				y: '-100%',
+			};
+		default:
+			return {
+				left: '50%',
+				top: '50%',
+				x: '-50%',
+				y: '-50%',
+			};
 	}
 }

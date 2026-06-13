@@ -23,11 +23,17 @@ export interface BasketItem {
 		credits: Credit[];
 		hardwarePurchaseType?: 'RENT' | 'BUY';
 		plusKartenCount?: number;
+		plusKarten?: {
+			normal: number;
+			flex: number;
+			kidsTeens: number;
+		};
 		customBasePrice?: number;
 		hardwareTier?: HardwareTier;
 	};
 	addedAt: number;
 }
+
 
 export interface Basket {
 	id: string;

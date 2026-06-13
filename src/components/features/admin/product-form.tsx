@@ -24,6 +24,7 @@ import {
 	MessageSquareQuote,
 	Euro,
 	CheckCircle2,
+	Wifi,
 } from 'lucide-react';
 import {
 	useForm, useFieldArray,
@@ -66,6 +67,7 @@ const productSchema = z.object({
 	activationFeePlanChange: z.number().optional().default(0),
 	activationFeeSpeedUp: z.number().optional().default(0),
 	allowMagentaTV: z.boolean().default(false),
+	allowHybrid: z.boolean().default(false),
 	allowHardwareTiers: z.boolean().default(false),
 	hasMagentaTVBundle: z.boolean().default(false),
 	magentaTVBundleName: z.string().optional(),
@@ -134,6 +136,7 @@ export function ProductForm({
 			activationFeePlanChange: initialData?.activationFeePlanChange || 0,
 			activationFeeSpeedUp: initialData?.activationFeeSpeedUp || 0,
 			allowMagentaTV: initialData?.allowMagentaTV || false,
+			allowHybrid: initialData?.allowHybrid || false,
 			allowHardwareTiers: initialData?.allowHardwareTiers || false,
 			hasMagentaTVBundle: initialData?.hasMagentaTVBundle || false,
 			magentaTVBundleName: initialData?.magentaTVBundleName || '',
@@ -599,6 +602,32 @@ export function ProductForm({
 							</label>
 						</div>
 					</AdminFormSection>
+					
+					{(category === 'DSL' || category === 'FIBER') && (
+						<AdminFormSection
+							title="Hybrid-Option"
+							description="Sichtbarkeit von Hybrid-Tarifvarianten."
+							icon={Wifi}
+						>
+							<div className="p-6 rounded-[2rem] bg-[#e20074]/5 border border-[#e20074]/10">
+								<label className="flex items-center gap-4 cursor-pointer">
+									<input
+										type="checkbox"
+										{...register('allowHybrid')}
+										className="w-6 h-6 rounded border-[#e20074]/20 text-[#e20074] focus:ring-[#e20074]"
+									/>
+									<div className="flex flex-col">
+										<span className="text-[1rem] font-bold text-[#e20074]">
+											Hybrid-Option zubuchbar
+										</span>
+										<span className="text-[0.75rem] text-[#e20074]/70 font-medium italic">
+											Wenn aktiviert, wird für diesen Festnetztarif eine Hybrid-Alternative zur Auswahl angeboten.
+										</span>
+									</div>
+								</label>
+							</div>
+						</AdminFormSection>
+					)}
 
 					{category === 'MOBILE' && (
 						<AdminFormSection

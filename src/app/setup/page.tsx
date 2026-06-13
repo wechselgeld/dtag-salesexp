@@ -51,7 +51,7 @@ export default async function Page() {
 			search: undefined,
 			limit: 6,
 		}).catch(() => null),
-		caller.session.getIsEmailRequired().catch(() => true),
+		caller.session.getIsEmailRequired().catch(() => false),
 		caller.session.verifyIp().catch((err) => ({
 			error: err.message,
 		})),

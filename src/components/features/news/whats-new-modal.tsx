@@ -4,11 +4,15 @@ import {
 	useState, useEffect,
 } from 'react';
 import {
+	useRouter,
+} from 'next/navigation';
+import {
 	motion, AnimatePresence,
 } from 'framer-motion';
 import {
-	Sparkles, Sparkle,
+	Sparkles, Sparkle, ArrowRight,
 } from 'lucide-react';
+import clsx from 'clsx';
 import {
 	PremiumButton,
 } from '@/components/shared/form/form-suite';
@@ -26,6 +30,7 @@ import {
 } from '@/lib/data/changelog-data';
 
 export function WhatsNewModal() {
+	const router = useRouter();
 	const lastSeenChangelogId = useChangelogStore((state) => state.lastSeenChangelogId);
 	const setLastSeenChangelogId = useChangelogStore((state) => state.setLastSeenChangelogId);
 	const acknowledgeFeature = useChangelogStore((state) => state.acknowledgeFeature);
@@ -149,34 +154,44 @@ export function WhatsNewModal() {
 						</div>
 
 						{/* Render Staggered Change Items */}
-						<div className="w-full text-left space-y-3.5 my-1">
-							{latestRelease.items.map((item, idx) => (
-								<motion.div
-									key={idx}
-									initial={{
-										opacity: 0,
-										x: -10,
-									}}
-									animate={{
-										opacity: 1,
-										x: 0,
-									}}
-									transition={{
-										delay: 0.1 + idx * 0.1,
-										duration: 0.3,
-									}}
-									className="bg-[#f7f8fa] border border-[#eaedf0] rounded-2xl p-4 flex flex-col gap-1 transition-all hover:border-[#e20074]/20 hover:shadow-xs group"
-								>
-									<div className="flex items-center gap-1.5">
-										<span className="text-[0.65rem] font-extrabold text-[#e20074] uppercase tracking-wider bg-[#e20074]/5 px-2 py-0.5 rounded-md group-hover:bg-[#e20074]/10 transition-colors">
-											{item.q}
-										</span>
-									</div>
-									<p className="text-[0.825rem] text-[#4a4a5e] leading-relaxed font-medium m-0 pt-0.5">
-										{item.a}
-									</p>
-								</motion.div>
-							))}
+						<div className="w-full text-left divide-y divide-slate-100 bg-[#fbfbfc] border border-slate-100 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
+							{latestRelease.items.map((item, idx) => {
+								const isAdded = item.q === 'Hinzugefügt';
+								const isChanged = item.q === 'Geändert';
+								const isRemoved = item.q === 'Entfernt';
+								return (
+									<motion.div
+										key={idx}
+										initial={{
+											opacity: 0,
+											y: 8,
+										}}
+										animate={{
+											opacity: 1,
+											y: 0,
+										}}
+										transition={{
+											delay: 0.05 + idx * 0.05,
+											duration: 0.4,
+										}}
+										className="py-3 first:pt-0 last:pb-0 flex items-start gap-3.5"
+									>
+										<div className="shrink-0 pt-0.5 min-w-[76px]">
+											<span className={clsx(
+												'inline-flex items-center text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+												isAdded && 'text-[#e20074] bg-[#e20074]/5',
+												isChanged && 'text-[#3b82f6] bg-[#3b82f6]/5',
+												isRemoved && 'text-[#64748b] bg-[#64748b]/5',
+											)}>
+												{item.q}
+											</span>
+										</div>
+										<p className="text-[0.825rem] text-slate-600 leading-relaxed font-normal m-0">
+											{item.a}
+										</p>
+									</motion.div>
+								);
+							})}
 						</div>
 
 						<div className="flex flex-col gap-2 pt-1">
@@ -184,8 +199,19 @@ export function WhatsNewModal() {
 								onClick={() => handleAction()}
 								className="w-full"
 							>
-								{isSalesTippsMajor ? 'Sales Tipps ausprobieren' : 'Verstanden & Loslegen!'}
+								{isSalesTippsMajor ? 'Sales Tipps mit KI ausprobieren' : 'Verstanden & Loslegen!'}
 							</PremiumButton>
+
+							<button
+								onClick={() => {
+									handleClose();
+									router.push('/changelog');
+								}}
+								className="text-xs text-[#888] hover:text-[#e20074] transition-all font-semibold py-2 bg-transparent border-none cursor-pointer flex items-center justify-center gap-1 mx-auto active:scale-[0.98] group/lnk"
+							>
+								<span>Vollständigen Änderungsverlauf ansehen</span>
+								<ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/lnk:translate-x-0.5" />
+							</button>
 						</div>
 					</motion.div>
 
