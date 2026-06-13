@@ -69,6 +69,8 @@ const productSchema = z.object({
 	allowMagentaTV: z.boolean().default(false),
 	allowHybrid: z.boolean().default(false),
 	allowHardwareTiers: z.boolean().default(false),
+	allowPlusKarten: z.boolean().default(false),
+	allowsUnlimitedAdvantage: z.boolean().default(false),
 	hasMagentaTVBundle: z.boolean().default(false),
 	magentaTVBundleName: z.string().optional(),
 	magentaTVBundlePrice: z.number().optional().default(0),
@@ -138,6 +140,8 @@ export function ProductForm({
 			allowMagentaTV: initialData?.allowMagentaTV || false,
 			allowHybrid: initialData?.allowHybrid || false,
 			allowHardwareTiers: initialData?.allowHardwareTiers || false,
+			allowPlusKarten: initialData?.allowPlusKarten || false,
+			allowsUnlimitedAdvantage: initialData?.allowsUnlimitedAdvantage || false,
 			hasMagentaTVBundle: initialData?.hasMagentaTVBundle || false,
 			magentaTVBundleName: initialData?.magentaTVBundleName || '',
 			magentaTVBundlePrice: initialData?.magentaTVBundlePrice || 0,
@@ -631,27 +635,65 @@ export function ProductForm({
 
 					{category === 'MOBILE' && (
 						<AdminFormSection
-							title="Smartphone-Optionen"
-							description="Hardware-Stufen für Mobilfunktarife."
+							title="Mobilfunk-Optionen"
+							description="Smartphone-Optionen, PlusKarten und Vorteile für Mobilfunktarife."
 							icon={Smartphone}
 						>
-							<div className="p-6 rounded-[2rem] bg-[#e20074]/5 border border-[#e20074]/10">
-								<label className="flex items-center gap-4 cursor-pointer">
-									<input
-										type="checkbox"
-										{...register('allowHardwareTiers')}
-										className="w-6 h-6 rounded border-[#e20074]/20 text-[#e20074] focus:ring-[#e20074]"
-									/>
-									<div className="flex flex-col">
-										<span className="text-[1rem] font-bold text-[#e20074]">
-											Smartphone-Optionen erlauben
-										</span>
-										<span className="text-[0.75rem] text-[#e20074]/70 font-medium italic">
-											Wenn aktiviert, kann der Nutzer im Konfigurator eine
-											Smartphone-Stufe auswählen (Smartphone, Top, Premium, Premium-Plus).
-										</span>
-									</div>
-								</label>
+							<div className="space-y-4">
+								<div className="p-6 rounded-[2rem] bg-[#e20074]/5 border border-[#e20074]/10">
+									<label className="flex items-center gap-4 cursor-pointer">
+										<input
+											type="checkbox"
+											{...register('allowHardwareTiers')}
+											className="w-6 h-6 rounded border-[#e20074]/20 text-[#e20074] focus:ring-[#e20074]"
+										/>
+										<div className="flex flex-col">
+											<span className="text-[1rem] font-bold text-[#e20074]">
+												Smartphone-Optionen erlauben
+											</span>
+											<span className="text-[0.75rem] text-[#e20074]/70 font-medium italic">
+												Wenn aktiviert, kann der Nutzer im Konfigurator eine
+												Smartphone-Stufe auswählen (Smartphone, Top, Premium, Premium-Plus).
+											</span>
+										</div>
+									</label>
+								</div>
+
+								<div className="p-6 rounded-[2rem] bg-[#e20074]/5 border border-[#e20074]/10">
+									<label className="flex items-center gap-4 cursor-pointer">
+										<input
+											type="checkbox"
+											{...register('allowPlusKarten')}
+											className="w-6 h-6 rounded border-[#e20074]/20 text-[#e20074] focus:ring-[#e20074]"
+										/>
+										<div className="flex flex-col">
+											<span className="text-[1rem] font-bold text-[#e20074]">
+												PlusKarten zubuchbar
+											</span>
+											<span className="text-[0.75rem] text-[#e20074]/70 font-medium italic">
+												Erlaubt das Hinzufügen von Zweitkarten (PlusKarten) zu diesem Mobilfunktarif im Konfigurator.
+											</span>
+										</div>
+									</label>
+								</div>
+
+								<div className="p-6 rounded-[2rem] bg-[#e20074]/5 border border-[#e20074]/10">
+									<label className="flex items-center gap-4 cursor-pointer">
+										<input
+											type="checkbox"
+											{...register('allowsUnlimitedAdvantage')}
+											className="w-6 h-6 rounded border-[#e20074]/20 text-[#e20074] focus:ring-[#e20074]"
+										/>
+										<div className="flex flex-col">
+											<span className="text-[1rem] font-bold text-[#e20074]">
+												Unlimited-Vorteil gewähren
+											</span>
+											<span className="text-[0.75rem] text-[#e20074]/70 font-medium italic">
+												Wenn aktiviert, wird beim Zubuchen von PlusKarten das Datenvolumen dieses Tarifs und aller PlusKarten auf 'Unlimited' heraufgestuft (für berechtigte Tarife wie z.B. MagentaMobil L).
+											</span>
+										</div>
+									</label>
+								</div>
 							</div>
 						</AdminFormSection>
 					)}

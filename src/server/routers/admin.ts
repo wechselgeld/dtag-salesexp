@@ -50,6 +50,8 @@ const productSchema = z.object({
     allowMagentaTV: z.boolean().default(false),
     allowHybrid: z.boolean().default(false),
     allowHardwareTiers: z.boolean().default(false),
+    allowPlusKarten: z.boolean().default(false),
+    allowsUnlimitedAdvantage: z.boolean().default(false),
     hasMagentaTVBundle: z.boolean().default(false),
     magentaTVBundleName: z.string().optional().nullable(),
     magentaTVBundlePrice: z.number().optional().nullable(),

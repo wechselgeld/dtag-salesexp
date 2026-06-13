@@ -2418,7 +2418,7 @@
       "source_file": "src/app/not-found.tsx",
       "source_location": "L14",
       "id": "app_not_found_notfound",
-      "community": 268,
+      "community": 51,
       "norm_label": "notfound()"
     },
     {
@@ -2877,7 +2877,7 @@
       "source_file": "src/app/admin/locations/new/page.tsx",
       "source_location": "L1",
       "id": "src_app_admin_locations_new_page_tsx",
-      "community": 268,
+      "community": 13,
       "norm_label": "page.tsx"
     },
     {
@@ -2886,7 +2886,7 @@
       "source_file": "src/app/admin/locations/new/page.tsx",
       "source_location": "L5",
       "id": "src_app_admin_locations_new_page_tsx_new_page_metadata",
-      "community": 268,
+      "community": 13,
       "norm_label": "metadata"
     },
     {
@@ -2895,7 +2895,7 @@
       "source_file": "src/app/admin/locations/new/page.tsx",
       "source_location": "L9",
       "id": "new_page_newlocationpage",
-      "community": 268,
+      "community": 13,
       "norm_label": "newlocationpage()"
     },
     {
@@ -2904,7 +2904,7 @@
       "source_file": "src/app/admin/locations/[id]/page.tsx",
       "source_location": "L1",
       "id": "src_app_admin_locations_id_page_tsx",
-      "community": 268,
+      "community": 13,
       "norm_label": "page.tsx"
     },
     {
@@ -2913,7 +2913,7 @@
       "source_file": "src/app/admin/locations/[id]/page.tsx",
       "source_location": "L11",
       "id": "src_app_admin_locations_id_page_tsx_id_page_metadata",
-      "community": 268,
+      "community": 13,
       "norm_label": "metadata"
     },
     {
@@ -2922,7 +2922,7 @@
       "source_file": "src/app/admin/locations/[id]/page.tsx",
       "source_location": "L15",
       "id": "id_page_editlocationpage",
-      "community": 268,
+      "community": 51,
       "norm_label": "editlocationpage()"
     },
     {
@@ -3066,7 +3066,7 @@
       "source_file": "src/app/admin/od-regions/new/page.tsx",
       "source_location": "L1",
       "id": "src_app_admin_od_regions_new_page_tsx",
-      "community": 13,
+      "community": 51,
       "norm_label": "page.tsx"
     },
     {
@@ -3075,7 +3075,7 @@
       "source_file": "src/app/admin/od-regions/new/page.tsx",
       "source_location": "L5",
       "id": "src_app_admin_od_regions_new_page_tsx_new_page_metadata",
-      "community": 13,
+      "community": 51,
       "norm_label": "metadata"
     },
     {
@@ -3084,7 +3084,7 @@
       "source_file": "src/app/admin/od-regions/new/page.tsx",
       "source_location": "L9",
       "id": "new_page_newodregionpage",
-      "community": 13,
+      "community": 51,
       "norm_label": "newodregionpage()"
     },
     {
@@ -3093,7 +3093,7 @@
       "source_file": "src/app/admin/od-regions/[id]/page.tsx",
       "source_location": "L1",
       "id": "src_app_admin_od_regions_id_page_tsx",
-      "community": 13,
+      "community": 51,
       "norm_label": "page.tsx"
     },
     {
@@ -3102,7 +3102,7 @@
       "source_file": "src/app/admin/od-regions/[id]/page.tsx",
       "source_location": "L11",
       "id": "src_app_admin_od_regions_id_page_tsx_id_page_metadata",
-      "community": 13,
+      "community": 51,
       "norm_label": "metadata"
     },
     {
@@ -3111,7 +3111,7 @@
       "source_file": "src/app/admin/od-regions/[id]/page.tsx",
       "source_location": "L15",
       "id": "id_page_editodregionpage",
-      "community": 268,
+      "community": 51,
       "norm_label": "editodregionpage()"
     },
     {
@@ -3507,7 +3507,7 @@
       "source_file": "src/app/admin/teams/[id]/page.tsx",
       "source_location": "L15",
       "id": "id_page_editteampage",
-      "community": 268,
+      "community": 51,
       "norm_label": "editteampage()"
     },
     {
@@ -4686,7 +4686,7 @@
       "source_file": "src/components/features/admin/location-form.tsx",
       "source_location": "L61",
       "id": "admin_location_form_locationform",
-      "community": 268,
+      "community": 13,
       "norm_label": "locationform()"
     },
     {
@@ -4749,7 +4749,7 @@
       "source_file": "src/components/features/admin/od-region-form.tsx",
       "source_location": "L1",
       "id": "src_components_features_admin_od_region_form_tsx",
-      "community": 13,
+      "community": 51,
       "norm_label": "od-region-form.tsx"
     },
     {
@@ -4758,7 +4758,7 @@
       "source_file": "src/components/features/admin/od-region-form.tsx",
       "source_location": "L29",
       "id": "admin_od_region_form_odregionschema",
-      "community": 13,
+      "community": 51,
       "norm_label": "odregionschema"
     },
     {
@@ -4767,7 +4767,7 @@
       "source_file": "src/components/features/admin/od-region-form.tsx",
       "source_location": "L34",
       "id": "admin_od_region_form_odregionformdata",
-      "community": 13,
+      "community": 51,
       "norm_label": "odregionformdata"
     },
     {
@@ -4776,7 +4776,7 @@
       "source_file": "src/components/features/admin/od-region-form.tsx",
       "source_location": "L36",
       "id": "admin_od_region_form_odregionformprops",
-      "community": 13,
+      "community": 51,
       "norm_label": "odregionformprops"
     },
     {
@@ -4785,7 +4785,7 @@
       "source_file": "src/components/features/admin/od-region-form.tsx",
       "source_location": "L45",
       "id": "admin_od_region_form_odregionform",
-      "community": 13,
+      "community": 51,
       "norm_label": "odregionform()"
     },
     {
@@ -4837,7 +4837,7 @@
       "label": "ProductFormData",
       "file_type": "code",
       "source_file": "src/components/features/admin/product-form.tsx",
-      "source_location": "L95",
+      "source_location": "L97",
       "id": "admin_product_form_productformdata",
       "community": 13,
       "norm_label": "productformdata"
@@ -4846,7 +4846,7 @@
       "label": "ProductFormProps",
       "file_type": "code",
       "source_file": "src/components/features/admin/product-form.tsx",
-      "source_location": "L97",
+      "source_location": "L99",
       "id": "admin_product_form_productformprops",
       "community": 13,
       "norm_label": "productformprops"
@@ -4855,7 +4855,7 @@
       "label": "ProductForm()",
       "file_type": "code",
       "source_file": "src/components/features/admin/product-form.tsx",
-      "source_location": "L102",
+      "source_location": "L104",
       "id": "admin_product_form_productform",
       "community": 13,
       "norm_label": "productform()"
@@ -8142,7 +8142,7 @@
       "source_file": "src/lib/audit-revert.ts",
       "source_location": "L1",
       "id": "src_lib_audit_revert_ts",
-      "community": 1,
+      "community": 25,
       "norm_label": "audit-revert.ts"
     },
     {
@@ -8151,7 +8151,7 @@
       "source_file": "src/lib/audit-revert.ts",
       "source_location": "L11",
       "id": "lib_audit_revert_revertauditlog",
-      "community": 1,
+      "community": 25,
       "norm_label": "revertauditlog()"
     },
     {
@@ -8574,7 +8574,7 @@
       "source_file": "src/lib/news-emitter.ts",
       "source_location": "L1",
       "id": "src_lib_news_emitter_ts",
-      "community": 51,
+      "community": 26,
       "norm_label": "news-emitter.ts"
     },
     {
@@ -8583,7 +8583,7 @@
       "source_file": "src/lib/news-emitter.ts",
       "source_location": "L8",
       "id": "lib_news_emitter_globalfornewsemitter",
-      "community": 51,
+      "community": 26,
       "norm_label": "globalfornewsemitter"
     },
     {
@@ -8592,7 +8592,7 @@
       "source_file": "src/lib/news-emitter.ts",
       "source_location": "L25",
       "id": "lib_news_emitter_subredis",
-      "community": 51,
+      "community": 26,
       "norm_label": "subredis"
     },
     {
@@ -8601,7 +8601,7 @@
       "source_file": "src/lib/news-emitter.ts",
       "source_location": "L36",
       "id": "lib_news_emitter_news",
-      "community": 51,
+      "community": 26,
       "norm_label": "news"
     },
     {
@@ -8610,7 +8610,7 @@
       "source_file": "src/lib/news-emitter.ts",
       "source_location": "L56",
       "id": "lib_news_emitter_publishnewsevent",
-      "community": 51,
+      "community": 26,
       "norm_label": "publishnewsevent()"
     },
     {
@@ -8700,7 +8700,7 @@
       "source_file": "src/lib/prisma-extended.ts",
       "source_location": "L1",
       "id": "src_lib_prisma_extended_ts",
-      "community": 40,
+      "community": 27,
       "norm_label": "prisma-extended.ts"
     },
     {
@@ -8853,7 +8853,7 @@
       "source_file": "src/lib/rbac.ts",
       "source_location": "L38",
       "id": "lib_rbac_getodregionfilter",
-      "community": 40,
+      "community": 33,
       "norm_label": "getodregionfilter()"
     },
     {
@@ -8871,7 +8871,7 @@
       "source_file": "src/lib/rbac.ts",
       "source_location": "L114",
       "id": "lib_rbac_getteamfilter",
-      "community": 40,
+      "community": 33,
       "norm_label": "getteamfilter()"
     },
     {
@@ -8880,7 +8880,7 @@
       "source_file": "src/lib/rbac.ts",
       "source_location": "L171",
       "id": "lib_rbac_getnewsvisibilityfilter",
-      "community": 51,
+      "community": 33,
       "norm_label": "getnewsvisibilityfilter()"
     },
     {
@@ -8889,7 +8889,7 @@
       "source_file": "src/lib/rbac.ts",
       "source_location": "L213",
       "id": "lib_rbac_isnewsvisible",
-      "community": 51,
+      "community": 33,
       "norm_label": "isnewsvisible()"
     },
     {
@@ -9474,7 +9474,7 @@
       "source_file": "src/server/trpc.ts",
       "source_location": "L335",
       "id": "server_trpc_protectedprocedure",
-      "community": 33,
+      "community": 25,
       "norm_label": "protectedprocedure"
     },
     {
@@ -9483,7 +9483,7 @@
       "source_file": "src/server/trpc.ts",
       "source_location": "L347",
       "id": "server_trpc_requirepermission",
-      "community": 33,
+      "community": 25,
       "norm_label": "requirepermission()"
     },
     {
@@ -9519,7 +9519,7 @@
       "source_file": "src/server/routers/addon.ts",
       "source_location": "L1",
       "id": "src_server_routers_addon_ts",
-      "community": 33,
+      "community": 25,
       "norm_label": "addon.ts"
     },
     {
@@ -9528,7 +9528,7 @@
       "source_file": "src/server/routers/addon.ts",
       "source_location": "L20",
       "id": "routers_addon_addonformschema",
-      "community": 33,
+      "community": 25,
       "norm_label": "addonformschema"
     },
     {
@@ -9537,7 +9537,7 @@
       "source_file": "src/server/routers/addon.ts",
       "source_location": "L37",
       "id": "routers_addon_tierschema",
-      "community": 33,
+      "community": 25,
       "norm_label": "tierschema"
     },
     {
@@ -9546,7 +9546,7 @@
       "source_file": "src/server/routers/addon.ts",
       "source_location": "L43",
       "id": "routers_addon_editorprocedure",
-      "community": 33,
+      "community": 25,
       "norm_label": "editorprocedure"
     },
     {
@@ -9555,7 +9555,7 @@
       "source_file": "src/server/routers/addon.ts",
       "source_location": "L46",
       "id": "routers_addon_addonrouter",
-      "community": 33,
+      "community": 25,
       "norm_label": "addonrouter"
     },
     {
@@ -9564,7 +9564,7 @@
       "source_file": "src/server/routers/admin-audit.ts",
       "source_location": "L1",
       "id": "src_server_routers_admin_audit_ts",
-      "community": 1,
+      "community": 25,
       "norm_label": "admin-audit.ts"
     },
     {
@@ -9573,7 +9573,7 @@
       "source_file": "src/server/routers/admin-audit.ts",
       "source_location": "L14",
       "id": "routers_admin_audit_serializedauditlog",
-      "community": 1,
+      "community": 25,
       "norm_label": "serializedauditlog"
     },
     {
@@ -9582,7 +9582,7 @@
       "source_file": "src/server/routers/admin-audit.ts",
       "source_location": "L29",
       "id": "routers_admin_audit_adminauditrouter",
-      "community": 1,
+      "community": 25,
       "norm_label": "adminauditrouter"
     },
     {
@@ -9591,7 +9591,7 @@
       "source_file": "src/server/routers/admin-errors.ts",
       "source_location": "L1",
       "id": "src_server_routers_admin_errors_ts",
-      "community": 33,
+      "community": 25,
       "norm_label": "admin-errors.ts"
     },
     {
@@ -9600,7 +9600,7 @@
       "source_file": "src/server/routers/admin-errors.ts",
       "source_location": "L11",
       "id": "routers_admin_errors_serializederrorlog",
-      "community": 33,
+      "community": 25,
       "norm_label": "serializederrorlog"
     },
     {
@@ -9609,7 +9609,7 @@
       "source_file": "src/server/routers/admin-errors.ts",
       "source_location": "L26",
       "id": "routers_admin_errors_adminerrorsrouter",
-      "community": 33,
+      "community": 25,
       "norm_label": "adminerrorsrouter"
     },
     {
@@ -9661,7 +9661,7 @@
       "label": "tierSchema",
       "file_type": "code",
       "source_file": "src/server/routers/admin.ts",
-      "source_location": "L74",
+      "source_location": "L76",
       "id": "routers_admin_tierschema",
       "community": 25,
       "norm_label": "tierschema"
@@ -9670,7 +9670,7 @@
       "label": "specialPriceSchema",
       "file_type": "code",
       "source_file": "src/server/routers/admin.ts",
-      "source_location": "L88",
+      "source_location": "L90",
       "id": "routers_admin_specialpriceschema",
       "community": 25,
       "norm_label": "specialpriceschema"
@@ -9679,7 +9679,7 @@
       "label": "adminProcedure",
       "file_type": "code",
       "source_file": "src/server/routers/admin.ts",
-      "source_location": "L117",
+      "source_location": "L119",
       "id": "routers_admin_adminprocedure",
       "community": 25,
       "norm_label": "adminprocedure"
@@ -9688,7 +9688,7 @@
       "label": "catalogProcedure",
       "file_type": "code",
       "source_file": "src/server/routers/admin.ts",
-      "source_location": "L119",
+      "source_location": "L121",
       "id": "routers_admin_catalogprocedure",
       "community": 25,
       "norm_label": "catalogprocedure"
@@ -9697,7 +9697,7 @@
       "label": "pricesProcedure",
       "file_type": "code",
       "source_file": "src/server/routers/admin.ts",
-      "source_location": "L120",
+      "source_location": "L122",
       "id": "routers_admin_pricesprocedure",
       "community": 25,
       "norm_label": "pricesprocedure"
@@ -9706,7 +9706,7 @@
       "label": "creditsProcedure",
       "file_type": "code",
       "source_file": "src/server/routers/admin.ts",
-      "source_location": "L121",
+      "source_location": "L123",
       "id": "routers_admin_creditsprocedure",
       "community": 25,
       "norm_label": "creditsprocedure"
@@ -9715,7 +9715,7 @@
       "label": "adminRouter",
       "file_type": "code",
       "source_file": "src/server/routers/admin.ts",
-      "source_location": "L123",
+      "source_location": "L125",
       "id": "routers_admin_adminrouter",
       "community": 25,
       "norm_label": "adminrouter"
@@ -9762,7 +9762,7 @@
       "source_file": "src/server/routers/location.ts",
       "source_location": "L1",
       "id": "src_server_routers_location_ts",
-      "community": 33,
+      "community": 40,
       "norm_label": "location.ts"
     },
     {
@@ -9771,7 +9771,7 @@
       "source_file": "src/server/routers/location.ts",
       "source_location": "L18",
       "id": "routers_location_locationrouter",
-      "community": 33,
+      "community": 40,
       "norm_label": "locationrouter"
     },
     {
@@ -9780,7 +9780,7 @@
       "source_file": "src/server/routers/news.ts",
       "source_location": "L1",
       "id": "src_server_routers_news_ts",
-      "community": 51,
+      "community": 33,
       "norm_label": "news.ts"
     },
     {
@@ -9789,7 +9789,7 @@
       "source_file": "src/server/routers/news.ts",
       "source_location": "L20",
       "id": "routers_news_getsessioncontext",
-      "community": 51,
+      "community": 33,
       "norm_label": "getsessioncontext()"
     },
     {
@@ -9798,7 +9798,7 @@
       "source_file": "src/server/routers/news.ts",
       "source_location": "L74",
       "id": "routers_news_newsrouter",
-      "community": 51,
+      "community": 33,
       "norm_label": "newsrouter"
     },
     {
@@ -13200,7 +13200,7 @@
       "source_file": ".agents/skills/fallow/references/patterns.md",
       "source_location": "L67",
       "id": "references_patterns_pr_dead_code_check",
-      "community": 306,
+      "community": 218,
       "norm_label": "pr dead code check"
     },
     {
@@ -13209,7 +13209,7 @@
       "source_file": ".agents/skills/fallow/references/patterns.md",
       "source_location": "L71",
       "id": "references_patterns_step_1_analyze_changed_files",
-      "community": 306,
+      "community": 218,
       "norm_label": "step 1: analyze changed files"
     },
     {
@@ -13218,7 +13218,7 @@
       "source_file": ".agents/skills/fallow/references/patterns.md",
       "source_location": "L73",
       "id": "references_patterns_codeblock_6",
-      "community": 306,
+      "community": 218,
       "norm_label": "code:bash (fallow dead-code --format json --quiet --changed-since main )"
     },
     {
@@ -13227,7 +13227,7 @@
       "source_file": ".agents/skills/fallow/references/patterns.md",
       "source_location": "L79",
       "id": "references_patterns_step_2_if_issues_found_show_specifics",
-      "community": 306,
+      "community": 218,
       "norm_label": "step 2: if issues found, show specifics"
     },
     {
@@ -13236,7 +13236,7 @@
       "source_file": ".agents/skills/fallow/references/patterns.md",
       "source_location": "L81",
       "id": "references_patterns_codeblock_7",
-      "community": 306,
+      "community": 218,
       "norm_label": "code:bash (fallow dead-code --format json --quiet --changed-since main)"
     },
     {
@@ -14028,7 +14028,7 @@
       "source_file": ".agents/skills/fallow/references/patterns.md",
       "source_location": "L528",
       "id": "references_patterns_production_vs_full_audit",
-      "community": 218,
+      "community": 60,
       "norm_label": "production vs full audit"
     },
     {
@@ -14037,7 +14037,7 @@
       "source_file": ".agents/skills/fallow/references/patterns.md",
       "source_location": "L530",
       "id": "references_patterns_full_audit_default",
-      "community": 218,
+      "community": 60,
       "norm_label": "full audit (default)"
     },
     {
@@ -14046,7 +14046,7 @@
       "source_file": ".agents/skills/fallow/references/patterns.md",
       "source_location": "L532",
       "id": "references_patterns_codeblock_46",
-      "community": 218,
+      "community": 60,
       "norm_label": "code:bash (fallow dead-code --format json --quiet)"
     },
     {
@@ -14055,7 +14055,7 @@
       "source_file": ".agents/skills/fallow/references/patterns.md",
       "source_location": "L538",
       "id": "references_patterns_production_audit",
-      "community": 218,
+      "community": 60,
       "norm_label": "production audit"
     },
     {
@@ -14064,7 +14064,7 @@
       "source_file": ".agents/skills/fallow/references/patterns.md",
       "source_location": "L540",
       "id": "references_patterns_codeblock_47",
-      "community": 218,
+      "community": 60,
       "norm_label": "code:bash (fallow dead-code --format json --quiet --production)"
     },
     {
@@ -15324,7 +15324,7 @@
       "source_file": ".agents/skills/taste-skill/cinematic-product/skill.md",
       "source_location": "L84",
       "id": "cinematic_product_skill_4_creative_proactivity_motion_and_performance",
-      "community": 307,
+      "community": 121,
       "norm_label": "4. creative proactivity, motion, and performance"
     },
     {
@@ -15333,7 +15333,7 @@
       "source_file": ".agents/skills/taste-skill/cinematic-product/skill.md",
       "source_location": "L86",
       "id": "cinematic_product_skill_creative_proactivity",
-      "community": 307,
+      "community": 121,
       "norm_label": "creative proactivity"
     },
     {
@@ -15342,7 +15342,7 @@
       "source_file": ".agents/skills/taste-skill/cinematic-product/skill.md",
       "source_location": "L97",
       "id": "cinematic_product_skill_motion_and_interaction",
-      "community": 307,
+      "community": 121,
       "norm_label": "motion and interaction"
     },
     {
@@ -15351,7 +15351,7 @@
       "source_file": ".agents/skills/taste-skill/cinematic-product/skill.md",
       "source_location": "L112",
       "id": "cinematic_product_skill_performance_guardrails",
-      "community": 307,
+      "community": 121,
       "norm_label": "performance guardrails"
     },
     {
@@ -17115,7 +17115,7 @@
       "source_file": ".agents/skills/taste-skill/dashboards/skill.md",
       "source_location": "L84",
       "id": "dashboards_skill_4_creative_proactivity_motion_and_performance",
-      "community": 309,
+      "community": 123,
       "norm_label": "4. creative proactivity, motion, and performance"
     },
     {
@@ -17124,7 +17124,7 @@
       "source_file": ".agents/skills/taste-skill/dashboards/skill.md",
       "source_location": "L86",
       "id": "dashboards_skill_creative_proactivity",
-      "community": 309,
+      "community": 123,
       "norm_label": "creative proactivity"
     },
     {
@@ -17133,7 +17133,7 @@
       "source_file": ".agents/skills/taste-skill/dashboards/skill.md",
       "source_location": "L97",
       "id": "dashboards_skill_motion_and_interaction",
-      "community": 309,
+      "community": 123,
       "norm_label": "motion and interaction"
     },
     {
@@ -17142,7 +17142,7 @@
       "source_file": ".agents/skills/taste-skill/dashboards/skill.md",
       "source_location": "L112",
       "id": "dashboards_skill_performance_guardrails",
-      "community": 309,
+      "community": 123,
       "norm_label": "performance guardrails"
     },
     {
@@ -17700,7 +17700,7 @@
       "source_file": ".agents/skills/taste-skill/editorial-premium/skill.md",
       "source_location": "L84",
       "id": "editorial_premium_skill_4_creative_proactivity_motion_and_performance",
-      "community": 208,
+      "community": 147,
       "norm_label": "4. creative proactivity, motion, and performance"
     },
     {
@@ -17709,7 +17709,7 @@
       "source_file": ".agents/skills/taste-skill/editorial-premium/skill.md",
       "source_location": "L86",
       "id": "editorial_premium_skill_creative_proactivity",
-      "community": 208,
+      "community": 147,
       "norm_label": "creative proactivity"
     },
     {
@@ -17718,7 +17718,7 @@
       "source_file": ".agents/skills/taste-skill/editorial-premium/skill.md",
       "source_location": "L97",
       "id": "editorial_premium_skill_motion_and_interaction",
-      "community": 208,
+      "community": 147,
       "norm_label": "motion and interaction"
     },
     {
@@ -17727,7 +17727,7 @@
       "source_file": ".agents/skills/taste-skill/editorial-premium/skill.md",
       "source_location": "L112",
       "id": "editorial_premium_skill_performance_guardrails",
-      "community": 208,
+      "community": 147,
       "norm_label": "performance guardrails"
     },
     {
@@ -21795,7 +21795,7 @@
       "source_file": ".agents/skills/taste-skill/soft-brutalism/skill.md",
       "source_location": "L84",
       "id": "soft_brutalism_skill_4_creative_proactivity_motion_and_performance",
-      "community": 60,
+      "community": 149,
       "norm_label": "4. creative proactivity, motion, and performance"
     },
     {
@@ -21804,7 +21804,7 @@
       "source_file": ".agents/skills/taste-skill/soft-brutalism/skill.md",
       "source_location": "L86",
       "id": "soft_brutalism_skill_creative_proactivity",
-      "community": 60,
+      "community": 149,
       "norm_label": "creative proactivity"
     },
     {
@@ -21813,7 +21813,7 @@
       "source_file": ".agents/skills/taste-skill/soft-brutalism/skill.md",
       "source_location": "L97",
       "id": "soft_brutalism_skill_motion_and_interaction",
-      "community": 60,
+      "community": 149,
       "norm_label": "motion and interaction"
     },
     {
@@ -21822,7 +21822,7 @@
       "source_file": ".agents/skills/taste-skill/soft-brutalism/skill.md",
       "source_location": "L112",
       "id": "soft_brutalism_skill_performance_guardrails",
-      "community": 60,
+      "community": 149,
       "norm_label": "performance guardrails"
     },
     {
@@ -22380,7 +22380,7 @@
       "source_file": ".agents/skills/taste-skill/swiss-system/skill.md",
       "source_location": "L84",
       "id": "swiss_system_skill_4_creative_proactivity_motion_and_performance",
-      "community": 129,
+      "community": 208,
       "norm_label": "4. creative proactivity, motion, and performance"
     },
     {
@@ -22389,7 +22389,7 @@
       "source_file": ".agents/skills/taste-skill/swiss-system/skill.md",
       "source_location": "L86",
       "id": "swiss_system_skill_creative_proactivity",
-      "community": 129,
+      "community": 208,
       "norm_label": "creative proactivity"
     },
     {
@@ -22398,7 +22398,7 @@
       "source_file": ".agents/skills/taste-skill/swiss-system/skill.md",
       "source_location": "L97",
       "id": "swiss_system_skill_motion_and_interaction",
-      "community": 129,
+      "community": 208,
       "norm_label": "motion and interaction"
     },
     {
@@ -22407,7 +22407,7 @@
       "source_file": ".agents/skills/taste-skill/swiss-system/skill.md",
       "source_location": "L112",
       "id": "swiss_system_skill_performance_guardrails",
-      "community": 129,
+      "community": 208,
       "norm_label": "performance guardrails"
     },
     {
@@ -27959,7 +27959,7 @@
       "file_type": "code",
       "source_file": "src/server/routers/adminAudit.ts",
       "source_location": "L1",
-      "community": 1,
+      "community": 25,
       "norm_label": "adminaudit.ts",
       "id": "src_server_routers_adminaudit_ts"
     },
@@ -27968,7 +27968,7 @@
       "file_type": "code",
       "source_file": "src/server/routers/adminAudit.ts",
       "source_location": "L14",
-      "community": 1,
+      "community": 25,
       "norm_label": "serializedauditlog",
       "id": "routers_adminaudit_serializedauditlog"
     },
@@ -27977,7 +27977,7 @@
       "file_type": "code",
       "source_file": "src/server/routers/adminAudit.ts",
       "source_location": "L29",
-      "community": 1,
+      "community": 25,
       "norm_label": "adminauditrouter",
       "id": "routers_adminaudit_adminauditrouter"
     },
@@ -27986,7 +27986,7 @@
       "file_type": "code",
       "source_file": "src/server/routers/adminErrors.ts",
       "source_location": "L1",
-      "community": 33,
+      "community": 25,
       "norm_label": "adminerrors.ts",
       "id": "src_server_routers_adminerrors_ts"
     },
@@ -27995,7 +27995,7 @@
       "file_type": "code",
       "source_file": "src/server/routers/adminErrors.ts",
       "source_location": "L11",
-      "community": 33,
+      "community": 25,
       "norm_label": "serializederrorlog",
       "id": "routers_adminerrors_serializederrorlog"
     },
@@ -28004,7 +28004,7 @@
       "file_type": "code",
       "source_file": "src/server/routers/adminErrors.ts",
       "source_location": "L26",
-      "community": 33,
+      "community": 25,
       "norm_label": "adminerrorsrouter",
       "id": "routers_adminerrors_adminerrorsrouter"
     },
@@ -79116,5 +79116,5 @@
       "source_file": "public/se-logo.svg"
     }
   ],
-  "built_at_commit": "5a710545cbd6a0eefea682df62f13cbf5cd53da4"
+  "built_at_commit": "61081b8aea73f079b1a9f2cdda3f646d87141261"
 }

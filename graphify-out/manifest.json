@@ -435,8 +435,8 @@
     "semantic_hash": "cd2f573b62f67baa74ac64e75519bce5"
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\admin\\product-form.tsx": {
-    "mtime": 1781275555.9589942,
-    "ast_hash": "c6f80fa61c7c8abcc7ff0f03b7e6c21c",
+    "mtime": 1781309363.4916751,
+    "ast_hash": "c3126af63d37ff386770b02ad76d4c68",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\components\\features\\admin\\special-price-form.tsx": {
@@ -880,8 +880,8 @@
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\server\\routers\\admin.ts": {
-    "mtime": 1781275533.9474516,
-    "ast_hash": "edf9a294857cf5cbb7ec217f5e0892d1",
+    "mtime": 1781309348.9087503,
+    "ast_hash": "beb6dcace68081eb829a860f13fa26d7",
     "semantic_hash": ""
   },
   "C:\\Users\\Felix\\OneDrive\\Desktop\\Telekom\\Website\\dev_preisliste\\dts_saleshelper\\src\\server\\routers\\auth.ts": {
