@@ -45,6 +45,7 @@ import {
 	Plus,
 	X,
 	Columns,
+	Infinity as InfinityIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -835,9 +836,9 @@ const BasketColumn = memo(function BasketColumn({
 	} = useBasketLogic(basket.id);
 
 	const items = basket.items || [
-];
+	];
 	const basketCredits = basket.basketCredits || [
-];
+	];
 	const totalMonthly = totals.monthly;
 
 	const isMultiColumn = isComparisonMode && basketsCount > 1;
@@ -958,8 +959,8 @@ const BasketColumn = memo(function BasketColumn({
 										}}
 										className="pl-1"
 										style={{
- overflow: creditsOpen ? 'visible' : 'hidden',
-}}
+											overflow: creditsOpen ? 'visible' : 'hidden',
+										}}
 									>
 										<CreditSelector
 											basketCredits={basketCredits}
@@ -1134,7 +1135,7 @@ const BasketColumn = memo(function BasketColumn({
 								>
 									{Object.entries(groupedOneTimeCosts).map(([
 										name,
-										cost ]: [string, number
+										cost]: [string, number
 										]) => (
 										<div
 											key={name}
@@ -1418,12 +1419,15 @@ const BasketItemCard = memo(function BasketItemCard({
 							{catLabel}
 						</span>
 						<h4
-							className="font-bold text-[0.85rem] text-[#1a1a2e] leading-tight m-0 mt-0.5 truncate max-w-full"
+							className="font-bold text-[0.85rem] text-[#1a1a2e] leading-tight m-0 mt-0.5 flex items-center gap-1.5 min-w-0"
 							title={fullItemTitle}
 						>
 							<span className="truncate">
 								{fullItemTitle}
 							</span>
+							{calculation.hasUnlimitedAdvantage && (
+								<InfinityIcon className="w-4 h-4 text-[#e20074] stroke-[2.5] shrink-0 mb-0.5" />
+							)}
 						</h4>
 					</div>
 
@@ -1439,14 +1443,6 @@ const BasketItemCard = memo(function BasketItemCard({
 						<Trash2 className="w-3 h-3" />
 					</button>
 				</div>
-
-				{/* Unlimited Badge */}
-				{calculation.hasUnlimitedAdvantage && (
-					<div className="mb-3 inline-flex items-center gap-1 bg-[#e20074]/6 text-[#e20074] px-2 py-0.5 rounded-md text-[0.65rem] font-bold uppercase tracking-wider">
-						<Sparkles className="w-2.5 h-2.5" />
-						Kombivorteil: Unlimited GB
-					</div>
-				)}
 
 				{/* Selected Addons */}
 				{item.config.selectedAddonIds?.length > 0 &&
