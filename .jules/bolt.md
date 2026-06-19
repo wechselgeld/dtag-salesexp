@@ -1,0 +1,3 @@
+## 2024-05-24 - [O(1) Map Lookups for React Renders]
+**Learning:** In heavily re-rendered components with complex internal loops like `streaming-comparison.tsx`, using static array `.find()` methods inside `.map()`, `.reduce()`, and `useMemo` hooks creates a hidden O(N*M) algorithmic complexity that scales poorly.
+**Action:** Always pre-compute a `Map` (e.g. `STREAMING_SERVICES_BY_ID = new Map(SERVICES.map(s => [s.id, s]))`) alongside static configuration arrays to enable O(1) `.get(id)` lookups. This should be applied proactively anywhere a static list of definitions is heavily referenced by ID in UI components.
