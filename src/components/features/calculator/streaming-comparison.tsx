@@ -113,6 +113,13 @@ const STREAMING_SERVICES = [
 	},
 ];
 
+const STREAMING_SERVICES_BY_ID = new Map(
+	STREAMING_SERVICES.map((s) => [
+		s.id,
+		s,
+	]),
+);
+
 const MAGENTA_PLANS = [
 	{
 		id: 'mtv-smart',
@@ -470,7 +477,7 @@ export function StreamingComparison({
 			const val = parseFloat(customPrices[id].replace(',', '.'));
 			return isNaN(val) ? 0 : val;
 		}
-		return STREAMING_SERVICES.find((s) => s.id === id)?.price || 0;
+		return STREAMING_SERVICES_BY_ID.get(id)?.price || 0;
 	}, [
 		customPrices,
 	]);
@@ -544,7 +551,7 @@ export function StreamingComparison({
 		setSelectedServices((prev) => {
 			// Remove any existing selection from this group
 			const filtered = prev.filter((sId) => {
-				const service = STREAMING_SERVICES.find((s) => s.id === sId);
+				const service = STREAMING_SERVICES_BY_ID.get(sId);
 				return service?.group !== groupId;
 			});
 			if (!id) { return filtered; }
@@ -559,7 +566,6 @@ export function StreamingComparison({
 		return selectedServices.reduce((sum, id) => sum + getPrice(id), 0);
 	}, [
 		selectedServices,
-		customPrices,
 		getPrice,
 	]);
 
@@ -572,8 +578,8 @@ export function StreamingComparison({
 
 	const coveredValue = useMemo(() => {
 		return selectedServices.reduce((sum, currentServiceId) => {
-			const currentService = STREAMING_SERVICES.find(
-				(s) => s.id === currentServiceId,
+			const currentService = STREAMING_SERVICES_BY_ID.get(
+				currentServiceId,
 			);
 			if (!currentService || !targetPlan) { return sum; }
 
@@ -581,7 +587,7 @@ export function StreamingComparison({
 
 			const includedServiceIdForGroup = targetPlan.includedServiceIds.find(
 				(serviceId) => {
-					const incService = STREAMING_SERVICES.find((s) => s.id === serviceId);
+					const incService = STREAMING_SERVICES_BY_ID.get(serviceId);
 					return incService?.group === currentService.group;
 				},
 			);
@@ -595,7 +601,6 @@ export function StreamingComparison({
 	}, [
 		selectedServices,
 		targetPlan,
-		customPrices,
 		getPrice,
 	]);
 
@@ -625,7 +630,7 @@ export function StreamingComparison({
 													selectedId={
 														selectedServices.find(
 															(sId) =>
-																STREAMING_SERVICES.find((s) => s.id === sId)
+																STREAMING_SERVICES_BY_ID.get(sId)
 																	?.group === group.groupId,
 														) || null
 													}
@@ -633,14 +638,14 @@ export function StreamingComparison({
 													customPrice={
 														selectedServices.find(
 															(sId) =>
-																STREAMING_SERVICES.find((s) => s.id === sId)
+																STREAMING_SERVICES_BY_ID.get(sId)
 																	?.group === group.groupId,
 														)
 															? customPrices[
 																	selectedServices.find(
 																		(sId) =>
-																			STREAMING_SERVICES.find(
-																				(s) => s.id === sId,
+																			STREAMING_SERVICES_BY_ID.get(
+																				sId,
 																			)?.group === group.groupId,
 																	)!
 															]
@@ -723,8 +728,8 @@ export function StreamingComparison({
 																const isGroupSelected =
 																	inc.group &&
 																	selectedServices.some((sId) => {
-																		const s = STREAMING_SERVICES.find(
-																			(x) => x.id === sId,
+																		const s = STREAMING_SERVICES_BY_ID.get(
+																			sId,
 																		);
 																		return s && s.group === inc.group;
 																	});
