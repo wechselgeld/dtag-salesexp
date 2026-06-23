@@ -1,0 +1,3 @@
+## 2026-06-23 - O(1) Map Lookups in Renders
+**Learning:** In Next.js/React applications, performing repetitive array searches (`.find()`) within render loops, `useMemo` hooks, or event callbacks on static or slowly-changing configuration arrays (like `STREAMING_SERVICES`) creates a significant O(N*M) performance bottleneck, especially when the component handles complex state or drag-and-drop.
+**Action:** When static lookup arrays are used repeatedly in mapping or reducing operations during rendering, immediately construct an O(1) `Map` outside the component (e.g., `const ITEMS_BY_ID = new Map(ITEMS.map(i => [i.id, i]))`) and replace `array.find(id)` with `ITEMS_BY_ID.get(id)` to guarantee linear O(N) scaling behavior.
