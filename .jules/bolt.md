@@ -1,0 +1,3 @@
+## 2024-11-20 - [O(1) Map Lookups for Streaming Services Optimization]
+**Learning:** In deeply nested React renders (like `streaming-comparison.tsx`), executing `.find()` on static configuration arrays repeatedly inside `.map()` loops or `useMemo` hooks causes unnecessary O(n*m) algorithmic complexity.
+**Action:** When working with static arrays that require frequent ID-based lookups during renders, initialize a `Map` (e.g. `const MAP_BY_ID = new Map(ARRAY.map(s => [s.id, s]))`) outside the component to enable O(1) lookups, and extract duplicated lookups in render blocks into shared local variables.
