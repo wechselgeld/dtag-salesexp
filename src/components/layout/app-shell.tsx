@@ -94,6 +94,7 @@ export function AppShell({
 	const showConsentBanner =
 		pathname !== '/setup' &&
 		pathname !== '/login' &&
+		pathname !== '/shutdown' &&
 		!pathname.startsWith('/admin') &&
 		pathname !== '/privacy' &&
 		pathname !== '/tracking' &&
@@ -133,8 +134,8 @@ export function AppShell({
 		</div>
 	);
 
-	// Don't show splash/modals on admin/login
-	if (isLoginOrAdmin) {
+	// Don't show splash/modals on admin/login/shutdown
+	if (isLoginOrAdmin || pathname === '/shutdown') {
 		return shellContent;
 	}
 

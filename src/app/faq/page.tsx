@@ -23,11 +23,11 @@ const FAQ_CATEGORIES = [
 		items: [
 			{
 				q: 'Was ist die Sales Experience?',
-				a: 'Die Sales Experience ist ein internes Vertriebsberatungstool, das speziell für die Deutsche Telekom Service GmbH entwickelt wurde. Es unterstützt Dich bei der Produktauswahl, Tarifkonfiguration und der Erstellung professioneller Angebote für Deine Kunden.',
+				a: 'Die Sales Experience ist ein internes Vertriebsberatungstool. Es unterstützt Dich bei der Produktauswahl, Tarifkonfiguration und der Erstellung professioneller Angebote für Deine Kunden.',
 			},
 			{
 				q: 'Wer kann das Tool nutzen?',
-				a: 'Das Tool ist für Vertriebsberater, Teamleiter und Manager in autorisierten Telekom-Standorten vorgesehen. Der Zugriff erfolgt oft personalisiert über eine E-Mail-Verifizierung. Bitte gib die Anwendung nicht weiter.',
+				a: 'Das Tool ist für Vertriebsberater, Teamleiter und Manager an autorisierten Standorten vorgesehen. Der Zugriff erfolgt oft personalisiert über eine E-Mail-Verifizierung. Bitte gib die Anwendung nicht weiter.',
 			},
 			{
 				q: 'Sind die Preise und Aktionen immer aktuell?',
@@ -106,6 +106,7 @@ export default function FAQPage() {
 				<PageHeader
 					title="Hilfe & FAQ"
 					description="Hier findest Du Antworten auf die häufigsten Fragen zum Sales Experience Tool."
+					hideLogo={true}
 				/>
 
 				<div className="space-y-12 mb-16">

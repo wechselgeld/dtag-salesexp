@@ -11,21 +11,21 @@ import {
 
 // --- Screen Header (inline, compact: icon badge + title/subtitle) ---
 export function ScreenHeader({
- icon, title, subtitle,
-}: { icon: React.ReactNode; title: React.ReactNode; subtitle?: React.ReactNode }) {
-    return (
-        <div className="flex flex-col gap-5 pb-2">
-            <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#e20074]/10 rounded-full flex items-center justify-center shrink-0">
-                    {icon}
-                </div>
-                <div className="text-left">
-                    <h3 className="text-[1.15rem] font-extrabold text-[#1a1a2e] tracking-tight leading-tight">{title}</h3>
-                    {subtitle && <p className="text-[0.875rem] text-[#999] leading-snug mt-0.5">{subtitle}</p>}
-                </div>
-            </div>
-        </div>
-    );
+	icon, title, subtitle, iconBgClassName,
+}: { icon: React.ReactNode; title: React.ReactNode; subtitle?: React.ReactNode; iconBgClassName?: string }) {
+	return (
+		<div className="flex flex-col gap-5 pb-2">
+			<div className="flex items-center gap-4">
+				<div className={clsx("w-12 h-12 rounded-full flex items-center justify-center shrink-0", iconBgClassName || "bg-[#e20074]/10")}>
+					{icon}
+				</div>
+				<div className="text-left">
+					<h3 className="text-[1.15rem] font-extrabold text-[#1a1a2e] tracking-tight leading-tight">{title}</h3>
+					{subtitle && <p className="text-[0.875rem] text-[#999] leading-snug mt-0.5">{subtitle}</p>}
+				</div>
+			</div>
+		</div>
+	);
 }
 
 // --- Section Header (legacy inline with step number badge) ---

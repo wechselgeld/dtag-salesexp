@@ -44,6 +44,8 @@
 	--font-sans:
 		var(--font-teleneo), ui-sans-serif, system-ui, sans-serif,
 		"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--font-syne:
+		var(--font-syne), "Syne", sans-serif;
 }
 
 @layer base {

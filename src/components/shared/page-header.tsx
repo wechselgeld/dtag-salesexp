@@ -10,6 +10,7 @@ interface PageHeaderProps {
 	description: string;
 	className?: string;
 	logoClassName?: string;
+	hideLogo?: boolean;
 }
 
 export function PageHeader({
@@ -17,6 +18,7 @@ export function PageHeader({
 	description,
 	className,
 	logoClassName,
+	hideLogo = false,
 }: PageHeaderProps) {
 	return (
 		<motion.div
@@ -39,7 +41,7 @@ export function PageHeader({
 			}}
 			className={clsx('flex flex-col items-center mb-10 text-center', className)}
 		>
-			<TelekomLogo className={clsx('w-12 h-12 text-[#e20074] mb-8', logoClassName)} />
+			{!hideLogo && <TelekomLogo className={clsx('w-12 h-12 text-[#e20074] mb-8', logoClassName)} />}
 			<h1 className="text-3xl sm:text-[2.5rem] font-extrabold text-[#1a1a2e] tracking-tight mb-3 leading-none">
 				{title}
 			</h1>

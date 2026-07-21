@@ -24,6 +24,7 @@ export default function AiInfoPage() {
 					title="KI-Nutzung & Datensicherheit"
 					description="Informationen zur sicheren Datenverarbeitung und den Nutzungsrichtlinien der künstlichen Intelligenz (SXP Scout) im internen Beratungstool."
 					logoClassName="ml-2"
+					hideLogo={true}
 				/>
 
 				{/* Content */}
@@ -32,7 +33,7 @@ export default function AiInfoPage() {
 						<div className="flex items-center gap-2 mb-2">
 							<Cpu className="w-5 h-5 text-[#e20074]" />
 							<h2 className="text-xl font-bold text-[#1a1a2e]">
-								1. Funktionsweise des Telekom SXP Scout
+								1. Funktionsweise des SXP Scout
 							</h2>
 						</div>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
@@ -148,7 +149,7 @@ export default function AiInfoPage() {
 							Künstliche Intelligenzen und Large Language Models (LLMs) sind statistische Text-Modelle. Obwohl wir dem Modell präzise Systemprompts und die aktuellen Warenkorb-Daten vorgeben, kann es vorkommen, dass die KI sachlich inkorrekte Aussagen, ungenaue Tarifergebnisse oder unpassende Formulierungen generiert (&bdquo;Halluzinationen&ldquo;).
 						</p>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
-							<strong>Die generierten Tipps sind rechtlich unverbindlich.</strong> Bitte überprüfen Sie alle vertraglichen Kernpunkte, rechtlichen Rahmenbedingungen und technischen Verfügbarkeiten (insb. Preise, Bandbreiten und Laufzeiten) vor der finalen Weitergabe an den Kunden anhand des offiziellen Preis- und Leistungsverzeichnisses der Telekom.
+							<strong>Die generierten Tipps sind rechtlich unverbindlich.</strong> Bitte überprüfen Sie alle vertraglichen Kernpunkte, rechtlichen Rahmenbedingungen und technischen Verfügbarkeiten (insb. Preise, Bandbreiten und Laufzeiten) vor der finalen Weitergabe an den Kunden anhand des offiziellen Preis- und Leistungsverzeichnisses.
 						</p>
 					</section>
 

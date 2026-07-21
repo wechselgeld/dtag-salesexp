@@ -1,16 +1,16 @@
-# Graph Report - dts_saleshelper  (2026-06-13)
+# Graph Report - dts_saleshelper  (2026-07-21)
 
 ## Corpus Check
-- 269 files · ~406,319 words
+- 272 files · ~407,431 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3356 nodes · 4696 edges · 307 communities (247 shown, 60 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 80 edges (avg confidence: 0.8)
+- 3366 nodes · 4715 edges · 304 communities (244 shown, 60 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 81 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `61081b8a`
+- Built from commit: `5ce7594a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -230,7 +230,6 @@
 - [[_COMMUNITY_Community 215|Community 215]]
 - [[_COMMUNITY_Community 217|Community 217]]
 - [[_COMMUNITY_Community 218|Community 218]]
-- [[_COMMUNITY_Community 219|Community 219]]
 - [[_COMMUNITY_Community 220|Community 220]]
 - [[_COMMUNITY_Community 221|Community 221]]
 - [[_COMMUNITY_Community 222|Community 222]]
@@ -279,7 +278,6 @@
 - [[_COMMUNITY_Community 265|Community 265]]
 - [[_COMMUNITY_Community 266|Community 266]]
 - [[_COMMUNITY_Community 267|Community 267]]
-- [[_COMMUNITY_Community 268|Community 268]]
 - [[_COMMUNITY_Community 269|Community 269]]
 - [[_COMMUNITY_Community 270|Community 270]]
 - [[_COMMUNITY_Community 271|Community 271]]
@@ -307,7 +305,6 @@
 - [[_COMMUNITY_Community 293|Community 293]]
 - [[_COMMUNITY_Community 294|Community 294]]
 - [[_COMMUNITY_Community 295|Community 295]]
-- [[_COMMUNITY_Community 296|Community 296]]
 - [[_COMMUNITY_Community 297|Community 297]]
 - [[_COMMUNITY_Community 298|Community 298]]
 - [[_COMMUNITY_Community 299|Community 299]]
@@ -316,11 +313,11 @@
 - [[_COMMUNITY_Community 302|Community 302]]
 - [[_COMMUNITY_Community 303|Community 303]]
 - [[_COMMUNITY_Community 304|Community 304]]
-- [[_COMMUNITY_Community 305|Community 305]]
+- [[_COMMUNITY_Community 306|Community 306]]
 - [[_COMMUNITY_Community 308|Community 308]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `clsx` - 61 edges
+1. `clsx` - 62 edges
 2. `trpc` - 54 edges
 3. `GSAP Explore Components` - 36 edges
 4. `Fallow: Critical Gotchas` - 32 edges
@@ -334,12 +331,12 @@
 ## Surprising Connections (you probably didn't know these)
 - `SidebarGroupSkeleton()` --calls--> `clsx`  [INFERRED]
   src/app/admin/layout.tsx → package.json
-- `InspectorModal()` --calls--> `clsx`  [INFERRED]
-  src/app/admin/audit/audit-client.tsx → package.json
-- `CategoryCard()` --calls--> `clsx`  [INFERRED]
-  src/app/products/products-client.tsx → package.json
-- `TierSelect()` --calls--> `clsx`  [INFERRED]
-  src/components/features/calculator/streaming-comparison.tsx → package.json
+- `HardwareTierSelector()` --calls--> `clsx`  [INFERRED]
+  src/app/products/[category]/[id]/product-detail-client.tsx → package.json
+- `PlusKartenConfigGroup()` --calls--> `clsx`  [INFERRED]
+  src/app/products/[category]/[id]/product-detail-client.tsx → package.json
+- `TabCard()` --calls--> `clsx`  [INFERRED]
+  src/components/features/basket/basket-drawer.tsx → package.json
 - `NotificationItem()` --calls--> `clsx`  [INFERRED]
   src/components/features/news/global-news-notification.tsx → package.json
 
@@ -349,35 +346,35 @@
 - **High Performance Caching Architecture** — concept_thundering_herd_protection, concept_graceful_cache_degradation, code_cache_helper, code_redis_client [EXTRACTED 1.00]
 - **Deutsche Telekom Brand Design Alignment** — se_logo_svg, teleneo_font, telekom_brand_identity [INFERRED 0.85]
 
-## Communities (307 total, 60 thin omitted)
+## Communities (304 total, 60 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.12
-Nodes (17): CATEGORY_COLORS, CATEGORY_NAMES, Deutsche Telekom SVG Logo, SidebarFooter(), SidebarFooterProps, SidebarLayout(), SidebarLayoutProps, SidebarLogo() (+9 more)
+Cohesion: 0.18
+Nodes (11): GlobalNewsNotification(), NotificationItem(), PRIORITY_CONFIG, NewsNotification, NewsNotificationStore, useNewsNotificationStore, SystemAlert, SystemAlertStore (+3 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.18
-Nodes (7): Permission, PERMISSIONS, ROLE_PERMISSIONS, auditContextMiddleware, isAuthed, loggerMiddleware, t
+Cohesion: 0.13
+Nodes (11): AuditContext, auditContextStorage, revertAuditLog(), adminAuditRouter, SerializedAuditLog, adminAuditRouter, SerializedAuditLog, auditContextMiddleware (+3 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.04
 Nodes (51): dependencies, bcryptjs, class-variance-authority, cmdk, consola, date-fns, framer-motion, @google/genai (+43 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.11
-Nodes (23): getSession(), hashPin(), JwtTyp, key, login(), logout(), SessionUser, signDeviceId() (+15 more)
+Cohesion: 0.10
+Nodes (25): getSession(), hashPin(), JwtTyp, key, login(), logout(), SessionUser, signDeviceId() (+17 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.05
 Nodes (44): Audit Log & Revert Engine Architecture, Automation & System Maintenance, AuditContext Storage, Audit Logger Service, Audit Revert Service, Cache Operations Helper, Email Notification Service, Prisma Client (Extended) (+36 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.15
-Nodes (20): buildCombinedSteps(), computeSteps(), CostStep, fmt(), fmtPrice(), formatDailyPrice(), getDate(), CheckIcon() (+12 more)
+Cohesion: 0.12
+Nodes (15): InspectorModal(), VariantDropdown(), MAGENTA_PLANS, STREAMING_SERVICES, StreamingComparison(), StreamingComparisonProps, TierSelect(), clsx (+7 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.10
-Nodes (28): BasketColumn, BasketDrawer(), BasketItemCard, CATEGORY_COLORS, CATEGORY_LABELS, EMPTY_NOTICES, CombinedTimeline(), MAGENTA_PLANS (+20 more)
+Cohesion: 0.12
+Nodes (20): BasketColumn, BasketItemCard, CATEGORY_COLORS, CATEGORY_LABELS, EMPTY_NOTICES, TabCard(), CreditSelector(), MAGENTA_TV_PACKAGES (+12 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.02
@@ -391,25 +388,29 @@ Nodes (58): autofillAttemptedRef, [cardHeight, setCardHeight], cardRef, containe
         data: userExistsData, isLoading: isUserExistsLoading,
     } (+50 more)
 
+### Community 8 - "Community 8"
+Cohesion: 0.17
+Nodes (8): BulkUpdateDialog(), BulkUpdateDialogProps, CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_LABELS, metadata
+
 ### Community 9 - "Community 9"
 Cohesion: 0.08
 Nodes (24): devDependencies, dotenv, dotenv-cli, eslint, eslint-config-next, @eslint/eslintrc, @eslint/js, prisma (+16 more)
 
 ### Community 10 - "Community 10"
-Cohesion: 0.12
-Nodes (24): AdminEmptyState(), AdminEmptyStateProps, AdminLoadMore(), AdminLoadMoreProps, PRIORITY_COLORS, PRIORITY_LABELS, CATEGORY_COLORS, CATEGORY_ICONS (+16 more)
+Cohesion: 0.13
+Nodes (21): AdminEmptyState(), AdminEmptyStateProps, AdminLoadMore(), AdminLoadMoreProps, PRIORITY_COLORS, PRIORITY_LABELS, AdminSearch(), AdminSearchProps (+13 more)
 
 ### Community 11 - "Community 11"
-Cohesion: 0.14
-Nodes (12): useDebounce(), bigramSimilarity(), FuzzyResult, fuzzySearch(), wordFuzzyMatch(), categories, CategoryGrid(), CATEGORY_COLORS (+4 more)
+Cohesion: 0.15
+Nodes (13): useDebounce(), bigramSimilarity(), FuzzyResult, fuzzySearch(), wordFuzzyMatch(), categories, CategoryGrid(), CATEGORY_COLORS (+5 more)
 
 ### Community 12 - "Community 12"
 Cohesion: 0.07
 Nodes (28): boundary_violations, circular_dependencies, duplicate_exports, elapsed_ms, empty_catalog_groups, kind, misconfigured_dependency_overrides, private_type_leaks (+20 more)
 
 ### Community 13 - "Community 13"
-Cohesion: 0.05
-Nodes (40): CreditForm(), CreditFormData, CreditFormProps, creditSchema, LocationForm(), LocationFormData, LocationFormProps, locationSchema (+32 more)
+Cohesion: 0.08
+Nodes (35): AddonFormData, AddonFormProps, addonSchema, CreditFormData, CreditFormProps, creditSchema, LocationFormData, LocationFormProps (+27 more)
 
 ### Community 14 - "Community 14"
 Cohesion: 0.10
@@ -436,12 +437,12 @@ Cohesion: 0.40
 Nodes (5): computedHash, skillPath, source, sourceType, design-taste-frontend
 
 ### Community 20 - "Community 20"
-Cohesion: 0.19
-Nodes (13): AuditContext, auditContextStorage, getAuditContext(), AUDITED_MODELS, fetchCurrentState(), fetchCurrentStateWithRelations(), GERMAN_MODEL_NAMES, getEntityLabel() (+5 more)
+Cohesion: 0.24
+Nodes (11): getAuditContext(), AUDITED_MODELS, fetchCurrentState(), fetchCurrentStateWithRelations(), GERMAN_MODEL_NAMES, getEntityLabel(), getGermanModelName(), logAutomaticAction() (+3 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.08
-Nodes (17): AddonForm(), AddonFormData, AddonFormProps, addonSchema, BulkUpdateDialog(), BulkUpdateDialogProps, CATEGORY_COLORS, CATEGORY_LABELS (+9 more)
+Cohesion: 0.07
+Nodes (36): ChangelogPage(), CHANGELOGS, FAQItem(), FAQPage(), CHANGELOG_DATA, ChangelogItem, ChangelogRelease, FeedbackModal() (+28 more)
 
 ### Community 22 - "Community 22"
 Cohesion: 0.05
@@ -456,15 +457,15 @@ Cohesion: 0.12
 Nodes (15): accentText, button, buttonContainer, container, credentialLabel, credentialRow, credentialsBox, credentialValue (+7 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.08
-Nodes (24): revertAuditLog(), addonFormSchema, addonRouter, editorProcedure, tierSchema, adminProcedure, adminRouter, adminAuditRouter (+16 more)
+Cohesion: 0.20
+Nodes (9): adminProcedure, adminRouter, catalogProcedure, creditsProcedure, priceHistorySchema, pricesProcedure, productSchema, specialPriceSchema (+1 more)
 
 ### Community 26 - "Community 26"
 Cohesion: 0.12
 Nodes (10): clearCache(), cacheLogger, globalForNewsEmitter, news, subRedis, RateLimitOptions, RedisRateLimiter, globalForRedis (+2 more)
 
 ### Community 27 - "Community 27"
-Cohesion: 0.24
+Cohesion: 0.25
 Nodes (10): getScopedPrisma(), AppRouter, Context, createContext(), extractClientIp(), metadata, Page(), metadata (+2 more)
 
 ### Community 28 - "Community 28"
@@ -472,16 +473,12 @@ Cohesion: 0.07
 Nodes (28): boundary_violations, circular_dependencies, duplicate_exports, elapsed_ms, empty_catalog_groups, kind, misconfigured_dependency_overrides, private_type_leaks (+20 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.08
-Nodes (37): AddonSelector(), Props, BusinessCaseSelector(), Product, Props, CostTimeline(), Props, Props (+29 more)
+Cohesion: 0.14
+Nodes (19): Props, CATEGORY_COLORS, CATEGORY_NAMES, MagentaTVPackageKey, Basket, BasketState, BasketState, Addon (+11 more)
 
 ### Community 30 - "Community 30"
 Cohesion: 0.04
 Nodes (48): Agent Rules, Analyze specific workspaces, Audit a project for cleanup opportunities, Catch typos in entry file exports, Check if a PR introduces quality risk, code:bash (npm install -g fallow          # prebuilt binaries (fastest)), code:bash (fallow dead-code --format json --quiet --production), code:bash (# Single package) (+40 more)
-
-### Community 31 - "Community 31"
-Cohesion: 0.17
-Nodes (14): EASE_OUT_EXPO, formatDate(), getTimeContext(), IntroSplash(), StreamingCalculatorModal(), ModalState, useModalStore, AppShell() (+6 more)
 
 ### Community 32 - "Community 32"
 Cohesion: 0.05
@@ -489,11 +486,11 @@ Nodes (43): 1. Logo Cover, 1. Monogram + Meaning, 2 × 3 REFERENCE-STYLE LAYOUT,
 
 ### Community 33 - "Community 33"
 Cohesion: 0.12
-Nodes (27): getCache(), getCached(), inflight, invalidateCache(), MISSING, scanKeys(), setCache(), sendGoodbyeEmail() (+19 more)
+Nodes (31): getCache(), getCached(), inflight, invalidateCache(), MISSING, scanKeys(), setCache(), sendGoodbyeEmail() (+23 more)
 
 ### Community 34 - "Community 34"
-Cohesion: 0.12
-Nodes (16): AdminLayout(), MenuGroup, MenuItem, SidebarGroupSkeleton(), usePermissions(), DeleteConfirmToast(), ErrorToastState, GlobalErrorToast() (+8 more)
+Cohesion: 0.10
+Nodes (21): AdminLayout(), MenuGroup, MenuItem, SidebarGroupSkeleton(), AdminPasskeyPrompt(), PasskeyPromptInner(), CachedSession, usePermissions() (+13 more)
 
 ### Community 35 - "Community 35"
 Cohesion: 0.17
@@ -516,16 +513,16 @@ Cohesion: 0.10
 Nodes (19): Code Quality, Color and Surfaces, Component Patterns, Content, Design Audit, Fix Priority, How This Works, Iconography (+11 more)
 
 ### Community 40 - "Community 40"
-Cohesion: 0.22
-Nodes (15): EditUserPage(), hasPermission(), canCreateNews(), canEditTeam(), canManageLocation(), canManageUser(), getLocationFilter(), getUserFilter() (+7 more)
+Cohesion: 0.17
+Nodes (20): EditUserPage(), hasPermission(), canCreateNews(), canEditTeam(), canManageLocation(), canManageUser(), getLocationFilter(), getNewsVisibilityFilter() (+12 more)
 
 ### Community 41 - "Community 41"
-Cohesion: 0.14
-Nodes (14): Props, dbLogger, formatDuration(), formatQuery(), formatStatus(), httpLogger, logger, globalForPrisma (+6 more)
+Cohesion: 0.16
+Nodes (13): dbLogger, formatDuration(), formatQuery(), formatStatus(), httpLogger, logger, globalForPrisma, prismaClientSingleton() (+5 more)
 
 ### Community 42 - "Community 42"
-Cohesion: 0.15
-Nodes (10): ACTION_MAP, AuditClient(), AuditLogType, ENTITY_MAP, InspectorModal(), metadata, ErrorLogType, ErrorsClient() (+2 more)
+Cohesion: 0.16
+Nodes (9): ACTION_MAP, AuditClient(), AuditLogType, ENTITY_MAP, metadata, ErrorLogType, ErrorsClient(), metadata (+1 more)
 
 ### Community 43 - "Community 43"
 Cohesion: 0.10
@@ -540,8 +537,8 @@ Cohesion: 0.10
 Nodes (19): 1. Systemstruktur & Kontrollschichten, 2. Implementierungsdetails der Komponenten, 3. Interaktionen und Beziehungen, 4. Entwickler-Anleitung: System erweitern, Berechtigungs-Matrix, code:typescript (args.where = {), code:block2 ([Frontend Guard / Hook] ──> [tRPC Router / requirePermission), code:typescript (export const PERMISSIONS = [) (+11 more)
 
 ### Community 46 - "Community 46"
-Cohesion: 0.09
-Nodes (22): SavingsCalculatorModalProps, StreamingComparison(), EmailInputProps, ErrorBanner(), PremiumButton, PremiumButtonProps, PremiumInput, PremiumInputProps (+14 more)
+Cohesion: 0.50
+Nodes (4): 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, Motion and Interaction, Performance Guardrails
 
 ### Community 47 - "Community 47"
 Cohesion: 0.05
@@ -556,20 +553,20 @@ Cohesion: 0.11
 Nodes (17): 1. Meta Information & Core Directive, 2. THE "ABSOLUTE ZERO" DIRECTIVE (STRICT ANTI-PATTERNS), 3. THE CREATIVE VARIANCE ENGINE, 4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY), 5. MOTION CHOREOGRAPHY (FLUID DYNAMICS), 6. PERFORMANCE GUARDRAILS, 7. EXECUTION PROTOCOL, 8. PRE-OUTPUT CHECKLIST (+9 more)
 
 ### Community 50 - "Community 50"
-Cohesion: 0.20
-Nodes (10): useImageBrightness(), NewsCarousel(), PRIORITY_CONFIG, getTimeContext(), HeroHeader(), HeroHeaderProps, CATEGORIES, CategoryCard() (+2 more)
+Cohesion: 0.12
+Nodes (8): SpecialPriceForm(), SpecialPriceFormData, SpecialPriceFormProps, specialPriceSchema, tierSchema, CreditSelectorProps, trpc, PRIORITY_CONFIG
 
 ### Community 51 - "Community 51"
-Cohesion: 0.16
-Nodes (10): OdRegionForm(), OdRegionFormData, OdRegionFormProps, odRegionSchema, NotFound(), EditLocationPage(), EditOdRegionPage(), EditTeamPage() (+2 more)
+Cohesion: 0.50
+Nodes (4): 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, Motion and Interaction, Performance Guardrails
 
 ### Community 52 - "Community 52"
 Cohesion: 0.06
 Nodes (33): CI Pipeline Setup, code:yaml (- uses: fallow-rs/fallow@v2), code:yaml (- uses: fallow-rs/fallow@v2), code:yaml (- uses: fallow-rs/fallow@v2), code:yaml (- uses: fallow-rs/fallow@v2), code:yaml (- uses: fallow-rs/fallow@v2), code:yaml (- name: Check for new dead code), code:yaml (- name: Duplication check) (+25 more)
 
 ### Community 53 - "Community 53"
-Cohesion: 0.10
-Nodes (16): TabCard(), VariantDropdown(), CreditSelector(), FAQItem(), clsx, FAQItem(), CheckboxRow(), EmailInputWithSuffix() (+8 more)
+Cohesion: 0.06
+Nodes (34): SavingsCalculatorModalProps, StreamingCalculatorModal(), CheckboxRow(), EmailInputProps, EmailInputWithSuffix(), ErrorBanner(), InfoCard(), PremiumButton (+26 more)
 
 ### Community 54 - "Community 54"
 Cohesion: 0.33
@@ -590,10 +587,6 @@ Nodes (16): 1. Skill Meta, 2.1 Swiss Industrial Print, 2.2 Tactical Telemetry & 
 ### Community 58 - "Community 58"
 Cohesion: 0.17
 Nodes (11): 1. Directory Blueprint, 2. Zustand Store Standardization, 3. tRPC Router Kebab-Case Standard, 4. UI Component Modularity, 5. Path Imports and Code Hygiene, code:typescript (// ✅ PASS), Core Rules, Core Rules (+3 more)
-
-### Community 60 - "Community 60"
-Cohesion: 0.40
-Nodes (5): code:bash (fallow dead-code --format json --quiet), code:bash (fallow dead-code --format json --quiet --production), Full audit (default), Production audit, Production vs Full Audit
 
 ### Community 65 - "Community 65"
 Cohesion: 0.09
@@ -656,8 +649,8 @@ Cohesion: 0.13
 Nodes (15): 7. STYLE DIRECTION: Dashboards, Component Vocabulary, Components Library, Copy Tone, Core Identity, Creative Arsenal For This Style, Current Production Priorities, Hero Direction (+7 more)
 
 ### Community 94 - "Community 94"
-Cohesion: 0.52
-Nodes (6): blobToBase64(), buildFileName(), buildPdfBlob(), downloadBlob(), generateOfferPdf(), getSvgAsPngBase64()
+Cohesion: 0.40
+Nodes (5): code:bash (fallow dead-code --format json --quiet), code:bash (fallow dead-code --format json --quiet --production), Full audit (default), Production audit, Production vs Full Audit
 
 ### Community 97 - "Community 97"
 Cohesion: 0.13
@@ -788,8 +781,8 @@ Cohesion: 0.29
 Nodes (6): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, High-Agency Soft Frontend Skill
 
 ### Community 129 - "Community 129"
-Cohesion: 0.29
-Nodes (6): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, High-Agency Swiss System Frontend Skill
+Cohesion: 0.18
+Nodes (10): 10.1 QUICK DECISION SHORTCUTS, 10. FAILURE MODES AND RECOVERY LOOP, 11. FINAL PRE-FLIGHT CHECK, 1. ACTIVE BASELINE CONFIGURATION, 2. DEFAULT ARCHITECTURE & CONVENTIONS, 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, High-Agency Swiss System Frontend Skill (+2 more)
 
 ### Community 130 - "Community 130"
 Cohesion: 0.18
@@ -1028,8 +1021,8 @@ Cohesion: 0.50
 Nodes (4): 5. TECHNICAL REFERENCE (Dial Definitions), DESIGN_VARIANCE (Level 1-10), MOTION_INTENSITY (Level 1-10), VISUAL_DENSITY (Level 1-10)
 
 ### Community 190 - "Community 190"
-Cohesion: 0.23
-Nodes (9): GlobalNewsNotification(), NotificationItem(), PRIORITY_CONFIG, NewsNotification, NewsNotificationStore, useNewsNotificationStore, SystemAlert, SystemAlertStore (+1 more)
+Cohesion: 0.10
+Nodes (28): BasketDrawer(), CombinedTimeline(), AddonSelector(), BusinessCaseSelector(), Product, Props, Props, SpecialPriceSelector() (+20 more)
 
 ### Community 191 - "Community 191"
 Cohesion: 0.50
@@ -1044,8 +1037,8 @@ Cohesion: 0.50
 Nodes (4): 5. TECHNICAL REFERENCE (Dial Definitions), DESIGN_VARIANCE (Level 1-10), MOTION_INTENSITY (Level 1-10), VISUAL_DENSITY (Level 1-10)
 
 ### Community 194 - "Community 194"
-Cohesion: 0.17
-Nodes (9): InfoCard(), CHIP_PROMPTS, formatMessageContent(), Message, MiniSpinner(), ParsedResponse, SalesTipsModal(), SalesTipsModalProps (+1 more)
+Cohesion: 0.22
+Nodes (3): PremiumGhostInput(), PremiumGhostInputProps, metadata
 
 ### Community 195 - "Community 195"
 Cohesion: 0.50
@@ -1064,12 +1057,12 @@ Cohesion: 0.50
 Nodes (4): 5. TECHNICAL REFERENCE (Dial Definitions), DESIGN_VARIANCE (Level 1-10), MOTION_INTENSITY (Level 1-10), VISUAL_DENSITY (Level 1-10)
 
 ### Community 199 - "Community 199"
-Cohesion: 0.23
-Nodes (8): metadata, teleNeo, SettingsWrapper(), ResolutionGuard(), AnalyticsProvider(), TrackingConsentBanner(), SettingsState, useSettingsStore
+Cohesion: 0.11
+Nodes (23): metadata, syne, teleNeo, SettingsWrapper(), CostTimeline(), Props, useImageBrightness(), SettingsState (+15 more)
 
 ### Community 202 - "Community 202"
-Cohesion: 0.27
-Nodes (8): ChangelogPage(), CHANGELOGS, FAQPage(), CHANGELOG_DATA, ChangelogItem, ChangelogRelease, ChangelogState, useChangelogStore
+Cohesion: 0.05
+Nodes (21): AddonForm(), CreditForm(), LocationForm(), NewsForm(), OdRegionForm(), ProductForm(), TeamForm(), UserForm() (+13 more)
 
 ### Community 203 - "Community 203"
 Cohesion: 0.40
@@ -1088,12 +1081,12 @@ Cohesion: 0.17
 Nodes (11): codeContainer, codeText, container, footer, h1, hr, logoContainer, main (+3 more)
 
 ### Community 207 - "Community 207"
-Cohesion: 0.60
-Nodes (5): handleLoginWithPasskey(), handleSaveNewPin(), markSetupComplete(), persistName(), runConditionalAutofill()
+Cohesion: 0.13
+Nodes (28): buildCombinedSteps(), computeSteps(), CostStep, fmt(), fmtPrice(), formatDailyPrice(), getDate(), CheckIcon() (+20 more)
 
 ### Community 208 - "Community 208"
-Cohesion: 0.50
-Nodes (4): 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, Motion and Interaction, Performance Guardrails
+Cohesion: 0.60
+Nodes (4): EASE_OUT_EXPO, formatDate(), getTimeContext(), IntroSplash()
 
 ### Community 209 - "Community 209"
 Cohesion: 0.50
@@ -1111,10 +1104,6 @@ Nodes (12): Baseline Comparison Tracks Issue Identity, code:bash (# Save current
 Cohesion: 0.17
 Nodes (11): code:bash (fallow dead-code --format json --quiet --include-dupes), code:bash (fallow dead-code --format json --quiet --changed-since main ), code:bash (fallow dead-code --format json --quiet --changed-since main), Combined Dead Code + Duplication, Fallow: Common Workflow Patterns & Recipes, PR Dead Code Check, Step 1: Analyze changed files, Step 1: Run combined analysis (+3 more)
 
-### Community 219 - "Community 219"
-Cohesion: 0.50
-Nodes (4): 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, Motion and Interaction, Performance Guardrails
-
 ### Community 220 - "Community 220"
 Cohesion: 0.17
 Nodes (12): code:bash (fallow dead-code --format json --quiet), code:bash (fallow dupes --format json --quiet), code:bash (fallow fix --dry-run --format json --quiet), code:bash (fallow fix --yes --format json --quiet), code:bash (fallow dead-code --format json --quiet), Full Project Audit, Step 1: Run full analysis, Step 2: Review issue counts (+4 more)
@@ -1125,7 +1114,7 @@ Nodes (11): `.claude/hooks/fallow-gate.sh`, `.claude/settings.json`, code:bash (
 
 ### Community 222 - "Community 222"
 Cohesion: 0.09
-Nodes (37): calculateProductCosts(), ContactSection(), ContactSectionProps, DetailsPage(), DetailsPageProps, DevicesSection(), DevicesSectionProps, FestnetzSection() (+29 more)
+Nodes (26): calculateProductCosts(), ContactSection(), ContactSectionProps, DevicesSection(), DevicesSectionProps, FestnetzSection(), FestnetzSectionProps, Footer() (+18 more)
 
 ### Community 223 - "Community 223"
 Cohesion: 0.18
@@ -1291,17 +1280,13 @@ Nodes (3): code:block35 (fallow license refresh: your stored license is too stal
 Cohesion: 0.67
 Nodes (3): code:typescript (// RESOLVED: static pattern with prefix), code:typescript (// fallow-ignore-next-line unused-export), Syntactic Analysis: No TypeScript Compiler
 
-### Community 268 - "Community 268"
-Cohesion: 0.24
-Nodes (6): TeamForm(), TeamFormData, TeamFormProps, teamSchema, metadata, metadata
-
 ### Community 289 - "Community 289"
 Cohesion: 0.11
 Nodes (17): clone_families, clone_groups, elapsed_ms, kind, schema_version, stats, clone_groups, clone_groups_below_min_occurrences (+9 more)
 
 ### Community 291 - "Community 291"
-Cohesion: 0.25
-Nodes (4): AccountResetEmail(), WelcomeEmail(), sendFeedbackEmail(), feedbackRouter
+Cohesion: 0.29
+Nodes (3): AccountResetEmail(), WelcomeEmail(), sendFeedbackEmail()
 
 ### Community 293 - "Community 293"
 Cohesion: 0.25
@@ -1315,10 +1300,6 @@ Nodes (5): entry_points, sources, total, package.json, plugin
 Cohesion: 0.40
 Nodes (5): entry_points, sources, total, package.json, plugin
 
-### Community 296 - "Community 296"
-Cohesion: 0.33
-Nodes (5): SetupPage(), initialValues, SetupDraftState, SetupState, useSetupStore
-
 ### Community 298 - "Community 298"
 Cohesion: 0.12
 Nodes (13): AgentMessage, AgentToolCall, GetProductDetailsArgsSchema, googleTools, GroqChatCompletionResponseSchema, GroqMessageSchema, GroqToolCallSchema, NimChatCompletionResponseSchema (+5 more)
@@ -1327,29 +1308,33 @@ Nodes (13): AgentMessage, AgentToolCall, GetProductDetailsArgsSchema, googleTool
 Cohesion: 0.43
 Nodes (6): sendAccountResetEmail(), ask(), delay(), main(), prisma, rl
 
+### Community 306 - "Community 306"
+Cohesion: 0.33
+Nodes (5): SetupPage(), initialValues, SetupDraftState, SetupState, useSetupStore
+
 ### Community 308 - "Community 308"
-Cohesion: 0.50
-Nodes (4): 4. CREATIVE PROACTIVITY, MOTION, AND PERFORMANCE, Creative Proactivity, Motion and Interaction, Performance Guardrails
+Cohesion: 0.60
+Nodes (5): handleLoginWithPasskey(), handleSaveNewPin(), markSetupComplete(), persistName(), runConditionalAutofill()
 
 ## Knowledge Gaps
-- **2089 isolated node(s):** `$schema`, `entry`, `ignorePatterns`, `ignoreDependencies`, `minOccurrences` (+2084 more)
+- **2091 isolated node(s):** `$schema`, `entry`, `ignorePatterns`, `ignoreDependencies`, `minOccurrences` (+2086 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **60 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `clsx` connect `Community 53` to `Community 0`, `Community 2`, `Community 6`, `Community 10`, `Community 11`, `Community 268`, `Community 13`, `Community 18`, `Community 21`, `Community 29`, `Community 34`, `Community 297`, `Community 42`, `Community 46`, `Community 176`, `Community 50`, `Community 51`, `Community 190`, `Community 194`?**
+- **Why does `clsx` connect `Community 5` to `Community 0`, `Community 2`, `Community 34`, `Community 194`, `Community 6`, `Community 199`, `Community 8`, `Community 42`, `Community 11`, `Community 202`, `Community 10`, `Community 176`, `Community 50`, `Community 18`, `Community 21`, `Community 53`, `Community 190`?**
   _High betweenness centrality (0.032) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `Community 2` to `Community 53`, `Community 54`?**
-  _High betweenness centrality (0.024) - this node is a cross-community bridge._
-- **Why does `trpc` connect `Community 21` to `Community 194`, `Community 6`, `Community 7`, `Community 10`, `Community 42`, `Community 268`, `Community 13`, `Community 46`, `Community 11`, `Community 50`, `Community 18`, `Community 51`, `Community 53`, `Community 29`, `Community 190`, `Community 31`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **Are the 60 inferred relationships involving `clsx` (e.g. with `SidebarGroupSkeleton()` and `AdminLayout()`) actually correct?**
-  _`clsx` has 60 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `dependencies` connect `Community 2` to `Community 5`, `Community 54`?**
+  _High betweenness centrality (0.022) - this node is a cross-community bridge._
+- **Why does `trpc` connect `Community 50` to `Community 0`, `Community 34`, `Community 5`, `Community 6`, `Community 199`, `Community 8`, `Community 7`, `Community 10`, `Community 42`, `Community 11`, `Community 13`, `Community 18`, `Community 53`, `Community 21`, `Community 29`, `Community 190`?**
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
+- **Are the 61 inferred relationships involving `clsx` (e.g. with `SidebarGroupSkeleton()` and `AdminLayout()`) actually correct?**
+  _`clsx` has 61 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `$schema`, `entry`, `ignorePatterns` to the rest of the system?**
-  _2097 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.12 - nodes in this community are weakly interconnected._
+  _2099 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Community 1` be split into smaller, more focused modules?**
+  _Cohesion score 0.13450292397660818 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.0392156862745098 - nodes in this community are weakly interconnected._

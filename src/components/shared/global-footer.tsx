@@ -12,7 +12,7 @@ export function GlobalFooter({
 	className,
 	textColor = 'text-[#888]',
 	linkColor = 'text-[#888]',
-	hoverColor = 'hover:text-[#e20074]',
+	hoverColor = 'hover:text-black',
 }: GlobalFooterProps) {
 	return (
 		<div
@@ -48,28 +48,6 @@ export function GlobalFooter({
 				>
 					Datenschutz
 				</Link>
-				<span className="opacity-50">·</span>
-				<Link
-					href="/ai-info"
-					className={clsx(
-						'transition-colors duration-200',
-						linkColor,
-						hoverColor,
-					)}
-				>
-					KI-Nutzung
-				</Link>
-				<span className="opacity-50">·</span>
-				<Link
-					href="/faq"
-					className={clsx(
-						'transition-colors duration-200',
-						linkColor,
-						hoverColor,
-					)}
-				>
-					FAQ
-				</Link>
 			</div>
 
 			<div
@@ -79,12 +57,11 @@ export function GlobalFooter({
 				)}
 			>
 				<span>
-					&copy; {new Date().getFullYear()} buffinteractive.net für Deutsche Telekom
-					Service GmbH
+					&copy; {new Date().getFullYear()} buffinteractive.net
 				</span>
 				<span className="hidden sm:inline opacity-50">|</span>
 				<div className="flex items-center gap-2">
-					<span className="font-semibold bg-linear-to-r from-[#e20074] to-[#ff007f] bg-clip-text text-transparent">
+					<span className="font-semibold text-black">
 						Sales Experience
 					</span>
 					<span className="px-1.5 py-0.5 rounded shadow-sm bg-black/5 font-mono text-[0.55rem] font-bold tracking-wider leading-none">

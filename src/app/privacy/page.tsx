@@ -18,19 +18,20 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
 	return (
-		<div className="min-h-screen py-16 px-4 selection:bg-[#e20074]/20 selection:text-[#e20074]">
+		<div className="min-h-screen py-16 px-4 selection:bg-black/10 selection:text-black">
 			<div className="max-w-3xl mx-auto">
 				<PageHeader
 					title="Datenschutzerklärung"
 					description="Informationspflichten nach Art. 13 DSGVO für Mitarbeiter und Berechtigte zur Nutzung des internen Beratungstools (Sales Experience)."
 					logoClassName="ml-2"
+					hideLogo={true}
 				/>
 
 				{/* Content */}
 				<div className="bg-white rounded-4xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-[#eaedf0] p-8 sm:p-12 space-y-10">
 					<section className="space-y-4">
 						<div className="flex items-center gap-2 mb-2">
-							<ShieldCheck className="w-5 h-5 text-[#e20074]" />
+							<ShieldCheck className="w-5 h-5 text-black" />
 							<h2 className="text-xl font-bold text-[#1a1a2e]">
 								1. Allgemeine Hinweise und Pflichtinformationen
 							</h2>
@@ -45,17 +46,17 @@ export default function PrivacyPage() {
 						<h3 className="text-[0.95rem] font-bold text-[#1a1a2e] pt-2">
 							Verantwortliche Stelle
 						</h3>
-						<p className="text-[0.95rem] text-[#555] leading-relaxed">
+						<p className="text-[0.95rem] text-[#555] leading-relaxed font-sans">
 							Die verantwortliche Stelle für die Datenverarbeitung auf dieser
 							Website ist die:
 							<br />
-							Buff Germany UG (haftungsbeschränkt)
+							Buff Interactive - Felix Kinze & Leon Trepesch GbR
 							<br />
 							Eulitzstr. 1
 							<br />
 							09112 Chemnitz
-							<br /><br />
-							Besuchen Sie Buff Interactive gern auf ihrer Website unter <a href="https://buffinteractive.net">buffinteractive.net</a>.
+							<br />
+							Deutschland
 						</p>
 						<p className="text-[0.95rem] text-[#555] leading-relaxed">
 							Dieses Tool ist <strong>strikt vertraulich</strong> und
@@ -68,7 +69,7 @@ export default function PrivacyPage() {
 
 					<section className="space-y-4">
 						<div className="flex items-center gap-2 mb-2">
-							<FileText className="w-5 h-5 text-[#e20074]" />
+							<FileText className="w-5 h-5 text-black" />
 							<h2 className="text-xl font-bold text-[#1a1a2e]">
 								2. Datenerfassung auf dieser Website
 							</h2>
@@ -133,7 +134,7 @@ export default function PrivacyPage() {
 
 					<section className="space-y-4">
 						<div className="flex items-center gap-2 mb-2">
-							<Info className="w-5 h-5 text-[#e20074]" />
+							<Info className="w-5 h-5 text-black" />
 							<h2 className="text-xl font-bold text-[#1a1a2e]">
 								3. Drittanbieter, Analysen und Hosting
 							</h2>
@@ -216,7 +217,7 @@ export default function PrivacyPage() {
 
 					<section className="space-y-4">
 						<div className="flex items-center gap-2 mb-2">
-							<FileText className="w-5 h-5 text-[#e20074]" />
+							<FileText className="w-5 h-5 text-black" />
 							<h2 className="text-xl font-bold text-[#1a1a2e]">
 								4. Cookies und Local Storage
 							</h2>
