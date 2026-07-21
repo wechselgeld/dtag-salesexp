@@ -9,9 +9,6 @@ import {
 	AppShell,
 } from '@/components/layout/app-shell';
 import {
-	ResolutionGuard,
-} from '@/components/layout/resolution-guard';
-import {
 	GlobalErrorToast,
 } from '@/components/shared/error-toast';
 import {
@@ -143,9 +140,7 @@ export default function RootLayout({
 				)}
 				<AnalyticsProvider />
 				<Providers>
-					<ResolutionGuard>
-						<AppShell>{children}</AppShell>
-					</ResolutionGuard>
+					<AppShell>{children}</AppShell>
 					<GlobalErrorToast />
 				</Providers>
 			</body>

@@ -13,9 +13,6 @@ import {
 	useBasketStore,
 } from '@/lib/store/basket-store';
 import {
-	IntroSplash,
-} from '@/components/features/auth-intro/intro-splash';
-import {
 	trpc,
 } from '@/lib/trpc';
 import {
@@ -140,7 +137,7 @@ export function AppShell({
 	}
 
 	return (
-		<IntroSplash>
+		<>
 			{shellContent}
 			{showConsentBanner && <TrackingConsentBanner />}
 			{!isStandalone && (
@@ -166,6 +163,6 @@ export function AppShell({
 					<WhatsNewModal />
 				</>
 			)}
-		</IntroSplash>
+		</>
 	);
 }
