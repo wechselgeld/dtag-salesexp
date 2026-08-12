@@ -1,0 +1,3 @@
+## 2024-06-25 - [Optimize streaming service lookups with Map]
+**Learning:** In React components that have frequent re-renders or memoized calculations containing static data lookups, using `.find()` inside loops or array reducers can lead to N*M computational complexity. Relying on O(N) Array loops inside another iteration is an architectural bottleneck when processing many configuration objects during rendering.
+**Action:** When static configuration arrays are present and used for lookups based on an ID, immediately build a `Map` (e.g., `const X_BY_ID = new Map(X.map(item => [item.id, item]))`) and replace `.find(x => x.id === id)` with `.get(id)`. This provides O(1) lookups and significantly reduces render time overhead.
