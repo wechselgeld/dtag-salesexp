@@ -475,6 +475,20 @@ export function StreamingComparison({
 		customPrices,
 	]);
 
+	// Map from groupId to selected serviceId
+	const selectedGroupMap = useMemo(() => {
+		const map = new Map<string, string>();
+		selectedServices.forEach((sId) => {
+			const service = STREAMING_SERVICES.find((s) => s.id === sId);
+			if (service) {
+				map.set(service.group, sId);
+			}
+		});
+		return map;
+	}, [
+		selectedServices,
+	]);
+
 	const {
 		data: pricingSettings,
 	} = trpc.settings.getPricingSettings.useQuery(
@@ -622,28 +636,11 @@ export function StreamingComparison({
 													group={group}
 													index={idx}
 													total={groupedServices.length}
-													selectedId={
-														selectedServices.find(
-															(sId) =>
-																STREAMING_SERVICES.find((s) => s.id === sId)
-																	?.group === group.groupId,
-														) || null
-													}
+														selectedId={selectedGroupMap.get(group.groupId) || null}
 													onSelect={(id) => toggleService(group.groupId, id)}
 													customPrice={
-														selectedServices.find(
-															(sId) =>
-																STREAMING_SERVICES.find((s) => s.id === sId)
-																	?.group === group.groupId,
-														)
-															? customPrices[
-																	selectedServices.find(
-																		(sId) =>
-																			STREAMING_SERVICES.find(
-																				(s) => s.id === sId,
-																			)?.group === group.groupId,
-																	)!
-															]
+															selectedGroupMap.has(group.groupId)
+																? customPrices[selectedGroupMap.get(group.groupId)!]
 															: undefined
 													}
 													onPriceChange={(id, val) =>
@@ -720,14 +717,7 @@ export function StreamingComparison({
 
 														<div className="flex flex-wrap gap-1.5 mb-4 pl-8">
 															{plan.includes.map((inc, i) => {
-																const isGroupSelected =
-																	inc.group &&
-																	selectedServices.some((sId) => {
-																		const s = STREAMING_SERVICES.find(
-																			(x) => x.id === sId,
-																		);
-																		return s && s.group === inc.group;
-																	});
+																	const isGroupSelected = inc.group && selectedGroupMap.has(inc.group);
 																return (
 																	<span
 																		key={i}
