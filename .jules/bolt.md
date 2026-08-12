@@ -1,0 +1,3 @@
+## 2024-05-24 - Pre-allocating Float64Array for O(1) nested updates
+**Learning:** In pricing/calculation logic where values like monthly costs are generated via a nested loop over time and items (e.g. `O(Months * SpecialPrices * Tiers)`), checking configurations inside the time loop is extremely slow.
+**Action:** When calculating repeated values across a time series array where constraints only apply within a fixed window (like `fromMonth` to `toMonth`), pre-allocate arrays (`new Float64Array(25).fill(...)`) and run the search over items first. Then loop over the time window to update indices directly. This drops complexity from multiplicative `O(A*B*C)` to additive `O(B*C + A)` and creates a measurable performance boost during heavy re-renders.

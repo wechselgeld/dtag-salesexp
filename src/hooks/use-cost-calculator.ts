@@ -60,6 +60,7 @@ export function calculateProductCosts({
 	settings = DEFAULT_PRICING,
 	customBasePrice,
 	hardwareTier = 'none',
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	isHybrid = false,
 }: CalculationInput): CalculationResult {
 	if (!product) {
@@ -177,7 +178,8 @@ export function calculateProductCosts({
 				name: `Bereitstellung PlusKarte Normal (Aktionspreis: 0 € statt ${(pkNormal * fee).toFixed(2).replace('.', ',')} €)`,
 				cost: 0,
 			});
-		} else {
+		}
+ else {
 			const totalFee = pkNormal * fee;
 			oneTimeTotal += totalFee;
 			oneTimeBreakdown.push({
@@ -194,7 +196,8 @@ export function calculateProductCosts({
 				name: `Bereitstellung PlusKarte Flex (Aktionspreis: 0 € statt ${(pkFlex * fee).toFixed(2).replace('.', ',')} €)`,
 				cost: 0,
 			});
-		} else {
+		}
+ else {
 			const totalFee = pkFlex * fee;
 			oneTimeTotal += totalFee;
 			oneTimeBreakdown.push({
@@ -210,7 +213,8 @@ export function calculateProductCosts({
 				name: 'Bereitstellung PlusKarte Kids & Teens',
 				cost: 0,
 			});
-		} else {
+		}
+ else {
 			const totalFee = pkKids * fee;
 			oneTimeTotal += totalFee;
 			oneTimeBreakdown.push({
@@ -268,45 +272,54 @@ export function calculateProductCosts({
 	const totalPlusKarten = pkNormal + pkFlex + pkKids;
 	const hasUnlimitedAdvantage = product.allowsUnlimitedAdvantage && totalPlusKarten > 0;
 
-	for (let month = 1; month <= 24; month++) {
-		let bestBasePrice = effectiveBasePrice;
-		let bestTVCost = tvPackagePrice;
+	// ⚡ Bolt Performance Optimization
+	// Pre-calculate best prices using Float64Array to reduce complexity
+	// from O(Months * SpecialPrices * Tiers) to O(SpecialPrices * Tiers + Months)
+	const bestBasePrices = new Float64Array(25).fill(effectiveBasePrice);
+	const bestTVCosts = new Float64Array(25).fill(tvPackagePrice);
+	const appliedBasePriceSpecials: (SpecialPrice | undefined)[] = new Array(25).fill(undefined);
+	const appliedTVSpecials: (SpecialPrice | undefined)[] = new Array(25).fill(undefined);
 
-		let appliedBasePriceSpecial: SpecialPrice | undefined;
-		let appliedTVSpecial: SpecialPrice | undefined;
+	for (const sp of activeSpecialPrices) {
+		for (const tier of sp.tiers) {
+			const target = tier.discountTarget || sp.discountTarget;
+			const type = tier.discountType || sp.discountType;
 
-		for (const sp of activeSpecialPrices) {
-			const matchingTier = sp.tiers.find(t => month >= t.fromMonth && month <= t.toMonth);
-			if (!matchingTier) { continue; }
-
-			const target = matchingTier.discountTarget || sp.discountTarget;
-			const type = matchingTier.discountType || sp.discountType;
+			const startMonth = Math.max(1, tier.fromMonth);
+			const endMonth = Math.min(24, tier.toMonth);
 
 			if (target === 'MAGENTA_TV') {
 				let simulatedCost = type === 'RELATIVE'
-					? tvPackagePrice - matchingTier.price
-					: matchingTier.price;
-
+					? tvPackagePrice - tier.price
+					: tier.price;
 				if (simulatedCost < 0) { simulatedCost = 0; }
 
-				if (simulatedCost < bestTVCost) {
-					bestTVCost = simulatedCost;
-					appliedTVSpecial = sp;
+				for (let month = startMonth; month <= endMonth; month++) {
+					if (simulatedCost < bestTVCosts[month]) {
+						bestTVCosts[month] = simulatedCost;
+						appliedTVSpecials[month] = sp;
+					}
 				}
 			}
-			else {
+ else {
 				let simulatedCost = type === 'RELATIVE'
-					? effectiveBasePrice - matchingTier.price
-					: matchingTier.price;
-
+					? effectiveBasePrice - tier.price
+					: tier.price;
 				if (simulatedCost < 0) { simulatedCost = 0; }
 
-				if (simulatedCost < bestBasePrice) {
-					bestBasePrice = simulatedCost;
-					appliedBasePriceSpecial = sp;
+				for (let month = startMonth; month <= endMonth; month++) {
+					if (simulatedCost < bestBasePrices[month]) {
+						bestBasePrices[month] = simulatedCost;
+						appliedBasePriceSpecials[month] = sp;
+					}
 				}
 			}
 		}
+	}
+
+	for (let month = 1; month <= 24; month++) {
+		const bestBasePrice = bestBasePrices[month];
+		const bestTVCost = bestTVCosts[month];
 
 		const totalMonthCost = bestBasePrice + monthlyAddonCost + bestTVCost + plusKartenCostPerMonth;
 		sumMonthlyCosts += totalMonthCost;
@@ -315,7 +328,7 @@ export function calculateProductCosts({
 			month,
 			basePrice: effectiveBasePrice,
 			effectivePrice: bestBasePrice,
-			specialPriceApplied: appliedBasePriceSpecial || appliedTVSpecial,
+			specialPriceApplied: appliedBasePriceSpecials[month] || appliedTVSpecials[month],
 			addonCosts: monthlyAddonCost,
 			magentaTVCost: bestTVCost,
 			total: totalMonthCost,
@@ -408,7 +421,10 @@ export function useCostCalculator(
 
 	const plusKartenCount = plusKarten.normal + plusKarten.flex + plusKarten.kidsTeens;
 	const setPlusKartenCount = (count: number) => {
-		setPlusKarten(prev => ({ ...prev, normal: count }));
+		setPlusKarten(prev => ({
+ ...prev,
+normal: count,
+}));
 	};
 
 	const [
@@ -426,7 +442,7 @@ export function useCostCalculator(
 	const pruneSpecialPrices = useCallback((
 		bc: BusinessCase,
 		pkg: MagentaTVPackageKey | null,
-		priceIds: string[]
+		priceIds: string[],
 	) => {
 		if (!product || priceIds.length === 0) { return priceIds; }
 		const isMTVSelected = pkg !== null || product.category === 'MAGENTA_TV_OTT';
@@ -446,11 +462,13 @@ export function useCostCalculator(
 			}
 			return true;
 		});
-	}, [product]);
+	}, [
+ product,
+]);
 
 	const pruneAddons = useCallback((
 		pkg: MagentaTVPackageKey | null,
-		addonIds: string[]
+		addonIds: string[],
 	) => {
 		if (!product || !product.compatibleAddons || addonIds.length === 0) { return addonIds; }
 		const isMTVSelected = pkg !== null || product.category === 'MAGENTA_TV_OTT';
@@ -465,20 +483,25 @@ export function useCostCalculator(
 			if (addon.magentaTVRequirement === 'ONLY_MEGASTREAM' && pkg !== 'megastream') { return false; }
 			return true;
 		});
-	}, [product]);
+	}, [
+ product,
+]);
 
 	const setBusinessCase = useCallback((
-		value: BusinessCase | ((prev: BusinessCase) => BusinessCase)
+		value: BusinessCase | ((prev: BusinessCase) => BusinessCase),
 	) => {
 		rawSetBusinessCase(prev => {
 			const nextBc = typeof value === 'function' ? value(prev) : value;
 			setSelectedSpecialPriceIds(currentIds => pruneSpecialPrices(nextBc, magentaTVPackage, currentIds));
 			return nextBc;
 		});
-	}, [magentaTVPackage, pruneSpecialPrices]);
+	}, [
+ magentaTVPackage,
+pruneSpecialPrices,
+]);
 
 	const setMagentaTVPackage = useCallback((
-		value: MagentaTVPackageKey | null | ((prev: MagentaTVPackageKey | null) => MagentaTVPackageKey | null)
+		value: MagentaTVPackageKey | null | ((prev: MagentaTVPackageKey | null) => MagentaTVPackageKey | null),
 	) => {
 		rawSetMagentaTVPackage(prev => {
 			const nextPkg = typeof value === 'function' ? value(prev) : value;
@@ -486,7 +509,11 @@ export function useCostCalculator(
 			setSelectedAddonIds(currentIds => pruneAddons(nextPkg, currentIds));
 			return nextPkg;
 		});
-	}, [businessCase, pruneSpecialPrices, pruneAddons]);
+	}, [
+ businessCase,
+pruneSpecialPrices,
+pruneAddons,
+]);
 
 	// Prune on product change
 	useEffect(() => {
@@ -494,7 +521,13 @@ export function useCostCalculator(
 			setSelectedSpecialPriceIds(prev => pruneSpecialPrices(businessCase, magentaTVPackage, prev));
 			setSelectedAddonIds(prev => pruneAddons(magentaTVPackage, prev));
 		}
-	}, [product, businessCase, magentaTVPackage, pruneSpecialPrices, pruneAddons]);
+	}, [
+ product,
+businessCase,
+magentaTVPackage,
+pruneSpecialPrices,
+pruneAddons,
+]);
 
 	const {
 		data: pricingSettings,
