@@ -1,0 +1,51 @@
+--- src/components/features/calculator/streaming-comparison.tsx
++++ src/components/features/calculator/streaming-comparison.tsx
+@@ -102,6 +102,11 @@
+	},
+ ];
+
++const STREAMING_SERVICES_BY_ID = new Map(
++	STREAMING_SERVICES.map((service) => [service.id, service]),
++);
++
+ const MAGENTA_PLANS = [
+	{
+		id: 'mtv-smart',
+@@ -470,7 +475,7 @@
+			const val = parseFloat(customPrices[id].replace(',', '.'));
+			return isNaN(val) ? 0 : val;
+		}
+-		return STREAMING_SERVICES.find((s) => s.id === id)?.price || 0;
++		return STREAMING_SERVICES_BY_ID.get(id)?.price || 0;
+	}, [
+		customPrices,
+	]);
+@@ -544,7 +549,7 @@
+		setSelectedServices((prev) => {
+			// Remove any existing selection from this group
+			const filtered = prev.filter((sId) => {
+-				const service = STREAMING_SERVICES.find((s) => s.id === sId);
++				const service = STREAMING_SERVICES_BY_ID.get(sId);
+				return service?.group !== groupId;
+			});
+			if (!id) { return filtered; }
+@@ -572,16 +577,16 @@
+
+	const coveredValue = useMemo(() => {
+		return selectedServices.reduce((sum, currentServiceId) => {
+-			const currentService = STREAMING_SERVICES.find(
+-				(s) => s.id === currentServiceId,
++			const currentService = STREAMING_SERVICES_BY_ID.get(
++				currentServiceId,
+			);
+			if (!currentService || !targetPlan) { return sum; }
+
+			const currentPrice = getPrice(currentServiceId);
+
+			const includedServiceIdForGroup = targetPlan.includedServiceIds.find(
+				(serviceId) => {
+-					const incService = STREAMING_SERVICES.find((s) => s.id === serviceId);
++					const incService = STREAMING_SERVICES_BY_ID.get(serviceId);
+					return incService?.group === currentService.group;
+				},
+			);
