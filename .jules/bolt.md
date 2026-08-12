@@ -1,0 +1,3 @@
+## 2024-06-21 - Optimize React Component List Renders with O(1) Map Lookups
+**Learning:** In React components like `streaming-comparison.tsx`, repeatedly using `Array.find()` inside `.map()` or `.reduce()` loops (especially for large configuration arrays or deep structures) causes unnecessary O(N*M) algorithmic complexity. This can result in slow renders and sluggish UI performance when user interactions trigger re-renders.
+**Action:** When finding static configuration data inside loops, construct a `Map` outside the component (or memoized inside) to enable O(1) lookups. By initializing `const STREAMING_SERVICES_BY_ID = new Map(...)` and using `STREAMING_SERVICES_BY_ID.get(id)`, rendering performance scales much better, turning complexity from O(N*M) to O(N+M).
